@@ -7,7 +7,15 @@ const OBJECTIVE_CONTRACT=[
   {id:'O4',definition:'Prepare customer-hosted planning and operational decisions',keyResultCount:8,epics:['EP-03','EP-05','EP-06','EP-10','EP-11','EP-13','EP-14','EP-15']},
   {id:'O5',definition:'Make the portfolio installable and portable in customer-controlled enterprise environments',keyResultCount:6,epics:['EP-07','EP-08']}
 ];
-const PRODUCT_IDS=['storefront','guard','forge','console','assurance','crossplane'];
+const PRODUCT_CONTRACT=[
+  {id:'storefront',name:'Storefront',role:'Experience'},
+  {id:'guard',name:'IaaP Guard',role:'Validate'},
+  {id:'forge',name:'IaaP Forge',role:'Construct'},
+  {id:'console',name:'IaaP Console',role:'Review'},
+  {id:'assurance',name:'IaaP Assurance',role:'Assure'},
+  {id:'crossplane',name:'Crossplane Control Plane',role:'Reconcile'}
+];
+const FOCUS_CONTRACT={closedEpic:'EP-07',activeEpic:'EP-08',activeLabel:'GitHub Enterprise Server and restricted-network portability'};
 const BASELINE={objectives:5,keyResults:47,epics:15,features:116};
 const STATUS_BY_STAGE={1:'DEFINING',2:'BUILDING',3:'VALIDATING',4:'INTEGRATING',5:'OPERATIONALIZING'};
 const AUTHORITY_NOTICE='Engineering and roadmap telemetry only. No production, pilot, deployment, approval, commercialization, cloud, or risk-acceptance authority is implied.';
@@ -52,8 +60,9 @@ function validDashboard(data){
     &&exactKeys(baseline,metrics)
     &&metrics.every(key=>baseline[key]===BASELINE[key])
     &&exactKeys(focus,['closedEpic','activeEpic','activeLabel','next'])
-    &&boundedText(focus.closedEpic)&&boundedText(focus.activeEpic)
-    &&focus.closedEpic!==focus.activeEpic&&boundedText(focus.activeLabel)
+    &&focus.closedEpic===FOCUS_CONTRACT.closedEpic
+    &&focus.activeEpic===FOCUS_CONTRACT.activeEpic
+    &&focus.activeLabel===FOCUS_CONTRACT.activeLabel
     &&Array.isArray(focus.next)&&focus.next.length>0&&focus.next.every(boundedText)
     &&Array.isArray(data.stageModel)&&data.stageModel.length===STAGE_NAMES.length
     &&data.stageModel.every((stage,index)=>stage===STAGE_NAMES[index])
@@ -69,9 +78,11 @@ function validDashboard(data){
     &&new Set(data.objectives.flatMap(item=>item.epics)).size===baseline.epics
     &&new Set(data.objectives.flatMap(item=>item.epics)).has(focus.closedEpic)
     &&new Set(data.objectives.flatMap(item=>item.epics)).has(focus.activeEpic)
-    &&Array.isArray(data.products)&&data.products.length===PRODUCT_IDS.length
-    &&data.products.every((item,index)=>exactKeys(item,['id','name','role','stageIndex','state','status','evidence','nextMilestone','href','source'])
-      &&item.id===PRODUCT_IDS[index]&&boundedText(item.name)&&boundedText(item.role)
+    &&Array.isArray(data.products)&&data.products.length===PRODUCT_CONTRACT.length
+    &&data.products.every((item,index)=>{
+      const expected=PRODUCT_CONTRACT[index];
+      return exactKeys(item,['id','name','role','stageIndex','state','status','evidence','nextMilestone','href','source'])
+      &&item.id===expected.id&&item.name===expected.name&&item.role===expected.role
       &&boundedText(item.state)&&boundedText(item.status)&&boundedText(item.evidence)
       &&boundedText(item.nextMilestone)&&Number.isInteger(item.stageIndex)
       &&item.stageIndex>=1&&item.stageIndex<=STAGE_NAMES.length
@@ -79,7 +90,8 @@ function validDashboard(data){
       &&exactKeys(item.source,['mode','repository','revision'])
       &&item.source.mode==='bounded-snapshot'
       &&item.source.repository==='InfrastructureProductWorks/multicloud-foundation-poc-integration'
-      &&item.source.revision===source.revision);
+      &&item.source.revision===source.revision;
+    });
 }
 function fmtDate(value){if(!value)return 'Repository-backed';const d=new Date(value);if(Number.isNaN(d.valueOf()))return String(value);return d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}
 function shortSha(value){return typeof value==='string'&&value.length>=7?value.slice(0,7):'snapshot'}
