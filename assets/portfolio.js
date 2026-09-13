@@ -1,5 +1,8 @@
 const DASHBOARD_URL='https://raw.githubusercontent.com/InfrastructureProductWorks/infrastructureproductworks.github.io/telemetry/portfolio-live/data/portfolio-dashboard-live.json';
 const STAGE_NAMES=['Define','Build','Validate','Integrate','Operationalize'];
+const PRODUCT_IDS=['storefront','guard','forge','console','assurance','crossplane'];
+const STATUS_BY_STAGE={1:'DEFINING',2:'BUILDING',3:'VALIDATING',4:'INTEGRATING',5:'OPERATIONALIZING'};
+const AUTHORITY_NOTICE='Engineering and roadmap telemetry only. No production, pilot, deployment, approval, commercialization, cloud, or risk-acceptance authority is implied.';
 const FALLBACK={
   schemaVersion:'portfolio-dashboard/v1',
   generatedAt:null,
@@ -21,37 +24,52 @@ function node(tag,className,value){const n=document.createElement(tag);if(classN
 function safePath(value){return typeof value==='string'&&value.startsWith('/')&&!value.startsWith('//')&&!value.includes('\\')&&!/[\r\n\t]/.test(value)?value:'#'}
 function object(value){return value!==null&&typeof value==='object'&&!Array.isArray(value)}
 function boundedText(value){return typeof value==='string'&&value.trim()!==''&&!/[\r\n\t]/.test(value)}
+function exactKeys(value,keys){return object(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.hasOwn(value,key))}
+function canonicalDate(value){return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)&&!Number.isNaN(Date.parse(`${value}T00:00:00Z`))&&new Date(`${value}T00:00:00Z`).toISOString().slice(0,10)===value}
+function canonicalTimestamp(value){return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(value)&&!Number.isNaN(Date.parse(value))&&new Date(value).toISOString()===value.replace('Z','.000Z')}
 function validDashboard(data){
   const baseline=data?.baseline,focus=data?.portfolioFocus,source=data?.source;
+  const topKeys=['schemaVersion','generatedAt','posture','authorityNotice','source','baseline','portfolioFocus','stageModel','objectives','products'];
   const metrics=['objectives','keyResults','epics','features'];
-  return object(data)
+  return exactKeys(data,topKeys)
     &&data.schemaVersion==='portfolio-dashboard/v1'
-    &&boundedText(data.posture)
-    &&typeof data.generatedAt==='string'&&!Number.isNaN(Date.parse(data.generatedAt))
-    &&object(source)&&/^[0-9a-f]{40}$/.test(source.revision||'')
-    &&object(baseline)&&metrics.every(key=>Number.isInteger(baseline[key])&&baseline[key]>=0)
-    &&object(focus)&&boundedText(focus.closedEpic)&&boundedText(focus.activeEpic)
-    &&boundedText(focus.activeLabel)&&Array.isArray(focus.next)&&focus.next.every(boundedText)
+    &&canonicalTimestamp(data.generatedAt)
+    &&boundedText(data.posture)&&data.authorityNotice===AUTHORITY_NOTICE
+    &&exactKeys(source,['roadmap','roadmapBaseline','scope','revision'])
+    &&source.roadmap==='config/portfolio-roadmap.json'
+    &&canonicalDate(source.roadmapBaseline)
+    &&source.scope==='sanitized-public-portfolio-telemetry'
+    &&/^[0-9a-f]{40}$/.test(source.revision)
+    &&exactKeys(baseline,metrics)
+    &&metrics.every(key=>Number.isInteger(baseline[key])&&baseline[key]>=0)
+    &&exactKeys(focus,['closedEpic','activeEpic','activeLabel','next'])
+    &&boundedText(focus.closedEpic)&&boundedText(focus.activeEpic)
+    &&focus.closedEpic!==focus.activeEpic&&boundedText(focus.activeLabel)
+    &&Array.isArray(focus.next)&&focus.next.length>0&&focus.next.every(boundedText)
     &&Array.isArray(data.stageModel)&&data.stageModel.length===STAGE_NAMES.length
     &&data.stageModel.every((stage,index)=>stage===STAGE_NAMES[index])
-    &&Array.isArray(data.objectives)&&data.objectives.length>0
-    &&data.objectives.every(item=>object(item)&&boundedText(item.id)&&boundedText(item.definition)
+    &&Array.isArray(data.objectives)&&data.objectives.length===baseline.objectives
+    &&data.objectives.every(item=>exactKeys(item,['id','definition','keyResultCount','epics'])
+      &&boundedText(item.id)&&boundedText(item.definition)
       &&Number.isInteger(item.keyResultCount)&&item.keyResultCount>=0
       &&Array.isArray(item.epics)&&item.epics.every(boundedText))
-    &&Array.isArray(data.products)&&data.products.length>0
-    &&data.products.every(item=>object(item)&&boundedText(item.id)&&boundedText(item.name)
-      &&boundedText(item.role)&&boundedText(item.state)&&boundedText(item.status)
-      &&boundedText(item.evidence)&&boundedText(item.nextMilestone)
-      &&Number.isInteger(item.stageIndex)&&item.stageIndex>=1&&item.stageIndex<=STAGE_NAMES.length
-      &&safePath(item.href)!=='#'&&object(item.source)
-      &&item.source.mode==='bounded-snapshot'&&/^[0-9a-f]{40}$/.test(item.source.revision||''));
+    &&Array.isArray(data.products)&&data.products.length===PRODUCT_IDS.length
+    &&data.products.every((item,index)=>exactKeys(item,['id','name','role','stageIndex','state','status','evidence','nextMilestone','href','source'])
+      &&item.id===PRODUCT_IDS[index]&&boundedText(item.name)&&boundedText(item.role)
+      &&boundedText(item.state)&&boundedText(item.status)&&boundedText(item.evidence)
+      &&boundedText(item.nextMilestone)&&Number.isInteger(item.stageIndex)
+      &&item.stageIndex>=1&&item.stageIndex<=STAGE_NAMES.length
+      &&item.status===STATUS_BY_STAGE[item.stageIndex]&&item.href===`/${item.id}/`
+      &&exactKeys(item.source,['mode','repository','revision'])
+      &&item.source.mode==='bounded-snapshot'
+      &&item.source.repository==='InfrastructureProductWorks/multicloud-foundation-poc-integration'
+      &&item.source.revision===source.revision);
 }
 function fmtDate(value){if(!value)return 'Repository-backed';const d=new Date(value);if(Number.isNaN(d.valueOf()))return String(value);return d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}
 function shortSha(value){return typeof value==='string'&&value.length>=7?value.slice(0,7):'snapshot'}
-function versionLabel(versions){if(!versions||typeof versions!=='object')return 'unversioned';const entries=Object.entries(versions);if(!entries.length)return 'unversioned';return entries.map(([k,v])=>`${k} ${v}`).join(' · ')}
 function renderBaseline(data){text('metric-objectives',data.baseline.objectives);text('metric-krs',data.baseline.keyResults);text('metric-epics',data.baseline.epics);text('metric-features',data.baseline.features);text('live-posture',String(data.posture||'').replaceAll('_',' '));text('live-updated',fmtDate(data.generatedAt));text('focus-id',data.portfolioFocus.activeEpic);text('focus-title',data.portfolioFocus.activeLabel);text('focus-copy',`${data.portfolioFocus.closedEpic} is functionally closed for the current bounded baseline. ${data.portfolioFocus.activeEpic} is the active portfolio focus.`);}
 function renderObjectives(data){const host=document.getElementById('objective-list');if(!host)return;host.replaceChildren();(data.objectives||[]).forEach((o,i)=>{const article=node('article','objective-row');article.dataset.index=String(i+1);article.append(node('div','objective-number',i+1));const copy=node('div','objective-copy');copy.append(node('b','',o.definition),node('span','',`${o.id} · canonical roadmap objective`));article.append(copy);const kr=node('div','objective-stat');kr.append(node('small','','KEY RESULTS'),node('strong','',o.keyResultCount));article.append(kr);const epics=Array.isArray(o.epics)?o.epics:[];const ep=node('div','objective-stat');ep.append(node('small','','EPICS'),node('strong','',epics.length));article.append(ep);const chips=node('div','epic-chips');epics.forEach(e=>{let cls='epic-chip';if(e===data.portfolioFocus.activeEpic)cls+=' active';if(e===data.portfolioFocus.closedEpic)cls+=' closed';chips.append(node('span',cls,e));});article.append(chips);host.append(article);});}
-function renderProducts(data){const host=document.getElementById('product-grid');if(!host)return;host.replaceChildren();(data.products||[]).forEach(p=>{const link=node('a','product-card');link.href=safePath(p.href);const top=node('div','product-top');const titleWrap=node('div');titleWrap.append(node('div','product-role',String(p.role||'').toUpperCase()),node('h3','',p.name));const status=String(p.status||'');top.append(titleWrap,node('span',`status-pill ${status.toLowerCase()}`,status));link.append(top,node('div','product-state',p.state),node('p','product-evidence',p.evidence));const labels=node('div','stage-labels');STAGE_NAMES.forEach(s=>labels.append(node('span','',s)));link.append(labels);const track=node('div','stage-track');const stageIndex=Number.isInteger(p.stageIndex)?Math.max(0,Math.min(STAGE_NAMES.length,p.stageIndex)):0;STAGE_NAMES.forEach((_,i)=>track.append(node('span',`stage-segment${i<stageIndex?' done':''}`)));link.append(track);const current=node('div','stage-current');current.append(node('span','','Current maturity'),node('strong','',STAGE_NAMES[Math.max(0,stageIndex-1)]||'Define'));link.append(current);const source=p.source||{};const sourceLine=node('div','product-source');const mode=source.mode==='bounded-snapshot'?'bounded snapshot':'product-owned main';sourceLine.append(node('span','',versionLabel(p.versions)),node('span','',mode),node('span','',shortSha(source.revision)));link.append(sourceLine);const next=node('div','next-block');next.append(node('small','','NEXT MILESTONE'),node('p','',p.nextMilestone));link.append(next,node('span','product-link','Open product →'));host.append(link);});}
+function renderProducts(data){const host=document.getElementById('product-grid');if(!host)return;host.replaceChildren();(data.products||[]).forEach(p=>{const link=node('a','product-card');link.href=safePath(p.href);const top=node('div','product-top');const titleWrap=node('div');titleWrap.append(node('div','product-role',String(p.role||'').toUpperCase()),node('h3','',p.name));const status=String(p.status||'');top.append(titleWrap,node('span',`status-pill ${status.toLowerCase()}`,status));link.append(top,node('div','product-state',p.state),node('p','product-evidence',p.evidence));const labels=node('div','stage-labels');STAGE_NAMES.forEach(s=>labels.append(node('span','',s)));link.append(labels);const track=node('div','stage-track');const stageIndex=Number.isInteger(p.stageIndex)?Math.max(0,Math.min(STAGE_NAMES.length,p.stageIndex)):0;STAGE_NAMES.forEach((_,i)=>track.append(node('span',`stage-segment${i<stageIndex?' done':''}`)));link.append(track);const current=node('div','stage-current');current.append(node('span','','Current maturity'),node('strong','',STAGE_NAMES[Math.max(0,stageIndex-1)]||'Define'));link.append(current);const source=p.source||{};const sourceLine=node('div','product-source');const mode=source.mode==='bounded-snapshot'?'bounded snapshot':'product-owned main';sourceLine.append(node('span','',mode),node('span','',shortSha(source.revision)));link.append(sourceLine);const next=node('div','next-block');next.append(node('small','','NEXT MILESTONE'),node('p','',p.nextMilestone));link.append(next,node('span','product-link','Open product →'));host.append(link);});}
 function renderNext(data){const host=document.getElementById('next-list');if(!host)return;host.replaceChildren();(data.portfolioFocus.next||[]).forEach((item,i)=>{if(i)host.append(node('i','','→'));host.append(node('span','',item));});}
 async function fetchJson(url){const res=await fetch(`${url}?v=${Date.now()}`,{cache:'no-store'});if(!res.ok)throw new Error(`HTTP ${res.status}`);return res.json();}
 async function loadDashboard(){let data=FALLBACK;try{const live=await fetchJson(DASHBOARD_URL);if(!validDashboard(live))throw new Error('unsupported portfolio dashboard contract');data=live;}catch(err){document.getElementById('sync-error')?.classList.add('show');console.warn('Portfolio dashboard feed unavailable or invalid; using bounded fallback.',err)}renderBaseline(data);renderObjectives(data);renderProducts(data);renderNext(data);}
