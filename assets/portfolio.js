@@ -8,13 +8,14 @@ const OBJECTIVE_CONTRACT=[
   {id:'O5',definition:'Make the portfolio installable and portable in customer-controlled enterprise environments',keyResultCount:6,epics:['EP-07','EP-08']}
 ];
 const PRODUCT_IDS=['storefront','guard','forge','console','assurance','crossplane'];
+const BASELINE={objectives:5,keyResults:47,epics:15,features:116};
 const STATUS_BY_STAGE={1:'DEFINING',2:'BUILDING',3:'VALIDATING',4:'INTEGRATING',5:'OPERATIONALIZING'};
 const AUTHORITY_NOTICE='Engineering and roadmap telemetry only. No production, pilot, deployment, approval, commercialization, cloud, or risk-acceptance authority is implied.';
 const FALLBACK={
   schemaVersion:'portfolio-dashboard/v1',
   generatedAt:null,
   posture:'CONTINUE_VALIDATION',
-  baseline:{objectives:5,keyResults:47,epics:15,features:116},
+  baseline:BASELINE,
   portfolioFocus:{closedEpic:'EP-07',activeEpic:'EP-08',activeLabel:'GitHub Enterprise Server and restricted-network portability',next:[]},
   stageModel:STAGE_NAMES,
   objectives:[
@@ -49,7 +50,7 @@ function validDashboard(data){
     &&source.scope==='sanitized-public-portfolio-telemetry'
     &&/^[0-9a-f]{40}$/.test(source.revision)
     &&exactKeys(baseline,metrics)
-    &&metrics.every(key=>Number.isInteger(baseline[key])&&baseline[key]>=0)
+    &&metrics.every(key=>baseline[key]===BASELINE[key])
     &&exactKeys(focus,['closedEpic','activeEpic','activeLabel','next'])
     &&boundedText(focus.closedEpic)&&boundedText(focus.activeEpic)
     &&focus.closedEpic!==focus.activeEpic&&boundedText(focus.activeLabel)
