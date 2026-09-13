@@ -11,7 +11,7 @@ const OBJECTIVES=[
 ];
 function text(id,value){const node=document.getElementById(id);if(node)node.textContent=String(value??'')}
 function node(tag,className,value){const n=document.createElement(tag);if(className)n.className=className;if(value!==undefined)n.textContent=String(value);return n}
-function safePath(value){return typeof value==='string'&&value.startsWith('/')&&!value.startsWith('//')?value:'#'}
+function safePath(value){return typeof value==='string'&&value.startsWith('/')&&!value.startsWith('//')&&!value.includes('\\')&&!/[\r\n\t]/.test(value)?value:'#'}
 function fmtDate(value){if(!value)return 'Repository-backed';const d=new Date(value);if(Number.isNaN(d.valueOf()))return String(value);return d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}
 function shortSha(value){return typeof value==='string'&&value.length>=7?value.slice(0,7):'snapshot'}
 function versionLabel(versions){if(!versions||typeof versions!=='object')return 'unversioned';const entries=Object.entries(versions);if(!entries.length)return 'unversioned';return entries.map(([k,v])=>`${k} ${v}`).join(' · ')}
