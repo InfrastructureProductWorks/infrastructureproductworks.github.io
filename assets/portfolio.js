@@ -1,5 +1,6 @@
 const DASHBOARD_URL='https://raw.githubusercontent.com/InfrastructureProductWorks/infrastructureproductworks.github.io/telemetry/portfolio-live/data/portfolio-dashboard-live.json';
 const STAGE_NAMES=['Define','Build','Validate','Integrate','Operationalize'];
+const OBJECTIVE_IDS=['O1','O2','O3','O4','O5'];
 const PRODUCT_IDS=['storefront','guard','forge','console','assurance','crossplane'];
 const STATUS_BY_STAGE={1:'DEFINING',2:'BUILDING',3:'VALIDATING',4:'INTEGRATING',5:'OPERATIONALIZING'};
 const AUTHORITY_NOTICE='Engineering and roadmap telemetry only. No production, pilot, deployment, approval, commercialization, cloud, or risk-acceptance authority is implied.';
@@ -48,11 +49,17 @@ function validDashboard(data){
     &&Array.isArray(focus.next)&&focus.next.length>0&&focus.next.every(boundedText)
     &&Array.isArray(data.stageModel)&&data.stageModel.length===STAGE_NAMES.length
     &&data.stageModel.every((stage,index)=>stage===STAGE_NAMES[index])
-    &&Array.isArray(data.objectives)&&data.objectives.length===baseline.objectives
-    &&data.objectives.every(item=>exactKeys(item,['id','definition','keyResultCount','epics'])
-      &&boundedText(item.id)&&boundedText(item.definition)
+    &&Array.isArray(data.objectives)&&data.objectives.length===OBJECTIVE_IDS.length
+    &&baseline.objectives===OBJECTIVE_IDS.length
+    &&data.objectives.every((item,index)=>exactKeys(item,['id','definition','keyResultCount','epics'])
+      &&item.id===OBJECTIVE_IDS[index]&&boundedText(item.definition)
       &&Number.isInteger(item.keyResultCount)&&item.keyResultCount>=0
-      &&Array.isArray(item.epics)&&item.epics.every(boundedText))
+      &&Array.isArray(item.epics)&&item.epics.every(boundedText)
+      &&new Set(item.epics).size===item.epics.length)
+    &&data.objectives.reduce((total,item)=>total+item.keyResultCount,0)===baseline.keyResults
+    &&new Set(data.objectives.flatMap(item=>item.epics)).size===baseline.epics
+    &&new Set(data.objectives.flatMap(item=>item.epics)).has(focus.closedEpic)
+    &&new Set(data.objectives.flatMap(item=>item.epics)).has(focus.activeEpic)
     &&Array.isArray(data.products)&&data.products.length===PRODUCT_IDS.length
     &&data.products.every((item,index)=>exactKeys(item,['id','name','role','stageIndex','state','status','evidence','nextMilestone','href','source'])
       &&item.id===PRODUCT_IDS[index]&&boundedText(item.name)&&boundedText(item.role)
