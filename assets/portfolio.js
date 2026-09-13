@@ -1,6 +1,12 @@
 const DASHBOARD_URL='https://raw.githubusercontent.com/InfrastructureProductWorks/infrastructureproductworks.github.io/telemetry/portfolio-live/data/portfolio-dashboard-live.json';
 const STAGE_NAMES=['Define','Build','Validate','Integrate','Operationalize'];
-const OBJECTIVE_IDS=['O1','O2','O3','O4','O5'];
+const OBJECTIVE_CONTRACT=[
+  {id:'O1',definition:'Preserve trustworthy evidence and release integrity',keyResultCount:3,epics:['EP-01']},
+  {id:'O2',definition:'Validate evaluator value without widening authority',keyResultCount:3,epics:['EP-02','EP-03']},
+  {id:'O3',definition:'Prove one minimum multi-cloud foundation safely and reversibly',keyResultCount:27,epics:['EP-04','EP-09','EP-10','EP-11','EP-12','EP-13','EP-14','EP-15']},
+  {id:'O4',definition:'Prepare customer-hosted planning and operational decisions',keyResultCount:8,epics:['EP-03','EP-05','EP-06','EP-10','EP-11','EP-13','EP-14','EP-15']},
+  {id:'O5',definition:'Make the portfolio installable and portable in customer-controlled enterprise environments',keyResultCount:6,epics:['EP-07','EP-08']}
+];
 const PRODUCT_IDS=['storefront','guard','forge','console','assurance','crossplane'];
 const STATUS_BY_STAGE={1:'DEFINING',2:'BUILDING',3:'VALIDATING',4:'INTEGRATING',5:'OPERATIONALIZING'};
 const AUTHORITY_NOTICE='Engineering and roadmap telemetry only. No production, pilot, deployment, approval, commercialization, cloud, or risk-acceptance authority is implied.';
@@ -26,6 +32,7 @@ function safePath(value){return typeof value==='string'&&value.startsWith('/')&&
 function object(value){return value!==null&&typeof value==='object'&&!Array.isArray(value)}
 function boundedText(value){return typeof value==='string'&&value.trim()!==''&&!/[\r\n\t]/.test(value)}
 function exactKeys(value,keys){return object(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.hasOwn(value,key))}
+function sameArray(actual,expected){return Array.isArray(actual)&&actual.length===expected.length&&actual.every((value,index)=>value===expected[index])}
 function canonicalDate(value){return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)&&!Number.isNaN(Date.parse(`${value}T00:00:00Z`))&&new Date(`${value}T00:00:00Z`).toISOString().slice(0,10)===value}
 function canonicalTimestamp(value){return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(value)&&!Number.isNaN(Date.parse(value))&&new Date(value).toISOString()===value.replace('Z','.000Z')}
 function validDashboard(data){
@@ -35,7 +42,7 @@ function validDashboard(data){
   return exactKeys(data,topKeys)
     &&data.schemaVersion==='portfolio-dashboard/v1'
     &&canonicalTimestamp(data.generatedAt)
-    &&boundedText(data.posture)&&data.authorityNotice===AUTHORITY_NOTICE
+    &&data.posture==='CONTINUE_VALIDATION'&&data.authorityNotice===AUTHORITY_NOTICE
     &&exactKeys(source,['roadmap','roadmapBaseline','scope','revision'])
     &&source.roadmap==='config/portfolio-roadmap.json'
     &&canonicalDate(source.roadmapBaseline)
@@ -49,13 +56,14 @@ function validDashboard(data){
     &&Array.isArray(focus.next)&&focus.next.length>0&&focus.next.every(boundedText)
     &&Array.isArray(data.stageModel)&&data.stageModel.length===STAGE_NAMES.length
     &&data.stageModel.every((stage,index)=>stage===STAGE_NAMES[index])
-    &&Array.isArray(data.objectives)&&data.objectives.length===OBJECTIVE_IDS.length
-    &&baseline.objectives===OBJECTIVE_IDS.length
-    &&data.objectives.every((item,index)=>exactKeys(item,['id','definition','keyResultCount','epics'])
-      &&item.id===OBJECTIVE_IDS[index]&&boundedText(item.definition)
-      &&Number.isInteger(item.keyResultCount)&&item.keyResultCount>=0
-      &&Array.isArray(item.epics)&&item.epics.every(boundedText)
-      &&new Set(item.epics).size===item.epics.length)
+    &&Array.isArray(data.objectives)&&data.objectives.length===OBJECTIVE_CONTRACT.length
+    &&baseline.objectives===OBJECTIVE_CONTRACT.length
+    &&data.objectives.every((item,index)=>{
+      const expected=OBJECTIVE_CONTRACT[index];
+      return exactKeys(item,['id','definition','keyResultCount','epics'])
+        &&item.id===expected.id&&item.definition===expected.definition
+        &&item.keyResultCount===expected.keyResultCount&&sameArray(item.epics,expected.epics);
+    })
     &&data.objectives.reduce((total,item)=>total+item.keyResultCount,0)===baseline.keyResults
     &&new Set(data.objectives.flatMap(item=>item.epics)).size===baseline.epics
     &&new Set(data.objectives.flatMap(item=>item.epics)).has(focus.closedEpic)
