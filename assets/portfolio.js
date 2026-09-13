@@ -1,4 +1,4 @@
-const DASHBOARD_URL='https://raw.githubusercontent.com/InfrastructureProductWorks/multicloud-foundation-poc-integration/telemetry/portfolio-live/config/portfolio-dashboard-live.json';
+const DASHBOARD_URL='https://raw.githubusercontent.com/InfrastructureProductWorks/infrastructureproductworks.github.io/telemetry/portfolio-live/data/portfolio-dashboard-live.json';
 const ROADMAP_URL='https://raw.githubusercontent.com/InfrastructureProductWorks/multicloud-foundation-poc-integration/main/config/portfolio-roadmap.json';
 const STAGE_NAMES=['Define','Build','Validate','Integrate','Operationalize'];
 const FALLBACK={schemaVersion:'portfolio-dashboard/v1',generatedAt:null,posture:'CONTINUE_VALIDATION',baseline:{objectives:5,keyResults:47,epics:15,features:116},portfolioFocus:{closedEpic:'EP-07',activeEpic:'EP-08',activeLabel:'GitHub Enterprise Server and restricted-network portability',next:[]},stageModel:STAGE_NAMES,products:[]};
