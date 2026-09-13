@@ -19,6 +19,33 @@ const FALLBACK={
 function text(id,value){const target=document.getElementById(id);if(target)target.textContent=String(value??'')}
 function node(tag,className,value){const n=document.createElement(tag);if(className)n.className=className;if(value!==undefined)n.textContent=String(value);return n}
 function safePath(value){return typeof value==='string'&&value.startsWith('/')&&!value.startsWith('//')&&!value.includes('\\')&&!/[\r\n\t]/.test(value)?value:'#'}
+function object(value){return value!==null&&typeof value==='object'&&!Array.isArray(value)}
+function boundedText(value){return typeof value==='string'&&value.trim()!==''&&!/[\r\n\t]/.test(value)}
+function validDashboard(data){
+  const baseline=data?.baseline,focus=data?.portfolioFocus,source=data?.source;
+  const metrics=['objectives','keyResults','epics','features'];
+  return object(data)
+    &&data.schemaVersion==='portfolio-dashboard/v1'
+    &&boundedText(data.posture)
+    &&typeof data.generatedAt==='string'&&!Number.isNaN(Date.parse(data.generatedAt))
+    &&object(source)&&/^[0-9a-f]{40}$/.test(source.revision||'')
+    &&object(baseline)&&metrics.every(key=>Number.isInteger(baseline[key])&&baseline[key]>=0)
+    &&object(focus)&&boundedText(focus.closedEpic)&&boundedText(focus.activeEpic)
+    &&boundedText(focus.activeLabel)&&Array.isArray(focus.next)&&focus.next.every(boundedText)
+    &&Array.isArray(data.stageModel)&&data.stageModel.length===STAGE_NAMES.length
+    &&data.stageModel.every((stage,index)=>stage===STAGE_NAMES[index])
+    &&Array.isArray(data.objectives)&&data.objectives.length>0
+    &&data.objectives.every(item=>object(item)&&boundedText(item.id)&&boundedText(item.definition)
+      &&Number.isInteger(item.keyResultCount)&&item.keyResultCount>=0
+      &&Array.isArray(item.epics)&&item.epics.every(boundedText))
+    &&Array.isArray(data.products)&&data.products.length>0
+    &&data.products.every(item=>object(item)&&boundedText(item.id)&&boundedText(item.name)
+      &&boundedText(item.role)&&boundedText(item.state)&&boundedText(item.status)
+      &&boundedText(item.evidence)&&boundedText(item.nextMilestone)
+      &&Number.isInteger(item.stageIndex)&&item.stageIndex>=1&&item.stageIndex<=STAGE_NAMES.length
+      &&safePath(item.href)!=='#'&&object(item.source)
+      &&item.source.mode==='bounded-snapshot'&&/^[0-9a-f]{40}$/.test(item.source.revision||''));
+}
 function fmtDate(value){if(!value)return 'Repository-backed';const d=new Date(value);if(Number.isNaN(d.valueOf()))return String(value);return d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}
 function shortSha(value){return typeof value==='string'&&value.length>=7?value.slice(0,7):'snapshot'}
 function versionLabel(versions){if(!versions||typeof versions!=='object')return 'unversioned';const entries=Object.entries(versions);if(!entries.length)return 'unversioned';return entries.map(([k,v])=>`${k} ${v}`).join(' · ')}
@@ -27,5 +54,5 @@ function renderObjectives(data){const host=document.getElementById('objective-li
 function renderProducts(data){const host=document.getElementById('product-grid');if(!host)return;host.replaceChildren();(data.products||[]).forEach(p=>{const link=node('a','product-card');link.href=safePath(p.href);const top=node('div','product-top');const titleWrap=node('div');titleWrap.append(node('div','product-role',String(p.role||'').toUpperCase()),node('h3','',p.name));const status=String(p.status||'');top.append(titleWrap,node('span',`status-pill ${status.toLowerCase()}`,status));link.append(top,node('div','product-state',p.state),node('p','product-evidence',p.evidence));const labels=node('div','stage-labels');STAGE_NAMES.forEach(s=>labels.append(node('span','',s)));link.append(labels);const track=node('div','stage-track');const stageIndex=Number.isInteger(p.stageIndex)?Math.max(0,Math.min(STAGE_NAMES.length,p.stageIndex)):0;STAGE_NAMES.forEach((_,i)=>track.append(node('span',`stage-segment${i<stageIndex?' done':''}`)));link.append(track);const current=node('div','stage-current');current.append(node('span','','Current maturity'),node('strong','',STAGE_NAMES[Math.max(0,stageIndex-1)]||'Define'));link.append(current);const source=p.source||{};const sourceLine=node('div','product-source');const mode=source.mode==='bounded-snapshot'?'bounded snapshot':'product-owned main';sourceLine.append(node('span','',versionLabel(p.versions)),node('span','',mode),node('span','',shortSha(source.revision)));link.append(sourceLine);const next=node('div','next-block');next.append(node('small','','NEXT MILESTONE'),node('p','',p.nextMilestone));link.append(next,node('span','product-link','Open product →'));host.append(link);});}
 function renderNext(data){const host=document.getElementById('next-list');if(!host)return;host.replaceChildren();(data.portfolioFocus.next||[]).forEach((item,i)=>{if(i)host.append(node('i','','→'));host.append(node('span','',item));});}
 async function fetchJson(url){const res=await fetch(`${url}?v=${Date.now()}`,{cache:'no-store'});if(!res.ok)throw new Error(`HTTP ${res.status}`);return res.json();}
-async function loadDashboard(){let data=FALLBACK;try{data=await fetchJson(DASHBOARD_URL);}catch(err){document.getElementById('sync-error')?.classList.add('show');console.warn('Portfolio dashboard feed unavailable; using bounded fallback.',err)}renderBaseline(data);renderObjectives(data);renderProducts(data);renderNext(data);}
+async function loadDashboard(){let data=FALLBACK;try{const live=await fetchJson(DASHBOARD_URL);if(!validDashboard(live))throw new Error('unsupported portfolio dashboard contract');data=live;}catch(err){document.getElementById('sync-error')?.classList.add('show');console.warn('Portfolio dashboard feed unavailable or invalid; using bounded fallback.',err)}renderBaseline(data);renderObjectives(data);renderProducts(data);renderNext(data);}
 document.addEventListener('DOMContentLoaded',loadDashboard);
