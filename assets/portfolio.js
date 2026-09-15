@@ -8,17 +8,20 @@ const OBJECTIVE_CONTRACT=[
   {id:'O5',definition:'Make the portfolio installable and portable in customer-controlled enterprise environments',keyResultCount:6,epics:['EP-07','EP-08']}
 ];
 const PRODUCT_CONTRACT=[
-  {id:'storefront',name:'Storefront',role:'Experience'},
-  {id:'guard',name:'IaaP Guard',role:'Validate'},
-  {id:'forge',name:'IaaP Forge',role:'Construct'},
-  {id:'console',name:'IaaP Console',role:'Review'},
-  {id:'assurance',name:'IaaP Assurance',role:'Assure'},
-  {id:'crossplane',name:'Crossplane Control Plane',role:'Reconcile'}
+  {id:'storefront',name:'Storefront',role:'Experience',repository:'InfrastructureProductWorks/backstage-infrastructure-product-storefront-poc'},
+  {id:'guard',name:'IaaP Guard',role:'Validate',repository:'InfrastructureProductWorks/iaap-guard'},
+  {id:'forge',name:'IaaP Forge',role:'Construct',repository:'InfrastructureProductWorks/iaap-forge'},
+  {id:'console',name:'IaaP Console',role:'Review',repository:'InfrastructureProductWorks/iaap-console'},
+  {id:'assurance',name:'IaaP Assurance',role:'Assure',repository:'InfrastructureProductWorks/iaap-assurance'},
+  {id:'crossplane',name:'Crossplane Control Plane',role:'Reconcile',repository:'InfrastructureProductWorks/crossplane-multicloud-seed-poc'}
 ];
 const FOCUS_CONTRACT={closedEpic:'EP-07',activeEpic:'EP-08',activeLabel:'GitHub Enterprise Server and restricted-network portability'};
 const BASELINE={objectives:5,keyResults:47,epics:15,features:116};
 const STATUS_BY_STAGE={1:'DEFINING',2:'BUILDING',3:'VALIDATING',4:'INTEGRATING',5:'OPERATIONALIZING'};
 const AUTHORITY_NOTICE='Engineering and roadmap telemetry only. No production, pilot, deployment, approval, commercialization, cloud, or risk-acceptance authority is implied.';
+const LIVE_SCOPE='sanitized-product-owned-live-portfolio-telemetry';
+const LIVE_AGGREGATION='scheduled-protected-main-product-status-contracts';
+const INTEGRATION_REPOSITORY='InfrastructureProductWorks/multicloud-foundation-poc-integration';
 const FALLBACK={
   schemaVersion:'portfolio-dashboard/v1',
   generatedAt:null,
@@ -44,6 +47,7 @@ function exactKeys(value,keys){return object(value)&&Object.keys(value).length==
 function sameArray(actual,expected){return Array.isArray(actual)&&actual.length===expected.length&&actual.every((value,index)=>value===expected[index])}
 function canonicalDate(value){return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)&&!Number.isNaN(Date.parse(`${value}T00:00:00Z`))&&new Date(`${value}T00:00:00Z`).toISOString().slice(0,10)===value}
 function canonicalTimestamp(value){return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(value)&&!Number.isNaN(Date.parse(value))&&new Date(value).toISOString()===value.replace('Z','.000Z')}
+function validVersions(value){return object(value)&&Object.entries(value).every(([key,version])=>boundedText(key)&&boundedText(version))}
 function validDashboard(data){
   const baseline=data?.baseline,focus=data?.portfolioFocus,source=data?.source;
   const topKeys=['schemaVersion','generatedAt','posture','authorityNotice','source','baseline','portfolioFocus','stageModel','objectives','products'];
@@ -52,10 +56,12 @@ function validDashboard(data){
     &&data.schemaVersion==='portfolio-dashboard/v1'
     &&canonicalTimestamp(data.generatedAt)
     &&data.posture==='CONTINUE_VALIDATION'&&data.authorityNotice===AUTHORITY_NOTICE
-    &&exactKeys(source,['roadmap','roadmapBaseline','scope','revision'])
+    &&exactKeys(source,['roadmap','roadmapBaseline','scope','aggregation','repository','revision'])
     &&source.roadmap==='config/portfolio-roadmap.json'
     &&canonicalDate(source.roadmapBaseline)
-    &&source.scope==='sanitized-public-portfolio-telemetry'
+    &&source.scope===LIVE_SCOPE
+    &&source.aggregation===LIVE_AGGREGATION
+    &&source.repository===INTEGRATION_REPOSITORY
     &&/^[0-9a-f]{40}$/.test(source.revision)
     &&exactKeys(baseline,metrics)
     &&metrics.every(key=>baseline[key]===BASELINE[key])
@@ -81,16 +87,22 @@ function validDashboard(data){
     &&Array.isArray(data.products)&&data.products.length===PRODUCT_CONTRACT.length
     &&data.products.every((item,index)=>{
       const expected=PRODUCT_CONTRACT[index];
-      return exactKeys(item,['id','name','role','stageIndex','state','status','evidence','nextMilestone','href','source'])
+      const productSource=item?.source;
+      const isAssurance=item?.id==='assurance';
+      return exactKeys(item,['id','name','role','stageIndex','state','status','evidence','nextMilestone','href','versions','source'])
       &&item.id===expected.id&&item.name===expected.name&&item.role===expected.role
       &&boundedText(item.state)&&boundedText(item.status)&&boundedText(item.evidence)
       &&boundedText(item.nextMilestone)&&Number.isInteger(item.stageIndex)
       &&item.stageIndex>=1&&item.stageIndex<=STAGE_NAMES.length
       &&item.status===STATUS_BY_STAGE[item.stageIndex]&&item.href===`/${item.id}/`
-      &&exactKeys(item.source,['mode','repository','revision'])
-      &&item.source.mode==='bounded-snapshot'
-      &&item.source.repository==='InfrastructureProductWorks/multicloud-foundation-poc-integration'
-      &&item.source.revision===source.revision;
+      &&validVersions(item.versions)
+      &&exactKeys(productSource,['repository','revision','mode'])
+      &&productSource.repository===expected.repository
+      &&(
+        isAssurance
+          ? productSource.mode==='bounded-snapshot'&&productSource.revision===null
+          : productSource.mode==='product-owned-main'&&typeof productSource.revision==='string'&&/^[0-9a-f]{40}$/.test(productSource.revision)
+      );
     });
 }
 function fmtDate(value){if(!value)return 'Repository-backed';const d=new Date(value);if(Number.isNaN(d.valueOf()))return String(value);return d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}
