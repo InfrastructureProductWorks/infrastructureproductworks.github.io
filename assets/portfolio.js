@@ -115,9 +115,8 @@ function validDashboard(data){
       &&exactKeys(productSource,['repository','revision','mode'])
       &&productSource.repository===expected.repository
       &&(
-        isAssurance
-          ? productSource.mode==='bounded-snapshot'&&productSource.revision===null
-          : productSource.mode==='product-owned-main'&&typeof productSource.revision==='string'&&/^[0-9a-f]{40}$/.test(productSource.revision)
+        productSource.mode==='product-owned-main'&&typeof productSource.revision==='string'&&/^[0-9a-f]{40}$/.test(productSource.revision)
+        ||(isAssurance&&productSource.mode==='bounded-snapshot'&&productSource.revision===null)
       );
     });
 }
