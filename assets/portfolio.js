@@ -9,7 +9,7 @@ const PRODUCT_CONTRACT=[
   {id:'crossplane',name:'Crossplane Control Plane',role:'Reconcile',repository:'InfrastructureProductWorks/crossplane-multicloud-seed-poc'}
 ];
 const FOCUS_CONTRACT={closedEpic:'EP-07',activeEpic:'EP-08',activeLabel:'GitHub Enterprise Server and restricted-network portability'};
-const BASELINE={objectives:7,keyResults:54,epics:17,features:134};
+const BASELINE={objectives:8,keyResults:58,epics:18,features:142};
 const STATUS_BY_STAGE={1:'DEFINING',2:'BUILDING',3:'VALIDATING',4:'INTEGRATING',5:'OPERATIONALIZING'};
 const AUTHORITY_NOTICE='Engineering and roadmap telemetry only. No production, pilot, deployment, approval, commercialization, cloud, or risk-acceptance authority is implied.';
 const LIVE_SCOPE='sanitized-product-owned-live-portfolio-telemetry';
@@ -29,6 +29,7 @@ const FALLBACK={
       'EP-16 Connected Application Experience begins in parallel with Preview boundaries preserved',
       'Connected Storefront and Connected Forge must prove authenticated, integrity-bound handoff before any Operational claim',
       'Customer identity, persistence, audit, Guard operational profiles, Crossplane and cloud/provider integrations remain separately gated',
+      'EP-18 multi-customer isolation defines customer-bound identity, policy, evidence, secrets and cross-customer fail-closed testing before any tenant-isolation claim',
       'EP-17 AI-assisted and agent-operated evolution remains evidence-gated after trusted connected and customer-operational foundations'
     ]
   },
@@ -40,7 +41,8 @@ const FALLBACK={
     {id:'O4',definition:'Prepare customer-hosted planning and operational decisions',keyResultCount:8,epics:['EP-03','EP-05','EP-06','EP-10','EP-11','EP-13','EP-14','EP-15']},
     {id:'O5',definition:'Make the portfolio installable and portable in customer-controlled enterprise environments',keyResultCount:6,epics:['EP-07','EP-08']},
     {id:'O6',definition:'Connect the product experience without widening execution authority',keyResultCount:4,epics:['EP-16']},
-    {id:'O7',definition:'Prepare evidence-gated AI-assisted and agent-operated evolution',keyResultCount:3,epics:['EP-17']}
+    {id:'O7',definition:'Prepare evidence-gated AI-assisted and agent-operated evolution',keyResultCount:3,epics:['EP-17']},
+    {id:'O8',definition:'Establish verifiable multi-customer isolation',keyResultCount:4,epics:['EP-18']}
   ],
   products:[]
 };
