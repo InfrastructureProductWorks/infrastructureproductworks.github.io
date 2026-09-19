@@ -17,7 +17,7 @@ const DELIVERY_OUTLOOK_MILESTONES=[
   {
     id:'core-v1',
     label:'IPW Core v1',
-    window:'November 2026',
+    planningWindow:'November 2026',
     summary:'Feature-complete bounded product system with connected experience, evidence integrity, isolation contracts and change-readiness handoffs.',
     epics:['EP-01','EP-03','EP-07','EP-16','EP-18','EP-19'],
     critical:['EP-16','EP-18','EP-19']
@@ -25,7 +25,7 @@ const DELIVERY_OUTLOOK_MILESTONES=[
   {
     id:'pilot-ready',
     label:'Customer-hosted / Pilot Ready',
-    window:'Q1–Q2 2027',
+    planningWindow:'Q1–Q2 2027',
     summary:'Customer-controlled identity, execution, foundation, security and operational evidence validated in an authorized environment.',
     epics:['EP-04','EP-05','EP-08','EP-09','EP-10','EP-11','EP-12','EP-13','EP-14','EP-15','EP-18'],
     critical:['EP-04','EP-08','EP-10','EP-11']
@@ -33,7 +33,7 @@ const DELIVERY_OUTLOOK_MILESTONES=[
   {
     id:'operational-readiness',
     label:'Operational Readiness Candidate',
-    window:'Q3 2027',
+    planningWindow:'Q3 2027',
     summary:'Support, recovery, security, cost, portability and customer evidence assembled for an explicit release, hold or stop decision.',
     epics:['EP-06'],
     critical:['EP-06']
@@ -153,7 +153,15 @@ function validDashboard(data){
       );
     });
 }
-function fmtDate(value){if(!value)return 'Repository-backed';const d=new Date(value);if(Number.isNaN(d.valueOf()))return String(value);return d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}
+function fmtDate(value){
+  if(!value)return 'Repository-backed';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(value)){
+    const [year,month,day]=value.split('-').map(Number);
+    return new Date(year,month-1,day).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+  }
+  const d=new Date(value);if(Number.isNaN(d.valueOf()))return String(value);
+  return d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+}
 function shortSha(value){return typeof value==='string'&&value.length>=7?value.slice(0,7):'snapshot'}
 function renderBaseline(data){text('metric-objectives',data.baseline.objectives);text('metric-krs',data.baseline.keyResults);text('metric-epics',data.baseline.epics);text('metric-features',data.baseline.features);text('live-posture',String(data.posture||'').replaceAll('_',' '));text('live-updated',fmtDate(data.generatedAt));text('focus-id',DELIVERY_FOCUS.epic);text('focus-title',DELIVERY_FOCUS.title);text('focus-increment',DELIVERY_FOCUS.increment);text('focus-copy',DELIVERY_FOCUS.copy);text('portability-id',data.portfolioFocus.activeEpic);text('portability-title',data.portfolioFocus.activeLabel);text('portability-accepted','GHE-06 bounded accepted');const blocked=(data.portfolioFocus.next||[]).some(item=>item.toLowerCase().includes('ghe-07')&&item.toLowerCase().includes('externally blocked'));text('portability-state',blocked?'EXTERNALLY BLOCKED':'ACTIVE TRACK');text('portability-copy',blocked?'Waiting on an authorized live GHES/customer-controlled GitHub target.':'Live customer-runner and GHES acceptance remains gated on authorized target evidence.');text('portability-note',blocked?'Not an unfinished synthetic engineering issue.':'Live target evidence remains required before support can be claimed.');}
 function roadmapStatusClass(group){return ['active','accepted','gated','documentation','future','planned'].includes(group)?` status-${group}`:' status-planned'}
@@ -273,13 +281,21 @@ function renderRoadmapRelationships(data){
   bindRoadmapControls(host,{filtersEnabled:true});
   renderDeliveryOutlook(data);
 }
+function epicExternallyBlocked(ep){
+  if(!object(ep))return false;
+  const status=String(ep.status||'').toLowerCase();
+  const progress=String(ep.progress||'').toLowerCase();
+  const basis=String(ep.progressBasis||'').toLowerCase();
+  return status.includes('externally blocked')||progress.includes('externally blocked')||basis.includes('externally blocked');
+}
 function milestoneEvidence(milestone,epicById){
   const rows=milestone.epics.map(id=>epicById[id]).filter(Boolean);
   const criticalRows=milestone.critical.map(id=>epicById[id]).filter(Boolean);
   const complete=rows.length===milestone.epics.length;
   const progress=complete?pctMean(rows.map(ep=>ep.completionPercent)):null;
   const openCritical=criticalRows.filter(ep=>ep.completionPercent<100);
-  const hasExternalOrGated=openCritical.some(ep=>ep.group==='gated'||ep.group==='future');
+  const externalBlocked=openCritical.filter(epicExternallyBlocked);
+  const hasExternalOrGated=openCritical.some(ep=>ep.group==='gated'||ep.group==='future'||epicExternallyBlocked(ep));
   const hasDocumentationCritical=openCritical.some(ep=>ep.group==='documentation');
   const allAccepted=complete&&rows.every(ep=>ep.completionPercent===100);
   let posture='DEVELOPING',group='documentation';
@@ -289,39 +305,87 @@ function milestoneEvidence(milestone,epicById){
   else if(hasDocumentationCritical){posture='DEVELOPING';group='documentation';}
   else if(openCritical.some(ep=>ep.group==='active')){posture='ACTIVE';group='active';}
   const confidence=!complete?'LOW':allAccepted?'HIGH':hasExternalOrGated?'LOW':hasDocumentationCritical?'MEDIUM':progress>=75?'HIGH':'MEDIUM';
-  return {rows,criticalRows,openCritical,progress,posture,group,confidence};
+  return {rows,criticalRows,openCritical,externalBlocked,allAccepted,progress,posture,group,confidence};
+}
+function quarterLabel(date){
+  const d=new Date(date);if(Number.isNaN(d.valueOf()))return null;
+  return `Q${Math.floor(d.getUTCMonth()/3)+1} ${d.getUTCFullYear()}`;
+}
+function forecastWindow(lowerDate,upperDate){
+  const lower=quarterLabel(lowerDate),upper=quarterLabel(upperDate);
+  if(!lower||!upper)return null;
+  return lower===upper?lower:`${lower}–${upper}`;
+}
+function milestoneHistory(milestone,data){
+  const snapshots=Array.isArray(data.progressHistory)?data.progressHistory:[];
+  const points=snapshots.map(snapshot=>{
+    const values=milestone.epics.map(id=>snapshot.epics?.[id]);
+    if(values.length!==milestone.epics.length||values.some(value=>!Number.isInteger(value)))return null;
+    return {date:snapshot.date,time:Date.parse(`${snapshot.date}T00:00:00Z`),progress:pctMean(values)};
+  }).filter(Boolean).sort((a,b)=>a.time-b.time);
+  const currentValues=milestone.epics.map(id=>data.epics?.[id]?.completionPercent);
+  if(currentValues.length===milestone.epics.length&&currentValues.every(Number.isInteger)&&validDate(data.generatedAt)){
+    const current={date:data.generatedAt,time:Date.parse(`${data.generatedAt}T00:00:00Z`),progress:pctMean(currentValues)};
+    const sameDate=points.findIndex(point=>point.date===current.date);
+    if(sameDate>=0)points[sameDate]=current;else points.push(current);
+  }
+  return points.sort((a,b)=>a.time-b.time).filter((point,index,list)=>index===0||point.date!==list[index-1].date);
+}
+function forecastSignal(milestone,evidence,data){
+  if(evidence.allAccepted)return {label:'Accepted',detail:'All Epics in this milestone are accepted on the bounded roadmap scale.'};
+  if(evidence.externalBlocked.length)return {label:'Customer-dependent',detail:`No completion date is inferred while critical path ${evidence.externalBlocked.map(ep=>ep.id).join(', ')} remains externally blocked.`};
+  const points=milestoneHistory(milestone,data);
+  const minimumSnapshots=data.forecastModel.minimumSnapshots;
+  const minimumSpanDays=data.forecastModel.minimumSpanDays;
+  if(points.length<minimumSnapshots)return {label:'Trend establishing',detail:`Need at least ${minimumSnapshots} dated evidence snapshots before a trend forecast is calculated.`};
+  const first=points[0],last=points[points.length-1];
+  const spanDays=Math.round((last.time-first.time)/86400000);
+  if(spanDays<minimumSpanDays)return {label:'Trend establishing',detail:`Evidence history spans ${spanDays} day${spanDays===1?'':'s'}; at least ${minimumSpanDays} are required.`};
+  const delta=last.progress-first.progress;
+  if(delta<=0)return {label:'No measurable trend',detail:`No positive milestone movement is recorded across ${points.length} snapshots spanning ${spanDays} days.`};
+  const velocity=delta/spanDays;
+  const etaDays=(100-last.progress)/velocity;
+  if(!Number.isFinite(etaDays)||etaDays<0||etaDays>730)return {label:'Long-range / unstable',detail:'The observed evidence trend does not support a bounded completion window within 24 months.'};
+  const lowerDays=Math.max(1,etaDays*.75),upperDays=Math.max(lowerDays,etaDays*1.25);
+  const lower=new Date(last.time+lowerDays*86400000),upper=new Date(last.time+upperDays*86400000);
+  const window=forecastWindow(lower,upper);
+  const monthly=(velocity*30).toFixed(1).replace(/\.0$/,'');
+  return {label:window||'Trend unavailable',detail:`Linear evidence trend from ${points.length} snapshots over ${spanDays} days (~${monthly} percentage points per 30 days). This is a planning signal, not a delivery commitment.`};
 }
 function renderDeliveryOutlook(data){
   const host=document.getElementById('delivery-outlook-grid');if(!host)return;host.replaceChildren();
   const error=document.getElementById('delivery-outlook-error');error?.classList.remove('show');
-  if(!object(data)||!object(data.epics)){
+  if(!object(data)||!object(data.epics)||!object(data.forecastModel)){
     error?.classList.add('show');
     text('delivery-outlook-focus','Unavailable');
-    text('delivery-outlook-updated',fmtDate(dashboardState?.generatedAt));
+    text('delivery-outlook-updated',fmtDate(data?.generatedAt||dashboardState?.generatedAt));
     return;
   }
   DELIVERY_OUTLOOK_MILESTONES.forEach(milestone=>{
     const evidence=milestoneEvidence(milestone,data.epics);
+    const forecast=forecastSignal(milestone,evidence,data);
     const card=node('article','delivery-outlook-card');card.dataset.group=evidence.group;
     const top=node('div','delivery-outlook-card-top');
-    const title=node('div');title.append(node('small','delivery-outlook-label','PROJECTED COMPLETION WINDOW'),node('h3','',milestone.label));
+    const title=node('div');title.append(node('small','delivery-outlook-label','PLANNING WINDOW'),node('h3','',milestone.label));
     const status=metaPill(evidence.posture,evidence.group);top.append(title,status);card.append(top);
-    card.append(node('div','delivery-outlook-window',milestone.window),node('p','delivery-outlook-summary',milestone.summary));
+    card.append(node('div','delivery-outlook-window',milestone.planningWindow),node('p','delivery-outlook-summary',milestone.summary));
     if(evidence.progress!==null)card.append(progressBar(evidence.progress,'Evidence-backed milestone rollup'));
     const facts=node('div','delivery-outlook-facts');
+    const automatic=node('div');automatic.append(node('small','','AUTO FORECAST'),node('strong','',forecast.label));
     const confidence=node('div');confidence.append(node('small','','EVIDENCE CONFIDENCE'),node('strong','',evidence.confidence));
     const critical=node('div');critical.append(node('small','','OPEN CRITICAL PATH'),node('strong','',evidence.openCritical.length?evidence.openCritical.map(ep=>ep.id).join(' → '):'No open critical Epics'));
-    facts.append(confidence,critical);card.append(facts);
+    facts.append(automatic,confidence,critical);card.append(facts,node('p','delivery-outlook-forecast-note',forecast.detail));
     const path=node('p','delivery-outlook-path',evidence.openCritical.length?evidence.openCritical.map(ep=>`${ep.id} · ${ep.title}`).join('  →  '):'All milestone critical-path Epics are accepted.');
     card.append(path);host.append(card);
   });
   text('delivery-outlook-focus',DELIVERY_FOCUS.increment);
-  text('delivery-outlook-updated',fmtDate(dashboardState?.generatedAt||data.generatedAt));
+  text('delivery-outlook-updated',fmtDate(data.generatedAt||dashboardState?.generatedAt));
 }
 function validRoadmapRelationships(data){
   if(!object(data)||data.schemaVersion!=='roadmap-relationship-view/v4')return false;
   if(!object(data.relationshipModel)||data.relationshipModel.objectiveToHeadlineKeyResults!=='one-to-many'||data.relationshipModel.headlineKeyResultToEpics!=='derived-through-registered-measures'||data.relationshipModel.registeredMeasures!=='traceability-only-hidden-from-executive-view'||data.relationshipModel.objectiveToEpics!=='derived-through-registered-measures')return false;
   if(!object(data.progressModel)||data.progressModel.method!=='evidence-backed-epic-rollup/v1'||!boundedText(data.progressModel.scale)||!boundedText(data.progressModel.strategicKeyResult)||!boundedText(data.progressModel.objective)||!boundedText(data.progressModel.note))return false;
+  if(!object(data.forecastModel)||data.forecastModel.method!=='linear-evidence-trend/v1'||data.forecastModel.minimumSnapshots!==2||data.forecastModel.minimumSpanDays!==7||data.forecastModel.blockedBehavior!=='no-date-inferred'||data.forecastModel.planningWindows!=='explicit-roadmap-assumptions')return false;
   if(!boundedText(data.generatedAt)||!/^\d{4}-\d{2}-\d{2}$/.test(data.generatedAt))return false;
   if(!boundedText(data.sourceRevision)||!/^[0-9a-f]{40}$/.test(data.sourceRevision))return false;
   if(!boundedText(data.roadmapBlobSha)||!/^[0-9a-f]{40}$/.test(data.roadmapBlobSha))return false;
@@ -340,6 +404,15 @@ function validRoadmapRelationships(data){
     return object(k)&&/^KR\d+\.\d+$/.test(k.id)&&objectiveSet.has(k.objective)&&boundedText(k.definition)&&boundedText(k.status)&&nestedGroups.has(k.group)&&boundedText(k.time)&&sourceOk&&sharedRangeOk&&Array.isArray(k.epics)&&k.epics.length>0&&new Set(k.epics).size===k.epics.length&&k.epics.every(id=>epicSet.has(id));
   }))return false;
   if(!epicIds.every(id=>{const ep=data.epics[id];return object(ep)&&ep.id===id&&/^EP-\d+$/.test(id)&&boundedText(ep.title)&&boundedText(ep.status)&&nestedGroups.has(ep.group)&&boundedText(ep.progress)&&boundedText(ep.time)&&Number.isInteger(ep.featureCount)&&ep.featureCount>=0&&Number.isInteger(ep.completionPercent)&&[0,25,50,75,100].includes(ep.completionPercent)&&boundedText(ep.progressBasis)&&Array.isArray(ep.features)&&ep.features.length===ep.featureCount&&ep.features.every(featureId=>boundedText(featureId)&&/^[A-Z][A-Z0-9]*-\d{2,}$/.test(featureId));}))return false;
+  if(!Array.isArray(data.progressHistory)||data.progressHistory.length<1)return false;
+  let previousHistoryDate='';
+  for(const snapshot of data.progressHistory){
+    if(!object(snapshot)||!validDate(snapshot.date)||snapshot.date>data.generatedAt||snapshot.date<=previousHistoryDate||!object(snapshot.epics))return false;
+    const snapshotIds=Object.keys(snapshot.epics);
+    if(snapshotIds.length!==epicIds.length||snapshotIds.some(id=>!epicSet.has(id)))return false;
+    if(epicIds.some(id=>!Number.isInteger(snapshot.epics[id])||![0,25,50,75,100].includes(snapshot.epics[id])))return false;
+    previousHistoryDate=snapshot.date;
+  }
   const allFeatureIds=epicIds.flatMap(id=>data.epics[id].features);if(new Set(allFeatureIds).size!==allFeatureIds.length)return false;
   const headlineById=new Map(data.headlineKeyResults.map(h=>[h.id,h])),krById=new Map(data.keyResults.map(k=>[k.id,k]));
   const headlineReach=new Map(headlineIds.map(id=>[id,0])),krReach=new Map(krIds.map(id=>[id,0])),reachableEpics=new Set();
