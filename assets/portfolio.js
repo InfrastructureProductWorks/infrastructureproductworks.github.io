@@ -131,16 +131,29 @@ function metaPill(value,group){const span=node('span',`roadmap-meta-pill${roadma
 function bindRoadmapControls(host,{filtersEnabled=true}={}){
   const filters=[...document.querySelectorAll('[data-roadmap-filter]')];
   filters.forEach(button=>{
+    const selected=button.dataset.roadmapFilter==='all';
     button.disabled=!filtersEnabled;
     button.setAttribute('aria-disabled',String(!filtersEnabled));
-    if(!filtersEnabled){button.classList.remove('active');if(button.dataset.roadmapFilter==='all')button.classList.add('active');return;}
+    button.setAttribute('aria-pressed',String(selected));
+    button.classList.toggle('active',selected);
+    if(!filtersEnabled){button.onclick=null;return;}
     button.onclick=()=>{
-      filters.forEach(b=>b.classList.toggle('active',b===button));
+      filters.forEach(b=>{
+        const active=b===button;
+        b.classList.toggle('active',active);
+        b.setAttribute('aria-pressed',String(active));
+      });
       const value=button.dataset.roadmapFilter;
       host.querySelectorAll('.roadmap-objective').forEach(item=>{item.hidden=value!=='all'&&item.dataset.group!==value;});
     };
   });
-  const expand=document.getElementById('roadmap-expand-all');if(expand)expand.onclick=()=>host.querySelectorAll('details:not([hidden])').forEach(d=>d.open=true);
+  const expand=document.getElementById('roadmap-expand-all');
+  if(expand)expand.onclick=()=>{
+    host.querySelectorAll('.roadmap-objective:not([hidden])').forEach(objective=>{
+      objective.open=true;
+      objective.querySelectorAll('details').forEach(child=>child.open=true);
+    });
+  };
   const collapse=document.getElementById('roadmap-collapse-all');if(collapse)collapse.onclick=()=>host.querySelectorAll('details').forEach(d=>d.open=false);
 }
 function renderRoadmapFallback(data){
@@ -215,4 +228,4 @@ function renderProducts(data){const host=document.getElementById('product-grid')
 function renderNext(data){const host=document.getElementById('next-list');if(!host)return;host.replaceChildren();(data.portfolioFocus.next||[]).forEach((item,i)=>{if(i)host.append(node('i','','→'));host.append(node('span','',item));});}
 async function fetchJson(url){const res=await fetch(`${url}?v=${Date.now()}`,{cache:'no-store'});if(!res.ok)throw new Error(`HTTP ${res.status}`);return res.json();}
 async function loadDashboard(){let data=FALLBACK;try{const live=await fetchJson(DASHBOARD_URL);if(!validDashboard(live))throw new Error('unsupported portfolio dashboard contract');data=live;}catch(err){document.getElementById('sync-error')?.classList.add('show');console.warn('Portfolio dashboard feed unavailable or invalid; using bounded fallback.',err)}dashboardState=data;renderBaseline(data);renderProducts(data);renderNext(data);}
-document.addEventListener('DOMContentLoaded',()=>{loadDashboard();loadRoadmapRelationships();});
+document.addEventListener('DOMContentLoaded',async()=>{await loadDashboard();await loadRoadmapRelationships();});
