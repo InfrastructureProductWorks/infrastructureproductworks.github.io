@@ -173,64 +173,102 @@ function renderRoadmapFallback(data){
   });
   bindRoadmapControls(host,{filtersEnabled:false});
 }
+function headlineRollup(headline,krById){
+  const measures=headline.measures.map(id=>krById.get(id)).filter(Boolean);
+  const epicIds=[...new Set(measures.flatMap(k=>k.epics||[]))];
+  const groups=[...new Set(measures.map(k=>k.group))];
+  const group=groups.length===1?groups[0]:(groups.includes('active')?'active':groups.includes('gated')?'gated':groups.includes('documentation')?'documentation':groups.includes('future')?'future':groups.includes('planned')?'planned':'accepted');
+  const statuses=[...new Set(measures.map(k=>k.status))];
+  const times=[...new Set(measures.map(k=>k.time))];
+  return {measures,epicIds,group,status:statuses.length===1?statuses[0]:'Mixed evidence state',time:times.length===1?times[0]:'Multiple evidence periods'};
+}
 function renderRoadmapRelationships(data){
   const host=document.getElementById('roadmap-relationship-list');if(!host)return;host.replaceChildren();
-  text('roadmap-baseline',data.planning.baseline);text('roadmap-quarter',data.planning.evidenceQuarter);text('roadmap-horizon',data.planning.horizon);text('roadmap-time-note',data.planning.timingNote);
+  text('roadmap-baseline',data.planning.baseline);text('roadmap-quarter',data.planning.evidenceQuarter);text('roadmap-horizon',data.planning.horizon);text('roadmap-time-note',data.planning.timingNote);text('metric-headline-krs',data.headlineKeyResults.length);
+  const headlineById=new Map((data.headlineKeyResults||[]).map(h=>[h.id,h]));
   const krById=new Map((data.keyResults||[]).map(k=>[k.id,k]));
   const epicById=data.epics||{};
-  (data.objectives||[]).forEach((o,index)=>{
-    const details=node('details','roadmap-objective');details.dataset.group=o.group;details.dataset.objective=o.id;if(index===0)details.open=false;
+  (data.objectives||[]).forEach(o=>{
+    const details=node('details','roadmap-objective');details.dataset.group=o.group;details.dataset.objective=o.id;
     const summary=node('summary','roadmap-objective-summary');
     const left=node('div','roadmap-objective-copy');left.append(node('span','roadmap-id',o.id),node('strong','',o.definition),node('span','roadmap-objective-progress',o.progress));
-    const meta=node('div','roadmap-objective-meta');meta.append(metaPill(o.status,o.group),node('span','roadmap-time-pill',o.time),node('span','roadmap-count-pill',`${o.keyResults.length} Key Result${o.keyResults.length===1?'':'s'}`));
+    const meta=node('div','roadmap-objective-meta');meta.append(metaPill(o.status,o.group),node('span','roadmap-time-pill',o.time),node('span','roadmap-count-pill',`${o.headlineKeyResults.length} headline KRs`),node('span','roadmap-count-pill',`${o.keyResults.length} registered measures`));
     summary.append(left,meta);details.append(summary);
     const body=node('div','roadmap-objective-body');
     const progress=node('div','roadmap-progress-block');progress.append(node('small','','OBJECTIVE PROGRESS'),node('p','',o.progress),node('span','roadmap-period-line',o.time));body.append(progress);
-    const krList=node('div','roadmap-kr-list');
-    o.keyResults.forEach(krId=>{
-      const kr=krById.get(krId);if(!kr)return;
-      const krDetails=node('details','roadmap-kr');krDetails.dataset.group=kr.group;
-      const krSummary=node('summary','roadmap-kr-summary');
-      const krCopy=node('div','roadmap-kr-copy');krCopy.append(node('span','roadmap-kr-id',kr.id),node('strong','',kr.definition));
-      if(kr.sharedRange)krCopy.append(node('span','roadmap-shared-note',`Shared source outcome for ${kr.sharedRange}`));
-      const krMeta=node('div','roadmap-kr-meta');krMeta.append(metaPill(kr.status,kr.group),node('span','roadmap-time-pill',kr.time),node('span','roadmap-count-pill',`${kr.epics.length} contributing Epic${kr.epics.length===1?'':'s'}`));
-      krSummary.append(krCopy,krMeta);krDetails.append(krSummary);
-      const krBody=node('div','roadmap-kr-body');krBody.append(node('small','roadmap-contrib-label','CONTRIBUTING EPICS'));
-      const epicGrid=node('div','roadmap-epic-grid');
-      kr.epics.forEach(epicId=>{
-        const ep=epicById[epicId];if(!ep)return;
-        const card=node('article','roadmap-epic-card');card.dataset.group=ep.group;
-        const top=node('div','roadmap-epic-top');
-        const title=node('div');title.append(node('span','roadmap-epic-id',ep.id),node('h4','',ep.title));
-        const badges=node('div','roadmap-epic-badges');badges.append(metaPill(ep.status,ep.group),node('span','roadmap-time-pill',ep.time));
-        top.append(title,badges);card.append(top,node('p','roadmap-epic-progress',ep.progress),node('span','roadmap-feature-count',`${ep.featureCount} registered features`));
-        epicGrid.append(card);
+    const headlineList=node('div','roadmap-headline-list');
+    o.headlineKeyResults.forEach(headlineId=>{
+      const headline=headlineById.get(headlineId);if(!headline)return;
+      const rollup=headlineRollup(headline,krById);
+      const headlineDetails=node('details','roadmap-headline');headlineDetails.dataset.group=rollup.group;
+      const headlineSummary=node('summary','roadmap-headline-summary');
+      const headlineCopy=node('div','roadmap-headline-copy');headlineCopy.append(node('span','roadmap-headline-id',headline.id),node('strong','',headline.title));
+      const headlineMeta=node('div','roadmap-headline-meta');headlineMeta.append(metaPill(rollup.status,rollup.group),node('span','roadmap-time-pill',rollup.time),node('span','roadmap-count-pill',`${rollup.measures.length} measure${rollup.measures.length===1?'':'s'}`),node('span','roadmap-count-pill',`${rollup.epicIds.length} contributing Epic${rollup.epicIds.length===1?'':'s'}`));
+      headlineSummary.append(headlineCopy,headlineMeta);headlineDetails.append(headlineSummary);
+      const headlineBody=node('div','roadmap-headline-body');headlineBody.append(node('small','roadmap-contrib-label','REGISTERED KR MEASURES'));
+      const krList=node('div','roadmap-kr-list');
+      rollup.measures.forEach(kr=>{
+        const krDetails=node('details','roadmap-kr');krDetails.dataset.group=kr.group;
+        const krSummary=node('summary','roadmap-kr-summary');
+        const krCopy=node('div','roadmap-kr-copy');krCopy.append(node('span','roadmap-kr-id',kr.id),node('strong','',kr.definition));
+        const krMeta=node('div','roadmap-kr-meta');krMeta.append(metaPill(kr.status,kr.group),node('span','roadmap-time-pill',kr.time),node('span','roadmap-count-pill',`${kr.epics.length} contributing Epic${kr.epics.length===1?'':'s'}`));
+        krSummary.append(krCopy,krMeta);krDetails.append(krSummary);
+        const krBody=node('div','roadmap-kr-body');krBody.append(node('small','roadmap-contrib-label','CONTRIBUTING EPICS'));
+        const epicGrid=node('div','roadmap-epic-grid');
+        kr.epics.forEach(epicId=>{
+          const ep=epicById[epicId];if(!ep)return;
+          const card=node('article','roadmap-epic-card');card.dataset.group=ep.group;
+          const top=node('div','roadmap-epic-top');
+          const title=node('div');title.append(node('span','roadmap-epic-id',ep.id),node('h4','',ep.title));
+          const badges=node('div','roadmap-epic-badges');badges.append(metaPill(ep.status,ep.group),node('span','roadmap-time-pill',ep.time));
+          top.append(title,badges);card.append(top,node('p','roadmap-epic-progress',ep.progress),node('span','roadmap-feature-count',`${ep.featureCount} registered features`));
+          epicGrid.append(card);
+        });
+        krBody.append(epicGrid);krDetails.append(krBody);krList.append(krDetails);
       });
-      krBody.append(epicGrid);krDetails.append(krBody);krList.append(krDetails);
+      headlineBody.append(krList);headlineDetails.append(headlineBody);headlineList.append(headlineDetails);
     });
-    body.append(krList);details.append(body);host.append(details);
+    body.append(headlineList);details.append(body);host.append(details);
   });
   bindRoadmapControls(host,{filtersEnabled:true});
 }
 function validRoadmapRelationships(data){
-  if(!object(data)||data.schemaVersion!=='roadmap-relationship-view/v2')return false;
-  if(!object(data.relationshipModel)||data.relationshipModel.objectiveToKeyResults!=='one-to-many'||data.relationshipModel.keyResultToEpics!=='one-to-many'||data.relationshipModel.objectiveToEpics!=='derived-through-key-results')return false;
+  if(!object(data)||data.schemaVersion!=='roadmap-relationship-view/v3')return false;
+  if(!object(data.relationshipModel)||data.relationshipModel.objectiveToHeadlineKeyResults!=='one-to-many'||data.relationshipModel.headlineKeyResultToRegisteredMeasures!=='one-to-many'||data.relationshipModel.registeredMeasureToEpics!=='one-to-many'||data.relationshipModel.objectiveToEpics!=='derived-through-registered-measures')return false;
   if(!boundedText(data.generatedAt)||!/^\d{4}-\d{2}-\d{2}$/.test(data.generatedAt))return false;
   if(!boundedText(data.sourceRevision)||!/^[0-9a-f]{40}$/.test(data.sourceRevision))return false;
   if(!object(data.planning)||!boundedText(data.planning.baseline)||!normalizeRoadmapDate(data.planning.baseline)||!boundedText(data.planning.evidenceQuarter)||!/^Q[1-4]\s+\d{4}$/.test(data.planning.evidenceQuarter)||!boundedText(data.planning.horizon)||!boundedText(data.planning.timingNote))return false;
-  if(!Array.isArray(data.objectives)||data.objectives.length<1||!Array.isArray(data.keyResults)||data.keyResults.length<1||!object(data.epics)||Object.keys(data.epics).length<1)return false;
-  const objectiveIds=data.objectives.map(o=>o?.id),krIds=data.keyResults.map(k=>k?.id),epicIds=Object.keys(data.epics);
-  if(new Set(objectiveIds).size!==objectiveIds.length||new Set(krIds).size!==krIds.length)return false;
-  const objectiveSet=new Set(objectiveIds),krSet=new Set(krIds),epicSet=new Set(epicIds);
+  if(!Array.isArray(data.objectives)||data.objectives.length<1||!Array.isArray(data.headlineKeyResults)||data.headlineKeyResults.length<1||!Array.isArray(data.keyResults)||data.keyResults.length<1||!object(data.epics)||Object.keys(data.epics).length<1)return false;
+  const objectiveIds=data.objectives.map(o=>o?.id),headlineIds=data.headlineKeyResults.map(h=>h?.id),krIds=data.keyResults.map(k=>k?.id),epicIds=Object.keys(data.epics);
+  if(new Set(objectiveIds).size!==objectiveIds.length||new Set(headlineIds).size!==headlineIds.length||new Set(krIds).size!==krIds.length)return false;
+  const objectiveSet=new Set(objectiveIds),headlineSet=new Set(headlineIds),krSet=new Set(krIds),epicSet=new Set(epicIds);
   const objectiveGroups=new Set(['active','accepted','gated','documentation','future']);
   const nestedGroups=new Set(['active','accepted','gated','documentation','future','planned']);
-  if(!data.objectives.every(o=>object(o)&&/^O\d+$/.test(o.id)&&boundedText(o.definition)&&boundedText(o.status)&&objectiveGroups.has(o.group)&&boundedText(o.progress)&&boundedText(o.time)&&Array.isArray(o.keyResults)&&o.keyResults.length>0&&new Set(o.keyResults).size===o.keyResults.length&&o.keyResults.every(id=>krSet.has(id))&&o.epics===undefined))return false;
+  if(!data.objectives.every(o=>object(o)&&/^O\d+$/.test(o.id)&&boundedText(o.definition)&&boundedText(o.status)&&objectiveGroups.has(o.group)&&boundedText(o.progress)&&boundedText(o.time)&&Array.isArray(o.headlineKeyResults)&&o.headlineKeyResults.length>=3&&o.headlineKeyResults.length<=5&&new Set(o.headlineKeyResults).size===o.headlineKeyResults.length&&o.headlineKeyResults.every(id=>headlineSet.has(id))&&Array.isArray(o.keyResults)&&o.keyResults.length>0&&new Set(o.keyResults).size===o.keyResults.length&&o.keyResults.every(id=>krSet.has(id))&&o.epics===undefined))return false;
+  if(!data.headlineKeyResults.every(h=>object(h)&&/^O\d+-HKR\d+$/.test(h.id)&&objectiveSet.has(h.objective)&&boundedText(h.title)&&Array.isArray(h.measures)&&h.measures.length>0&&new Set(h.measures).size===h.measures.length&&h.measures.every(id=>krSet.has(id))))return false;
   if(!data.keyResults.every(k=>{
     const sharedRangeOk=k.sharedRange===null||(boundedText(k.sharedRange)&&/^KR\d+\.\d+(?:-KR\d+\.\d+)?$/.test(k.sharedRange));
     const sourceOk=boundedText(k.source)&&k.source.length<=240&&!k.source.includes('..')&&!k.source.startsWith('/')&&/^[A-Za-z0-9._\/-]+$/.test(k.source);
     return object(k)&&/^KR\d+\.\d+$/.test(k.id)&&objectiveSet.has(k.objective)&&boundedText(k.definition)&&boundedText(k.status)&&nestedGroups.has(k.group)&&boundedText(k.time)&&sourceOk&&sharedRangeOk&&Array.isArray(k.epics)&&k.epics.length>0&&new Set(k.epics).size===k.epics.length&&k.epics.every(id=>epicSet.has(id));
   }))return false;
   if(!epicIds.every(id=>{const ep=data.epics[id];return object(ep)&&ep.id===id&&/^EP-\d+$/.test(id)&&boundedText(ep.title)&&boundedText(ep.status)&&nestedGroups.has(ep.group)&&boundedText(ep.progress)&&boundedText(ep.time)&&Number.isInteger(ep.featureCount)&&ep.featureCount>=0&&Array.isArray(ep.features)&&ep.features.length===ep.featureCount&&ep.features.every(featureId=>boundedText(featureId)&&/^[A-Z][A-Z0-9]*-\d{2,}$/.test(featureId));} ))return false;
+  const headlineById=new Map(data.headlineKeyResults.map(h=>[h.id,h]));
+  const measureHeadlineCount=new Map(krIds.map(id=>[id,0]));
+  for(const o of data.objectives){
+    const objectiveHeadlineMeasures=[];
+    for(const headlineId of o.headlineKeyResults){
+      const headline=headlineById.get(headlineId);
+      if(!headline||headline.objective!==o.id)return false;
+      for(const measureId of headline.measures){
+        const measure=data.keyResults.find(k=>k.id===measureId);
+        if(!measure||measure.objective!==o.id)return false;
+        measureHeadlineCount.set(measureId,(measureHeadlineCount.get(measureId)||0)+1);
+        objectiveHeadlineMeasures.push(measureId);
+      }
+    }
+    if(objectiveHeadlineMeasures.length!==o.keyResults.length||new Set(objectiveHeadlineMeasures).size!==o.keyResults.length||o.keyResults.some(id=>!objectiveHeadlineMeasures.includes(id)))return false;
+  }
+  if([...measureHeadlineCount.values()].some(count=>count!==1))return false;
   const allFeatureIds=epicIds.flatMap(id=>data.epics[id].features);
   if(new Set(allFeatureIds).size!==allFeatureIds.length)return false;
   const krById=new Map(data.keyResults.map(k=>[k.id,k]));
