@@ -279,7 +279,7 @@ function milestoneEvidence(milestone,epicById){
   const complete=rows.length===milestone.epics.length;
   const progress=complete?pctMean(rows.map(ep=>ep.completionPercent)):null;
   const openCritical=criticalRows.filter(ep=>ep.completionPercent<100);
-  const hasExternalOrGated=openCritical.some(ep=>ep.group==='gated'||ep.group==='future');
+  const hasExternalOrGated=openCritical.some(ep=>ep.group==='gated'||ep.group==='future'||/externally blocked|external prerequisite|customer-dependent/i.test(`${ep.status||''} ${ep.progress||''} ${ep.progressBasis||''}`));
   const hasDocumentationCritical=openCritical.some(ep=>ep.group==='documentation');
   const allAccepted=complete&&rows.every(ep=>ep.completionPercent===100);
   let posture='DEVELOPING',group='documentation';
