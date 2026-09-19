@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 const port = process.env.PORT || 10000;
 const secret = process.env.GITHUB_MARKETPLACE_WEBHOOK_SECRET;
 const supportToken = process.env.SUPPORT_GITHUB_TOKEN;
-const supportRepo = process.env.SUPPORT_GITHUB_REPO || 'InfrastructureProductWorks/infrastructureproductworks.github.io';
+const supportRepo = process.env.SUPPORT_GITHUB_REPO || '';
 const allowedOrigins = new Set([
   'https://infrastructureproductworks.com',
   'https://www.infrastructureproductworks.com'
@@ -35,7 +35,7 @@ function readBody(req,maxBytes=32768){
   });
 }
 async function createSupportIssue(payload,reference){
-  if(!supportToken)return null;
+  if(!supportToken||!supportRepo)return null;
   const body=[
     'Website support intake',
     '',
@@ -93,7 +93,7 @@ async function handleSupport(req,res,origin){
     return json(res,400,{error:'invalid_submission'},origin);
   }
   const reference=`IPW-${new Date().toISOString().slice(0,10).replaceAll('-','')}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
-  if(!supportToken){
+  if(!supportToken||!supportRepo){
     console.error(JSON.stringify({kind:'support-intake-not-configured',reference,product:payload.product,type:payload.type,receivedAt:new Date().toISOString()}));
     return json(res,503,{error:'support_intake_not_configured'},origin);
   }
