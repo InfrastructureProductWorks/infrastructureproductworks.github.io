@@ -409,8 +409,8 @@ function validRoadmapRelationships(data){
   for(const snapshot of data.progressHistory){
     if(!object(snapshot)||!validDate(snapshot.date)||snapshot.date>data.generatedAt||snapshot.date<=previousHistoryDate||!object(snapshot.epics))return false;
     const snapshotIds=Object.keys(snapshot.epics);
-    if(snapshotIds.length!==epicIds.length||snapshotIds.some(id=>!epicSet.has(id)))return false;
-    if(epicIds.some(id=>!Number.isInteger(snapshot.epics[id])||![0,25,50,75,100].includes(snapshot.epics[id])))return false;
+    if(snapshotIds.length<1||snapshotIds.some(id=>!/^EP-\d+$/.test(id)))return false;
+    if(snapshotIds.some(id=>!Number.isInteger(snapshot.epics[id])||![0,25,50,75,100].includes(snapshot.epics[id])))return false;
     previousHistoryDate=snapshot.date;
   }
   const allFeatureIds=epicIds.flatMap(id=>data.epics[id].features);if(new Set(allFeatureIds).size!==allFeatureIds.length)return false;
