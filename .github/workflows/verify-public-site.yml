@@ -49,7 +49,7 @@ jobs:
             if(!/^\d{4}-\d{2}-\d{2}$/.test(snapshot.date)||snapshot.date<=prior) throw new Error('history dates');
             if(snapshot.date>data.generatedAt) throw new Error('future history snapshot');
             const ids=Object.keys(snapshot.epics||{});
-            if(ids.length<1||ids.some(id=>!/^EP-\\d+$/.test(id))) throw new Error('history epic identifiers');
+            if(ids.length<1||ids.some(id=>!/^EP-\d+$/.test(id))) throw new Error('history epic identifiers');
             if(ids.some(id=>!allowed.has(snapshot.epics[id]))) throw new Error('history completion scale');
             prior=snapshot.date;
           }
