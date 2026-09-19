@@ -37,3 +37,20 @@ The endpoint:
 - does not accept security vulnerabilities or sensitive customer material.
 
 Security-sensitive reports remain on the separate security-reporting path and must never be converted into ordinary public support issues.
+
+
+## Immediate email notification
+
+The backend can send a best-effort email alert after a private GitHub support issue is created. Notification failure never changes the customer submission result and never prevents issue creation.
+
+Configure these protected environment variables on the Render service:
+
+- `SUPPORT_NOTIFY_TO`: mailbox that receives the alert.
+- `SUPPORT_NOTIFY_FROM`: optional From address; defaults to `SUPPORT_SMTP_USER`.
+- `SUPPORT_SMTP_HOST`: SMTP server hostname.
+- `SUPPORT_SMTP_PORT`: SMTP port; defaults to `465`.
+- `SUPPORT_SMTP_SECURE`: defaults to `true`; set to `false` for STARTTLS-style ports such as 587.
+- `SUPPORT_SMTP_USER`: SMTP account username.
+- `SUPPORT_SMTP_PASS`: SMTP password or provider-issued app password.
+
+The email contains only the support reference, product, request type, title and private issue link. Customer contact information and the full request remain only in the private GitHub issue.
