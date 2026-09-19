@@ -13,6 +13,32 @@ const PRODUCT_CONTRACT=[
 const FOCUS_CONTRACT={closedEpic:'EP-07',activeEpic:'EP-08',activeLabel:'GitHub Enterprise Server and restricted-network portability'};
 const DELIVERY_FOCUS={epic:'EP-16',title:'Connected Application Experience',increment:'EDA-06 — Immutable Evidence & Artifact Adapter',copy:'Separate immutable evidence and artifacts from the event store while preserving exact digest, provenance, tenant scope and zero-authority boundaries.'};
 const BASELINE={objectives:8,keyResults:62,epics:19,features:150};
+const DELIVERY_OUTLOOK_MILESTONES=[
+  {
+    id:'core-v1',
+    label:'IPW Core v1',
+    window:'November 2026',
+    summary:'Feature-complete bounded product system with connected experience, evidence integrity, isolation contracts and change-readiness handoffs.',
+    epics:['EP-01','EP-03','EP-07','EP-16','EP-18','EP-19'],
+    critical:['EP-16','EP-18','EP-19']
+  },
+  {
+    id:'pilot-ready',
+    label:'Customer-hosted / Pilot Ready',
+    window:'Q1–Q2 2027',
+    summary:'Customer-controlled identity, execution, foundation, security and operational evidence validated in an authorized environment.',
+    epics:['EP-04','EP-05','EP-08','EP-09','EP-10','EP-11','EP-12','EP-13','EP-14','EP-15','EP-18'],
+    critical:['EP-04','EP-08','EP-10','EP-11']
+  },
+  {
+    id:'operational-readiness',
+    label:'Operational Readiness Candidate',
+    window:'Q3 2027',
+    summary:'Support, recovery, security, cost, portability and customer evidence assembled for an explicit release, hold or stop decision.',
+    epics:['EP-06'],
+    critical:['EP-06']
+  }
+];
 const STATUS_BY_STAGE={1:'DEFINING',2:'BUILDING',3:'VALIDATING',4:'INTEGRATING',5:'OPERATIONALIZING'};
 const AUTHORITY_NOTICE='Engineering and roadmap telemetry only. No production, pilot, deployment, approval, commercialization, cloud, or risk-acceptance authority is implied.';
 const LIVE_SCOPE='sanitized-product-owned-live-portfolio-telemetry';
@@ -241,6 +267,50 @@ function renderRoadmapRelationships(data){
     body.append(headlineList);details.append(body);host.append(details);
   });
   bindRoadmapControls(host,{filtersEnabled:true});
+  renderDeliveryOutlook(data);
+}
+function milestoneEvidence(milestone,epicById){
+  const rows=milestone.epics.map(id=>epicById[id]).filter(Boolean);
+  const criticalRows=milestone.critical.map(id=>epicById[id]).filter(Boolean);
+  const complete=rows.length===milestone.epics.length;
+  const progress=complete?pctMean(rows.map(ep=>ep.completionPercent)):null;
+  const openCritical=criticalRows.filter(ep=>ep.completionPercent<100);
+  const hasExternalOrGated=openCritical.some(ep=>ep.group==='gated'||ep.group==='future');
+  const allAccepted=complete&&rows.every(ep=>ep.completionPercent===100);
+  let posture='DEVELOPING',group='documentation';
+  if(!complete){posture='DATA INCOMPLETE';group='gated';}
+  else if(allAccepted){posture='ACCEPTED';group='accepted';}
+  else if(hasExternalOrGated){posture='CONDITIONAL';group='gated';}
+  else if(progress>=50){posture='ON TRACK';group='active';}
+  const confidence=!complete?'LOW':allAccepted?'HIGH':hasExternalOrGated?'MEDIUM':progress>=60?'HIGH':'MEDIUM';
+  return {rows,criticalRows,openCritical,progress,posture,group,confidence};
+}
+function renderDeliveryOutlook(data){
+  const host=document.getElementById('delivery-outlook-grid');if(!host)return;host.replaceChildren();
+  const error=document.getElementById('delivery-outlook-error');error?.classList.remove('show');
+  if(!object(data)||!object(data.epics)){
+    error?.classList.add('show');
+    text('delivery-outlook-focus','Unavailable');
+    text('delivery-outlook-updated',fmtDate(dashboardState?.generatedAt));
+    return;
+  }
+  DELIVERY_OUTLOOK_MILESTONES.forEach(milestone=>{
+    const evidence=milestoneEvidence(milestone,data.epics);
+    const card=node('article','delivery-outlook-card');card.dataset.group=evidence.group;
+    const top=node('div','delivery-outlook-card-top');
+    const title=node('div');title.append(node('small','delivery-outlook-label','PROJECTED COMPLETION WINDOW'),node('h3','',milestone.label));
+    const status=metaPill(evidence.posture,evidence.group);top.append(title,status);card.append(top);
+    card.append(node('div','delivery-outlook-window',milestone.window),node('p','delivery-outlook-summary',milestone.summary));
+    if(evidence.progress!==null)card.append(progressBar(evidence.progress,'Evidence-backed milestone rollup'));
+    const facts=node('div','delivery-outlook-facts');
+    const confidence=node('div');confidence.append(node('small','','CONFIDENCE'),node('strong','',evidence.confidence));
+    const critical=node('div');critical.append(node('small','','OPEN CRITICAL PATH'),node('strong','',evidence.openCritical.length?evidence.openCritical.map(ep=>ep.id).join(' → '):'No open critical Epics'));
+    facts.append(confidence,critical);card.append(facts);
+    const path=node('p','delivery-outlook-path',evidence.openCritical.length?evidence.openCritical.map(ep=>`${ep.id} · ${ep.title}`).join('  →  '):'All milestone critical-path Epics are accepted.');
+    card.append(path);host.append(card);
+  });
+  text('delivery-outlook-focus',DELIVERY_FOCUS.increment);
+  text('delivery-outlook-updated',fmtDate(dashboardState?.generatedAt||data.generatedAt));
 }
 function validRoadmapRelationships(data){
   if(!object(data)||data.schemaVersion!=='roadmap-relationship-view/v4')return false;
@@ -303,7 +373,7 @@ function roadmapMatchesDashboard(data,dashboard){
     return derivedEpics.size===dashboardEpics.size&&[...derivedEpics].every(id=>dashboardEpics.has(id));
   });
 }
-async function loadRoadmapRelationships(){try{const data=await fetchJson(ROADMAP_RELATIONSHIP_URL,{timeoutMs:5000});if(!validRoadmapRelationships(data))throw new Error('unsupported roadmap relationship contract');if(!roadmapMatchesDashboard(data,dashboardState||FALLBACK))throw new Error('roadmap relationship data does not match current dashboard baseline');renderRoadmapRelationships(data);}catch(err){document.getElementById('roadmap-map-error')?.classList.add('show');renderRoadmapFallback(dashboardState||FALLBACK);console.warn('Roadmap relationship data unavailable, invalid, out of sync, or timed out; using bounded fallback.',err)}}
+async function loadRoadmapRelationships(){try{const data=await fetchJson(ROADMAP_RELATIONSHIP_URL,{timeoutMs:5000});if(!validRoadmapRelationships(data))throw new Error('unsupported roadmap relationship contract');if(!roadmapMatchesDashboard(data,dashboardState||FALLBACK))throw new Error('roadmap relationship data does not match current dashboard baseline');renderRoadmapRelationships(data);}catch(err){document.getElementById('roadmap-map-error')?.classList.add('show');renderRoadmapFallback(dashboardState||FALLBACK);renderDeliveryOutlook(null);console.warn('Roadmap relationship data unavailable, invalid, out of sync, or timed out; using bounded fallback.',err)}}
 function renderProducts(data){const host=document.getElementById('product-grid');if(!host)return;host.replaceChildren();(data.products||[]).forEach(p=>{const link=node('a','product-card');link.href=safePath(p.href);const top=node('div','product-top');const titleWrap=node('div');titleWrap.append(node('div','product-role',String(p.role||'').toUpperCase()),node('h3','',p.name));const status=String(p.status||'');top.append(titleWrap,node('span',`status-pill ${status.toLowerCase()}`,status));link.append(top,node('div','product-state',p.state),node('p','product-evidence',p.evidence));const proof=node('div','proof-pattern');[['BUILD',p.state],['VALIDATE',p.status],['EVIDENCE',p.evidence]].forEach(([label,value])=>{const step=node('div','proof-step');step.append(node('small','',label),node('strong','',value));proof.append(step);});link.append(proof);const labels=node('div','stage-labels');STAGE_NAMES.forEach(s=>labels.append(node('span','',s)));link.append(labels);const track=node('div','stage-track');const stageIndex=Number.isInteger(p.stageIndex)?Math.max(0,Math.min(STAGE_NAMES.length,p.stageIndex)):0;STAGE_NAMES.forEach((_,i)=>track.append(node('span',`stage-segment${i<stageIndex?' done':''}`)));link.append(track);const current=node('div','stage-current');current.append(node('span','','Current engineering maturity'),node('strong','',STAGE_NAMES[Math.max(0,stageIndex-1)]||'Define'));link.append(current);const source=p.source||{};const sourceLine=node('div','product-source');const mode=source.mode==='bounded-snapshot'?'bounded snapshot':'product-owned main';sourceLine.append(node('span','',mode),node('span','',shortSha(source.revision)));link.append(sourceLine);const next=node('div','next-block');next.append(node('small','','NEXT MILESTONE'),node('p','',p.nextMilestone));link.append(next,node('span','product-link','Open product →'));host.append(link);});}
 function renderNext(data){const host=document.getElementById('next-list');if(!host)return;host.replaceChildren();(data.portfolioFocus.next||[]).forEach((item,i)=>{if(i)host.append(node('i','','→'));host.append(node('span','',item));});}
 async function fetchJson(url,{timeoutMs=0}={}){
