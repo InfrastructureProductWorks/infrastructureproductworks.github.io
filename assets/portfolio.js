@@ -128,6 +128,21 @@ function shortSha(value){return typeof value==='string'&&value.length>=7?value.s
 function renderBaseline(data){text('metric-objectives',data.baseline.objectives);text('metric-krs',data.baseline.keyResults);text('metric-epics',data.baseline.epics);text('metric-features',data.baseline.features);text('live-posture',String(data.posture||'').replaceAll('_',' '));text('live-updated',fmtDate(data.generatedAt));text('focus-id',DELIVERY_FOCUS.epic);text('focus-title',DELIVERY_FOCUS.title);text('focus-increment',DELIVERY_FOCUS.increment);text('focus-copy',DELIVERY_FOCUS.copy);text('portability-id',data.portfolioFocus.activeEpic);text('portability-title',data.portfolioFocus.activeLabel);text('portability-accepted','GHE-06 bounded accepted');const blocked=(data.portfolioFocus.next||[]).some(item=>item.toLowerCase().includes('ghe-07')&&item.toLowerCase().includes('externally blocked'));text('portability-state',blocked?'EXTERNALLY BLOCKED':'ACTIVE TRACK');text('portability-copy',blocked?'Waiting on an authorized live GHES/customer-controlled GitHub target.':'Live customer-runner and GHES acceptance remains gated on authorized target evidence.');text('portability-note',blocked?'Not an unfinished synthetic engineering issue.':'Live target evidence remains required before support can be claimed.');}
 function roadmapStatusClass(group){return ['active','accepted','gated','documentation','future','planned'].includes(group)?` status-${group}`:' status-planned'}
 function metaPill(value,group){const span=node('span',`roadmap-meta-pill${roadmapStatusClass(group)}`,value);return span}
+function bindRoadmapControls(host,{filtersEnabled=true}={}){
+  const filters=[...document.querySelectorAll('[data-roadmap-filter]')];
+  filters.forEach(button=>{
+    button.disabled=!filtersEnabled;
+    button.setAttribute('aria-disabled',String(!filtersEnabled));
+    if(!filtersEnabled){button.classList.remove('active');if(button.dataset.roadmapFilter==='all')button.classList.add('active');return;}
+    button.onclick=()=>{
+      filters.forEach(b=>b.classList.toggle('active',b===button));
+      const value=button.dataset.roadmapFilter;
+      host.querySelectorAll('.roadmap-objective').forEach(item=>{item.hidden=value!=='all'&&item.dataset.group!==value;});
+    };
+  });
+  const expand=document.getElementById('roadmap-expand-all');if(expand)expand.onclick=()=>host.querySelectorAll('details:not([hidden])').forEach(d=>d.open=true);
+  const collapse=document.getElementById('roadmap-collapse-all');if(collapse)collapse.onclick=()=>host.querySelectorAll('details').forEach(d=>d.open=false);
+}
 function renderRoadmapFallback(data){
   const host=document.getElementById('roadmap-relationship-list');if(!host)return;host.replaceChildren();
   (data.objectives||[]).forEach(o=>{
@@ -138,6 +153,7 @@ function renderRoadmapFallback(data){
     summary.append(copy,meta);details.append(summary,node('p','roadmap-fallback-copy','Detailed KR-to-Epic mapping is temporarily unavailable. No relationship is being inferred.'));
     host.append(details);
   });
+  bindRoadmapControls(host,{filtersEnabled:false});
 }
 function renderRoadmapRelationships(data){
   const host=document.getElementById('roadmap-relationship-list');if(!host)return;host.replaceChildren();
@@ -176,16 +192,24 @@ function renderRoadmapRelationships(data){
     });
     body.append(krList);details.append(body);host.append(details);
   });
-  const filters=[...document.querySelectorAll('[data-roadmap-filter]')];
-  filters.forEach(button=>button.addEventListener('click',()=>{
-    filters.forEach(b=>b.classList.toggle('active',b===button));
-    const value=button.dataset.roadmapFilter;
-    host.querySelectorAll('.roadmap-objective').forEach(item=>{item.hidden=value!=='all'&&item.dataset.group!==value;});
-  }));
-  document.getElementById('roadmap-expand-all')?.addEventListener('click',()=>host.querySelectorAll('details:not([hidden])').forEach(d=>d.open=true));
-  document.getElementById('roadmap-collapse-all')?.addEventListener('click',()=>host.querySelectorAll('details').forEach(d=>d.open=false));
+  bindRoadmapControls(host,{filtersEnabled:true});
 }
-function validRoadmapRelationships(data){return object(data)&&data.schemaVersion==='roadmap-relationship-view/v1'&&object(data.planning)&&Array.isArray(data.objectives)&&data.objectives.length===8&&Array.isArray(data.keyResults)&&data.keyResults.length===62&&object(data.epics)&&Object.keys(data.epics).length===19}
+function validRoadmapRelationships(data){
+  if(!object(data)||data.schemaVersion!=='roadmap-relationship-view/v1'||!object(data.planning)||!boundedText(data.planning.baseline)||!boundedText(data.planning.evidenceQuarter)||!boundedText(data.planning.horizon)||!boundedText(data.planning.timingNote))return false;
+  if(!Array.isArray(data.objectives)||data.objectives.length!==8||!Array.isArray(data.keyResults)||data.keyResults.length!==62||!object(data.epics)||Object.keys(data.epics).length!==19)return false;
+  const objectiveIds=data.objectives.map(o=>o?.id),krIds=data.keyResults.map(k=>k?.id),epicIds=Object.keys(data.epics);
+  if(new Set(objectiveIds).size!==objectiveIds.length||new Set(krIds).size!==krIds.length)return false;
+  const objectiveSet=new Set(objectiveIds),krSet=new Set(krIds),epicSet=new Set(epicIds);
+  if(!data.objectives.every(o=>object(o)&&/^O\d+$/.test(o.id)&&boundedText(o.definition)&&boundedText(o.status)&&boundedText(o.group)&&boundedText(o.progress)&&boundedText(o.time)&&Array.isArray(o.keyResults)&&Array.isArray(o.epics)&&new Set(o.keyResults).size===o.keyResults.length&&new Set(o.epics).size===o.epics.length&&o.keyResults.every(id=>krSet.has(id))&&o.epics.every(id=>epicSet.has(id))))return false;
+  if(!data.keyResults.every(k=>object(k)&&/^KR\d+\.\d+$/.test(k.id)&&objectiveSet.has(k.objective)&&boundedText(k.definition)&&boundedText(k.status)&&boundedText(k.group)&&boundedText(k.time)&&Array.isArray(k.epics)&&k.epics.length>0&&new Set(k.epics).size===k.epics.length&&k.epics.every(id=>epicSet.has(id))))return false;
+  if(!epicIds.every(id=>{const ep=data.epics[id];return object(ep)&&ep.id===id&&/^EP-\d+$/.test(id)&&boundedText(ep.title)&&boundedText(ep.status)&&boundedText(ep.group)&&boundedText(ep.progress)&&boundedText(ep.time)&&Number.isInteger(ep.featureCount)&&ep.featureCount>=0&&Array.isArray(ep.features)&&ep.features.length===ep.featureCount&&ep.features.every(boundedText);} ))return false;
+  for(const o of data.objectives){
+    for(const krId of o.keyResults){const kr=data.keyResults.find(item=>item.id===krId);if(!kr||kr.objective!==o.id)return false;}
+    const contributed=new Set(o.keyResults.flatMap(krId=>(data.keyResults.find(item=>item.id===krId)||{epics:[]}).epics));
+    if(o.epics.some(id=>!contributed.has(id))||[...contributed].some(id=>!o.epics.includes(id)))return false;
+  }
+  return true;
+}
 async function loadRoadmapRelationships(){try{const data=await fetchJson(ROADMAP_RELATIONSHIP_URL);if(!validRoadmapRelationships(data))throw new Error('unsupported roadmap relationship contract');renderRoadmapRelationships(data);}catch(err){document.getElementById('roadmap-map-error')?.classList.add('show');renderRoadmapFallback(dashboardState||FALLBACK);console.warn('Roadmap relationship data unavailable or invalid; using bounded fallback.',err)}}
 function renderProducts(data){const host=document.getElementById('product-grid');if(!host)return;host.replaceChildren();(data.products||[]).forEach(p=>{const link=node('a','product-card');link.href=safePath(p.href);const top=node('div','product-top');const titleWrap=node('div');titleWrap.append(node('div','product-role',String(p.role||'').toUpperCase()),node('h3','',p.name));const status=String(p.status||'');top.append(titleWrap,node('span',`status-pill ${status.toLowerCase()}`,status));link.append(top,node('div','product-state',p.state),node('p','product-evidence',p.evidence));const proof=node('div','proof-pattern');[['BUILD',p.state],['VALIDATE',p.status],['EVIDENCE',p.evidence]].forEach(([label,value])=>{const step=node('div','proof-step');step.append(node('small','',label),node('strong','',value));proof.append(step);});link.append(proof);const labels=node('div','stage-labels');STAGE_NAMES.forEach(s=>labels.append(node('span','',s)));link.append(labels);const track=node('div','stage-track');const stageIndex=Number.isInteger(p.stageIndex)?Math.max(0,Math.min(STAGE_NAMES.length,p.stageIndex)):0;STAGE_NAMES.forEach((_,i)=>track.append(node('span',`stage-segment${i<stageIndex?' done':''}`)));link.append(track);const current=node('div','stage-current');current.append(node('span','','Current engineering maturity'),node('strong','',STAGE_NAMES[Math.max(0,stageIndex-1)]||'Define'));link.append(current);const source=p.source||{};const sourceLine=node('div','product-source');const mode=source.mode==='bounded-snapshot'?'bounded snapshot':'product-owned main';sourceLine.append(node('span','',mode),node('span','',shortSha(source.revision)));link.append(sourceLine);const next=node('div','next-block');next.append(node('small','','NEXT MILESTONE'),node('p','',p.nextMilestone));link.append(next,node('span','product-link','Open product →'));host.append(link);});}
 function renderNext(data){const host=document.getElementById('next-list');if(!host)return;host.replaceChildren();(data.portfolioFocus.next||[]).forEach((item,i)=>{if(i)host.append(node('i','','→'));host.append(node('span','',item));});}
