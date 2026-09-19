@@ -276,13 +276,15 @@ function milestoneEvidence(milestone,epicById){
   const progress=complete?pctMean(rows.map(ep=>ep.completionPercent)):null;
   const openCritical=criticalRows.filter(ep=>ep.completionPercent<100);
   const hasExternalOrGated=openCritical.some(ep=>ep.group==='gated'||ep.group==='future');
+  const hasDocumentationCritical=openCritical.some(ep=>ep.group==='documentation');
   const allAccepted=complete&&rows.every(ep=>ep.completionPercent===100);
   let posture='DEVELOPING',group='documentation';
   if(!complete){posture='DATA INCOMPLETE';group='gated';}
   else if(allAccepted){posture='ACCEPTED';group='accepted';}
   else if(hasExternalOrGated){posture='CONDITIONAL';group='gated';}
-  else if(progress>=50){posture='ON TRACK';group='active';}
-  const confidence=!complete?'LOW':allAccepted?'HIGH':hasExternalOrGated?'MEDIUM':progress>=60?'HIGH':'MEDIUM';
+  else if(hasDocumentationCritical){posture='DEVELOPING';group='documentation';}
+  else if(openCritical.some(ep=>ep.group==='active')){posture='ACTIVE';group='active';}
+  const confidence=!complete?'LOW':allAccepted?'HIGH':hasExternalOrGated?'LOW':hasDocumentationCritical?'MEDIUM':progress>=75?'HIGH':'MEDIUM';
   return {rows,criticalRows,openCritical,progress,posture,group,confidence};
 }
 function renderDeliveryOutlook(data){
@@ -303,7 +305,7 @@ function renderDeliveryOutlook(data){
     card.append(node('div','delivery-outlook-window',milestone.window),node('p','delivery-outlook-summary',milestone.summary));
     if(evidence.progress!==null)card.append(progressBar(evidence.progress,'Evidence-backed milestone rollup'));
     const facts=node('div','delivery-outlook-facts');
-    const confidence=node('div');confidence.append(node('small','','CONFIDENCE'),node('strong','',evidence.confidence));
+    const confidence=node('div');confidence.append(node('small','','EVIDENCE CONFIDENCE'),node('strong','',evidence.confidence));
     const critical=node('div');critical.append(node('small','','OPEN CRITICAL PATH'),node('strong','',evidence.openCritical.length?evidence.openCritical.map(ep=>ep.id).join(' → '):'No open critical Epics'));
     facts.append(confidence,critical);card.append(facts);
     const path=node('p','delivery-outlook-path',evidence.openCritical.length?evidence.openCritical.map(ep=>`${ep.id} · ${ep.title}`).join('  →  '):'All milestone critical-path Epics are accepted.');
