@@ -1,1 +1,354 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/favicon.ico" sizes="16x16 32x32"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><meta name="theme-color" content="#ffffff"><title>Security | Infrastructure Product Works</title><link rel="stylesheet" href="/assets/site.css"></head><body><header><a class="brand" href="/">Infrastructure <span>Product Works</span></a><nav><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><details class="nav-products"><summary>Products</summary><div class="nav-menu"><a href="/storefront/"><small>EXPERIENCE</small>Storefront</a><a href="/guard/"><small>VALIDATE</small>IaaP Guard</a><a href="/forge/"><small>CONSTRUCT</small>IaaP Forge</a><a href="/console/"><small>REVIEW</small>IaaP Console</a><a href="/assurance/"><small>ASSURE</small>IaaP Assurance</a><a href="/crossplane/"><small>ARCHITECTURE</small>Crossplane Control Plane</a></div></details><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/docs/guard/">Docs</a></nav><details class="mobile-nav"><summary>Menu</summary><div class="nav-menu"><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><a href="/storefront/">Storefront</a><a href="/guard/">IaaP Guard</a><a href="/forge/">IaaP Forge</a><a href="/console/">IaaP Console</a><a href="/assurance/">IaaP Assurance</a><a href="/crossplane/">Crossplane</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/docs/guard/">Documentation</a><a href="/support/">Support</a></div></details></header><main><section class="hero"><p class="eyebrow">SECURITY MODEL</p><h1>Bounded authority is a <em>security control.</em></h1><p class="lede">Infrastructure Product Works separates proposal, deterministic validation, human decision and infrastructure execution. No product component should acquire broader operational authority merely because it participates in the workflow.</p></section><section><div class="cards"><article><h3>Least authority</h3><p>Components should receive only the access required for their declared role.</p></article><article><h3>Evidence integrity</h3><p>Validation evidence is intended to remain bound to the source and decision context it represents.</p></article><article><h3>Customer controls</h3><p>Branch protection, approval, credentials and production controls remain customer responsibilities and boundaries.</p></article><article><h3>No implicit deployment</h3><p>A PASS result is not an instruction to apply or provision infrastructure.</p></article><article><h3>Deterministic gates</h3><p>Policy-sensitive validation favors bounded, testable rules over unconstrained model judgment.</p></article><article><h3>Responsible reporting</h3><p>Do not disclose suspected vulnerabilities through public issues when doing so would expose exploit details or sensitive information.</p></article></div></section></main><footer><strong>Infrastructure Product Works</strong><div><a href="/support/">Support</a><a href="/privacy/">Privacy</a><a href="/insights/">Insights</a></div></footer></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#ffffff">
+<title>Security &amp; Trust Architecture | Infrastructure Product Works</title>
+<meta name="description" content="How Infrastructure Product Works separates proposal, validation, review, authorization and reconciliation with bounded authority, evidence integrity and customer-controlled trust boundaries.">
+<link rel="stylesheet" href="/assets/site.css">
+<style>
+.security-wrap{max-width:1180px;margin:auto}
+.security-intro{max-width:930px}
+.security-badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.security-badges span{padding:8px 12px;border:1px solid #b9d9e8;border-radius:999px;background:#eef7fb;color:#0c5c86;font-size:11px;font-weight:850;letter-spacing:.04em}
+.security-rule{max-width:1180px;margin:auto;padding:34px;border:1px solid #c8d7e4;border-radius:24px;background:linear-gradient(135deg,#f7fbff,#f2faf5);box-shadow:0 18px 44px #0f172a0d}
+.security-rule strong{display:block;font-size:clamp(26px,3vw,42px);line-height:1.08;letter-spacing:-.04em;color:#16324a}
+.security-rule p{max-width:920px;color:#5d6d80;font-size:18px;margin-bottom:0}
+.trust-model{max-width:1180px;margin:34px auto 0;padding:28px;border:1px solid #ffffff1f;border-radius:26px;background:#07172b;color:#f8fafc;box-shadow:0 22px 55px #0f172a24}
+.trust-flow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;align-items:stretch}
+.trust-node{position:relative;min-height:190px;padding:18px;border:1px solid #45647f;border-radius:17px;background:#0d2438;display:flex;flex-direction:column}
+.trust-node small{color:#7dd3fc;font-size:10px;font-weight:900;letter-spacing:.1em}
+.trust-node h3{font-size:18px;line-height:1.16;margin:10px 0 8px;color:#fff}
+.trust-node p{margin:0;color:#c8d4e2;font-size:13px;line-height:1.55}
+.trust-node b{margin-top:auto;padding-top:14px;color:#86efac;font-size:11px}
+.trust-node:not(:last-child):after{content:"→";position:absolute;right:-10px;top:50%;transform:translate(50%,-50%);z-index:2;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#0b1d31;color:#7dd3fc;font-weight:900}
+.trust-foot{margin-top:18px;padding:18px 20px;border:1px solid #ec489966;border-radius:16px;background:#111d2c}
+.trust-foot strong{display:block;color:#f8fafc;font-size:18px}
+.trust-foot span{color:#c0ccda;font-size:14px}
+.security-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;max-width:1180px;margin:34px auto 0}
+.security-grid article{padding:24px;border:1px solid #d6e0e9;border-radius:18px;background:#fff;box-shadow:0 12px 30px #0f172a0b}
+.security-grid small{display:block;color:#0b719b;font-size:10px;font-weight:900;letter-spacing:.11em}
+.security-grid h3{font-size:20px;line-height:1.2;margin:10px 0 8px}
+.security-grid p{color:#5d6d80;margin:0}
+.evidence-chain{max-width:1180px;margin:34px auto 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.evidence-chain article{position:relative;padding:24px;border:1px solid #a9cfe3;border-radius:18px;background:#f5fbff}
+.evidence-chain article:not(:last-child):after{content:"→";position:absolute;right:-12px;top:50%;transform:translate(50%,-50%);z-index:2;width:25px;height:25px;display:grid;place-items:center;border-radius:50%;background:#0f6fae;color:#fff;font-weight:900}
+.evidence-chain b{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#e5f4fb;color:#0c5c86;font-size:12px;margin-bottom:13px}
+.evidence-chain h3{font-size:18px;margin:0 0 8px}
+.evidence-chain p{color:#5d6d80;margin:0;font-size:14px}
+.authority-table{max-width:1180px;margin:32px auto 0;border:1px solid #d6e0e9;border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 12px 30px #0f172a0b}
+.authority-row{display:grid;grid-template-columns:.65fr 1.2fr 1.15fr;border-top:1px solid #e2e8f0}
+.authority-row:first-child{border-top:0;background:#eef7fb;font-size:11px;font-weight:900;letter-spacing:.08em;color:#0c5c86}
+.authority-row>div{padding:16px 18px}
+.authority-row>div+div{border-left:1px solid #e2e8f0}
+.authority-row strong{color:#17324d}
+.authority-row span{color:#5d6d80}
+.fail-strip{max-width:1180px;margin:34px auto 0;padding:27px;border:1px solid #efcf80;border-radius:20px;background:#fff8e9}
+.fail-strip h3{margin:0 0 8px;font-size:23px;color:#5f4308}
+.fail-strip p{margin:0;color:#75520b}
+.maturity-grid{max-width:1180px;margin:34px auto 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.maturity-grid article{padding:25px;border-radius:19px;border:1px solid #d6e0e9;background:#fff}
+.maturity-grid article:nth-child(1){border-top:4px solid #22c55e}
+.maturity-grid article:nth-child(2){border-top:4px solid #f59e0b}
+.maturity-grid article:nth-child(3){border-top:4px solid #8b5cf6}
+.maturity-grid small{font-size:10px;font-weight:900;letter-spacing:.1em;color:#0b719b}
+.maturity-grid h3{margin:8px 0 9px;font-size:21px}
+.maturity-grid p,.maturity-grid li{color:#5d6d80}
+.maturity-grid ul{padding-left:18px;margin-bottom:0}
+.shared-grid{max-width:1180px;margin:32px auto 0;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.shared-grid article{padding:27px;border:1px solid #d6e0e9;border-radius:20px;background:#fff}
+.shared-grid article:last-child{background:#f8fbfe}
+.shared-grid h3{font-size:23px;margin:0 0 11px}
+.shared-grid li{color:#5d6d80;margin:8px 0}
+.report-card{max-width:1180px;margin:auto;padding:34px;border:1px solid #f0bfd4;border-radius:24px;background:#fff6fa}
+.report-card h2{margin-top:8px}
+.report-card p{max-width:900px;color:#5d6d80;font-size:18px}
+@media(max-width:1050px){
+.trust-flow{grid-template-columns:repeat(2,minmax(0,1fr))}
+.trust-node:not(:last-child):after{display:none}
+.security-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.evidence-chain{grid-template-columns:repeat(2,minmax(0,1fr))}
+.evidence-chain article:not(:last-child):after{display:none}
+.maturity-grid{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+.security-rule,.trust-model,.report-card{padding:21px}
+.trust-flow,.security-grid,.evidence-chain,.shared-grid{grid-template-columns:1fr}
+.trust-node{min-height:0}
+.authority-table{overflow:auto}
+.authority-row{min-width:760px}
+.security-badges span{font-size:10px}
+}
+</style>
+</head>
+<body>
+<header>
+<a class="brand" href="/">Infrastructure <span>Product Works</span></a>
+<nav>
+<a href="/">Home</a>
+<a href="/portfolio/">Portfolio Status</a>
+<a href="/operating-model/">How It Works</a>
+<details class="nav-products"><summary>Products</summary><div class="nav-menu">
+<a href="/storefront/"><small>EXPERIENCE</small>Storefront</a>
+<a href="/guard/"><small>VALIDATE</small>IaaP Guard</a>
+<a href="/forge/"><small>CONSTRUCT</small>IaaP Forge</a>
+<a href="/console/"><small>REVIEW</small>IaaP Console</a>
+<a href="/assurance/"><small>ASSURE</small>IaaP Assurance</a>
+<a href="/crossplane/"><small>ARCHITECTURE</small>Crossplane Control Plane</a>
+</div></details>
+<a href="/work/">The Work</a>
+<a href="/insights/">Insights</a>
+<a href="/about/">About</a>
+<a href="/docs/guard/">Docs</a>
+</nav>
+<details class="mobile-nav"><summary>Menu</summary><div class="nav-menu">
+<a href="/">Home</a>
+<a href="/portfolio/">Portfolio Status</a>
+<a href="/operating-model/">How It Works</a>
+<a href="/storefront/">Storefront</a>
+<a href="/guard/">IaaP Guard</a>
+<a href="/forge/">IaaP Forge</a>
+<a href="/console/">IaaP Console</a>
+<a href="/assurance/">IaaP Assurance</a>
+<a href="/crossplane/">Crossplane</a>
+<a href="/work/">The Work</a>
+<a href="/insights/">Insights</a>
+<a href="/about/">About</a>
+<a href="/docs/guard/">Documentation</a>
+<a href="/support/">Support</a>
+</div></details>
+</header>
+
+<main>
+<section class="hero">
+<div class="security-intro">
+<p class="eyebrow">SECURITY &amp; TRUST ARCHITECTURE</p>
+<h1>Security is part of the <em>operating model.</em></h1>
+<p class="lede">Infrastructure Product Works is designed around bounded authority, deterministic validation, verifiable evidence and explicit human authorization. Proposal, validation, review, authorization and infrastructure execution are intentionally separate jobs.</p>
+<div class="security-badges">
+<span>LEAST AUTHORITY</span><span>DETERMINISTIC GATES</span><span>EVIDENCE BINDING</span><span>HUMAN AUTHORIZATION</span><span>CUSTOMER CONTROLLED</span>
+</div>
+<div class="actions">
+<a class="button" href="#trust-model">See the trust model</a>
+<a class="button ghost" href="#maturity">Security maturity</a>
+<a class="button ghost" href="#reporting">Report a vulnerability</a>
+</div>
+</div>
+</section>
+
+<section>
+<div class="security-rule">
+<p class="eyebrow">THE GOVERNING RULE</p>
+<strong>No stage inherits authority merely because the previous stage passed.</strong>
+<p>A valid request is not an approval. A PASS result is not deployment permission. A product definition is not production authority. A review surface is not a decision engine. Authorization must remain explicit all the way to the point where an authorized control plane is permitted to act.</p>
+</div>
+</section>
+
+<section id="trust-model">
+<div class="security-wrap">
+<p class="eyebrow">END-TO-END TRUST MODEL</p>
+<h2>Every surface has a job. None quietly becomes the whole control plane.</h2>
+<p class="section-lede">These products can participate in one governed infrastructure journey, but this diagram is a trust model rather than a claim that every deployment uses one rigid runtime sequence.</p>
+<div class="trust-model">
+<div class="trust-flow">
+<article class="trust-node"><small>EXPERIENCE</small><h3>Storefront</h3><p>Captures a bounded product request without exposing provider implementation as the consumer contract.</p><b>REQUEST, NOT AUTHORITY</b></article>
+<article class="trust-node"><small>VALIDATE</small><h3>Guard</h3><p>Evaluates infrastructure intent against deterministic architecture, policy, security and evidence rules.</p><b>PASS ≠ DEPLOY</b></article>
+<article class="trust-node"><small>CONSTRUCT</small><h3>Forge</h3><p>Defines governed infrastructure products, capabilities, versions and reviewable product artifacts.</p><b>CONSTRUCT ≠ APPROVE</b></article>
+<article class="trust-node"><small>REVIEW</small><h3>Console</h3><p>Presents verified producer evidence, provenance and review context without becoming approval authority.</p><b>VISIBILITY ≠ DECISION</b></article>
+<article class="trust-node"><small>ASSURE</small><h3>Assurance</h3><p>Checks whether identity, purpose, scope, time and required approval still bound the requested action.</p><b>AUTHORITY CANNOT WIDEN</b></article>
+<article class="trust-node"><small>AUTHORIZE</small><h3>Accountable decision</h3><p>An authorized person or customer-controlled system grants the bounded permission required for action.</p><b>EXPLICIT AUTHORITY</b></article>
+<article class="trust-node"><small>RECONCILE</small><h3>Crossplane</h3><p>Reconciles authorized product state through replaceable provider implementations behind stable contracts.</p><b>ACT ONLY AFTER AUTHORIZATION</b></article>
+</div>
+<div class="trust-foot"><strong>Security comes from the boundaries between the stages as much as the controls inside them.</strong><span>Each handoff should preserve identity, source context, evidence and scope so downstream systems can verify what they received instead of assuming trust.</span></div>
+</div>
+</div>
+</section>
+
+<section>
+<div class="security-wrap">
+<p class="eyebrow">CORE SECURITY CONTROLS</p>
+<h2>The architecture is designed to reduce invisible trust.</h2>
+<p class="section-lede">The goal is not to make automation powerless. It is to make every meaningful capability explicit, bounded and reviewable.</p>
+<div class="security-grid">
+<article><small>LEAST AUTHORITY</small><h3>Access follows the declared role</h3><p>Validation, product construction, review and reconciliation should receive only the permissions required for their bounded responsibility.</p></article>
+<article><small>DETERMINISM</small><h3>Policy-sensitive gates stay testable</h3><p>Security-sensitive decisions favor versioned, repeatable rules over unconstrained model judgment or hidden discretionary state.</p></article>
+<article><small>PROVENANCE</small><h3>Evidence stays tied to its source</h3><p>Producer revision, digest, product binding and decision context are retained so downstream consumers can verify what they are relying on.</p></article>
+<article><small>FAIL CLOSED</small><h3>Unverifiable does not become trusted</h3><p>Identity, evidence, source binding, scope or policy that cannot be verified should stop, hold or require explicit review rather than silently continue.</p></article>
+<article><small>CUSTOMER CONTROL</small><h3>Production authority stays with the operator</h3><p>Credentials, branch protection, enterprise identity, production approvals and operational controls remain customer-owned boundaries.</p></article>
+<article><small>NO IMPLICIT DEPLOYMENT</small><h3>A result is evidence for a decision</h3><p>Guard findings, Forge artifacts and Console review context do not themselves approve, merge, provision or reconcile infrastructure.</p></article>
+<article><small>ISOLATION</small><h3>Customer context must travel end to end</h3><p>Multi-customer design carries customer, organization and environment context through identity, profiles, evidence, approvals, products, secrets, integrations and audit history. Cross-customer substitution must fail closed before any tenant-isolation claim.</p></article>
+<article><small>PORTABILITY</small><h3>Trust cannot depend on public internet assumptions</h3><p>GHES, private runners, private certificate authorities, proxies, mirrors and disconnected verification are treated as security and portability requirements, not deployment trivia.</p></article>
+<article><small>SEPARATION OF DUTIES</small><h3>Presentation does not become authority</h3><p>Review and visibility can be centralized without collapsing producer ownership, formal approval or infrastructure execution into one application.</p></article>
+</div>
+</div>
+</section>
+
+<section>
+<div class="security-wrap">
+<p class="eyebrow">EVIDENCE INTEGRITY &amp; PROVENANCE</p>
+<h2>Trust the exact thing that was evaluated, not something that merely looks similar.</h2>
+<p class="section-lede">The evidence model is intended to preserve a verifiable chain from source to review so later systems can detect substitution, drift or broken lineage.</p>
+<div class="evidence-chain">
+<article><b>01</b><h3>Source revision</h3><p>Identify the exact proposal, repository state or producer revision that generated the evidence.</p></article>
+<article><b>02</b><h3>Evidence digest</h3><p>Bind the report or assessment output to an integrity value that downstream consumers can verify.</p></article>
+<article><b>03</b><h3>Product binding</h3><p>Retain the selected infrastructure product, contract or product context associated with the evidence.</p></article>
+<article><b>04</b><h3>Decision context</h3><p>Present the verified lineage to reviewers without rewriting the producer verdict or inventing new authority.</p></article>
+</div>
+<div class="fail-strip">
+<h3>What should fail closed?</h3>
+<p>Mismatched source revisions, broken digests, stale or substituted evidence, missing required authority, scope expansion and cross-customer substitution are all conditions that should stop an automated path or route it to explicit review rather than being normalized away.</p>
+</div>
+</div>
+</section>
+
+<section>
+<div class="security-wrap">
+<p class="eyebrow">AUTHORITY MODEL</p>
+<h2>Proposal, validation, review, authorization and execution are different verbs for a reason.</h2>
+<p class="section-lede">Keeping these responsibilities distinct prevents useful automation from quietly becoming an all-powerful deployment system.</p>
+<div class="authority-table">
+<div class="authority-row"><div>STAGE</div><div>WHAT IT MAY DO</div><div>WHAT IT DOES NOT MEAN</div></div>
+<div class="authority-row"><div><strong>Proposal</strong></div><div><span>Describe desired infrastructure or a product selection.</span></div><div><span>No approval, credential or deployment authority is implied.</span></div></div>
+<div class="authority-row"><div><strong>Validation</strong></div><div><span>Evaluate bounded rules and produce evidence-backed findings.</span></div><div><span>PASS is not permission to merge, remediate or provision.</span></div></div>
+<div class="authority-row"><div><strong>Construction</strong></div><div><span>Define and render governed product artifacts and contracts.</span></div><div><span>A valid product artifact is not a production authorization.</span></div></div>
+<div class="authority-row"><div><strong>Review</strong></div><div><span>Organize verified context, materiality and human workbench information.</span></div><div><span>A dashboard or review marker is not an approval engine.</span></div></div>
+<div class="authority-row"><div><strong>Authorization</strong></div><div><span>Grant bounded permission through accountable customer-controlled authority.</span></div><div><span>Delegated scope may stay equal or narrow; it must not silently widen.</span></div></div>
+<div class="authority-row"><div><strong>Reconciliation</strong></div><div><span>Drive observed infrastructure toward an authorized desired state.</span></div><div><span>The reconciler does not retroactively create the authority it consumes.</span></div></div>
+</div>
+</div>
+</section>
+
+<section>
+<div class="security-wrap">
+<p class="eyebrow">AI &amp; AGENT SAFETY</p>
+<h2>AI can increase implementation capacity without inheriting decision rights.</h2>
+<p class="section-lede">Infrastructure Product Works treats generated infrastructure and AI-assisted recommendations as proposals to validate, not authority to trust simply because a model produced them.</p>
+<div class="security-grid">
+<article><small>AI MAY</small><h3>Propose and explain</h3><p>AI can assist with requirements, mappings, infrastructure-product configuration, implementation drafts, impact analysis and explanations against versioned inputs.</p></article>
+<article><small>DETERMINISTIC SYSTEMS</small><h3>Validate what matters</h3><p>Architecture, policy, security, evidence and authority checks that protect the operating boundary remain explicit, testable and independently verifiable.</p></article>
+<article><small>HUMANS RETAIN</small><h3>Accountable acceptance</h3><p>Material exceptions, approvals, authorization and production decisions remain with the people and systems that own those responsibilities.</p></article>
+<article><small>FUTURE AGENTS</small><h3>Bounded commands only</h3><p>Agent-operated infrastructure remains conditional on explicit authority, least privilege, deterministic guardrails, evidence retention, rollback and escalation.</p></article>
+<article><small>NO SILENT EXPANSION</small><h3>Capability does not equal permission</h3><p>An agent being technically capable of an action does not make that action authorized. The authority package must remain independently checkable.</p></article>
+<article><small>EVIDENCE</small><h3>The actor is not the only witness</h3><p>High-impact automated decisions should leave evidence outside the unilateral control of the component that proposed or performed the action.</p></article>
+</div>
+</div>
+</section>
+
+<section>
+<div class="security-wrap">
+<p class="eyebrow">RESTRICTED-NETWORK &amp; ENTERPRISE OPERATION</p>
+<h2>The security model must survive outside a public-cloud demo path.</h2>
+<p class="section-lede">Portability work explicitly considers GitHub Enterprise Server, private runners, private certificate authorities, proxies, internal mirrors, local evidence handling and reduced or disconnected network conditions.</p>
+<div class="shared-grid">
+<article><h3>What the architecture is proving</h3><ul>
+<li>Dependencies are identified instead of assuming unrestricted internet access.</li>
+<li>Evidence can be imported, verified and reviewed without turning remote collection into a hidden requirement.</li>
+<li>Private CA, proxy, mirror and runner constraints are treated as first-class operational inputs.</li>
+<li>Product boundaries remain explicit when adapters and provider integrations change.</li>
+</ul></article>
+<article><h3>What this does not claim</h3><ul>
+<li>Universal operation in every enterprise network or GHES topology.</li>
+<li>Production authorization merely because restricted-network tests pass.</li>
+<li>Customer identity, audit, Crossplane or cloud-provider integrations before they are individually accepted.</li>
+<li>Operational readiness without customer-selected evidence in the target environment.</li>
+</ul></article>
+</div>
+</div>
+</section>
+
+<section id="maturity">
+<div class="security-wrap">
+<p class="eyebrow">SECURITY MATURITY</p>
+<h2>Evidence is separated from aspiration.</h2>
+<p class="section-lede">The portfolio deliberately distinguishes accepted or demonstrated controls from active validation and future gated capability. A polished preview is not treated as production proof.</p>
+<div class="maturity-grid">
+<article><small>ACCEPTED / DEMONSTRATED BASELINE</small><h3>Bounded trust controls</h3><ul>
+<li>Explicit separation of validation, review, authorization and reconciliation.</li>
+<li>Deterministic Guard behavior and evidence-oriented product contracts.</li>
+<li>Console source-revision and digest verification concepts in the current bounded baseline.</li>
+<li>Assurance synthetic proofs for authority attenuation, custody and independent evidence.</li>
+<li>Synthetic connected-app paths that stop at human review rather than provisioning.</li>
+</ul></article>
+<article><small>ACTIVE VALIDATION</small><h3>Enterprise and customer-operational trust</h3><ul>
+<li>GHES and restricted-network portability.</li>
+<li>Trusted profile approval and versioning.</li>
+<li>Customer-selected assessor evidence and operational profiles.</li>
+<li>Customer identity, persistence, audit and replaceable integration boundaries.</li>
+<li>Operational evidence sufficient to support an explicit customer decision.</li>
+</ul></article>
+<article><small>GATED / FUTURE</small><h3>Do not claim before proof</h3><ul>
+<li>Multi-customer isolation before cross-customer substitution tests pass.</li>
+<li>Broad autonomous remediation or agent-operated infrastructure.</li>
+<li>Production authorization inferred from synthetic proofs or documentation.</li>
+<li>Universal provider, network or enterprise topology compatibility.</li>
+<li>Any capability that would widen authority beyond an accepted bounded contract.</li>
+</ul></article>
+</div>
+<div class="actions"><a class="button ghost" href="/portfolio/">See live portfolio maturity</a><a class="button ghost" href="/work/">Inspect engineering evidence</a></div>
+</div>
+</section>
+
+<section>
+<div class="security-wrap">
+<p class="eyebrow">SHARED RESPONSIBILITY</p>
+<h2>Infrastructure Product Works can bound the system. The operator still owns the environment.</h2>
+<div class="shared-grid">
+<article><h3>Infrastructure Product Works</h3><ul>
+<li>Defines bounded product and authority contracts.</li>
+<li>Builds deterministic validation and evidence semantics within each accepted product scope.</li>
+<li>Preserves explicit separation between proposal, review and execution.</li>
+<li>Documents known limitations and evidence-bounded maturity.</li>
+<li>Provides security reporting guidance for supported product surfaces.</li>
+</ul></article>
+<article><h3>Customer / platform operator</h3><ul>
+<li>Owns enterprise identity, credentials, secrets and production access.</li>
+<li>Configures branch protection, repositories, runners, network controls and operational policy.</li>
+<li>Selects the authoritative control profiles, evidence sources and approval authorities.</li>
+<li>Owns production authorization, incident response, monitoring, continuity and runtime operations.</li>
+<li>Validates the system in the target environment before making an operational claim.</li>
+</ul></article>
+</div>
+</div>
+</section>
+
+<section id="reporting">
+<div class="report-card">
+<p class="eyebrow">RESPONSIBLE SECURITY REPORTING</p>
+<h2>Report suspected vulnerabilities privately.</h2>
+<p>Do not place credentials, tokens, private keys, proprietary infrastructure details, private repository contents, exploit details or sensitive reproduction material in a public issue or pull request. For supported repositories with GitHub Private Vulnerability Reporting enabled, use the repository's <strong>Security → Advisories → Report a vulnerability</strong> path.</p>
+<div class="actions">
+<a class="button" href="https://github.com/InfrastructureProductWorks/iaap-guard/security/advisories/new" target="_blank" rel="noopener noreferrer">Report an IaaP Guard vulnerability</a>
+<a class="button ghost" href="/support/">Support guidance</a>
+</div>
+</div>
+</section>
+
+<section class="principle">
+<h2>Automate the work.<br><span>Do not automate away accountability.</span></h2>
+<p>The security objective is not fewer controls. It is to turn the right controls into repeatable product behavior while keeping approval, authority and accountability visible.</p>
+</section>
+</main>
+
+<footer>
+<strong>Infrastructure Product Works™</strong>
+<div>
+<a href="/portfolio/">Portfolio Status</a>
+<a href="/operating-model/">How It Works</a>
+<a href="/work/">The Work</a>
+<a href="/insights/">Insights</a>
+<a href="/about/">About</a>
+<a href="/support/">Support</a>
+<a href="/security/">Security</a>
+<a href="/privacy/">Privacy</a>
+<a href="/terms/">Terms</a>
+</div>
+<p>Bounded authority · deterministic trust · verifiable evidence · customer controlled</p>
+</footer>
+</body>
+</html>
