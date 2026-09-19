@@ -388,3 +388,28 @@
 
 /* Direct Epic rollup progress */
 .okr-progress{margin-top:10px;max-width:560px}.okr-progress-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:6px;font-size:10px;color:#6d7d8f}.okr-progress-head strong{color:#294258;font-size:11px}.okr-progress-track{height:7px;border-radius:999px;background:#e8eef3;overflow:hidden}.okr-progress-fill{display:block;height:100%;border-radius:999px;background:currentColor;color:#7898ac}.roadmap-percent-pill{display:inline-flex;align-items:center;border-radius:999px;border:1px solid #bfd5e2;background:#eef7fb;color:#315e78;padding:6px 8px;font-size:9px;font-weight:900}.roadmap-progress-basis{margin:8px 0 0;color:#8491a0;font-size:10px;line-height:1.45}
+
+
+/* Delivery Outlook */
+.delivery-outlook-section{padding-bottom:18px}
+.delivery-outlook-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.delivery-outlook-card{display:flex;flex-direction:column;gap:14px;padding:24px;border:1px solid #244663;border-radius:20px;background:linear-gradient(145deg,#0d2438,#0b1730);box-shadow:0 16px 42px #0003}
+.delivery-outlook-card[data-group="active"]{border-color:#22c55e55;background:linear-gradient(145deg,#0b2a20,#0b1730)}
+.delivery-outlook-card[data-group="gated"]{border-color:#f59e0b55;background:linear-gradient(145deg,#2b210f,#0b1730)}
+.delivery-outlook-card[data-group="accepted"]{border-color:#38bdf855;background:linear-gradient(145deg,#0a2036,#0b1730)}
+.delivery-outlook-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.delivery-outlook-label{display:block;color:#8fa5ba;font-size:9px;font-weight:900;letter-spacing:.12em}
+.delivery-outlook-card h3{margin:6px 0 0;font-size:22px;line-height:1.1}
+.delivery-outlook-window{font-size:32px;font-weight:900;letter-spacing:-.04em}
+.delivery-outlook-summary{margin:0;color:#c0ccda;font-size:13px;line-height:1.55;min-height:82px}
+.delivery-outlook-facts{display:grid;grid-template-columns:.65fr 1.35fr;gap:12px;padding-top:13px;border-top:1px solid #ffffff14}
+.delivery-outlook-facts small,.delivery-outlook-meta small{display:block;color:#8194a8;font-size:9px;font-weight:900;letter-spacing:.11em}
+.delivery-outlook-facts strong{display:block;margin-top:4px;font-size:12px;line-height:1.4}
+.delivery-outlook-path{margin:0;color:#9fb3c6;font-size:11px;line-height:1.5}
+.delivery-outlook-meta{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:12px;margin-top:15px;padding:18px 20px;border:1px solid #244663;border-radius:16px;background:#0b1730}
+.delivery-outlook-meta strong{display:block;margin-top:5px;font-size:12px;line-height:1.45;color:#dbe7f1}
+.delivery-outlook-method{margin-top:12px;padding:15px 18px;border:1px solid #244663;border-radius:14px;background:#0a1627}
+.delivery-outlook-method summary{cursor:pointer;color:#dbe7f1;font-weight:800;font-size:12px}
+.delivery-outlook-method p{color:#aebdce;font-size:12px;line-height:1.6;margin:12px 0 0}
+@media(max-width:1000px){.delivery-outlook-grid{grid-template-columns:1fr}.delivery-outlook-summary{min-height:auto}.delivery-outlook-meta{grid-template-columns:1fr}}
+@media(max-width:720px){.delivery-outlook-card-top{flex-direction:column}.delivery-outlook-window{font-size:28px}.delivery-outlook-facts{grid-template-columns:1fr}}
