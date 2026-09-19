@@ -83,3 +83,200 @@
 
 @media(max-width:900px){.focus-stack{grid-template-columns:1fr}.focus-card{grid-template-columns:auto 1fr}.focus-state{grid-column:1/-1;text-align:left;display:flex;gap:10px;align-items:center}.portability-card{grid-template-columns:auto 1fr}}
 @media(max-width:560px){.focus-card,.portability-card{padding:18px}.focus-id{width:54px;height:54px}.focus-state,.portability-state{display:block}.focus-state span,.portability-state span{display:block;margin-top:4px}}
+
+
+/* Approved Active Delivery Focus composition — 2026-09-19 */
+.focus-stack{
+  display:grid;
+  grid-template-columns:minmax(0,1.85fr) minmax(320px,1fr);
+  gap:18px;
+  margin-top:16px;
+  align-items:stretch
+}
+.focus-card,.portability-card{
+  position:relative;
+  overflow:hidden;
+  min-height:286px;
+  border-radius:22px;
+  box-shadow:0 16px 42px #0f172a0b
+}
+.focus-card{
+  display:block;
+  padding:34px 38px!important;
+  border:1px solid #d8d4f5!important;
+  background:
+    radial-gradient(ellipse at 82% 105%,#8b5cf617 0,transparent 44%),
+    linear-gradient(145deg,#fff 0%,#fcfbff 58%,#f8f6ff 100%)!important
+}
+.focus-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:24px
+}
+.focus-eyebrow,.portability-eyebrow{
+  display:block;
+  color:#8e8ad5!important;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase
+}
+.focus-id,.portability-id{
+  width:auto;
+  height:auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:14px;
+  padding:9px 17px;
+  border-radius:999px;
+  background:#efeaff!important;
+  border:0!important;
+  color:#6d5bd0!important;
+  font-size:16px;
+  line-height:1;
+  font-weight:900
+}
+.focus-copy{
+  max-width:760px;
+  margin-top:28px
+}
+.focus-copy h3{
+  margin:0 0 14px;
+  color:#12213a!important;
+  font-size:clamp(28px,3vw,42px);
+  line-height:1.06;
+  letter-spacing:-.035em
+}
+.focus-copy .focus-increment{
+  margin:0 0 23px;
+  color:#6c7690!important;
+  font-size:18px;
+  font-weight:500
+}
+.focus-copy>p:last-child{
+  max-width:690px;
+  color:#6b7690!important;
+  font-size:16px;
+  line-height:1.55
+}
+.focus-state{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:9px;
+  text-align:right
+}
+.focus-state strong,.portability-state strong{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  width:max-content;
+  padding:9px 16px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.025em
+}
+.focus-state strong{
+  color:#1d8b4d!important;
+  background:#e8f8ee;
+  border:1px solid #c8ebd3
+}
+.focus-state span{
+  color:#7a8598!important;
+  font-size:12px
+}
+.state-dot{
+  width:9px;
+  height:9px;
+  flex:0 0 9px;
+  border-radius:50%;
+  background:currentColor
+}
+.portability-card{
+  display:flex;
+  flex-direction:column;
+  padding:32px 34px!important;
+  border:1px solid #dde1ef!important;
+  background:linear-gradient(145deg,#fff 0%,#fdfdff 100%)!important
+}
+.portability-id{
+  align-self:flex-start;
+  margin-top:14px
+}
+.portability-card h3{
+  margin:21px 0 10px;
+  color:#12213a;
+  font-size:clamp(21px,2vw,28px);
+  line-height:1.15;
+  letter-spacing:-.025em
+}
+.portability-accepted{
+  margin:0 0 14px;
+  color:#737d92!important;
+  font-size:17px
+}
+.portability-state{
+  display:block;
+  padding:0;
+  border:0;
+  margin:0 0 14px
+}
+.portability-state strong{
+  color:#b85b08!important;
+  background:#fff0df;
+  border:1px solid #f4d5b4
+}
+.portability-card>p#portability-copy{
+  margin:0;
+  color:#69758b!important;
+  font-size:15px;
+  line-height:1.5
+}
+.portability-note{
+  margin:auto 0 0!important;
+  padding-top:16px;
+  border-top:1px solid #e5e8ef;
+  color:#7c8496!important;
+  font-size:13px!important;
+  font-style:italic
+}
+.focus-caption{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:15px 8px 0;
+  color:#737d92
+}
+.focus-caption-icon{
+  width:28px;
+  height:28px;
+  flex:0 0 28px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:#eeeafd;
+  color:#8e8ad5;
+  font-size:14px;
+  font-weight:900
+}
+.focus-caption p{
+  margin:0;
+  font-size:13px;
+  line-height:1.45
+}
+@media(max-width:980px){
+  .focus-stack{grid-template-columns:1fr}
+  .focus-card,.portability-card{min-height:0}
+}
+@media(max-width:640px){
+  .focus-card,.portability-card{padding:24px!important}
+  .focus-header{display:block}
+  .focus-state{align-items:flex-start;text-align:left;margin-top:16px}
+  .focus-copy{margin-top:24px}
+  .focus-copy h3{font-size:30px}
+  .focus-copy .focus-increment{font-size:16px}
+  .focus-caption{align-items:flex-start;margin-left:0;margin-right:0}
+}
