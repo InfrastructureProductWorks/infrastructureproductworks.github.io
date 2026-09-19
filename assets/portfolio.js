@@ -158,6 +158,11 @@ function bindRoadmapControls(host,{filtersEnabled=true}={}){
 }
 function renderRoadmapFallback(data){
   const host=document.getElementById('roadmap-relationship-list');if(!host)return;host.replaceChildren();
+  const fallbackBaseline=object(data?.source)&&boundedText(data.source.roadmapBaseline)?data.source.roadmapBaseline:'Unavailable';
+  text('roadmap-baseline',fallbackBaseline);
+  text('roadmap-quarter','Unavailable');
+  text('roadmap-horizon','Unavailable');
+  text('roadmap-time-note','Relationship timing is unavailable while the roadmap relationship dataset is unavailable or out of sync.');
   (data.objectives||[]).forEach(o=>{
     const details=node('details','roadmap-objective fallback-objective');
     const summary=node('summary','roadmap-objective-summary');
@@ -214,9 +219,10 @@ function validRoadmapRelationships(data){
   if(new Set(objectiveIds).size!==objectiveIds.length||new Set(krIds).size!==krIds.length)return false;
   const objectiveSet=new Set(objectiveIds),krSet=new Set(krIds),epicSet=new Set(epicIds);
   const objectiveGroups=new Set(['active','accepted','gated','documentation','future']);
+  const nestedGroups=new Set(['active','accepted','gated','documentation','future','planned']);
   if(!data.objectives.every(o=>object(o)&&/^O\d+$/.test(o.id)&&boundedText(o.definition)&&boundedText(o.status)&&objectiveGroups.has(o.group)&&boundedText(o.progress)&&boundedText(o.time)&&Array.isArray(o.keyResults)&&Array.isArray(o.epics)&&new Set(o.keyResults).size===o.keyResults.length&&new Set(o.epics).size===o.epics.length&&o.keyResults.every(id=>krSet.has(id))&&o.epics.every(id=>epicSet.has(id))))return false;
-  if(!data.keyResults.every(k=>object(k)&&/^KR\d+\.\d+$/.test(k.id)&&objectiveSet.has(k.objective)&&boundedText(k.definition)&&boundedText(k.status)&&boundedText(k.group)&&boundedText(k.time)&&Array.isArray(k.epics)&&k.epics.length>0&&new Set(k.epics).size===k.epics.length&&k.epics.every(id=>epicSet.has(id))))return false;
-  if(!epicIds.every(id=>{const ep=data.epics[id];return object(ep)&&ep.id===id&&/^EP-\d+$/.test(id)&&boundedText(ep.title)&&boundedText(ep.status)&&boundedText(ep.group)&&boundedText(ep.progress)&&boundedText(ep.time)&&Number.isInteger(ep.featureCount)&&ep.featureCount>=0&&Array.isArray(ep.features)&&ep.features.length===ep.featureCount&&ep.features.every(boundedText);} ))return false;
+  if(!data.keyResults.every(k=>object(k)&&/^KR\d+\.\d+$/.test(k.id)&&objectiveSet.has(k.objective)&&boundedText(k.definition)&&boundedText(k.status)&&nestedGroups.has(k.group)&&boundedText(k.time)&&Array.isArray(k.epics)&&k.epics.length>0&&new Set(k.epics).size===k.epics.length&&k.epics.every(id=>epicSet.has(id))))return false;
+  if(!epicIds.every(id=>{const ep=data.epics[id];return object(ep)&&ep.id===id&&/^EP-\d+$/.test(id)&&boundedText(ep.title)&&boundedText(ep.status)&&nestedGroups.has(ep.group)&&boundedText(ep.progress)&&boundedText(ep.time)&&Number.isInteger(ep.featureCount)&&ep.featureCount>=0&&Array.isArray(ep.features)&&ep.features.length===ep.featureCount&&ep.features.every(boundedText);} ))return false;
   const allFeatureIds=epicIds.flatMap(id=>data.epics[id].features);
   if(new Set(allFeatureIds).size!==allFeatureIds.length)return false;
   const krById=new Map(data.keyResults.map(k=>[k.id,k]));
