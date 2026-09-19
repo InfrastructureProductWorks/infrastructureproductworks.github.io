@@ -236,7 +236,8 @@ function validRoadmapRelationships(data){
 }
 function roadmapMatchesDashboard(data,dashboard){
   if(!object(dashboard)||!object(dashboard.baseline)||!Array.isArray(dashboard.objectives))return false;
-  if(data.objectives.length!==dashboard.baseline.objectives||data.keyResults.length!==dashboard.baseline.keyResults||Object.keys(data.epics).length!==dashboard.baseline.epics)return false;
+  const relationshipFeatureCount=Object.values(data.epics||{}).reduce((total,ep)=>total+(Number.isInteger(ep.featureCount)?ep.featureCount:0),0);
+  if(data.objectives.length!==dashboard.baseline.objectives||data.keyResults.length!==dashboard.baseline.keyResults||Object.keys(data.epics).length!==dashboard.baseline.epics||relationshipFeatureCount!==dashboard.baseline.features)return false;
   if(object(dashboard.source)&&boundedText(dashboard.source.revision)&&data.sourceRevision!==dashboard.source.revision)return false;
   const objectiveById=new Map(data.objectives.map(o=>[o.id,o]));
   return dashboard.objectives.every(o=>{
