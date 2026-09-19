@@ -63,7 +63,7 @@ jobs:
 
   verify-public-site:
     name: verify-custom-domain
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -113,6 +113,8 @@ jobs:
                 "${BASE_URL}${css_ref}&verify=${EXPECTED_SHA}" || true)"
 
               if [[ "${script_code}" == "200" && "${css_code}" == "200" ]] \
+                && [[ "$(git hash-object "${script}")" == "${js_blob}" ]] \
+                && [[ "$(git hash-object "${stylesheet}")" == "${css_blob}" ]] \
                 && grep -Fq 'proof-pattern' "${script}" \
                 && grep -Fq "['BUILD',p.state]" "${script}" \
                 && grep -Fq "['VALIDATE',p.status]" "${script}" \
