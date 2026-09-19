@@ -213,7 +213,10 @@ function renderRoadmapRelationships(data){
   bindRoadmapControls(host,{filtersEnabled:true});
 }
 function validRoadmapRelationships(data){
-  if(!object(data)||data.schemaVersion!=='roadmap-relationship-view/v1'||!object(data.planning)||!boundedText(data.planning.baseline)||!boundedText(data.planning.evidenceQuarter)||!boundedText(data.planning.horizon)||!boundedText(data.planning.timingNote))return false;
+  if(!object(data)||data.schemaVersion!=='roadmap-relationship-view/v1')return false;
+  if(!boundedText(data.generatedAt)||!/^\d{4}-\d{2}-\d{2}$/.test(data.generatedAt))return false;
+  if(!boundedText(data.sourceRevision)||!/^[0-9a-f]{40}$/.test(data.sourceRevision))return false;
+  if(!object(data.planning)||!boundedText(data.planning.baseline)||!normalizeRoadmapDate(data.planning.baseline)||!boundedText(data.planning.evidenceQuarter)||!/^Q[1-4]\s+\d{4}$/.test(data.planning.evidenceQuarter)||!boundedText(data.planning.horizon)||!boundedText(data.planning.timingNote))return false;
   if(!Array.isArray(data.objectives)||data.objectives.length<1||!Array.isArray(data.keyResults)||data.keyResults.length<1||!object(data.epics)||Object.keys(data.epics).length<1)return false;
   const objectiveIds=data.objectives.map(o=>o?.id),krIds=data.keyResults.map(k=>k?.id),epicIds=Object.keys(data.epics);
   if(new Set(objectiveIds).size!==objectiveIds.length||new Set(krIds).size!==krIds.length)return false;
@@ -226,7 +229,7 @@ function validRoadmapRelationships(data){
     const sourceOk=boundedText(k.source)&&k.source.length<=240&&!k.source.includes('..')&&!k.source.startsWith('/')&&/^[A-Za-z0-9._\/-]+$/.test(k.source);
     return object(k)&&/^KR\d+\.\d+$/.test(k.id)&&objectiveSet.has(k.objective)&&boundedText(k.definition)&&boundedText(k.status)&&nestedGroups.has(k.group)&&boundedText(k.time)&&sourceOk&&sharedRangeOk&&Array.isArray(k.epics)&&k.epics.length>0&&new Set(k.epics).size===k.epics.length&&k.epics.every(id=>epicSet.has(id));
   }))return false;
-  if(!epicIds.every(id=>{const ep=data.epics[id];return object(ep)&&ep.id===id&&/^EP-\d+$/.test(id)&&boundedText(ep.title)&&boundedText(ep.status)&&nestedGroups.has(ep.group)&&boundedText(ep.progress)&&boundedText(ep.time)&&Number.isInteger(ep.featureCount)&&ep.featureCount>=0&&Array.isArray(ep.features)&&ep.features.length===ep.featureCount&&ep.features.every(boundedText);} ))return false;
+  if(!epicIds.every(id=>{const ep=data.epics[id];return object(ep)&&ep.id===id&&/^EP-\d+$/.test(id)&&boundedText(ep.title)&&boundedText(ep.status)&&nestedGroups.has(ep.group)&&boundedText(ep.progress)&&boundedText(ep.time)&&Number.isInteger(ep.featureCount)&&ep.featureCount>=0&&Array.isArray(ep.features)&&ep.features.length===ep.featureCount&&ep.features.every(featureId=>boundedText(featureId)&&/^[A-Z][A-Z0-9]*-\d{2,}$/.test(featureId));} ))return false;
   const allFeatureIds=epicIds.flatMap(id=>data.epics[id].features);
   if(new Set(allFeatureIds).size!==allFeatureIds.length)return false;
   const krById=new Map(data.keyResults.map(k=>[k.id,k]));
