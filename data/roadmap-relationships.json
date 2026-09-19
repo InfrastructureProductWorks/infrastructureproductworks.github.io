@@ -156,8 +156,8 @@
     {
       "id": "KR1.1",
       "objective": "O1",
-      "definition": "Clean exact-head review, digest-bound manifests, and rejection of moved tags or altered proofs",
-      "sharedRange": "KR1.1-KR1.3",
+      "definition": "100% of changed repositories have clean exact-head review, zero unresolved threads, and green protected-main checks.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-01"
@@ -169,8 +169,8 @@
     {
       "id": "KR1.2",
       "objective": "O1",
-      "definition": "Clean exact-head review, digest-bound manifests, and rejection of moved tags or altered proofs",
-      "sharedRange": "KR1.1-KR1.3",
+      "definition": "100% of accepted portfolio manifests pin component version, exact revision, evidence digest, and replay method.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-01"
@@ -182,8 +182,8 @@
     {
       "id": "KR1.3",
       "objective": "O1",
-      "definition": "Clean exact-head review, digest-bound manifests, and rejection of moved tags or altered proofs",
-      "sharedRange": "KR1.1-KR1.3",
+      "definition": "Zero moved immutable tags and zero contradictory, altered, or mismatched proofs accepted.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-01"
@@ -195,8 +195,8 @@
     {
       "id": "KR2.1",
       "objective": "O2",
-      "definition": "Define E1, keep evidence classes separate, and require zero operational authority for evaluation readiness",
-      "sharedRange": "KR2.1-KR2.3",
+      "definition": "E1 names one target user or buyer problem, one bounded workflow, measures, controls, stop conditions, and a disposition by the end of Portfolio 2026.10.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-02"
@@ -208,8 +208,8 @@
     {
       "id": "KR2.2",
       "objective": "O2",
-      "definition": "Define E1, keep evidence classes separate, and require zero operational authority for evaluation readiness",
-      "sharedRange": "KR2.1-KR2.3",
+      "definition": "The scorecard keeps OBSERVED and SYNTHETIC evidence separate and measures proposal time, review effort, comprehension, replay, and willingness to continue.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-02",
@@ -222,8 +222,8 @@
     {
       "id": "KR2.3",
       "objective": "O2",
-      "definition": "Define E1, keep evidence classes separate, and require zero operational authority for evaluation readiness",
-      "sharedRange": "KR2.1-KR2.3",
+      "definition": "Zero credentials, customer data, paid services, cloud writes, or operational authority are required for evaluation readiness.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-02"
@@ -235,8 +235,8 @@
     {
       "id": "KR3.1",
       "objective": "O3",
-      "definition": "One passing profile, digest-bound lifecycle evidence, zero residual resources, and no self-approval",
-      "sharedRange": "KR3.1-KR3.4",
+      "definition": "Exactly one authorized AWS/Azure foundation profile passes and every unsafe fixture fails closed.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-04"
@@ -248,8 +248,8 @@
     {
       "id": "KR3.2",
       "objective": "O3",
-      "definition": "One passing profile, digest-bound lifecycle evidence, zero residual resources, and no self-approval",
-      "sharedRange": "KR3.1-KR3.4",
+      "definition": "100% of plan, apply, verify, rollback, and teardown stages retain exact-revision, digest-bound evidence.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-04"
@@ -261,8 +261,8 @@
     {
       "id": "KR3.3",
       "objective": "O3",
-      "definition": "One passing profile, digest-bound lifecycle evidence, zero residual resources, and no self-approval",
-      "sharedRange": "KR3.1-KR3.4",
+      "definition": "Teardown leaves zero managed residual resources and recorded spend does not exceed the authorized ceiling.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-04"
@@ -274,8 +274,8 @@
     {
       "id": "KR3.4",
       "objective": "O3",
-      "definition": "One passing profile, digest-bound lifecycle evidence, zero residual resources, and no self-approval",
-      "sharedRange": "KR3.1-KR3.4",
+      "definition": "Zero AI or component self-approvals.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-04"
@@ -287,8 +287,8 @@
     {
       "id": "KR4.1",
       "objective": "O4",
-      "definition": "Version stable planning IDs and present accepted producer evidence faithfully",
-      "sharedRange": "KR4.1-KR4.2",
+      "definition": "A versioned successor maps 100% of valid Objectives, Key Results, Epics, Features, Stories, candidate tasks, stable identifiers, relationships, totals, and fail-closed consistency rules while preserving valid Guard V1 behavior.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-05"
@@ -300,8 +300,8 @@
     {
       "id": "KR4.2",
       "objective": "O4",
-      "definition": "Version stable planning IDs and present accepted producer evidence faithfully",
-      "sharedRange": "KR4.1-KR4.2",
+      "definition": "Console presents 100% of accepted producer evidence without recreating Guard policy or blending OBSERVED and SYNTHETIC results.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-03",
@@ -315,8 +315,8 @@
     {
       "id": "KR4.3",
       "objective": "O4",
-      "definition": "Present producer evidence faithfully and produce an accountable pilot decision packet",
-      "sharedRange": "KR4.2-KR4.3",
+      "definition": "By August 2027, the pilot decision packet covers SLOs, support, recovery, privacy, security, cost, publication, and accountable authority and records RELEASE, HOLD, or STOP.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-06"
@@ -328,8 +328,8 @@
     {
       "id": "KR5.1",
       "objective": "O5",
-      "definition": "Define each product's adoption surface, prove reversible installation/upgrade paths, and preserve digest-bound distribution evidence with explicit compatibility coordinates",
-      "sharedRange": "KR5.1-KR5.3",
+      "definition": "100% of portfolio products have an explicit supported or deliberately gated adoption surface and ownership boundary: Guard App; Forge App + worker; Console OCI/Compose with Helm separately gated; first-class Storefront app + Backstage Adapter; Assurance customer-hosted decision; Composite AI embedded runtime.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-07"
@@ -341,8 +341,8 @@
     {
       "id": "KR5.2",
       "objective": "O5",
-      "definition": "Define each product's adoption surface, prove reversible installation/upgrade paths, and preserve digest-bound distribution evidence with explicit compatibility coordinates",
-      "sharedRange": "KR5.1-KR5.3",
+      "definition": "Guard and Forge have reversible install/upgrade/uninstall evidence, Console has a reproducible customer-hosted evaluation package, Storefront has a customer-hosted standalone app plus reusable Backstage Adapter over one order contract, and no distribution path grants cloud execution or self-approval authority.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-07"
@@ -354,8 +354,8 @@
     {
       "id": "KR5.3",
       "objective": "O5",
-      "definition": "Define each product's adoption surface, prove reversible installation/upgrade paths, and preserve digest-bound distribution evidence with explicit compatibility coordinates",
-      "sharedRange": "KR5.1-KR5.3",
+      "definition": "100% of released customer-hosted packages or accepted app surfaces have explicit exact version/revision, digest/provenance status, dependency/SBOM status, upgrade/rollback procedure where applicable, retained acceptance evidence, and cross-product compatibility coordinates; the minimum status profile is accepted while missing product-specific SBOM/signing evidence remains explicitly absent or gated rather than inferred.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-07"
@@ -367,8 +367,8 @@
     {
       "id": "KR5.4",
       "objective": "O5",
-      "definition": "Remove SaaS-only assumptions, prove GHES compatibility on an authorized target, and support self-hosted/restricted-network operation",
-      "sharedRange": "KR5.4-KR5.6",
+      "definition": "100% of active GitHub integration code uses configurable web/API endpoints and contains zero mandatory hard-coded GitHub SaaS endpoints in runtime paths.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-08"
@@ -380,8 +380,8 @@
     {
       "id": "KR5.5",
       "objective": "O5",
-      "definition": "Remove SaaS-only assumptions, prove GHES compatibility on an authorized target, and support self-hosted/restricted-network operation",
-      "sharedRange": "KR5.4-KR5.6",
+      "definition": "At least one authorized GHES target passes App registration/installation, webhook verification, installation-token authentication, immutable repository reads, PR/Check/evidence flows, and version/capability detection before GHES support is claimed.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-08"
@@ -393,8 +393,8 @@
     {
       "id": "KR5.6",
       "objective": "O5",
-      "definition": "Remove SaaS-only assumptions, prove GHES compatibility on an authorized target, and support self-hosted/restricted-network operation",
-      "sharedRange": "KR5.4-KR5.6",
+      "definition": "All GHES-targeted Actions paths run on self-hosted runners, and deterministic core operation has a restricted-network profile with optional external AI adapters disabled by default.",
+      "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP.md",
       "epics": [
         "EP-08"
@@ -861,7 +861,7 @@
     {
       "id": "KR8.1",
       "objective": "O8",
-      "definition": "Customer-context completeness: 100% of customer-scoped contracts selected for the bounded journey carry customerId, organizationId, and environmentId, and reject missing or conflicting scope",
+      "definition": "100% of customer-scoped contracts selected for the bounded journey carry explicit customer, organization, and environment context and reject missing or conflicting scope.",
       "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-MULTI-CUSTOMER-ISOLATION-2026-09-17.md",
       "epics": [
@@ -874,7 +874,7 @@
     {
       "id": "KR8.2",
       "objective": "O8",
-      "definition": "Cross-customer fail-closed proof: Synthetic Guard/Console/Forge/Storefront/Assurance substitution tests reject 100% of intentionally mismatched trusted profiles, approvals, evidence packages, product/order bindings, and assurance records",
+      "definition": "Synthetic cross-customer substitution tests reject 100% of mismatched trusted profiles, approvals, evidence packages, product/order bindings, and assurance records across the bounded product journey.",
       "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-MULTI-CUSTOMER-ISOLATION-2026-09-17.md",
       "epics": [
@@ -887,7 +887,7 @@
     {
       "id": "KR8.3",
       "objective": "O8",
-      "definition": "Isolation of authority and custody: The target architecture documents tenant-scoped identity, secrets, integrations, data/evidence custody, audit, versioning, and lifecycle rules with no implicit cross-customer authority",
+      "definition": "The target architecture documents tenant-scoped identity, secrets, integrations, custody, audit, versioning, lifecycle, recovery, and incident boundaries with no implicit cross-customer authority.",
       "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-MULTI-CUSTOMER-ISOLATION-2026-09-17.md",
       "epics": [
@@ -900,7 +900,7 @@
     {
       "id": "KR8.4",
       "objective": "O8",
-      "definition": "Deployment-pattern proof: Dedicated-enterprise and managed-isolated acceptance profiles are documented and validated before any shared multi-tenant SaaS claim; shared tenancy requires a separate evidence gate",
+      "definition": "Dedicated-enterprise and managed-isolated acceptance profiles are documented and validated before any shared multi-tenant SaaS claim; shared tenancy remains separately gated.",
       "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-MULTI-CUSTOMER-ISOLATION-2026-09-17.md",
       "epics": [
