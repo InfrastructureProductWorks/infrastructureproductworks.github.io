@@ -163,6 +163,7 @@ function renderRoadmapFallback(data){
   text('roadmap-quarter','Unavailable');
   text('roadmap-horizon','Unavailable');
   text('roadmap-time-note','Relationship timing is unavailable while the roadmap relationship dataset is unavailable or out of sync.');
+  text('metric-headline-krs','—');
   (data.objectives||[]).forEach(o=>{
     const details=node('details','roadmap-objective fallback-objective');
     const summary=node('summary','roadmap-objective-summary');
@@ -177,7 +178,7 @@ function headlineRollup(headline,krById){
   const measures=headline.measures.map(id=>krById.get(id)).filter(Boolean);
   const epicIds=[...new Set(measures.flatMap(k=>k.epics||[]))];
   const groups=[...new Set(measures.map(k=>k.group))];
-  const group=groups.length===1?groups[0]:(groups.includes('active')?'active':groups.includes('gated')?'gated':groups.includes('documentation')?'documentation':groups.includes('future')?'future':groups.includes('planned')?'planned':'accepted');
+  const group=groups.length===1?groups[0]:(groups.includes('gated')?'gated':groups.includes('active')?'active':groups.includes('documentation')?'documentation':groups.includes('future')?'future':groups.includes('planned')?'planned':'accepted');
   const statuses=[...new Set(measures.map(k=>k.status))];
   const times=[...new Set(measures.map(k=>k.time))];
   return {measures,epicIds,group,status:statuses.length===1?statuses[0]:'Mixed evidence state',time:times.length===1?times[0]:'Multiple evidence periods'};
