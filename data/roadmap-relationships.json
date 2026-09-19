@@ -1,0 +1,1368 @@
+{
+  "schemaVersion": "roadmap-relationship-view/v1",
+  "generatedAt": "2026-09-19",
+  "sourceRevision": "0678e47a8fb31c3cf2a2c14fb5d57a9bfec60836",
+  "planning": {
+    "baseline": "September 19, 2026",
+    "evidenceQuarter": "Q3 2026",
+    "horizon": "September 2026 through August 2027",
+    "timingNote": "Quarter labels show when planning or evidence was recorded. They are not delivery commitments unless the roadmap explicitly says so."
+  },
+  "objectives": [
+    {
+      "id": "O1",
+      "definition": "Preserve trustworthy evidence and release integrity",
+      "status": "Accepted baseline",
+      "group": "accepted",
+      "progress": "Evidence integrity baseline is established; maintenance remains ongoing",
+      "time": "Q3 2026 baseline",
+      "keyResults": [
+        "KR1.1",
+        "KR1.2",
+        "KR1.3"
+      ],
+      "epics": [
+        "EP-01"
+      ]
+    },
+    {
+      "id": "O2",
+      "definition": "Validate evaluator value without widening authority",
+      "status": "In progress",
+      "group": "active",
+      "progress": "Trusted evidence intake has bounded accepted slices while broader evaluator work remains planned",
+      "time": "Q3 2026 evidence · horizon through Aug 2027",
+      "keyResults": [
+        "KR2.1",
+        "KR2.2",
+        "KR2.3"
+      ],
+      "epics": [
+        "EP-02",
+        "EP-03"
+      ]
+    },
+    {
+      "id": "O3",
+      "definition": "Prove one minimum multi-cloud foundation safely and reversibly",
+      "status": "Conditional / gated",
+      "group": "gated",
+      "progress": "Foundation product contracts are defined across network, security, identity, hierarchy, observability, resilience and cost; live proof remains gated",
+      "time": "Q3 2026 design · later authorized live gates",
+      "keyResults": [
+        "KR3.1",
+        "KR3.2",
+        "KR3.3",
+        "KR3.4",
+        "KR3.5",
+        "KR3.6",
+        "KR3.7",
+        "KR3.8",
+        "KR3.9",
+        "KR3.10",
+        "KR3.11",
+        "KR3.12",
+        "KR3.13",
+        "KR3.14",
+        "KR3.15",
+        "KR3.25",
+        "KR3.26",
+        "KR3.27",
+        "KR3.16",
+        "KR3.17",
+        "KR3.18",
+        "KR3.19",
+        "KR3.20",
+        "KR3.21",
+        "KR3.22",
+        "KR3.23",
+        "KR3.24"
+      ],
+      "epics": [
+        "EP-04",
+        "EP-09",
+        "EP-10",
+        "EP-11",
+        "EP-12",
+        "EP-13",
+        "EP-14",
+        "EP-15"
+      ]
+    },
+    {
+      "id": "O4",
+      "definition": "Prepare customer-hosted planning and operational decisions",
+      "status": "Mixed / gated",
+      "group": "gated",
+      "progress": "Planning, readiness, evidence and change-readiness work advance in bounded/documentation-first slices; operational decisions remain customer-evidence dependent",
+      "time": "Q3 2026 evidence/design · horizon through Aug 2027",
+      "keyResults": [
+        "KR4.1",
+        "KR4.2",
+        "KR4.3",
+        "KR4.4",
+        "KR4.5",
+        "KR4.8",
+        "KR4.6",
+        "KR4.7",
+        "KR4.9",
+        "KR4.10",
+        "KR4.11",
+        "KR4.12"
+      ],
+      "epics": [
+        "EP-05",
+        "EP-03",
+        "EP-06",
+        "EP-10",
+        "EP-11",
+        "EP-13",
+        "EP-14",
+        "EP-15",
+        "EP-19"
+      ]
+    },
+    {
+      "id": "O5",
+      "definition": "Make the portfolio installable and portable in customer-controlled enterprise environments",
+      "status": "Active",
+      "group": "active",
+      "progress": "EP-07 bounded closed · EP-08 active with GHE-07 externally blocked",
+      "time": "Q3 2026 · live portability timing customer-dependent",
+      "keyResults": [
+        "KR5.1",
+        "KR5.2",
+        "KR5.3",
+        "KR5.4",
+        "KR5.5",
+        "KR5.6"
+      ],
+      "epics": [
+        "EP-07",
+        "EP-08"
+      ]
+    },
+    {
+      "id": "O6",
+      "definition": "Connect the product experience without widening execution authority",
+      "status": "Active",
+      "group": "active",
+      "progress": "EDA-01 through EDA-05 accepted · EDA-06 current",
+      "time": "Q3 2026 active delivery",
+      "keyResults": [
+        "KR6.1",
+        "KR6.2",
+        "KR6.3",
+        "KR6.4"
+      ],
+      "epics": [
+        "EP-16"
+      ]
+    },
+    {
+      "id": "O7",
+      "definition": "Prepare evidence-gated AI-assisted and agent-operated evolution",
+      "status": "Future / evidence-gated",
+      "group": "future",
+      "progress": "AI-assisted and agent-operated evolution remains downstream of accepted connected and operational foundations",
+      "time": "Future · evidence-gated",
+      "keyResults": [
+        "KR7.1",
+        "KR7.2",
+        "KR7.3"
+      ],
+      "epics": [
+        "EP-17"
+      ]
+    },
+    {
+      "id": "O8",
+      "definition": "Establish verifiable multi-customer isolation",
+      "status": "Documentation-first",
+      "group": "documentation",
+      "progress": "Tenant/customer isolation architecture and fail-closed substitution requirements are defined before any operational claim",
+      "time": "Q3 2026 design",
+      "keyResults": [
+        "KR8.1",
+        "KR8.2",
+        "KR8.3",
+        "KR8.4"
+      ],
+      "epics": [
+        "EP-18"
+      ]
+    }
+  ],
+  "keyResults": [
+    {
+      "id": "KR1.1",
+      "objective": "O1",
+      "definition": "Clean exact-head review, digest-bound manifests, and rejection of moved tags or altered proofs",
+      "sharedRange": "KR1.1-KR1.3",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-01"
+      ],
+      "status": "Accepted / bounded",
+      "group": "accepted",
+      "time": "Q3 2026 baseline"
+    },
+    {
+      "id": "KR1.2",
+      "objective": "O1",
+      "definition": "Clean exact-head review, digest-bound manifests, and rejection of moved tags or altered proofs",
+      "sharedRange": "KR1.1-KR1.3",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-01"
+      ],
+      "status": "Accepted / bounded",
+      "group": "accepted",
+      "time": "Q3 2026 baseline"
+    },
+    {
+      "id": "KR1.3",
+      "objective": "O1",
+      "definition": "Clean exact-head review, digest-bound manifests, and rejection of moved tags or altered proofs",
+      "sharedRange": "KR1.1-KR1.3",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-01"
+      ],
+      "status": "Accepted / bounded",
+      "group": "accepted",
+      "time": "Q3 2026 baseline"
+    },
+    {
+      "id": "KR2.1",
+      "objective": "O2",
+      "definition": "Define E1, keep evidence classes separate, and require zero operational authority for evaluation readiness",
+      "sharedRange": "KR2.1-KR2.3",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-02"
+      ],
+      "status": "Planned",
+      "group": "planned",
+      "time": "Planning horizon: Sep 2026–Aug 2027"
+    },
+    {
+      "id": "KR2.2",
+      "objective": "O2",
+      "definition": "Define E1, keep evidence classes separate, and require zero operational authority for evaluation readiness",
+      "sharedRange": "KR2.1-KR2.3",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-02",
+        "EP-03"
+      ],
+      "status": "Active",
+      "group": "active",
+      "time": "Planning horizon: Sep 2026–Aug 2027"
+    },
+    {
+      "id": "KR2.3",
+      "objective": "O2",
+      "definition": "Define E1, keep evidence classes separate, and require zero operational authority for evaluation readiness",
+      "sharedRange": "KR2.1-KR2.3",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-02"
+      ],
+      "status": "Planned",
+      "group": "planned",
+      "time": "Planning horizon: Sep 2026–Aug 2027"
+    },
+    {
+      "id": "KR3.1",
+      "objective": "O3",
+      "definition": "One passing profile, digest-bound lifecycle evidence, zero residual resources, and no self-approval",
+      "sharedRange": "KR3.1-KR3.4",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-04"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Future authorized sandbox"
+    },
+    {
+      "id": "KR3.2",
+      "objective": "O3",
+      "definition": "One passing profile, digest-bound lifecycle evidence, zero residual resources, and no self-approval",
+      "sharedRange": "KR3.1-KR3.4",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-04"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Future authorized sandbox"
+    },
+    {
+      "id": "KR3.3",
+      "objective": "O3",
+      "definition": "One passing profile, digest-bound lifecycle evidence, zero residual resources, and no self-approval",
+      "sharedRange": "KR3.1-KR3.4",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-04"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Future authorized sandbox"
+    },
+    {
+      "id": "KR3.4",
+      "objective": "O3",
+      "definition": "One passing profile, digest-bound lifecycle evidence, zero residual resources, and no self-approval",
+      "sharedRange": "KR3.1-KR3.4",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-04"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Future authorized sandbox"
+    },
+    {
+      "id": "KR4.1",
+      "objective": "O4",
+      "definition": "Version stable planning IDs and present accepted producer evidence faithfully",
+      "sharedRange": "KR4.1-KR4.2",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-05"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Planning horizon: Sep 2026–Aug 2027"
+    },
+    {
+      "id": "KR4.2",
+      "objective": "O4",
+      "definition": "Version stable planning IDs and present accepted producer evidence faithfully",
+      "sharedRange": "KR4.1-KR4.2",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-03",
+        "EP-05",
+        "EP-06"
+      ],
+      "status": "Active",
+      "group": "active",
+      "time": "Q3 2026 evidence"
+    },
+    {
+      "id": "KR4.3",
+      "objective": "O4",
+      "definition": "Present producer evidence faithfully and produce an accountable pilot decision packet",
+      "sharedRange": "KR4.2-KR4.3",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-06"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Future / pilot-decision gate"
+    },
+    {
+      "id": "KR5.1",
+      "objective": "O5",
+      "definition": "Define each product's adoption surface, prove reversible installation/upgrade paths, and preserve digest-bound distribution evidence with explicit compatibility coordinates",
+      "sharedRange": "KR5.1-KR5.3",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-07"
+      ],
+      "status": "Accepted / bounded",
+      "group": "accepted",
+      "time": "Q3 2026 closure"
+    },
+    {
+      "id": "KR5.2",
+      "objective": "O5",
+      "definition": "Define each product's adoption surface, prove reversible installation/upgrade paths, and preserve digest-bound distribution evidence with explicit compatibility coordinates",
+      "sharedRange": "KR5.1-KR5.3",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-07"
+      ],
+      "status": "Accepted / bounded",
+      "group": "accepted",
+      "time": "Q3 2026 closure"
+    },
+    {
+      "id": "KR5.3",
+      "objective": "O5",
+      "definition": "Define each product's adoption surface, prove reversible installation/upgrade paths, and preserve digest-bound distribution evidence with explicit compatibility coordinates",
+      "sharedRange": "KR5.1-KR5.3",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-07"
+      ],
+      "status": "Accepted / bounded",
+      "group": "accepted",
+      "time": "Q3 2026 closure"
+    },
+    {
+      "id": "KR5.4",
+      "objective": "O5",
+      "definition": "Remove SaaS-only assumptions, prove GHES compatibility on an authorized target, and support self-hosted/restricted-network operation",
+      "sharedRange": "KR5.4-KR5.6",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-08"
+      ],
+      "status": "Active",
+      "group": "active",
+      "time": "Q3 2026 evidence · live timing customer-dependent"
+    },
+    {
+      "id": "KR5.5",
+      "objective": "O5",
+      "definition": "Remove SaaS-only assumptions, prove GHES compatibility on an authorized target, and support self-hosted/restricted-network operation",
+      "sharedRange": "KR5.4-KR5.6",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-08"
+      ],
+      "status": "Active",
+      "group": "active",
+      "time": "Q3 2026 evidence · live timing customer-dependent"
+    },
+    {
+      "id": "KR5.6",
+      "objective": "O5",
+      "definition": "Remove SaaS-only assumptions, prove GHES compatibility on an authorized target, and support self-hosted/restricted-network operation",
+      "sharedRange": "KR5.4-KR5.6",
+      "source": "docs/PORTFOLIO_ROADMAP.md",
+      "epics": [
+        "EP-08"
+      ],
+      "status": "Active",
+      "group": "active",
+      "time": "Q3 2026 evidence · live timing customer-dependent"
+    },
+    {
+      "id": "KR3.5",
+      "objective": "O3",
+      "definition": "Standard network-enabled foundation orders require zero consumer-supplied raw CIDRs, route-table identifiers, DNS zone identifiers, resolver endpoints, or firewall rules",
+      "sharedRange": null,
+      "source": "docs/EP-09_NETWORK_FOUNDATION_PRODUCTS_2026-09-08.md",
+      "epics": [
+        "EP-09"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.6",
+      "objective": "O3",
+      "definition": "Every live address allocation is bound to an authoritative customer-approved IPAM source or approved allocation service, and conflicting or ambiguous allocations fail closed",
+      "sharedRange": null,
+      "source": "docs/EP-09_NETWORK_FOUNDATION_PRODUCTS_2026-09-08.md",
+      "epics": [
+        "EP-09"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.7",
+      "objective": "O3",
+      "definition": "Every live DNS dependency is bound to an approved namespace/zone reference, owner, lifecycle policy, logging expectation, and resolution profile before mutation",
+      "sharedRange": null,
+      "source": "docs/EP-09_NETWORK_FOUNDATION_PRODUCTS_2026-09-08.md",
+      "epics": [
+        "EP-09"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.8",
+      "objective": "O3",
+      "definition": "Standard approved network profiles can be fulfilled without per-order network-engineer intervention; all material changes and exceptions are routed to accountable network/security authorities with retained evidence",
+      "sharedRange": null,
+      "source": "docs/EP-09_NETWORK_FOUNDATION_PRODUCTS_2026-09-08.md",
+      "epics": [
+        "EP-09"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.9",
+      "objective": "O3",
+      "definition": "Standard foundation orders require zero consumer-authored IAM policy JSON, raw firewall rules, KMS identifiers, secret-store credentials, or security-event destination identifiers",
+      "sharedRange": null,
+      "source": "docs/EP-10_SECURITY_FOUNDATION_PRODUCTS_2026-09-08.md",
+      "epics": [
+        "EP-10"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.10",
+      "objective": "O3",
+      "definition": "Every live foundation instance is bound to an approved, versioned SecurityProfile whose required controls are validated before any authorized mutation",
+      "sharedRange": null,
+      "source": "docs/EP-10_SECURITY_FOUNDATION_PRODUCTS_2026-09-08.md",
+      "epics": [
+        "EP-10"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.11",
+      "objective": "O3",
+      "definition": "Every security-profile exception is target-specific, time-bounded, attributable, separately approved, and retained with compensating-control and removal evidence",
+      "sharedRange": null,
+      "source": "docs/EP-10_SECURITY_FOUNDATION_PRODUCTS_2026-09-08.md",
+      "epics": [
+        "EP-10"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR4.4",
+      "objective": "O4",
+      "definition": "Console can present the selected security profile, control status, evidence references, exceptions, and accountable owners without recreating Guard policy or granting execution authority",
+      "sharedRange": null,
+      "source": "docs/EP-10_SECURITY_FOUNDATION_PRODUCTS_2026-09-08.md",
+      "epics": [
+        "EP-10"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.12",
+      "objective": "O3",
+      "definition": "Standard foundation orders require zero consumer-supplied cloud access keys, client secrets, service-account keys, raw trust policies, or raw IAM policy documents",
+      "sharedRange": null,
+      "source": "docs/EP-11_IDENTITY_FOUNDATION_PRODUCTS_2026-09-08.md",
+      "epics": [
+        "EP-11"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.13",
+      "objective": "O3",
+      "definition": "Every live workload identity is bound to an approved, versioned IdentityProfile with exact issuer/subject/audience/target constraints and no static long-lived cloud credentials in the reference path",
+      "sharedRange": null,
+      "source": "docs/EP-11_IDENTITY_FOUNDATION_PRODUCTS_2026-09-08.md",
+      "epics": [
+        "EP-11"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.14",
+      "objective": "O3",
+      "definition": "Discovery, execution, approval, evidence, and AI identities remain distinct, and any privilege escalation or wildcard trust fails closed unless covered by a separately approved, time-bounded exception",
+      "sharedRange": null,
+      "source": "docs/EP-11_IDENTITY_FOUNDATION_PRODUCTS_2026-09-08.md",
+      "epics": [
+        "EP-11"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR4.5",
+      "objective": "O4",
+      "definition": "Console can present identity profile, effective-permission evidence, federation binding, revocation status, access-review references, and accountable owners without exposing credential material or granting access authority",
+      "sharedRange": null,
+      "source": "docs/EP-11_IDENTITY_FOUNDATION_PRODUCTS_2026-09-08.md",
+      "epics": [
+        "EP-11"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.15",
+      "objective": "O3",
+      "definition": "Standard approved placement profiles can be fulfilled without per-order cloud-governance engineering; material changes and exceptions are routed to accountable authorities",
+      "sharedRange": null,
+      "source": "docs/EP-12_RESOURCE_HIERARCHY_TENANT_VENDING_2026-09-08.md",
+      "epics": [
+        "EP-12"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.25",
+      "objective": "O3",
+      "definition": "Standard foundation orders require zero consumer-supplied cloud account, subscription, project, folder, management-group, billing-account, or organization-unit identifiers",
+      "sharedRange": null,
+      "source": "docs/EP-12_RESOURCE_HIERARCHY_TENANT_VENDING_2026-09-08.md",
+      "epics": [
+        "EP-12"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.26",
+      "objective": "O3",
+      "definition": "Every target is bound to an approved hierarchy profile, accountable owner, environment boundary, billing relationship, quota profile, and immutable placement evidence before any authorized mutation",
+      "sharedRange": null,
+      "source": "docs/EP-12_RESOURCE_HIERARCHY_TENANT_VENDING_2026-09-08.md",
+      "epics": [
+        "EP-12"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.27",
+      "objective": "O3",
+      "definition": "Unsupported hierarchy, region, billing, ownership, policy, or quota combinations fail closed",
+      "sharedRange": null,
+      "source": "docs/EP-12_RESOURCE_HIERARCHY_TENANT_VENDING_2026-09-08.md",
+      "epics": [
+        "EP-12"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.16",
+      "objective": "O3",
+      "definition": "Every authorized foundation instance has an approved observability profile with required audit, metrics, logging, alerting, retention, and ownership references",
+      "sharedRange": null,
+      "source": "docs/EP-13_OBSERVABILITY_TELEMETRY_2026-09-08.md",
+      "epics": [
+        "EP-13"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.17",
+      "objective": "O3",
+      "definition": "Standard orders require zero consumer-supplied raw logging endpoints, monitoring workspace IDs, alert destinations, or provider-specific telemetry configuration",
+      "sharedRange": null,
+      "source": "docs/EP-13_OBSERVABILITY_TELEMETRY_2026-09-08.md",
+      "epics": [
+        "EP-13"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.18",
+      "objective": "O3",
+      "definition": "Missing required telemetry, disabled audit paths, unknown destinations, or profile mismatch fails closed for live stages",
+      "sharedRange": null,
+      "source": "docs/EP-13_OBSERVABILITY_TELEMETRY_2026-09-08.md",
+      "epics": [
+        "EP-13"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR4.8",
+      "objective": "O4",
+      "definition": "Console can present product health, telemetry coverage, evidence references, and accountable owners without becoming the source monitoring system or policy engine",
+      "sharedRange": null,
+      "source": "docs/EP-13_OBSERVABILITY_TELEMETRY_2026-09-08.md",
+      "epics": [
+        "EP-13"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.19",
+      "objective": "O3",
+      "definition": "Every stateful live foundation product has an explicit approved resilience profile or an attributable NOT_APPLICABLE decision",
+      "sharedRange": null,
+      "source": "docs/EP-14_RESILIENCE_RECOVERY_2026-09-08.md",
+      "epics": [
+        "EP-14"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.20",
+      "objective": "O3",
+      "definition": "Standard orders require zero consumer-supplied raw backup-vault IDs, replication rules, provider failover configuration, or storage-retention machinery",
+      "sharedRange": null,
+      "source": "docs/EP-14_RESILIENCE_RECOVERY_2026-09-08.md",
+      "epics": [
+        "EP-14"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.21",
+      "objective": "O3",
+      "definition": "Missing recovery ownership, incompatible RTO/RPO, absent required backup/replication, or untested teardown/recovery conditions fail closed for applicable live stages",
+      "sharedRange": null,
+      "source": "docs/EP-14_RESILIENCE_RECOVERY_2026-09-08.md",
+      "epics": [
+        "EP-14"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR4.6",
+      "objective": "O4",
+      "definition": "Pilot-readiness evidence includes restore/recovery tests, failure behavior, ownership, and observed recovery results rather than configuration claims alone",
+      "sharedRange": null,
+      "source": "docs/EP-14_RESILIENCE_RECOVERY_2026-09-08.md",
+      "epics": [
+        "EP-14"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.22",
+      "objective": "O3",
+      "definition": "Every authorized foundation instance has accountable cost ownership, allocation metadata, an approved budget/cost ceiling, and lifecycle cost evidence",
+      "sharedRange": null,
+      "source": "docs/EP-15_FINOPS_COST_GOVERNANCE_2026-09-08.md",
+      "epics": [
+        "EP-15"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.23",
+      "objective": "O3",
+      "definition": "Standard orders require zero consumer-supplied raw billing-account controls, unrestricted quota changes, or provider-specific budget implementation",
+      "sharedRange": null,
+      "source": "docs/EP-15_FINOPS_COST_GOVERNANCE_2026-09-08.md",
+      "epics": [
+        "EP-15"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR3.24",
+      "objective": "O3",
+      "definition": "Missing cost ownership, absent ceiling, unsupported quota, altered allocation metadata, or unauthorized spending path fails closed before applicable live execution",
+      "sharedRange": null,
+      "source": "docs/EP-15_FINOPS_COST_GOVERNANCE_2026-09-08.md",
+      "epics": [
+        "EP-15"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR4.7",
+      "objective": "O4",
+      "definition": "Console can present cost ownership, approved ceiling, observed spend, anomalies, and lifecycle cost evidence without becoming the billing authority",
+      "sharedRange": null,
+      "source": "docs/EP-15_FINOPS_COST_GOVERNANCE_2026-09-08.md",
+      "epics": [
+        "EP-15"
+      ],
+      "status": "Conditional / gated",
+      "group": "gated",
+      "time": "Q3 2026 design · later live gate"
+    },
+    {
+      "id": "KR6.1",
+      "objective": "O6",
+      "definition": "Public Preview deployments remain isolated and clearly labeled while separate customer-hosted Connected Storefront and Forge profiles are implemented",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CONNECTED-APPLICATIONS-2026-09-17.md",
+      "epics": [
+        "EP-16"
+      ],
+      "status": "Active",
+      "group": "active",
+      "time": "Q3 2026 active delivery"
+    },
+    {
+      "id": "KR6.2",
+      "objective": "O6",
+      "definition": "One authenticated, integrity-bound Storefront → Forge transport preserves the accepted handoff semantics and human-review stop",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CONNECTED-APPLICATIONS-2026-09-17.md",
+      "epics": [
+        "EP-16"
+      ],
+      "status": "Active",
+      "group": "active",
+      "time": "Q3 2026 active delivery"
+    },
+    {
+      "id": "KR6.3",
+      "objective": "O6",
+      "definition": "Connected Storefront and Forge expose bounded adapter/readiness and provenance state without exposing secrets or claiming Operational maturity",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CONNECTED-APPLICATIONS-2026-09-17.md",
+      "epics": [
+        "EP-16"
+      ],
+      "status": "Active",
+      "group": "active",
+      "time": "Q3 2026 active delivery"
+    },
+    {
+      "id": "KR6.4",
+      "objective": "O6",
+      "definition": "Cross-product synthetic acceptance proves preview isolation, transport authentication, tamper rejection, and zero autonomous approval/provisioning authority",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CONNECTED-APPLICATIONS-2026-09-17.md",
+      "epics": [
+        "EP-16"
+      ],
+      "status": "Active",
+      "group": "active",
+      "time": "Q3 2026 active delivery"
+    },
+    {
+      "id": "KR7.1",
+      "objective": "O7",
+      "definition": "AI authoring may propose requirements, evidence mappings, and product mappings only against versioned inputs and explicit human acceptance",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CONNECTED-APPLICATIONS-2026-09-17.md",
+      "epics": [
+        "EP-17"
+      ],
+      "status": "Future / evidence-gated",
+      "group": "future",
+      "time": "Future · evidence-gated"
+    },
+    {
+      "id": "KR7.2",
+      "objective": "O7",
+      "definition": "Agent operations remain constrained by deterministic policy, least privilege, human approval boundaries, revocation/rollback, and retained evidence",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CONNECTED-APPLICATIONS-2026-09-17.md",
+      "epics": [
+        "EP-17"
+      ],
+      "status": "Future / evidence-gated",
+      "group": "future",
+      "time": "Future · evidence-gated"
+    },
+    {
+      "id": "KR7.3",
+      "objective": "O7",
+      "definition": "No agent-operated capability advances to Operational status before customer-selected validation and explicit authority",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CONNECTED-APPLICATIONS-2026-09-17.md",
+      "epics": [
+        "EP-17"
+      ],
+      "status": "Future / evidence-gated",
+      "group": "future",
+      "time": "Future · evidence-gated"
+    },
+    {
+      "id": "KR8.1",
+      "objective": "O8",
+      "definition": "Customer-context completeness: 100% of customer-scoped contracts selected for the bounded journey carry customerId, organizationId, and environmentId, and reject missing or conflicting scope",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-MULTI-CUSTOMER-ISOLATION-2026-09-17.md",
+      "epics": [
+        "EP-18"
+      ],
+      "status": "Documentation-first",
+      "group": "documentation",
+      "time": "Q3 2026 design"
+    },
+    {
+      "id": "KR8.2",
+      "objective": "O8",
+      "definition": "Cross-customer fail-closed proof: Synthetic Guard/Console/Forge/Storefront/Assurance substitution tests reject 100% of intentionally mismatched trusted profiles, approvals, evidence packages, product/order bindings, and assurance records",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-MULTI-CUSTOMER-ISOLATION-2026-09-17.md",
+      "epics": [
+        "EP-18"
+      ],
+      "status": "Documentation-first",
+      "group": "documentation",
+      "time": "Q3 2026 design"
+    },
+    {
+      "id": "KR8.3",
+      "objective": "O8",
+      "definition": "Isolation of authority and custody: The target architecture documents tenant-scoped identity, secrets, integrations, data/evidence custody, audit, versioning, and lifecycle rules with no implicit cross-customer authority",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-MULTI-CUSTOMER-ISOLATION-2026-09-17.md",
+      "epics": [
+        "EP-18"
+      ],
+      "status": "Documentation-first",
+      "group": "documentation",
+      "time": "Q3 2026 design"
+    },
+    {
+      "id": "KR8.4",
+      "objective": "O8",
+      "definition": "Deployment-pattern proof: Dedicated-enterprise and managed-isolated acceptance profiles are documented and validated before any shared multi-tenant SaaS claim; shared tenancy requires a separate evidence gate",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-MULTI-CUSTOMER-ISOLATION-2026-09-17.md",
+      "epics": [
+        "EP-18"
+      ],
+      "status": "Documentation-first",
+      "group": "documentation",
+      "time": "Q3 2026 design"
+    },
+    {
+      "id": "KR4.9",
+      "objective": "O4",
+      "definition": "change-context contract: define an organization-neutral, versioned Change Readiness Package with explicit current/desired/delta/evidence/missing-field semantics",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CHANGE-READINESS-HISTORY-2026-09-19.md",
+      "epics": [
+        "EP-19"
+      ],
+      "status": "Documentation-first",
+      "group": "documentation",
+      "time": "Q3 2026 design"
+    },
+    {
+      "id": "KR4.10",
+      "objective": "O4",
+      "definition": "Retained relationship history: define and prove tenant-scoped temporal relationship history sufficient to reconstruct product/component/dependency/change relationships without creating a shadow enterprise CMDB",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CHANGE-READINESS-HISTORY-2026-09-19.md",
+      "epics": [
+        "EP-19"
+      ],
+      "status": "Documentation-first",
+      "group": "documentation",
+      "time": "Q3 2026 design"
+    },
+    {
+      "id": "KR4.11",
+      "objective": "O4",
+      "definition": "Deterministic delta and export: produce repeatable before/after, network/security/dependency deltas and starter exports whose claims are bound to exact retained inputs",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CHANGE-READINESS-HISTORY-2026-09-19.md",
+      "epics": [
+        "EP-19"
+      ],
+      "status": "Documentation-first",
+      "group": "documentation",
+      "time": "Q3 2026 design"
+    },
+    {
+      "id": "KR4.12",
+      "objective": "O4",
+      "definition": "Human-governance handoff: prove that organization-specific submission/approval fields remain explicit and that export never creates approval, authorization, risk acceptance or execution authority",
+      "sharedRange": null,
+      "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CHANGE-READINESS-HISTORY-2026-09-19.md",
+      "epics": [
+        "EP-19"
+      ],
+      "status": "Documentation-first",
+      "group": "documentation",
+      "time": "Q3 2026 design"
+    }
+  ],
+  "epics": {
+    "EP-01": {
+      "id": "EP-01",
+      "title": "Evidence integrity and custody",
+      "status": "Accepted baseline",
+      "group": "accepted",
+      "progress": "Released baseline with planned maintenance",
+      "time": "Q3 2026 baseline",
+      "featureCount": 14,
+      "features": [
+        "EIB-01",
+        "EIB-02",
+        "EIB-03",
+        "EIB-04",
+        "EIB-05",
+        "F-01",
+        "F-02",
+        "F-05",
+        "E-01",
+        "E-02",
+        "E-03",
+        "B-01",
+        "B-02",
+        "B-03"
+      ]
+    },
+    "EP-02": {
+      "id": "EP-02",
+      "title": "Evaluation need and scorecard",
+      "status": "Planned",
+      "group": "planned",
+      "progress": "Planned evaluation/scorecard work remains bounded by evidence requirements",
+      "time": "Planning horizon: Sep 2026–Aug 2027",
+      "featureCount": 3,
+      "features": [
+        "F-03",
+        "F-04",
+        "E-04"
+      ]
+    },
+    "EP-03": {
+      "id": "EP-03",
+      "title": "Trusted evidence intake",
+      "status": "In progress",
+      "group": "active",
+      "progress": "AEP-01 through AEP-04 have bounded accepted evidence; operational assessment remains gated",
+      "time": "Q3 2026 evidence",
+      "featureCount": 11,
+      "features": [
+        "TEI-01",
+        "TEI-02",
+        "TEI-03",
+        "TEI-04",
+        "TEI-05",
+        "TEI-06",
+        "AEP-01",
+        "AEP-02",
+        "AEP-03",
+        "AEP-04",
+        "AEP-05"
+      ]
+    },
+    "EP-04": {
+      "id": "EP-04",
+      "title": "Minimum multi-cloud foundation",
+      "status": "Conditional",
+      "group": "gated",
+      "progress": "Live foundation proof remains conditional on authorized nonproduction infrastructure and explicit authority",
+      "time": "Future authorized sandbox",
+      "featureCount": 7,
+      "features": [
+        "MCF-01",
+        "MCF-02",
+        "MCF-03",
+        "MCF-04",
+        "MCF-05",
+        "MCF-06",
+        "MCF-07"
+      ]
+    },
+    "EP-05": {
+      "id": "EP-05",
+      "title": "Planning and outcomes",
+      "status": "Conditional",
+      "group": "gated",
+      "progress": "Planning and outcomes capability remains conditional on accepted producer evidence",
+      "time": "Planning horizon: Sep 2026–Aug 2027",
+      "featureCount": 5,
+      "features": [
+        "PLO-01",
+        "PLO-02",
+        "PLO-03",
+        "PLO-04",
+        "PLO-05"
+      ]
+    },
+    "EP-06": {
+      "id": "EP-06",
+      "title": "Operational readiness and pilot decision",
+      "status": "Gated",
+      "group": "gated",
+      "progress": "Operational readiness remains exploratory and gated by customer-selected evidence and authority",
+      "time": "Future / pilot-decision gate",
+      "featureCount": 5,
+      "features": [
+        "ORC-01",
+        "ORC-02",
+        "ORC-03",
+        "ORC-04",
+        "ORC-05"
+      ]
+    },
+    "EP-07": {
+      "id": "EP-07",
+      "title": "Product distribution and adoption surfaces",
+      "status": "Bounded closed",
+      "group": "accepted",
+      "progress": "Functionally closed for the current bounded distribution baseline",
+      "time": "Q3 2026 closure",
+      "featureCount": 8,
+      "features": [
+        "DAS-01",
+        "DAS-02",
+        "DAS-03",
+        "DAS-04",
+        "DAS-05",
+        "DAS-06",
+        "DAS-07",
+        "DAS-08"
+      ]
+    },
+    "EP-08": {
+      "id": "EP-08",
+      "title": "GitHub Enterprise Server and restricted-network portability",
+      "status": "Active / externally blocked",
+      "group": "active",
+      "progress": "GHE-06 bounded accepted · GHE-07 ready but externally blocked · GHE-08 gated on live evidence",
+      "time": "Q3 2026 evidence · live timing customer-dependent",
+      "featureCount": 8,
+      "features": [
+        "GHE-01",
+        "GHE-02",
+        "GHE-03",
+        "GHE-04",
+        "GHE-05",
+        "GHE-06",
+        "GHE-07",
+        "GHE-08"
+      ]
+    },
+    "EP-09": {
+      "id": "EP-09",
+      "title": "Network Foundation Products",
+      "status": "Conditional",
+      "group": "gated",
+      "progress": "Contract and simulation work may proceed; live network integration remains separately gated",
+      "time": "Q3 2026 design · later live gate",
+      "featureCount": 8,
+      "features": [
+        "NET-01",
+        "NET-02",
+        "NET-03",
+        "NET-04",
+        "NET-05",
+        "NET-06",
+        "NET-07",
+        "NET-08"
+      ]
+    },
+    "EP-10": {
+      "id": "EP-10",
+      "title": "Security Foundation Products and Policy Profiles",
+      "status": "Conditional",
+      "group": "gated",
+      "progress": "Documentation and bounded profile work may proceed; live security integration remains separately gated",
+      "time": "Q3 2026 design · later live gate",
+      "featureCount": 10,
+      "features": [
+        "SEC-01",
+        "SEC-02",
+        "SEC-03",
+        "SEC-04",
+        "SEC-05",
+        "SEC-06",
+        "SEC-07",
+        "SEC-08",
+        "SEC-09",
+        "SEC-10"
+      ]
+    },
+    "EP-11": {
+      "id": "EP-11",
+      "title": "Identity Foundation Products and Federation Profiles",
+      "status": "Conditional",
+      "group": "gated",
+      "progress": "Bounded identity contracts exist; live identity-provider operation remains separately gated",
+      "time": "Q3 2026 design · later live gate",
+      "featureCount": 10,
+      "features": [
+        "IDN-01",
+        "IDN-02",
+        "IDN-03",
+        "IDN-04",
+        "IDN-05",
+        "IDN-06",
+        "IDN-07",
+        "IDN-08",
+        "IDN-09",
+        "IDN-10"
+      ]
+    },
+    "EP-12": {
+      "id": "EP-12",
+      "title": "Resource Hierarchy and Tenant Vending",
+      "status": "Conditional",
+      "group": "gated",
+      "progress": "Contract and simulation work may proceed; live vending remains gated by authorized targets and approvals",
+      "time": "Q3 2026 design · later live gate",
+      "featureCount": 8,
+      "features": [
+        "HIE-01",
+        "HIE-02",
+        "HIE-03",
+        "HIE-04",
+        "HIE-05",
+        "HIE-06",
+        "HIE-07",
+        "HIE-08"
+      ]
+    },
+    "EP-13": {
+      "id": "EP-13",
+      "title": "Observability and Telemetry",
+      "status": "Conditional",
+      "group": "gated",
+      "progress": "Contract and simulation work may proceed; live telemetry requires authorized destinations and data handling",
+      "time": "Q3 2026 design · later live gate",
+      "featureCount": 8,
+      "features": [
+        "OBS-01",
+        "OBS-02",
+        "OBS-03",
+        "OBS-04",
+        "OBS-05",
+        "OBS-06",
+        "OBS-07",
+        "OBS-08"
+      ]
+    },
+    "EP-14": {
+      "id": "EP-14",
+      "title": "Resilience and Recovery",
+      "status": "Conditional",
+      "group": "gated",
+      "progress": "Resilience contracts are defined; live backup/recovery and observed recovery evidence remain gated",
+      "time": "Q3 2026 design · later live gate",
+      "featureCount": 8,
+      "features": [
+        "RES-01",
+        "RES-02",
+        "RES-03",
+        "RES-04",
+        "RES-05",
+        "RES-06",
+        "RES-07",
+        "RES-08"
+      ]
+    },
+    "EP-15": {
+      "id": "EP-15",
+      "title": "FinOps and Cost Governance",
+      "status": "Conditional",
+      "group": "gated",
+      "progress": "Bounded cost-admission evidence exists; authoritative cost and spending paths remain separately gated",
+      "time": "Q3 2026 design · later live gate",
+      "featureCount": 8,
+      "features": [
+        "FIN-01",
+        "FIN-02",
+        "FIN-03",
+        "FIN-04",
+        "FIN-05",
+        "FIN-06",
+        "FIN-07",
+        "FIN-08"
+      ]
+    },
+    "EP-16": {
+      "id": "EP-16",
+      "title": "Connected Application Experience",
+      "status": "Active",
+      "group": "active",
+      "progress": "EDA-01 through EDA-05 accepted · EDA-06 evidence/artifact adapter current · EDA-07 later",
+      "time": "Q3 2026 active delivery",
+      "featureCount": 8,
+      "features": [
+        "CAP-01",
+        "CAP-02",
+        "CAP-03",
+        "CAP-04",
+        "CAP-05",
+        "CAP-06",
+        "CAP-07",
+        "CAP-08"
+      ]
+    },
+    "EP-17": {
+      "id": "EP-17",
+      "title": "AI-Assisted and Agent-Operated Evolution",
+      "status": "Future / evidence-gated",
+      "group": "future",
+      "progress": "AI and agent operation remain downstream of trusted connected and customer-operational foundations",
+      "time": "Future · evidence-gated",
+      "featureCount": 5,
+      "features": [
+        "AIO-01",
+        "AIO-02",
+        "AIO-03",
+        "AIO-04",
+        "AIO-05"
+      ]
+    },
+    "EP-18": {
+      "id": "EP-18",
+      "title": "Multi-Customer / Tenant Isolation Architecture",
+      "status": "Documentation-first",
+      "group": "documentation",
+      "progress": "Customer-scope and cross-customer fail-closed acceptance architecture is defined; operational isolation is not claimed",
+      "time": "Q3 2026 design",
+      "featureCount": 8,
+      "features": [
+        "MCI-01",
+        "MCI-02",
+        "MCI-03",
+        "MCI-04",
+        "MCI-05",
+        "MCI-06",
+        "MCI-07",
+        "MCI-08"
+      ]
+    },
+    "EP-19": {
+      "id": "EP-19",
+      "title": "Change Readiness & Relationship History",
+      "status": "Documentation-first",
+      "group": "documentation",
+      "progress": "Change-context, relationship-history and deterministic delta contracts are being defined before operational adapters",
+      "time": "Q3 2026 design",
+      "featureCount": 8,
+      "features": [
+        "CRP-01",
+        "CRP-02",
+        "CRP-03",
+        "CRP-04",
+        "CRP-05",
+        "CRP-06",
+        "CRP-07",
+        "CRP-08"
+      ]
+    }
+  }
+}
