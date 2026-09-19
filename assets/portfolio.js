@@ -182,7 +182,7 @@ function renderRoadmapRelationships(data){
     const details=node('details','roadmap-objective');details.dataset.group=o.group;details.dataset.objective=o.id;if(index===0)details.open=false;
     const summary=node('summary','roadmap-objective-summary');
     const left=node('div','roadmap-objective-copy');left.append(node('span','roadmap-id',o.id),node('strong','',o.definition),node('span','roadmap-objective-progress',o.progress));
-    const meta=node('div','roadmap-objective-meta');meta.append(metaPill(o.status,o.group),node('span','roadmap-time-pill',o.time),node('span','roadmap-count-pill','1 → N Key Results'),node('span','roadmap-count-pill',`${o.keyResults.length} KRs`));
+    const meta=node('div','roadmap-objective-meta');meta.append(metaPill(o.status,o.group),node('span','roadmap-time-pill',o.time),node('span','roadmap-count-pill',`${o.keyResults.length} Key Result${o.keyResults.length===1?'':'s'}`));
     summary.append(left,meta);details.append(summary);
     const body=node('div','roadmap-objective-body');
     const progress=node('div','roadmap-progress-block');progress.append(node('small','','OBJECTIVE PROGRESS'),node('p','',o.progress),node('span','roadmap-period-line',o.time));body.append(progress);
@@ -193,7 +193,7 @@ function renderRoadmapRelationships(data){
       const krSummary=node('summary','roadmap-kr-summary');
       const krCopy=node('div','roadmap-kr-copy');krCopy.append(node('span','roadmap-kr-id',kr.id),node('strong','',kr.definition));
       if(kr.sharedRange)krCopy.append(node('span','roadmap-shared-note',`Shared source outcome for ${kr.sharedRange}`));
-      const krMeta=node('div','roadmap-kr-meta');krMeta.append(metaPill(kr.status,kr.group),node('span','roadmap-time-pill',kr.time),node('span','roadmap-count-pill','1 → N Epics'),node('span','roadmap-count-pill',`${kr.epics.length} contributing Epic${kr.epics.length===1?'':'s'}`));
+      const krMeta=node('div','roadmap-kr-meta');krMeta.append(metaPill(kr.status,kr.group),node('span','roadmap-time-pill',kr.time),node('span','roadmap-count-pill',`${kr.epics.length} contributing Epic${kr.epics.length===1?'':'s'}`));
       krSummary.append(krCopy,krMeta);krDetails.append(krSummary);
       const krBody=node('div','roadmap-kr-body');krBody.append(node('small','roadmap-contrib-label','CONTRIBUTING EPICS'));
       const epicGrid=node('div','roadmap-epic-grid');
