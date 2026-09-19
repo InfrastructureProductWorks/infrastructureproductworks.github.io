@@ -1592,6 +1592,39 @@
       ]
     }
   ],
+  "progressHistory": [
+    {
+      "date": "2026-09-19",
+      "epics": {
+        "EP-01": 100,
+        "EP-02": 0,
+        "EP-03": 50,
+        "EP-04": 25,
+        "EP-05": 25,
+        "EP-06": 25,
+        "EP-07": 100,
+        "EP-08": 75,
+        "EP-09": 25,
+        "EP-10": 25,
+        "EP-11": 25,
+        "EP-12": 25,
+        "EP-13": 25,
+        "EP-14": 25,
+        "EP-15": 25,
+        "EP-16": 75,
+        "EP-17": 0,
+        "EP-18": 25,
+        "EP-19": 25
+      }
+    }
+  ],
+  "forecastModel": {
+    "method": "linear-evidence-trend/v1",
+    "minimumSnapshots": 2,
+    "minimumSpanDays": 7,
+    "blockedBehavior": "no-date-inferred",
+    "planningWindows": "explicit-roadmap-assumptions"
+  },
   "progressModel": {
     "method": "evidence-backed-epic-rollup/v1",
     "scale": "0 planned/future · 25 defined or gated · 50 in progress · 75 bounded validation/integration · 100 accepted or closed",
