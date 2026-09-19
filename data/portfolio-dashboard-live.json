@@ -1,0 +1,239 @@
+{
+  "schemaVersion": "portfolio-dashboard/v1",
+  "generatedAt": "2026-09-19T17:19:20Z",
+  "posture": "CONTINUE_VALIDATION",
+  "authorityNotice": "Engineering and roadmap telemetry only. No production, pilot, deployment, approval, commercialization, cloud, or risk-acceptance authority is implied.",
+  "source": {
+    "roadmap": "config/portfolio-roadmap.json",
+    "roadmapBaseline": "2026-09-19",
+    "scope": "sanitized-product-owned-live-portfolio-telemetry",
+    "aggregation": "scheduled-protected-main-product-status-contracts",
+    "repository": "InfrastructureProductWorks/multicloud-foundation-poc-integration",
+    "revision": "0678e47a8fb31c3cf2a2c14fb5d57a9bfec60836"
+  },
+  "baseline": {
+    "objectives": 8,
+    "keyResults": 62,
+    "epics": 19,
+    "features": 150
+  },
+  "portfolioFocus": {
+    "closedEpic": "EP-07",
+    "activeEpic": "EP-08",
+    "activeLabel": "GitHub Enterprise Server and restricted-network portability",
+    "next": [
+      "EP-08 remains the active portability track: GHE-06 bounded restricted-network acceptance is complete; GHE-07 is ready but externally blocked because no authorized live GHES/customer-controlled GitHub target is available; GHE-08 remains gated on GHE-07 live evidence",
+      "EP-16 authenticated Connected Storefront to Connected Forge synthetic baseline is proven over protected-main revisions while Preview deployments remain isolated",
+      "Next EP-16 work binds Guard trusted-profile state and downstream review/evidence surfaces without widening human authority",
+      "Customer identity, persistence, audit, operational Guard profiles, Crossplane and cloud/provider integrations remain separately gated before any Operational claim",
+      "EP-18 multi-customer isolation defines customer-bound identity, trusted profiles, evidence, approvals, products, secrets, integrations and audit, with cross-customer substitution required to fail closed before any tenant-isolation claim",
+      "EP-19 change readiness and relationship history will turn provenance-bound current/desired state, dependencies and evidence into organization-neutral starter packages for downstream security, network and change processes without submitting or approving those processes",
+      "EP-17 AI-assisted and agent-operated evolution remains evidence-gated after trusted connected and customer-operational foundations"
+    ]
+  },
+  "stageModel": [
+    "Define",
+    "Build",
+    "Validate",
+    "Integrate",
+    "Operationalize"
+  ],
+  "products": [
+    {
+      "id": "storefront",
+      "name": "Storefront",
+      "role": "Experience",
+      "stageIndex": 3,
+      "state": "GHE-06 bounded restricted profile accepted",
+      "status": "VALIDATING",
+      "evidence": "The first-class Storefront and Backstage adapter preserve the governed product identity and order contract. The accepted GHE-06 restricted profile covers the locked Python, Node, npm, Playwright, Firefox, and Backstage-transport graph; full create-app/Yarn backend generation, remote customer catalog collection, customer-runner operation, and live GHES remain outside that bounded acceptance.",
+      "nextMilestone": "Preserve the accepted GHE-06 profile. GHE-07 customer-runner/live GitHub or GHES execution and GHE-08 customer-target support acceptance remain separately gated; operational-readiness controls and authenticated session isolation are still required before any external pilot decision.",
+      "href": "/storefront/",
+      "versions": {
+        "application": "0.4.0",
+        "adapterDistribution": "0.2.0"
+      },
+      "source": {
+        "repository": "InfrastructureProductWorks/backstage-infrastructure-product-storefront-poc",
+        "revision": "25464a5c030f0718fdaccf6de349238253d1d7b2",
+        "mode": "product-owned-main"
+      }
+    },
+    {
+      "id": "guard",
+      "name": "IaaP Guard",
+      "role": "Validate",
+      "stageIndex": 4,
+      "state": "GHE-06 bounded restricted profile accepted",
+      "status": "INTEGRATING",
+      "evidence": "Hosted GitHub App and accepted GHE-01/GHE-04 portability remain intact. The GHE-06 bounded restricted profile now has machine-enforced exclusions for hosted/public package, container, Actions, and telemetry surfaces, while the maintained Guard runtime carries accepted local/offline execution evidence. Customer-runner and live GHES remain unobserved.",
+      "nextMilestone": "Preserve the accepted GHE-06 restricted profile. Advance GHE-07 only on an authorized customer-runner/live GitHub or GHES target; in parallel, bind trusted profile/version approval state into connected review and evidence surfaces without widening authority.",
+      "href": "/guard/",
+      "versions": {
+        "product": "1.0.2"
+      },
+      "source": {
+        "repository": "InfrastructureProductWorks/iaap-guard",
+        "revision": "6fdba6099565601313069a02a9dab89c651376ec",
+        "mode": "product-owned-main"
+      }
+    },
+    {
+      "id": "forge",
+      "name": "IaaP Forge",
+      "role": "Construct",
+      "stageIndex": 4,
+      "state": "GHE-06 bounded restricted profile accepted; durable event-state proof added",
+      "status": "INTEGRATING",
+      "evidence": "Deterministic construction, bounded distribution, and GHE-06 restricted execution are accepted. Protected main also contains the connected event/state model and SQLite synthetic persistence proof for durable events and rebuildable projections; no broker, production persistence, customer-runner, live GHES, or execution authority is implied.",
+      "nextMilestone": "Preserve the accepted GHE-06 and event-state boundaries. Advance GHE-07 only with authorized live customer-runner/GHES evidence; continue connected product work by binding trusted Guard/profile state and human-review/evidence projections before any Operational claim.",
+      "href": "/forge/",
+      "versions": {
+        "application": "1.3.2",
+        "workerDistribution": "0.1.0"
+      },
+      "source": {
+        "repository": "InfrastructureProductWorks/iaap-forge",
+        "revision": "522ccbe20e95e63c2d17e5d0f631cd9df9b41240",
+        "mode": "product-owned-main"
+      }
+    },
+    {
+      "id": "console",
+      "name": "IaaP Console",
+      "role": "Review",
+      "stageIndex": 3,
+      "state": "GHE-06 bounded restricted profile accepted; protected review surface",
+      "status": "VALIDATING",
+      "evidence": "Digest-verified evidence, planning visibility, customer-controlled review surfaces, bounded private-CA/TLS profiles, and the disconnected container/runtime proof are accepted on protected main. The portfolio now treats GHE-06 restricted-network execution as bounded accepted while customer-runner/live GHES operation remains outside scope.",
+      "nextMilestone": "Preserve the accepted GHE-06 and disconnected-runtime boundaries. Consume only provenance-bound connected producer projections and trusted profile state; GHE-07/GHE-08 require separately authorized customer-runner/live GHES and customer-target evidence.",
+      "href": "/console/",
+      "versions": {
+        "application": "0.1.1",
+        "distribution": "0.2.0"
+      },
+      "source": {
+        "repository": "InfrastructureProductWorks/iaap-console",
+        "revision": "663fa54984a9e13f31a4ee01f590182a69f5cba0",
+        "mode": "product-owned-main"
+      }
+    },
+    {
+      "id": "assurance",
+      "name": "IaaP Assurance",
+      "role": "Assure",
+      "stageIndex": 3,
+      "state": "Gate 6 bounded proof passed",
+      "status": "VALIDATING",
+      "evidence": "Deterministic synthetic custody proof, authority attenuation, and agentic authority/custody boundaries are accepted while operational scale remains separately gated.",
+      "nextMilestone": "Advance service and runtime maturity while preserving authority, custody, and independent-evidence boundaries.",
+      "href": "/assurance/",
+      "versions": {},
+      "source": {
+        "repository": "InfrastructureProductWorks/iaap-assurance",
+        "revision": null,
+        "mode": "bounded-snapshot"
+      }
+    },
+    {
+      "id": "crossplane",
+      "name": "Crossplane Control Plane",
+      "role": "Reconcile",
+      "stageIndex": 2,
+      "state": "Architecture and integration boundary",
+      "status": "BUILDING",
+      "evidence": "Crossplane remains the replaceable authoritative reconciler behind stable infrastructure-product contracts; current work is bounded to architecture and synthetic integration evidence.",
+      "nextMilestone": "Prove the customer-controlled minimum-foundation reconciliation path only when later roadmap gates authorize it.",
+      "href": "/crossplane/",
+      "versions": {},
+      "source": {
+        "repository": "InfrastructureProductWorks/crossplane-multicloud-seed-poc",
+        "revision": "716b3e128cfc444fcb5d5b3793697f7604a9e9f8",
+        "mode": "product-owned-main"
+      }
+    }
+  ],
+  "objectives": [
+    {
+      "id": "O1",
+      "definition": "Preserve trustworthy evidence and release integrity",
+      "keyResultCount": 3,
+      "epics": [
+        "EP-01"
+      ]
+    },
+    {
+      "id": "O2",
+      "definition": "Validate evaluator value without widening authority",
+      "keyResultCount": 3,
+      "epics": [
+        "EP-02",
+        "EP-03"
+      ]
+    },
+    {
+      "id": "O3",
+      "definition": "Prove one minimum multi-cloud foundation safely and reversibly",
+      "keyResultCount": 27,
+      "epics": [
+        "EP-04",
+        "EP-09",
+        "EP-10",
+        "EP-11",
+        "EP-12",
+        "EP-13",
+        "EP-14",
+        "EP-15"
+      ]
+    },
+    {
+      "id": "O4",
+      "definition": "Prepare customer-hosted planning and operational decisions",
+      "keyResultCount": 12,
+      "epics": [
+        "EP-03",
+        "EP-05",
+        "EP-06",
+        "EP-10",
+        "EP-11",
+        "EP-13",
+        "EP-14",
+        "EP-15",
+        "EP-19"
+      ]
+    },
+    {
+      "id": "O5",
+      "definition": "Make the portfolio installable and portable in customer-controlled enterprise environments",
+      "keyResultCount": 6,
+      "epics": [
+        "EP-07",
+        "EP-08"
+      ]
+    },
+    {
+      "id": "O6",
+      "definition": "Connect the product experience without widening execution authority",
+      "keyResultCount": 4,
+      "epics": [
+        "EP-16"
+      ]
+    },
+    {
+      "id": "O7",
+      "definition": "Prepare evidence-gated AI-assisted and agent-operated evolution",
+      "keyResultCount": 3,
+      "epics": [
+        "EP-17"
+      ]
+    },
+    {
+      "id": "O8",
+      "definition": "Establish verifiable multi-customer isolation",
+      "keyResultCount": 4,
+      "epics": [
+        "EP-18"
+      ]
+    }
+  ]
+}
