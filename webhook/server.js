@@ -1,10 +1,18 @@
 import http from 'node:http';
 import crypto from 'node:crypto';
+import nodemailer from 'nodemailer';
 
 const port = process.env.PORT || 10000;
 const secret = process.env.GITHUB_MARKETPLACE_WEBHOOK_SECRET;
 const supportToken = process.env.SUPPORT_GITHUB_TOKEN;
 const supportRepo = process.env.SUPPORT_GITHUB_REPO || '';
+const notifyTo = process.env.SUPPORT_NOTIFY_TO || '';
+const notifyFrom = process.env.SUPPORT_NOTIFY_FROM || '';
+const smtpHost = process.env.SUPPORT_SMTP_HOST || '';
+const smtpPort = Number(process.env.SUPPORT_SMTP_PORT || 465);
+const smtpSecure = String(process.env.SUPPORT_SMTP_SECURE || 'true').toLowerCase()!=='false';
+const smtpUser = process.env.SUPPORT_SMTP_USER || '';
+const smtpPass = process.env.SUPPORT_SMTP_PASS || '';
 const allowedOrigins = new Set([
   'https://infrastructureproductworks.com',
   'https://www.infrastructureproductworks.com'
@@ -61,6 +69,35 @@ async function assertPrivateSupportRepo(){
   const repo=await response.json();
   if(repo.private!==true)throw new Error('support_repo_must_be_private');
 }
+
+async function sendSupportNotification(issue,payload,reference){
+  if(!notifyTo||!smtpHost||!smtpUser||!smtpPass)return false;
+  const transporter=nodemailer.createTransport({
+    host:smtpHost,
+    port:smtpPort,
+    secure:smtpSecure,
+    auth:{user:smtpUser,pass:smtpPass},
+    connectionTimeout:10000,
+    greetingTimeout:10000,
+    socketTimeout:15000
+  });
+  const from=notifyFrom||smtpUser;
+  const subject=`New IPW support request · ${payload.product} · ${payload.title}`;
+  const text=[
+    'A new Infrastructure Product Works support request was received.',
+    '',
+    `Reference: ${reference}`,
+    `Product: ${payload.product}`,
+    `Request type: ${payload.type}`,
+    `Title: ${payload.title}`,
+    `Private issue: ${issue.url}`,
+    '',
+    'Customer contact details and the full submission remain in the private GitHub issue.'
+  ].join('\n');
+  await transporter.sendMail({from,to:notifyTo,subject,text});
+  return true;
+}
+
 async function createSupportIssue(payload,reference){
   if(!supportToken||!supportRepo)return null;
   await assertPrivateSupportRepo();
@@ -135,6 +172,12 @@ async function handleSupport(req,res,origin){
   try{
     const issue=await createSupportIssue(payload,reference);
     console.log(JSON.stringify({kind:'support-intake',reference,issue:issue?.number||null,product:payload.product,type:payload.type,receivedAt:new Date().toISOString()}));
+    try{
+      const notified=await sendSupportNotification(issue,payload,reference);
+      if(notified)console.log(JSON.stringify({kind:'support-notification-sent',reference,issue:issue?.number||null,receivedAt:new Date().toISOString()}));
+    }catch(error){
+      console.error(JSON.stringify({kind:'support-notification-error',reference,issue:issue?.number||null,message:String(error?.message||error)}));
+    }
     return supportResult(res,formMode,201,{accepted:true,reference},origin);
   }catch(error){
     console.error(JSON.stringify({kind:'support-intake-error',reference,message:String(error?.message||error)}));
