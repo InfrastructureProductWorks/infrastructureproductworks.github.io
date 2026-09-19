@@ -161,7 +161,7 @@
 <article class="trust-node"><small>VALIDATE</small><h3>Guard</h3><p>Evaluates infrastructure intent against deterministic architecture, policy, security and evidence rules.</p><b>PASS ≠ DEPLOY</b></article>
 <article class="trust-node"><small>CONSTRUCT</small><h3>Forge</h3><p>Defines governed infrastructure products, capabilities, versions and reviewable product artifacts.</p><b>CONSTRUCT ≠ APPROVE</b></article>
 <article class="trust-node"><small>REVIEW</small><h3>Console</h3><p>Presents verified producer evidence, provenance and review context without becoming approval authority.</p><b>VISIBILITY ≠ DECISION</b></article>
-<article class="trust-node"><small>ASSURE</small><h3>Assurance</h3><p>Checks whether identity, purpose, scope, time and required approval still bound the requested action.</p><b>AUTHORITY CANNOT WIDEN</b></article>
+<article class="trust-node"><small>ASSURE</small><h3>Assurance</h3><p>Rechecks whether authority, identity, purpose, scope, time, custody and evidence still support the requested action or retained runtime state.</p><b>TRUST MUST STILL HOLD</b></article>
 <article class="trust-node"><small>AUTHORIZE</small><h3>Accountable decision</h3><p>An authorized person or customer-controlled system grants the bounded permission required for action.</p><b>EXPLICIT AUTHORITY</b></article>
 <article class="trust-node"><small>RECONCILE</small><h3>Crossplane</h3><p>Reconciles authorized product state through replaceable provider implementations behind stable contracts.</p><b>ACT ONLY AFTER AUTHORIZATION</b></article>
 </div>
@@ -207,6 +207,51 @@
 </div>
 </section>
 
+<section id="assurance-lifecycle">
+<div class="security-wrap">
+<p class="eyebrow">ASSURANCE ACROSS THE LIFECYCLE</p>
+<h2>Validation is a point-in-time finding. Assurance keeps trust from silently going stale.</h2>
+<p class="section-lede">A prior PASS, review or authority package should not remain usable merely because it was once valid. IaaP Assurance is the authority, custody, safeguard-continuity and runtime-assurance layer that rechecks whether the exact identity, purpose, scope, time, evidence and constraints still support what a downstream system is about to do or continue trusting.</p>
+<div class="security-grid">
+<article><small>AUTHORITY PACKAGE</small><h3>Is the authority still active and in scope?</h3><p>Assurance verifies that the authority being relied upon is present, active, time-bounded, purpose-bound and tied to the exact customer, environment, product and requested action.</p></article>
+<article><small>ATTENUATION</small><h3>Authority may narrow, never silently widen</h3><p>Delegated authority may stay equal or become more restrictive. A downstream handoff that broadens scope, privilege, purpose or permitted action must stop or return for accountable review.</p></article>
+<article><small>CUSTODY</small><h3>Restrictions remain attached to evidence and protected data</h3><p>Evidence, data-handling constraints, source identity and retention requirements should survive copying, transformation and handoff rather than disappearing when the artifact moves.</p></article>
+<article><small>CONTINUITY</small><h3>Earlier evidence does not prove later state forever</h3><p>Runtime or later-stage evidence can be compared with the authorized baseline so drift, expired authority, changed dependencies or broken evidence bindings do not inherit yesterday's trust.</p></article>
+<article><small>INDEPENDENT EVIDENCE</small><h3>The actor is not the only witness</h3><p>High-impact assurance decisions should retain tamper-evident evidence outside the requesting or acting component's unilateral control so later review and replay remain possible.</p></article>
+<article><small>ROLLBACK / RESTORATION</small><h3>Recovery stays tied to accepted authority</h3><p>A rollback target or restoration action should reference an accepted prior state and bounded authority rather than turning a detected problem into unrestricted remediation permission.</p></article>
+</div>
+
+<div class="fail-strip">
+<h3>Assurance is a gate, not automatically the actuator.</h3>
+<p>When Assurance finds a broken authority, custody, evidence or runtime condition, the default security response is to prevent the next protected action from proceeding, hold it for review, or mark the relied-upon state as untrusted. Direct infrastructure mutation or remediation requires a separately accepted and explicitly authorized enforcement path.</p>
+</div>
+
+<h2 style="margin-top:46px">Where enforcement actually happens</h2>
+<p class="section-lede">The Assurance decision becomes meaningful only when the next control point is required to consume it. Different stages enforce the same bounded trust decision in different ways.</p>
+<div class="authority-table">
+<div class="authority-row"><div>ASSURANCE CONDITION</div><div>ENFORCEMENT POINT</div><div>BOUNDED RESPONSE</div></div>
+<div class="authority-row"><div><strong>Pre-release finding</strong></div><div><span>Release, Git/GitOps, CI/CD or product-handoff gate.</span></div><div><span>Do not promote, merge, release or hand off the candidate until the required review or correction is satisfied.</span></div></div>
+<div class="authority-row"><div><strong>Expired or mismatched authority</strong></div><div><span>Authority consumer or execution-admission boundary.</span></div><div><span>Refuse to issue or consume execution authority; return hold, review-required or deny rather than widening scope.</span></div></div>
+<div class="authority-row"><div><strong>Pre-reconciliation failure</strong></div><div><span>Crossplane / executor handoff and customer-controlled admission controls.</span></div><div><span>Do not reconcile the proposed state. Crossplane acts only when the required bounded authority has survived Assurance.</span></div></div>
+<div class="authority-row"><div><strong>Runtime drift or safeguard break</strong></div><div><span>Assurance runtime profile plus customer-controlled IAM, policy, GitOps, Kubernetes, Crossplane or provider controls.</span></div><div><span>Record the finding, block new protected actions and coordinate only pre-authorized containment or restoration. Autonomous remediation remains separately gated.</span></div></div>
+<div class="authority-row"><div><strong>Broken custody or evidence binding</strong></div><div><span>Console, Assurance and downstream evidence consumers.</span></div><div><span>Stop relying on the affected evidence or decision context and require revalidation or accountable review.</span></div></div>
+</div>
+
+<div class="shared-grid">
+<article><h3>Sentry: before deployment</h3><ul>
+<li>Applies the Assurance operating profile at the release boundary.</li>
+<li>Can deny or hold a candidate when authority, policy, evidence or scope no longer supports release.</li>
+<li>May propose bounded corrections, but a proposal is not permission to mutate production.</li>
+</ul></article>
+<article><h3>Shield: after deployment</h3><ul>
+<li>Observes an authorized runtime baseline and later evidence.</li>
+<li>Can surface drift and coordinate approved containment or restoration paths.</li>
+<li>Live multicloud enforcement and unrestricted autonomous remediation remain unclaimed until separately proven and authorized.</li>
+</ul></article>
+</div>
+</div>
+</section>
+
 <section>
 <div class="security-wrap">
 <p class="eyebrow">CHANGE READINESS &amp; RETAINED HISTORY</p>
@@ -238,6 +283,7 @@
 <div class="authority-row"><div><strong>Validation</strong></div><div><span>Evaluate bounded rules and produce evidence-backed findings.</span></div><div><span>PASS is not permission to merge, remediate or provision.</span></div></div>
 <div class="authority-row"><div><strong>Construction</strong></div><div><span>Define and render governed product artifacts and contracts.</span></div><div><span>A valid product artifact is not a production authorization.</span></div></div>
 <div class="authority-row"><div><strong>Review</strong></div><div><span>Organize verified context, materiality and human workbench information.</span></div><div><span>A dashboard or review marker is not an approval engine.</span></div></div>
+<div class="authority-row"><div><strong>Assurance</strong></div><div><span>Verify that authority, custody, evidence, scope and safeguard conditions still support reliance on the requested or retained state.</span></div><div><span>An Assurance finding does not itself create legal/policy authority or unrestricted remediation permission.</span></div></div>
 <div class="authority-row"><div><strong>Authorization</strong></div><div><span>Grant bounded permission through accountable customer-controlled authority.</span></div><div><span>Delegated scope may stay equal or narrow; it must not silently widen.</span></div></div>
 <div class="authority-row"><div><strong>Reconciliation</strong></div><div><span>Drive observed infrastructure toward an authorized desired state.</span></div><div><span>The reconciler does not retroactively create the authority it consumes.</span></div></div>
 </div>
@@ -292,7 +338,7 @@
 <li>Explicit separation of validation, review, authorization and reconciliation.</li>
 <li>Deterministic Guard behavior and evidence-oriented product contracts.</li>
 <li>Console source-revision and digest verification concepts in the current bounded baseline.</li>
-<li>Assurance synthetic proofs for authority attenuation, custody and independent evidence.</li>
+<li>Assurance synthetic proofs for authority attenuation, custody, rollback, independent evidence and bounded deny/rollback behavior.</li>
 <li>Synthetic connected-app paths that stop at human review rather than provisioning.</li>
 </ul></article>
 <article><small>ACTIVE VALIDATION</small><h3>Enterprise and customer-operational trust</h3><ul>
@@ -306,6 +352,7 @@
 <article><small>GATED / FUTURE</small><h3>Do not claim before proof</h3><ul>
 <li>Multi-customer isolation before cross-customer substitution tests pass.</li>
 <li>Broad autonomous remediation or agent-operated infrastructure.</li>
+<li>Live multicloud enforcement or an un-bypassable Assurance control boundary before separately accepted operational proof.</li>
 <li>Production authorization inferred from synthetic proofs or documentation.</li>
 <li>Universal provider, network or enterprise topology compatibility.</li>
 <li>Any capability that would widen authority beyond an accepted bounded contract.</li>
