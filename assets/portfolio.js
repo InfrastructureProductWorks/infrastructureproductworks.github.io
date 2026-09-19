@@ -173,79 +173,115 @@ function renderRoadmapFallback(data){
   });
   bindRoadmapControls(host,{filtersEnabled:false});
 }
+function headlineRollup(headline,krById){
+  const measures=headline.measures.map(id=>krById.get(id)).filter(Boolean);
+  const epicIds=[...new Set(measures.flatMap(k=>k.epics||[]))];
+  const groups=[...new Set(measures.map(k=>k.group))];
+  const group=groups.length===1?groups[0]:(groups.includes('active')?'active':groups.includes('gated')?'gated':groups.includes('documentation')?'documentation':groups.includes('future')?'future':groups.includes('planned')?'planned':'accepted');
+  const statuses=[...new Set(measures.map(k=>k.status))];
+  const times=[...new Set(measures.map(k=>k.time))];
+  return {measures,epicIds,group,status:statuses.length===1?statuses[0]:'Mixed evidence state',time:times.length===1?times[0]:'Multiple evidence periods'};
+}
+function headlineGroup(measures){
+  const groups=new Set(measures.map(m=>m.group));
+  if(groups.has('gated'))return 'gated';
+  if(groups.has('active'))return 'active';
+  if(groups.has('documentation'))return 'documentation';
+  if(groups.size===1&&groups.has('accepted'))return 'accepted';
+  if(groups.has('planned'))return 'planned';
+  return 'future';
+}
+function headlineStatus(group){
+  return ({active:'In progress',accepted:'Accepted / bounded',gated:'Conditional / gated',documentation:'Documentation-first',planned:'Planned',future:'Future / evidence-gated'})[group]||'Planned';
+}
+function headlineTime(measures){
+  const values=[...new Set(measures.map(m=>m.time).filter(Boolean))];
+  return values.length===1?values[0]:'Mixed timing · see measures';
+}
 function renderRoadmapRelationships(data){
   const host=document.getElementById('roadmap-relationship-list');if(!host)return;host.replaceChildren();
-  text('roadmap-baseline',data.planning.baseline);text('roadmap-quarter',data.planning.evidenceQuarter);text('roadmap-horizon',data.planning.horizon);text('roadmap-time-note',data.planning.timingNote);
-  const krById=new Map((data.keyResults||[]).map(k=>[k.id,k]));
+  text('roadmap-baseline',data.planning.baseline);text('roadmap-quarter',data.planning.evidenceQuarter);text('roadmap-horizon',data.planning.horizon);text('roadmap-time-note',data.planning.timingNote);text('metric-headline-krs',data.headlineKeyResults.length);
+  const measureById=new Map((data.keyResults||[]).map(k=>[k.id,k]));
+  const headlineById=new Map((data.headlineKeyResults||[]).map(h=>[h.id,h]));
   const epicById=data.epics||{};
-  (data.objectives||[]).forEach((o,index)=>{
-    const details=node('details','roadmap-objective');details.dataset.group=o.group;details.dataset.objective=o.id;if(index===0)details.open=false;
+  (data.objectives||[]).forEach(o=>{
+    const details=node('details','roadmap-objective');details.dataset.group=o.group;details.dataset.objective=o.id;
     const summary=node('summary','roadmap-objective-summary');
     const left=node('div','roadmap-objective-copy');left.append(node('span','roadmap-id',o.id),node('strong','',o.definition),node('span','roadmap-objective-progress',o.progress));
-    const meta=node('div','roadmap-objective-meta');meta.append(metaPill(o.status,o.group),node('span','roadmap-time-pill',o.time),node('span','roadmap-count-pill',`${o.keyResults.length} Key Result${o.keyResults.length===1?'':'s'}`));
+    const meta=node('div','roadmap-objective-meta');meta.append(metaPill(o.status,o.group),node('span','roadmap-time-pill',o.time),node('span','roadmap-count-pill',`${o.headlineKeyResults.length} headline KR${o.headlineKeyResults.length===1?'':'s'}`),node('span','roadmap-count-pill',`${o.keyResults.length} registered measures`));
     summary.append(left,meta);details.append(summary);
     const body=node('div','roadmap-objective-body');
     const progress=node('div','roadmap-progress-block');progress.append(node('small','','OBJECTIVE PROGRESS'),node('p','',o.progress),node('span','roadmap-period-line',o.time));body.append(progress);
-    const krList=node('div','roadmap-kr-list');
-    o.keyResults.forEach(krId=>{
-      const kr=krById.get(krId);if(!kr)return;
-      const krDetails=node('details','roadmap-kr');krDetails.dataset.group=kr.group;
-      const krSummary=node('summary','roadmap-kr-summary');
-      const krCopy=node('div','roadmap-kr-copy');krCopy.append(node('span','roadmap-kr-id',kr.id),node('strong','',kr.definition));
-      if(kr.sharedRange)krCopy.append(node('span','roadmap-shared-note',`Shared source outcome for ${kr.sharedRange}`));
-      const krMeta=node('div','roadmap-kr-meta');krMeta.append(metaPill(kr.status,kr.group),node('span','roadmap-time-pill',kr.time),node('span','roadmap-count-pill',`${kr.epics.length} contributing Epic${kr.epics.length===1?'':'s'}`));
-      krSummary.append(krCopy,krMeta);krDetails.append(krSummary);
-      const krBody=node('div','roadmap-kr-body');krBody.append(node('small','roadmap-contrib-label','CONTRIBUTING EPICS'));
-      const epicGrid=node('div','roadmap-epic-grid');
-      kr.epics.forEach(epicId=>{
-        const ep=epicById[epicId];if(!ep)return;
-        const card=node('article','roadmap-epic-card');card.dataset.group=ep.group;
-        const top=node('div','roadmap-epic-top');
-        const title=node('div');title.append(node('span','roadmap-epic-id',ep.id),node('h4','',ep.title));
-        const badges=node('div','roadmap-epic-badges');badges.append(metaPill(ep.status,ep.group),node('span','roadmap-time-pill',ep.time));
-        top.append(title,badges);card.append(top,node('p','roadmap-epic-progress',ep.progress),node('span','roadmap-feature-count',`${ep.featureCount} registered features`));
-        epicGrid.append(card);
+    const headlineList=node('div','roadmap-headline-list');
+    o.headlineKeyResults.forEach(hid=>{
+      const h=headlineById.get(hid);if(!h)return;
+      const measures=h.measures.map(id=>measureById.get(id)).filter(Boolean);
+      const group=headlineGroup(measures);
+      const epicIds=[...new Set(measures.flatMap(m=>m.epics))];
+      const hDetails=node('details','roadmap-headline-kr');hDetails.dataset.group=group;
+      const hSummary=node('summary','roadmap-headline-summary');
+      const hCopy=node('div','roadmap-headline-copy');hCopy.append(node('span','roadmap-headline-id',h.id.replace(/^O\d+-/,'').replace('HKR','KR ')),node('strong','',h.title));
+      const hMeta=node('div','roadmap-headline-meta');hMeta.append(metaPill(headlineStatus(group),group),node('span','roadmap-time-pill',headlineTime(measures)),node('span','roadmap-count-pill',`${measures.length} measure${measures.length===1?'':'s'}`),node('span','roadmap-count-pill',`${epicIds.length} contributing Epic${epicIds.length===1?'':'s'}`));
+      hSummary.append(hCopy,hMeta);hDetails.append(hSummary);
+      const hBody=node('div','roadmap-headline-body');hBody.append(node('small','roadmap-contrib-label','REGISTERED MEASURES'));
+      const measureList=node('div','roadmap-measure-list');
+      measures.forEach(kr=>{
+        const krDetails=node('details','roadmap-measure');krDetails.dataset.group=kr.group;
+        const krSummary=node('summary','roadmap-measure-summary');
+        const krCopy=node('div','roadmap-kr-copy');krCopy.append(node('span','roadmap-kr-id',kr.id),node('strong','',kr.definition));
+        const krMeta=node('div','roadmap-kr-meta');krMeta.append(metaPill(kr.status,kr.group),node('span','roadmap-time-pill',kr.time),node('span','roadmap-count-pill',`${kr.epics.length} contributing Epic${kr.epics.length===1?'':'s'}`));
+        krSummary.append(krCopy,krMeta);krDetails.append(krSummary);
+        const krBody=node('div','roadmap-kr-body');krBody.append(node('small','roadmap-contrib-label','CONTRIBUTING EPICS'));
+        const epicGrid=node('div','roadmap-epic-grid');
+        kr.epics.forEach(epicId=>{
+          const ep=epicById[epicId];if(!ep)return;
+          const card=node('article','roadmap-epic-card');card.dataset.group=ep.group;
+          const top=node('div','roadmap-epic-top');
+          const title=node('div');title.append(node('span','roadmap-epic-id',ep.id),node('h4','',ep.title));
+          const badges=node('div','roadmap-epic-badges');badges.append(metaPill(ep.status,ep.group),node('span','roadmap-time-pill',ep.time));
+          top.append(title,badges);card.append(top,node('p','roadmap-epic-progress',ep.progress),node('span','roadmap-feature-count',`${ep.featureCount} registered features`));
+          epicGrid.append(card);
+        });
+        krBody.append(epicGrid);krDetails.append(krBody);measureList.append(krDetails);
       });
-      krBody.append(epicGrid);krDetails.append(krBody);krList.append(krDetails);
+      hBody.append(measureList);hDetails.append(hBody);headlineList.append(hDetails);
     });
-    body.append(krList);details.append(body);host.append(details);
+    body.append(headlineList);details.append(body);host.append(details);
   });
   bindRoadmapControls(host,{filtersEnabled:true});
 }
 function validRoadmapRelationships(data){
-  if(!object(data)||data.schemaVersion!=='roadmap-relationship-view/v2')return false;
-  if(!object(data.relationshipModel)||data.relationshipModel.objectiveToKeyResults!=='one-to-many'||data.relationshipModel.keyResultToEpics!=='one-to-many'||data.relationshipModel.objectiveToEpics!=='derived-through-key-results')return false;
+  if(!object(data)||data.schemaVersion!=='roadmap-relationship-view/v3')return false;
+  if(!object(data.relationshipModel)||data.relationshipModel.objectiveToHeadlineKeyResults!=='one-to-many'||data.relationshipModel.headlineKeyResultToRegisteredMeasures!=='one-to-many'||data.relationshipModel.registeredMeasureToEpics!=='one-to-many'||data.relationshipModel.objectiveToEpics!=='derived-through-registered-measures')return false;
   if(!boundedText(data.generatedAt)||!/^\d{4}-\d{2}-\d{2}$/.test(data.generatedAt))return false;
   if(!boundedText(data.sourceRevision)||!/^[0-9a-f]{40}$/.test(data.sourceRevision))return false;
   if(!object(data.planning)||!boundedText(data.planning.baseline)||!normalizeRoadmapDate(data.planning.baseline)||!boundedText(data.planning.evidenceQuarter)||!/^Q[1-4]\s+\d{4}$/.test(data.planning.evidenceQuarter)||!boundedText(data.planning.horizon)||!boundedText(data.planning.timingNote))return false;
-  if(!Array.isArray(data.objectives)||data.objectives.length<1||!Array.isArray(data.keyResults)||data.keyResults.length<1||!object(data.epics)||Object.keys(data.epics).length<1)return false;
-  const objectiveIds=data.objectives.map(o=>o?.id),krIds=data.keyResults.map(k=>k?.id),epicIds=Object.keys(data.epics);
-  if(new Set(objectiveIds).size!==objectiveIds.length||new Set(krIds).size!==krIds.length)return false;
-  const objectiveSet=new Set(objectiveIds),krSet=new Set(krIds),epicSet=new Set(epicIds);
+  if(!Array.isArray(data.objectives)||data.objectives.length<1||!Array.isArray(data.headlineKeyResults)||data.headlineKeyResults.length<1||!Array.isArray(data.keyResults)||data.keyResults.length<1||!object(data.epics)||Object.keys(data.epics).length<1)return false;
+  const objectiveIds=data.objectives.map(o=>o?.id),headlineIds=data.headlineKeyResults.map(h=>h?.id),krIds=data.keyResults.map(k=>k?.id),epicIds=Object.keys(data.epics);
+  if(new Set(objectiveIds).size!==objectiveIds.length||new Set(headlineIds).size!==headlineIds.length||new Set(krIds).size!==krIds.length)return false;
+  const objectiveSet=new Set(objectiveIds),headlineSet=new Set(headlineIds),krSet=new Set(krIds),epicSet=new Set(epicIds);
   const objectiveGroups=new Set(['active','accepted','gated','documentation','future']);
   const nestedGroups=new Set(['active','accepted','gated','documentation','future','planned']);
-  if(!data.objectives.every(o=>object(o)&&/^O\d+$/.test(o.id)&&boundedText(o.definition)&&boundedText(o.status)&&objectiveGroups.has(o.group)&&boundedText(o.progress)&&boundedText(o.time)&&Array.isArray(o.keyResults)&&o.keyResults.length>0&&new Set(o.keyResults).size===o.keyResults.length&&o.keyResults.every(id=>krSet.has(id))&&o.epics===undefined))return false;
+  if(!data.objectives.every(o=>object(o)&&/^O\d+$/.test(o.id)&&boundedText(o.definition)&&boundedText(o.status)&&objectiveGroups.has(o.group)&&boundedText(o.progress)&&boundedText(o.time)&&Array.isArray(o.headlineKeyResults)&&o.headlineKeyResults.length>=3&&o.headlineKeyResults.length<=5&&new Set(o.headlineKeyResults).size===o.headlineKeyResults.length&&o.headlineKeyResults.every(id=>headlineSet.has(id))&&Array.isArray(o.keyResults)&&o.keyResults.length>0&&new Set(o.keyResults).size===o.keyResults.length&&o.keyResults.every(id=>krSet.has(id))&&o.epics===undefined))return false;
+  if(!data.headlineKeyResults.every(h=>object(h)&&/^O\d+-HKR\d+$/.test(h.id)&&objectiveSet.has(h.objective)&&boundedText(h.title)&&Array.isArray(h.measures)&&h.measures.length>0&&new Set(h.measures).size===h.measures.length&&h.measures.every(id=>krSet.has(id))))return false;
   if(!data.keyResults.every(k=>{
     const sharedRangeOk=k.sharedRange===null||(boundedText(k.sharedRange)&&/^KR\d+\.\d+(?:-KR\d+\.\d+)?$/.test(k.sharedRange));
     const sourceOk=boundedText(k.source)&&k.source.length<=240&&!k.source.includes('..')&&!k.source.startsWith('/')&&/^[A-Za-z0-9._\/-]+$/.test(k.source);
     return object(k)&&/^KR\d+\.\d+$/.test(k.id)&&objectiveSet.has(k.objective)&&boundedText(k.definition)&&boundedText(k.status)&&nestedGroups.has(k.group)&&boundedText(k.time)&&sourceOk&&sharedRangeOk&&Array.isArray(k.epics)&&k.epics.length>0&&new Set(k.epics).size===k.epics.length&&k.epics.every(id=>epicSet.has(id));
   }))return false;
-  if(!epicIds.every(id=>{const ep=data.epics[id];return object(ep)&&ep.id===id&&/^EP-\d+$/.test(id)&&boundedText(ep.title)&&boundedText(ep.status)&&nestedGroups.has(ep.group)&&boundedText(ep.progress)&&boundedText(ep.time)&&Number.isInteger(ep.featureCount)&&ep.featureCount>=0&&Array.isArray(ep.features)&&ep.features.length===ep.featureCount&&ep.features.every(featureId=>boundedText(featureId)&&/^[A-Z][A-Z0-9]*-\d{2,}$/.test(featureId));} ))return false;
-  const allFeatureIds=epicIds.flatMap(id=>data.epics[id].features);
-  if(new Set(allFeatureIds).size!==allFeatureIds.length)return false;
-  const krById=new Map(data.keyResults.map(k=>[k.id,k]));
-  const krReachCount=new Map(krIds.map(id=>[id,0]));
-  const reachableEpics=new Set();
+  if(!epicIds.every(id=>{const ep=data.epics[id];return object(ep)&&ep.id===id&&/^EP-\d+$/.test(id)&&boundedText(ep.title)&&boundedText(ep.status)&&nestedGroups.has(ep.group)&&boundedText(ep.progress)&&boundedText(ep.time)&&Number.isInteger(ep.featureCount)&&ep.featureCount>=0&&Array.isArray(ep.features)&&ep.features.length===ep.featureCount&&ep.features.every(featureId=>boundedText(featureId)&&/^[A-Z][A-Z0-9]*-\d{2,}$/.test(featureId));}))return false;
+  const allFeatureIds=epicIds.flatMap(id=>data.epics[id].features);if(new Set(allFeatureIds).size!==allFeatureIds.length)return false;
+  const headlineById=new Map(data.headlineKeyResults.map(h=>[h.id,h])),krById=new Map(data.keyResults.map(k=>[k.id,k]));
+  const headlineReach=new Map(headlineIds.map(id=>[id,0])),krReach=new Map(krIds.map(id=>[id,0])),reachableEpics=new Set();
   for(const o of data.objectives){
-    for(const krId of o.keyResults){
-      const kr=krById.get(krId);
-      if(!kr||kr.objective!==o.id)return false;
-      krReachCount.set(krId,(krReachCount.get(krId)||0)+1);
-      kr.epics.forEach(id=>reachableEpics.add(id));
+    for(const hid of o.headlineKeyResults){
+      const h=headlineById.get(hid);if(!h||h.objective!==o.id)return false;headlineReach.set(hid,(headlineReach.get(hid)||0)+1);
+      for(const krId of h.measures){const kr=krById.get(krId);if(!kr||kr.objective!==o.id)return false;krReach.set(krId,(krReach.get(krId)||0)+1);kr.epics.forEach(id=>reachableEpics.add(id));}
     }
+    const derivedMeasures=new Set(o.headlineKeyResults.flatMap(hid=>(headlineById.get(hid)||{measures:[]}).measures));
+    if(derivedMeasures.size!==o.keyResults.length||o.keyResults.some(id=>!derivedMeasures.has(id)))return false;
   }
-  if([...krReachCount.values()].some(count=>count!==1))return false;
-  if(epicIds.some(id=>!reachableEpics.has(id)))return false;
+  if([...headlineReach.values()].some(count=>count!==1)||[...krReach.values()].some(count=>count!==1)||epicIds.some(id=>!reachableEpics.has(id)))return false;
   return true;
 }
 function normalizeRoadmapDate(value){

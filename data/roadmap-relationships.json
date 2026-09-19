@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "roadmap-relationship-view/v2",
+  "schemaVersion": "roadmap-relationship-view/v3",
   "generatedAt": "2026-09-19",
   "sourceRevision": "0678e47a8fb31c3cf2a2c14fb5d57a9bfec60836",
   "planning": {
@@ -20,6 +20,11 @@
         "KR1.1",
         "KR1.2",
         "KR1.3"
+      ],
+      "headlineKeyResults": [
+        "O1-HKR1",
+        "O1-HKR2",
+        "O1-HKR3"
       ]
     },
     {
@@ -33,6 +38,11 @@
         "KR2.1",
         "KR2.2",
         "KR2.3"
+      ],
+      "headlineKeyResults": [
+        "O2-HKR1",
+        "O2-HKR2",
+        "O2-HKR3"
       ]
     },
     {
@@ -70,6 +80,13 @@
         "KR3.22",
         "KR3.23",
         "KR3.24"
+      ],
+      "headlineKeyResults": [
+        "O3-HKR1",
+        "O3-HKR2",
+        "O3-HKR3",
+        "O3-HKR4",
+        "O3-HKR5"
       ]
     },
     {
@@ -92,6 +109,12 @@
         "KR4.10",
         "KR4.11",
         "KR4.12"
+      ],
+      "headlineKeyResults": [
+        "O4-HKR1",
+        "O4-HKR2",
+        "O4-HKR3",
+        "O4-HKR4"
       ]
     },
     {
@@ -108,6 +131,12 @@
         "KR5.4",
         "KR5.5",
         "KR5.6"
+      ],
+      "headlineKeyResults": [
+        "O5-HKR1",
+        "O5-HKR2",
+        "O5-HKR3",
+        "O5-HKR4"
       ]
     },
     {
@@ -122,6 +151,12 @@
         "KR6.2",
         "KR6.3",
         "KR6.4"
+      ],
+      "headlineKeyResults": [
+        "O6-HKR1",
+        "O6-HKR2",
+        "O6-HKR3",
+        "O6-HKR4"
       ]
     },
     {
@@ -135,6 +170,11 @@
         "KR7.1",
         "KR7.2",
         "KR7.3"
+      ],
+      "headlineKeyResults": [
+        "O7-HKR1",
+        "O7-HKR2",
+        "O7-HKR3"
       ]
     },
     {
@@ -149,6 +189,12 @@
         "KR8.2",
         "KR8.3",
         "KR8.4"
+      ],
+      "headlineKeyResults": [
+        "O8-HKR1",
+        "O8-HKR2",
+        "O8-HKR3",
+        "O8-HKR4"
       ]
     }
   ],
@@ -1325,8 +1371,283 @@
     }
   },
   "relationshipModel": {
-    "objectiveToKeyResults": "one-to-many",
-    "keyResultToEpics": "one-to-many",
-    "objectiveToEpics": "derived-through-key-results"
-  }
+    "objectiveToHeadlineKeyResults": "one-to-many",
+    "headlineKeyResultToRegisteredMeasures": "one-to-many",
+    "registeredMeasureToEpics": "one-to-many",
+    "objectiveToEpics": "derived-through-registered-measures"
+  },
+  "headlineKeyResults": [
+    {
+      "id": "O1-HKR1",
+      "objective": "O1",
+      "title": "Review integrity is clean at exact head",
+      "measures": [
+        "KR1.1"
+      ]
+    },
+    {
+      "id": "O1-HKR2",
+      "objective": "O1",
+      "title": "Accepted manifests are fully reproducible",
+      "measures": [
+        "KR1.2"
+      ]
+    },
+    {
+      "id": "O1-HKR3",
+      "objective": "O1",
+      "title": "Immutable release evidence cannot drift",
+      "measures": [
+        "KR1.3"
+      ]
+    },
+    {
+      "id": "O2-HKR1",
+      "objective": "O2",
+      "title": "A bounded evaluator hypothesis is explicit",
+      "measures": [
+        "KR2.1"
+      ]
+    },
+    {
+      "id": "O2-HKR2",
+      "objective": "O2",
+      "title": "Evaluator value is measured with evidence classes kept separate",
+      "measures": [
+        "KR2.2"
+      ]
+    },
+    {
+      "id": "O2-HKR3",
+      "objective": "O2",
+      "title": "Evaluation readiness requires zero operational authority",
+      "measures": [
+        "KR2.3"
+      ]
+    },
+    {
+      "id": "O3-HKR1",
+      "objective": "O3",
+      "title": "The minimum foundation is safe, reversible, and non-self-approving",
+      "measures": [
+        "KR3.1",
+        "KR3.2",
+        "KR3.3",
+        "KR3.4"
+      ]
+    },
+    {
+      "id": "O3-HKR2",
+      "objective": "O3",
+      "title": "Network, security, and identity are delivered through governed profiles",
+      "measures": [
+        "KR3.5",
+        "KR3.6",
+        "KR3.7",
+        "KR3.8",
+        "KR3.9",
+        "KR3.10",
+        "KR3.11",
+        "KR3.12",
+        "KR3.13",
+        "KR3.14"
+      ]
+    },
+    {
+      "id": "O3-HKR3",
+      "objective": "O3",
+      "title": "Tenant placement and hierarchy are governed without exposing cloud internals",
+      "measures": [
+        "KR3.15",
+        "KR3.25",
+        "KR3.26",
+        "KR3.27"
+      ]
+    },
+    {
+      "id": "O3-HKR4",
+      "objective": "O3",
+      "title": "Operational visibility and recovery are inherited, testable outcomes",
+      "measures": [
+        "KR3.16",
+        "KR3.17",
+        "KR3.18",
+        "KR3.19",
+        "KR3.20",
+        "KR3.21"
+      ]
+    },
+    {
+      "id": "O3-HKR5",
+      "objective": "O3",
+      "title": "Cost ownership and spend controls are explicit before live execution",
+      "measures": [
+        "KR3.22",
+        "KR3.23",
+        "KR3.24"
+      ]
+    },
+    {
+      "id": "O4-HKR1",
+      "objective": "O4",
+      "title": "Planning and outcomes remain stable, versioned, and traceable",
+      "measures": [
+        "KR4.1"
+      ]
+    },
+    {
+      "id": "O4-HKR2",
+      "objective": "O4",
+      "title": "Review surfaces faithfully present accepted evidence and profile state",
+      "measures": [
+        "KR4.2",
+        "KR4.4",
+        "KR4.5",
+        "KR4.8"
+      ]
+    },
+    {
+      "id": "O4-HKR3",
+      "objective": "O4",
+      "title": "Operational readiness produces an accountable release, hold, or stop decision",
+      "measures": [
+        "KR4.3",
+        "KR4.6",
+        "KR4.7"
+      ]
+    },
+    {
+      "id": "O4-HKR4",
+      "objective": "O4",
+      "title": "Change readiness is reconstructable from retained relationship history",
+      "measures": [
+        "KR4.9",
+        "KR4.10",
+        "KR4.11",
+        "KR4.12"
+      ]
+    },
+    {
+      "id": "O5-HKR1",
+      "objective": "O5",
+      "title": "Every product has a deliberate, reversible adoption surface",
+      "measures": [
+        "KR5.1",
+        "KR5.2",
+        "KR5.3"
+      ]
+    },
+    {
+      "id": "O5-HKR2",
+      "objective": "O5",
+      "title": "GitHub integration is endpoint-configurable and free of mandatory SaaS assumptions",
+      "measures": [
+        "KR5.4"
+      ]
+    },
+    {
+      "id": "O5-HKR3",
+      "objective": "O5",
+      "title": "GHES support is claimed only after authorized live-target acceptance",
+      "measures": [
+        "KR5.5"
+      ]
+    },
+    {
+      "id": "O5-HKR4",
+      "objective": "O5",
+      "title": "Restricted-network operation works on self-hosted runners with deterministic core behavior",
+      "measures": [
+        "KR5.6"
+      ]
+    },
+    {
+      "id": "O6-HKR1",
+      "objective": "O6",
+      "title": "Preview and Connected modes remain isolated and clearly distinguished",
+      "measures": [
+        "KR6.1"
+      ]
+    },
+    {
+      "id": "O6-HKR2",
+      "objective": "O6",
+      "title": "Storefront-to-Forge transport is authenticated and integrity-bound",
+      "measures": [
+        "KR6.2"
+      ]
+    },
+    {
+      "id": "O6-HKR3",
+      "objective": "O6",
+      "title": "Connected apps expose bounded readiness and provenance without widening authority",
+      "measures": [
+        "KR6.3"
+      ]
+    },
+    {
+      "id": "O6-HKR4",
+      "objective": "O6",
+      "title": "Cross-product acceptance proves tamper rejection and zero autonomous authority",
+      "measures": [
+        "KR6.4"
+      ]
+    },
+    {
+      "id": "O7-HKR1",
+      "objective": "O7",
+      "title": "AI proposals stay bound to versioned inputs and explicit human acceptance",
+      "measures": [
+        "KR7.1"
+      ]
+    },
+    {
+      "id": "O7-HKR2",
+      "objective": "O7",
+      "title": "Agent operations remain deterministic, least-privileged, reversible, and evidenced",
+      "measures": [
+        "KR7.2"
+      ]
+    },
+    {
+      "id": "O7-HKR3",
+      "objective": "O7",
+      "title": "No agent capability becomes Operational without customer validation and explicit authority",
+      "measures": [
+        "KR7.3"
+      ]
+    },
+    {
+      "id": "O8-HKR1",
+      "objective": "O8",
+      "title": "Customer context is complete and conflict-free on every scoped contract",
+      "measures": [
+        "KR8.1"
+      ]
+    },
+    {
+      "id": "O8-HKR2",
+      "objective": "O8",
+      "title": "Cross-customer substitution fails closed across the bounded journey",
+      "measures": [
+        "KR8.2"
+      ]
+    },
+    {
+      "id": "O8-HKR3",
+      "objective": "O8",
+      "title": "Authority, custody, secrets, audit, and lifecycle remain tenant-scoped",
+      "measures": [
+        "KR8.3"
+      ]
+    },
+    {
+      "id": "O8-HKR4",
+      "objective": "O8",
+      "title": "Dedicated and isolated deployment patterns are proven before any shared-tenancy claim",
+      "measures": [
+        "KR8.4"
+      ]
+    }
+  ]
 }
