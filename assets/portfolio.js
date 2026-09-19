@@ -246,11 +246,21 @@ function validRoadmapRelationships(data){
   if(epicIds.some(id=>!reachableEpics.has(id)))return false;
   return true;
 }
+function normalizeRoadmapDate(value){
+  if(!boundedText(value))return null;
+  const parsed=new Date(value);
+  return Number.isNaN(parsed.valueOf())?null:parsed.toISOString().slice(0,10);
+}
 function roadmapMatchesDashboard(data,dashboard){
   if(!object(dashboard)||!object(dashboard.baseline)||!Array.isArray(dashboard.objectives))return false;
   const relationshipFeatureCount=Object.values(data.epics||{}).reduce((total,ep)=>total+(Number.isInteger(ep.featureCount)?ep.featureCount:0),0);
   if(data.objectives.length!==dashboard.baseline.objectives||data.keyResults.length!==dashboard.baseline.keyResults||Object.keys(data.epics).length!==dashboard.baseline.epics||relationshipFeatureCount!==dashboard.baseline.features)return false;
   if(object(dashboard.source)&&boundedText(dashboard.source.revision)&&data.sourceRevision!==dashboard.source.revision)return false;
+  if(object(dashboard.source)&&boundedText(dashboard.source.roadmapBaseline)){
+    const relationshipBaseline=normalizeRoadmapDate(data.planning.baseline);
+    const dashboardBaseline=normalizeRoadmapDate(dashboard.source.roadmapBaseline);
+    if(!relationshipBaseline||!dashboardBaseline||relationshipBaseline!==dashboardBaseline)return false;
+  }
   const objectiveById=new Map(data.objectives.map(o=>[o.id,o]));
   return dashboard.objectives.every(o=>{
     const mapped=objectiveById.get(o.id);
