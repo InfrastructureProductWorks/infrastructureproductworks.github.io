@@ -37,3 +37,12 @@ The endpoint:
 - does not accept security vulnerabilities or sensitive customer material.
 
 Security-sensitive reports remain on the separate security-reporting path and must never be converted into ordinary public support issues.
+
+
+## Immediate owner notification
+
+Set `SUPPORT_GITHUB_ASSIGNEE` to the GitHub username that should own new website support issues.
+
+After a private support issue is created, the backend attempts to assign that issue to the configured owner. Assignment is best-effort: an assignment failure is logged but never changes the customer submission result or prevents issue creation.
+
+GitHub can deliver assignment notifications through the web notifications inbox, GitHub Mobile, and email according to the assignee's GitHub notification settings.

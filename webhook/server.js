@@ -5,6 +5,7 @@ const port = process.env.PORT || 10000;
 const secret = process.env.GITHUB_MARKETPLACE_WEBHOOK_SECRET;
 const supportToken = process.env.SUPPORT_GITHUB_TOKEN;
 const supportRepo = process.env.SUPPORT_GITHUB_REPO || '';
+const supportAssignee = process.env.SUPPORT_GITHUB_ASSIGNEE || '';
 const allowedOrigins = new Set([
   'https://infrastructureproductworks.com',
   'https://www.infrastructureproductworks.com'
@@ -61,6 +62,23 @@ async function assertPrivateSupportRepo(){
   const repo=await response.json();
   if(repo.private!==true)throw new Error('support_repo_must_be_private');
 }
+async function assignSupportIssue(issueNumber){
+  if(!supportAssignee)return false;
+  const response=await fetch(`https://api.github.com/repos/${supportRepo}/issues/${issueNumber}/assignees`,{
+    method:'POST',
+    headers:{
+      'accept':'application/vnd.github+json',
+      'authorization':`Bearer ${supportToken}`,
+      'x-github-api-version':'2022-11-28',
+      'content-type':'application/json',
+      'user-agent':'InfrastructureProductWorks-Support-Intake'
+    },
+    body:JSON.stringify({assignees:[supportAssignee]})
+  });
+  if(!response.ok)throw new Error(`github_assign_${response.status}`);
+  return true;
+}
+
 async function createSupportIssue(payload,reference){
   if(!supportToken||!supportRepo)return null;
   await assertPrivateSupportRepo();
@@ -135,6 +153,12 @@ async function handleSupport(req,res,origin){
   try{
     const issue=await createSupportIssue(payload,reference);
     console.log(JSON.stringify({kind:'support-intake',reference,issue:issue?.number||null,product:payload.product,type:payload.type,receivedAt:new Date().toISOString()}));
+    try{
+      const assigned=await assignSupportIssue(issue.number);
+      if(assigned)console.log(JSON.stringify({kind:'support-assigned',reference,issue:issue.number,assignee:supportAssignee,receivedAt:new Date().toISOString()}));
+    }catch(error){
+      console.error(JSON.stringify({kind:'support-assignment-error',reference,issue:issue.number,message:String(error?.message||error)}));
+    }
     return supportResult(res,formMode,201,{accepted:true,reference},origin);
   }catch(error){
     console.error(JSON.stringify({kind:'support-intake-error',reference,message:String(error?.message||error)}));
