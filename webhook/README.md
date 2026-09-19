@@ -39,18 +39,10 @@ The endpoint:
 Security-sensitive reports remain on the separate security-reporting path and must never be converted into ordinary public support issues.
 
 
-## Immediate email notification
+## Immediate owner notification
 
-The backend can send a best-effort email alert after a private GitHub support issue is created. Notification failure never changes the customer submission result and never prevents issue creation.
+Set `SUPPORT_GITHUB_ASSIGNEE` to the GitHub username that should own new website support issues.
 
-Configure these protected environment variables on the Render service:
+After a private support issue is created, the backend attempts to assign that issue to the configured owner. Assignment is best-effort: an assignment failure is logged but never changes the customer submission result or prevents issue creation.
 
-- `SUPPORT_NOTIFY_TO`: mailbox that receives the alert.
-- `SUPPORT_NOTIFY_FROM`: optional From address; defaults to `SUPPORT_SMTP_USER`.
-- `SUPPORT_SMTP_HOST`: SMTP server hostname.
-- `SUPPORT_SMTP_PORT`: SMTP port; defaults to `465`.
-- `SUPPORT_SMTP_SECURE`: defaults to `true`; set to `false` for STARTTLS-style ports such as 587.
-- `SUPPORT_SMTP_USER`: SMTP account username.
-- `SUPPORT_SMTP_PASS`: SMTP password or provider-issued app password.
-
-The email contains only the support reference, product, request type, title and private issue link. Customer contact information and the full request remain only in the private GitHub issue.
+GitHub can deliver assignment notifications through the web notifications inbox, GitHub Mobile, and email according to the assignee's GitHub notification settings.
