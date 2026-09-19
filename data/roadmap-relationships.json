@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "roadmap-relationship-view/v1",
+  "schemaVersion": "roadmap-relationship-view/v2",
   "generatedAt": "2026-09-19",
   "sourceRevision": "0678e47a8fb31c3cf2a2c14fb5d57a9bfec60836",
   "planning": {
@@ -20,9 +20,6 @@
         "KR1.1",
         "KR1.2",
         "KR1.3"
-      ],
-      "epics": [
-        "EP-01"
       ]
     },
     {
@@ -36,10 +33,6 @@
         "KR2.1",
         "KR2.2",
         "KR2.3"
-      ],
-      "epics": [
-        "EP-02",
-        "EP-03"
       ]
     },
     {
@@ -77,16 +70,6 @@
         "KR3.22",
         "KR3.23",
         "KR3.24"
-      ],
-      "epics": [
-        "EP-04",
-        "EP-09",
-        "EP-10",
-        "EP-11",
-        "EP-12",
-        "EP-13",
-        "EP-14",
-        "EP-15"
       ]
     },
     {
@@ -109,17 +92,6 @@
         "KR4.10",
         "KR4.11",
         "KR4.12"
-      ],
-      "epics": [
-        "EP-05",
-        "EP-03",
-        "EP-06",
-        "EP-10",
-        "EP-11",
-        "EP-13",
-        "EP-14",
-        "EP-15",
-        "EP-19"
       ]
     },
     {
@@ -136,10 +108,6 @@
         "KR5.4",
         "KR5.5",
         "KR5.6"
-      ],
-      "epics": [
-        "EP-07",
-        "EP-08"
       ]
     },
     {
@@ -154,9 +122,6 @@
         "KR6.2",
         "KR6.3",
         "KR6.4"
-      ],
-      "epics": [
-        "EP-16"
       ]
     },
     {
@@ -170,9 +135,6 @@
         "KR7.1",
         "KR7.2",
         "KR7.3"
-      ],
-      "epics": [
-        "EP-17"
       ]
     },
     {
@@ -187,9 +149,6 @@
         "KR8.2",
         "KR8.3",
         "KR8.4"
-      ],
-      "epics": [
-        "EP-18"
       ]
     }
   ],
@@ -1364,5 +1323,10 @@
         "CRP-08"
       ]
     }
+  },
+  "relationshipModel": {
+    "objectiveToKeyResults": "one-to-many",
+    "keyResultToEpics": "one-to-many",
+    "objectiveToEpics": "derived-through-key-results"
   }
 }
