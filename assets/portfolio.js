@@ -184,8 +184,8 @@ function headlineRollup(headline,krById){
 }
 function headlineGroup(measures){
   const groups=new Set(measures.map(m=>m.group));
-  if(groups.has('active'))return 'active';
   if(groups.has('gated'))return 'gated';
+  if(groups.has('active'))return 'active';
   if(groups.has('documentation'))return 'documentation';
   if(groups.size===1&&groups.has('accepted'))return 'accepted';
   if(groups.has('planned'))return 'planned';
