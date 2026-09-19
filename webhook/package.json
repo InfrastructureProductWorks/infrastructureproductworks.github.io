@@ -1,1 +1,15 @@
-{"name":"ipw-marketplace-webhook","version":"1.0.0","private":true,"type":"module","scripts":{"start":"node server.js"},"engines":{"node":">=20"}}
+{
+  "name": "ipw-marketplace-webhook",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "nodemailer": "10.0.10"
+  }
+}
