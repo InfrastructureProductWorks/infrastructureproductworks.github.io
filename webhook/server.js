@@ -34,8 +34,22 @@ function readBody(req,maxBytes=32768){
     req.on('error',reject);
   });
 }
+async function assertPrivateSupportRepo(){
+  const response=await fetch(`https://api.github.com/repos/${supportRepo}`,{
+    headers:{
+      'accept':'application/vnd.github+json',
+      'authorization':`Bearer ${supportToken}`,
+      'x-github-api-version':'2022-11-28',
+      'user-agent':'InfrastructureProductWorks-Support-Intake'
+    }
+  });
+  if(!response.ok)throw new Error(`github_repo_${response.status}`);
+  const repo=await response.json();
+  if(repo.private!==true)throw new Error('support_repo_must_be_private');
+}
 async function createSupportIssue(payload,reference){
   if(!supportToken||!supportRepo)return null;
+  await assertPrivateSupportRepo();
   const body=[
     'Website support intake',
     '',
