@@ -54,7 +54,7 @@ jobs:
             prior=snapshot.date;
           }
           const ep08=data.epics['EP-08'];
-          if(!ep08||!/externally blocked|external prerequisite|customer-dependent/i.test(`${ep08.status||''} ${ep08.progress||''} ${ep08.progressBasis||''}`)) throw new Error('EP-08 external block contract');
+          if(!ep08||!/externally blocked|external prerequisite|customer-dependent/i.test(`${ep08.status||''} ${ep08.progress||''} ${ep08.progressBasis||''} ${ep08.time||''}`)) throw new Error('EP-08 external block contract');
           console.log('Portfolio forecast contract validated.');
           NODE
 
