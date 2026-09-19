@@ -1,6 +1,13 @@
 name: Verify public site
 
 on:
+  pull_request:
+    paths:
+      - portfolio/index.html
+      - assets/portfolio.js
+      - assets/portfolio.css
+      - data/roadmap-relationships.json
+      - .github/workflows/verify-public-site.yml
   push:
     branches: [main]
   workflow_dispatch:
@@ -9,8 +16,51 @@ permissions:
   contents: read
 
 jobs:
+  validate-portfolio-outlook:
+    name: validate-portfolio-outlook
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JavaScript and forecast contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check assets/portfolio.js
+          grep -Fq "epicExternallyBlocked" assets/portfolio.js
+          grep -Fq "forecastSignal" assets/portfolio.js
+          grep -Fq "progressHistory" assets/portfolio.js
+          grep -Fq "AUTO FORECAST" assets/portfolio.js
+          grep -Fq "20260919-outlook-v3" portfolio/index.html
+          if grep -Fq "Protected-main evidence" portfolio/index.html; then
+            echo "::error::Portfolio must not claim protected-main evidence without verified protection."
+            exit 1
+          fi
+          node <<'NODE'
+          const fs=require('fs');
+          const data=JSON.parse(fs.readFileSync('data/roadmap-relationships.json','utf8'));
+          const allowed=new Set([0,25,50,75,100]);
+          if(data.forecastModel?.method!=='linear-evidence-trend/v1') throw new Error('forecastModel method');
+          if(data.forecastModel.minimumSnapshots!==2||data.forecastModel.minimumSpanDays!==7) throw new Error('forecast bounds');
+          if(data.forecastModel.blockedBehavior!=='no-date-inferred'||data.forecastModel.planningWindows!=='explicit-roadmap-assumptions') throw new Error('forecast semantics');
+          if(!Array.isArray(data.progressHistory)||data.progressHistory.length<1) throw new Error('progressHistory missing');
+          let prior='';
+          for(const snapshot of data.progressHistory){
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(snapshot.date)||snapshot.date<=prior) throw new Error('history dates');
+            if(snapshot.date>data.generatedAt) throw new Error('future history snapshot');
+            const ids=Object.keys(snapshot.epics||{});
+            if(ids.length<1||ids.some(id=>!/^EP-\d+$/.test(id))) throw new Error('history epic identifiers');
+            if(ids.some(id=>!allowed.has(snapshot.epics[id]))) throw new Error('history completion scale');
+            prior=snapshot.date;
+          }
+          const ep08=data.epics['EP-08'];
+          if(!ep08||!/externally blocked|external prerequisite|customer-dependent/i.test(`${ep08.status||''} ${ep08.progress||''} ${ep08.progressBasis||''}`)) throw new Error('EP-08 external block contract');
+          console.log('Portfolio forecast contract validated.');
+          NODE
+
   verify-public-site:
     name: verify-custom-domain
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -28,11 +78,18 @@ jobs:
           ok=0
           for attempt in $(seq 1 30); do
             echo "Attempt ${attempt}/30 for ${BASE_URL}/portfolio/"
-            code="$(curl --location --silent --show-error               --connect-timeout 10 --max-time 20               --output "${portfolio}"               --write-out '%{http_code}'               "${BASE_URL}/portfolio/?verify=${EXPECTED_SHA}" || true)"
+            code="$(curl --location --silent --show-error \
+              --connect-timeout 10 --max-time 20 \
+              --output "${portfolio}" \
+              --write-out '%{http_code}' \
+              "${BASE_URL}/portfolio/?verify=${EXPECTED_SHA}" || true)"
 
-            if [[ "${code}" == "200" ]]               && grep -Fq 'CONNECTED APPS UI QUALITY' "${portfolio}"               && grep -Fq 'BUILD → VALIDATE → EVIDENCE' "${portfolio}" \
+            if [[ "${code}" == "200" ]] \
+              && grep -Fq 'CONNECTED APPS UI QUALITY' "${portfolio}" \
+              && grep -Fq 'BUILD → VALIDATE → EVIDENCE' "${portfolio}" \
               && grep -Fq 'DELIVERY OUTLOOK' "${portfolio}" \
-              && grep -Fq 'delivery-outlook-grid' "${portfolio}"; then
+              && grep -Fq 'delivery-outlook-grid' "${portfolio}" \
+              && grep -Fq '20260919-outlook-v3' "${portfolio}"; then
               ok=1
               break
             fi
@@ -45,7 +102,10 @@ jobs:
             exit 1
           fi
 
-          curl --location --fail --silent --show-error             --connect-timeout 10 --max-time 20             "${BASE_URL}/assets/portfolio.js?verify=${EXPECTED_SHA}"             --output "${script}"
+          curl --location --fail --silent --show-error \
+            --connect-timeout 10 --max-time 20 \
+            "${BASE_URL}/assets/portfolio.js?verify=${EXPECTED_SHA}" \
+            --output "${script}"
 
           grep -Fq 'proof-pattern' "${script}"
           grep -Fq "['BUILD',p.state]" "${script}"
@@ -53,10 +113,13 @@ jobs:
           grep -Fq "['EVIDENCE',p.evidence]" "${script}"
           grep -Fq 'renderDeliveryOutlook' "${script}"
           grep -Fq 'DELIVERY_OUTLOOK_MILESTONES' "${script}"
+          grep -Fq 'epicExternallyBlocked' "${script}"
+          grep -Fq 'forecastSignal' "${script}"
+          grep -Fq 'AUTO FORECAST' "${script}"
 
           echo "Public deployment verified:"
           echo "  URL: ${BASE_URL}/portfolio/"
           echo "  HTTP: 200"
           echo "  Connected Apps validation panel: present"
           echo "  Build -> Validate -> Evidence product pattern: present"
-          echo "  Delivery Outlook: present"
+          echo "  Delivery Outlook: history-backed forecast plumbing present"
