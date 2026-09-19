@@ -31,7 +31,10 @@ jobs:
           grep -Fq "forecastSignal" assets/portfolio.js
           grep -Fq "progressHistory" assets/portfolio.js
           grep -Fq "AUTO FORECAST" assets/portfolio.js
-          grep -Fq "20260919-outlook-v3" portfolio/index.html
+          js_blob="$(git hash-object assets/portfolio.js)"
+          css_blob="$(git hash-object assets/portfolio.css)"
+          grep -Fq "/assets/portfolio.js?v=${js_blob}" portfolio/index.html
+          grep -Fq "/assets/portfolio.css?v=${css_blob}" portfolio/index.html
           if grep -Fq "Protected-main evidence" portfolio/index.html; then
             echo "::error::Portfolio must not claim protected-main evidence without verified protection."
             exit 1
@@ -64,6 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
+      - uses: actions/checkout@v4
       - name: Verify deployed portfolio on custom domain
         shell: bash
         env:
@@ -74,6 +78,11 @@ jobs:
 
           portfolio=/tmp/portfolio.html
           script=/tmp/portfolio.js
+          stylesheet=/tmp/portfolio.css
+          js_blob="$(git hash-object assets/portfolio.js)"
+          css_blob="$(git hash-object assets/portfolio.css)"
+          js_ref="/assets/portfolio.js?v=${js_blob}"
+          css_ref="/assets/portfolio.css?v=${css_blob}"
 
           ok=0
           for attempt in $(seq 1 30); do
@@ -89,33 +98,43 @@ jobs:
               && grep -Fq 'BUILD → VALIDATE → EVIDENCE' "${portfolio}" \
               && grep -Fq 'DELIVERY OUTLOOK' "${portfolio}" \
               && grep -Fq 'delivery-outlook-grid' "${portfolio}" \
-              && grep -Fq '20260919-outlook-v3' "${portfolio}"; then
-              ok=1
-              break
+              && grep -Fq "${js_ref}" "${portfolio}" \
+              && grep -Fq "${css_ref}" "${portfolio}"; then
+
+              script_code="$(curl --location --silent --show-error \
+                --connect-timeout 10 --max-time 20 \
+                --output "${script}" \
+                --write-out '%{http_code}' \
+                "${BASE_URL}${js_ref}&verify=${EXPECTED_SHA}" || true)"
+              css_code="$(curl --location --silent --show-error \
+                --connect-timeout 10 --max-time 20 \
+                --output "${stylesheet}" \
+                --write-out '%{http_code}' \
+                "${BASE_URL}${css_ref}&verify=${EXPECTED_SHA}" || true)"
+
+              if [[ "${script_code}" == "200" && "${css_code}" == "200" ]] \
+                && grep -Fq 'proof-pattern' "${script}" \
+                && grep -Fq "['BUILD',p.state]" "${script}" \
+                && grep -Fq "['VALIDATE',p.status]" "${script}" \
+                && grep -Fq "['EVIDENCE',p.evidence]" "${script}" \
+                && grep -Fq 'renderDeliveryOutlook' "${script}" \
+                && grep -Fq 'DELIVERY_OUTLOOK_MILESTONES' "${script}" \
+                && grep -Fq 'epicExternallyBlocked' "${script}" \
+                && grep -Fq 'forecastSignal' "${script}" \
+                && grep -Fq 'AUTO FORECAST' "${script}" \
+                && grep -Fq 'delivery-outlook-card' "${stylesheet}"; then
+                ok=1
+                break
+              fi
             fi
 
             sleep 10
           done
 
           if [[ "${ok}" != "1" ]]; then
-            echo "::error::Custom-domain portfolio did not publish the expected dashboard markers."
+            echo "::error::Custom-domain portfolio did not publish the expected content-addressed dashboard assets."
             exit 1
           fi
-
-          curl --location --fail --silent --show-error \
-            --connect-timeout 10 --max-time 20 \
-            "${BASE_URL}/assets/portfolio.js?verify=${EXPECTED_SHA}" \
-            --output "${script}"
-
-          grep -Fq 'proof-pattern' "${script}"
-          grep -Fq "['BUILD',p.state]" "${script}"
-          grep -Fq "['VALIDATE',p.status]" "${script}"
-          grep -Fq "['EVIDENCE',p.evidence]" "${script}"
-          grep -Fq 'renderDeliveryOutlook' "${script}"
-          grep -Fq 'DELIVERY_OUTLOOK_MILESTONES' "${script}"
-          grep -Fq 'epicExternallyBlocked' "${script}"
-          grep -Fq 'forecastSignal' "${script}"
-          grep -Fq 'AUTO FORECAST' "${script}"
 
           echo "Public deployment verified:"
           echo "  URL: ${BASE_URL}/portfolio/"
