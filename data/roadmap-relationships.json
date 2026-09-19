@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "roadmap-relationship-view/v3",
+  "schemaVersion": "roadmap-relationship-view/v4",
   "generatedAt": "2026-09-19",
   "sourceRevision": "0678e47a8fb31c3cf2a2c14fb5d57a9bfec60836",
   "planning": {
@@ -1021,7 +1021,9 @@
         "B-01",
         "B-02",
         "B-03"
-      ]
+      ],
+      "completionPercent": 100,
+      "progressBasis": "Accepted bounded baseline for evidence integrity and custody."
     },
     "EP-02": {
       "id": "EP-02",
@@ -1035,7 +1037,9 @@
         "F-03",
         "F-04",
         "E-04"
-      ]
+      ],
+      "completionPercent": 0,
+      "progressBasis": "Planned; no accepted implementation slice is recorded."
     },
     "EP-03": {
       "id": "EP-03",
@@ -1057,7 +1061,9 @@
         "AEP-03",
         "AEP-04",
         "AEP-05"
-      ]
+      ],
+      "completionPercent": 50,
+      "progressBasis": "In progress; AEP-01 through AEP-04 are bounded accepted while broader assessment work remains open."
     },
     "EP-04": {
       "id": "EP-04",
@@ -1075,7 +1081,9 @@
         "MCF-05",
         "MCF-06",
         "MCF-07"
-      ]
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Defined and gated; live minimum-foundation proof still requires authorized infrastructure and authority."
     },
     "EP-05": {
       "id": "EP-05",
@@ -1091,7 +1099,9 @@
         "PLO-03",
         "PLO-04",
         "PLO-05"
-      ]
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Defined and gated; operational planning/outcome use remains conditional on producer evidence."
     },
     "EP-06": {
       "id": "EP-06",
@@ -1107,7 +1117,9 @@
         "ORC-03",
         "ORC-04",
         "ORC-05"
-      ]
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Defined and gated; operational readiness still requires customer-selected evidence and authority."
     },
     "EP-07": {
       "id": "EP-07",
@@ -1126,7 +1138,9 @@
         "DAS-06",
         "DAS-07",
         "DAS-08"
-      ]
+      ],
+      "completionPercent": 100,
+      "progressBasis": "Current bounded distribution/adoption baseline is functionally closed."
     },
     "EP-08": {
       "id": "EP-08",
@@ -1145,7 +1159,9 @@
         "GHE-06",
         "GHE-07",
         "GHE-08"
-      ]
+      ],
+      "completionPercent": 75,
+      "progressBasis": "GHE-06 is bounded accepted; GHE-07 is externally blocked and GHE-08 remains gated."
     },
     "EP-09": {
       "id": "EP-09",
@@ -1164,7 +1180,9 @@
         "NET-06",
         "NET-07",
         "NET-08"
-      ]
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Network product contract and simulation design exist; live integration remains gated."
     },
     "EP-10": {
       "id": "EP-10",
@@ -1185,7 +1203,9 @@
         "SEC-08",
         "SEC-09",
         "SEC-10"
-      ]
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Security profile/documentation work exists; live integration remains gated."
     },
     "EP-11": {
       "id": "EP-11",
@@ -1206,7 +1226,9 @@
         "IDN-08",
         "IDN-09",
         "IDN-10"
-      ]
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Identity contracts are defined; live identity-provider operation remains gated."
     },
     "EP-12": {
       "id": "EP-12",
@@ -1225,7 +1247,9 @@
         "HIE-06",
         "HIE-07",
         "HIE-08"
-      ]
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Hierarchy/vending contract and simulation design exist; live vending remains gated."
     },
     "EP-13": {
       "id": "EP-13",
@@ -1244,7 +1268,9 @@
         "OBS-06",
         "OBS-07",
         "OBS-08"
-      ]
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Observability contract and simulation design exist; live telemetry remains gated."
     },
     "EP-14": {
       "id": "EP-14",
@@ -1263,7 +1289,9 @@
         "RES-06",
         "RES-07",
         "RES-08"
-      ]
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Resilience/recovery contracts are defined; observed recovery evidence remains gated."
     },
     "EP-15": {
       "id": "EP-15",
@@ -1282,7 +1310,9 @@
         "FIN-06",
         "FIN-07",
         "FIN-08"
-      ]
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Bounded cost-admission evidence exists; authoritative cost/spending paths remain gated."
     },
     "EP-16": {
       "id": "EP-16",
@@ -1301,7 +1331,9 @@
         "CAP-06",
         "CAP-07",
         "CAP-08"
-      ]
+      ],
+      "completionPercent": 75,
+      "progressBasis": "EDA-01 through EDA-05 are accepted; EDA-06 is current and later adapters remain open."
     },
     "EP-17": {
       "id": "EP-17",
@@ -1317,7 +1349,9 @@
         "AIO-03",
         "AIO-04",
         "AIO-05"
-      ]
+      ],
+      "completionPercent": 0,
+      "progressBasis": "Future/evidence-gated; no operational agent capability is accepted."
     },
     "EP-18": {
       "id": "EP-18",
@@ -1336,7 +1370,9 @@
         "MCI-06",
         "MCI-07",
         "MCI-08"
-      ]
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Documentation-first isolation architecture is defined; operational isolation is not claimed."
     },
     "EP-19": {
       "id": "EP-19",
@@ -1355,13 +1391,15 @@
         "CRP-06",
         "CRP-07",
         "CRP-08"
-      ]
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Documentation-first change-context/history contracts are defined before operational adapters."
     }
   },
   "relationshipModel": {
     "objectiveToHeadlineKeyResults": "one-to-many",
-    "headlineKeyResultToRegisteredMeasures": "one-to-many",
-    "registeredMeasureToEpics": "one-to-many",
+    "headlineKeyResultToEpics": "derived-through-registered-measures",
+    "registeredMeasures": "traceability-only-hidden-from-executive-view",
     "objectiveToEpics": "derived-through-registered-measures"
   },
   "headlineKeyResults": [
@@ -1553,5 +1591,12 @@
         "KR8.4"
       ]
     }
-  ]
+  ],
+  "progressModel": {
+    "method": "evidence-backed-epic-rollup/v1",
+    "scale": "0 planned/future · 25 defined or gated · 50 in progress · 75 bounded validation/integration · 100 accepted or closed",
+    "strategicKeyResult": "rounded mean of unique contributing Epic completion percentages",
+    "objective": "rounded mean of unique contributing Epic completion percentages across all strategic Key Results",
+    "note": "Percentages describe current bounded roadmap completion, not production readiness, authorization, or deployment readiness."
+  }
 }
