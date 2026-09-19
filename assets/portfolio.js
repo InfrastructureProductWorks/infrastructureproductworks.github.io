@@ -217,6 +217,8 @@ function validRoadmapRelationships(data){
   if(!data.objectives.every(o=>object(o)&&/^O\d+$/.test(o.id)&&boundedText(o.definition)&&boundedText(o.status)&&objectiveGroups.has(o.group)&&boundedText(o.progress)&&boundedText(o.time)&&Array.isArray(o.keyResults)&&Array.isArray(o.epics)&&new Set(o.keyResults).size===o.keyResults.length&&new Set(o.epics).size===o.epics.length&&o.keyResults.every(id=>krSet.has(id))&&o.epics.every(id=>epicSet.has(id))))return false;
   if(!data.keyResults.every(k=>object(k)&&/^KR\d+\.\d+$/.test(k.id)&&objectiveSet.has(k.objective)&&boundedText(k.definition)&&boundedText(k.status)&&boundedText(k.group)&&boundedText(k.time)&&Array.isArray(k.epics)&&k.epics.length>0&&new Set(k.epics).size===k.epics.length&&k.epics.every(id=>epicSet.has(id))))return false;
   if(!epicIds.every(id=>{const ep=data.epics[id];return object(ep)&&ep.id===id&&/^EP-\d+$/.test(id)&&boundedText(ep.title)&&boundedText(ep.status)&&boundedText(ep.group)&&boundedText(ep.progress)&&boundedText(ep.time)&&Number.isInteger(ep.featureCount)&&ep.featureCount>=0&&Array.isArray(ep.features)&&ep.features.length===ep.featureCount&&ep.features.every(boundedText);} ))return false;
+  const allFeatureIds=epicIds.flatMap(id=>data.epics[id].features);
+  if(new Set(allFeatureIds).size!==allFeatureIds.length)return false;
   const krById=new Map(data.keyResults.map(k=>[k.id,k]));
   const krReachCount=new Map(krIds.map(id=>[id,0]));
   const reachableEpics=new Set();
