@@ -17,6 +17,20 @@ function json(res,status,body,origin){
   if(origin&&allowedOrigins.has(origin)){headers['access-control-allow-origin']=origin;headers['vary']='Origin'}
   res.writeHead(status,headers);res.end(JSON.stringify(body));
 }
+function supportResult(res,formMode,status,body,origin){
+  if(!formMode)return json(res,status,body,origin);
+  const targetOrigin=allowedOrigins.has(origin)?origin:'https://infrastructureproductworks.com';
+  const params=new URLSearchParams();
+  params.set('submitted',body.accepted?'1':'0');
+  if(body.reference)params.set('reference',body.reference);
+  if(!body.accepted&&body.error)params.set('reason',body.error);
+  res.writeHead(303,{
+    'location':`${targetOrigin}/support/?${params.toString()}#support-form`,
+    'cache-control':'no-store',
+    'x-content-type-options':'nosniff'
+  });
+  res.end();
+}
 function clean(value,max){return typeof value==='string'?value.trim().replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,'').slice(0,max):''}
 function validEmail(value){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)&&value.length<=254}
 function clientIp(req){return String(req.headers['x-forwarded-for']||req.socket.remoteAddress||'unknown').split(',')[0].trim()}
@@ -86,11 +100,18 @@ async function createSupportIssue(payload,reference){
   return {number:issue.number,url:issue.html_url};
 }
 async function handleSupport(req,res,origin){
-  if(!origin||!allowedOrigins.has(origin))return json(res,403,{error:'origin_not_allowed'},origin);
-  if(limited(req))return json(res,429,{error:'rate_limited'},origin);
-  let raw;try{raw=await readBody(req)}catch{return json(res,413,{error:'request_too_large'},origin)}
-  let input;try{input=JSON.parse(raw.toString('utf8'))}catch{return json(res,400,{error:'invalid_json'},origin)}
-  if(clean(input.website,200))return json(res,202,{accepted:true},origin);
+  const contentType=String(req.headers['content-type']||'').split(';')[0].trim().toLowerCase();
+  const formMode=contentType==='application/x-www-form-urlencoded';
+  if(!origin||!allowedOrigins.has(origin))return supportResult(res,formMode,403,{error:'origin_not_allowed'},origin);
+  if(limited(req))return supportResult(res,formMode,429,{error:'rate_limited'},origin);
+  let raw;try{raw=await readBody(req)}catch{return supportResult(res,formMode,413,{error:'request_too_large'},origin)}
+  let input;
+  try{
+    if(contentType==='application/json')input=JSON.parse(raw.toString('utf8'));
+    else if(formMode)input=Object.fromEntries(new URLSearchParams(raw.toString('utf8')).entries());
+    else return supportResult(res,formMode,415,{error:'unsupported_content_type'},origin);
+  }catch{return supportResult(res,formMode,400,{error:'invalid_submission'},origin)}
+  if(clean(input.website,200))return supportResult(res,formMode,202,{accepted:true},origin);
   const payload={
     name:clean(input.name,100),
     email:clean(input.email,254),
@@ -104,20 +125,20 @@ async function handleSupport(req,res,origin){
   const products=new Set(['Storefront','IaaP Guard','IaaP Forge','IaaP Console','IaaP Assurance','Crossplane','Website','General']);
   const types=new Set(['Product question','Bug','Documentation','Installation','Feature request','Other']);
   if(!payload.name||!validEmail(payload.email)||!products.has(payload.product)||!types.has(payload.type)||payload.title.length<4||payload.description.length<10){
-    return json(res,400,{error:'invalid_submission'},origin);
+    return supportResult(res,formMode,400,{error:'invalid_submission'},origin);
   }
   const reference=`IPW-${new Date().toISOString().slice(0,10).replaceAll('-','')}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
   if(!supportToken||!supportRepo){
     console.error(JSON.stringify({kind:'support-intake-not-configured',reference,product:payload.product,type:payload.type,receivedAt:new Date().toISOString()}));
-    return json(res,503,{error:'support_intake_not_configured'},origin);
+    return supportResult(res,formMode,503,{error:'support_intake_not_configured'},origin);
   }
   try{
     const issue=await createSupportIssue(payload,reference);
     console.log(JSON.stringify({kind:'support-intake',reference,issue:issue?.number||null,product:payload.product,type:payload.type,receivedAt:new Date().toISOString()}));
-    return json(res,201,{accepted:true,reference});
+    return supportResult(res,formMode,201,{accepted:true,reference},origin);
   }catch(error){
     console.error(JSON.stringify({kind:'support-intake-error',reference,message:String(error?.message||error)}));
-    return json(res,502,{error:'support_intake_unavailable'},origin);
+    return supportResult(res,formMode,502,{error:'support_intake_unavailable'},origin);
   }
 }
 
