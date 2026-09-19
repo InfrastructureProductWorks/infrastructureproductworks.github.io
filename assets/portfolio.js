@@ -163,6 +163,7 @@ function renderRoadmapFallback(data){
   text('roadmap-quarter','Unavailable');
   text('roadmap-horizon','Unavailable');
   text('roadmap-time-note','Relationship timing is unavailable while the roadmap relationship dataset is unavailable or out of sync.');
+  text('metric-headline-krs','—');
   (data.objectives||[]).forEach(o=>{
     const details=node('details','roadmap-objective fallback-objective');
     const summary=node('summary','roadmap-objective-summary');
@@ -177,7 +178,7 @@ function headlineRollup(headline,krById){
   const measures=headline.measures.map(id=>krById.get(id)).filter(Boolean);
   const epicIds=[...new Set(measures.flatMap(k=>k.epics||[]))];
   const groups=[...new Set(measures.map(k=>k.group))];
-  const group=groups.length===1?groups[0]:(groups.includes('active')?'active':groups.includes('gated')?'gated':groups.includes('documentation')?'documentation':groups.includes('future')?'future':groups.includes('planned')?'planned':'accepted');
+  const group=groups.length===1?groups[0]:(groups.includes('gated')?'gated':groups.includes('active')?'active':groups.includes('documentation')?'documentation':groups.includes('future')?'future':groups.includes('planned')?'planned':'accepted');
   const statuses=[...new Set(measures.map(k=>k.status))];
   const times=[...new Set(measures.map(k=>k.time))];
   return {measures,epicIds,group,status:statuses.length===1?statuses[0]:'Mixed evidence state',time:times.length===1?times[0]:'Multiple evidence periods'};
@@ -262,7 +263,7 @@ function validRoadmapRelationships(data){
   const objectiveSet=new Set(objectiveIds),headlineSet=new Set(headlineIds),krSet=new Set(krIds),epicSet=new Set(epicIds);
   const objectiveGroups=new Set(['active','accepted','gated','documentation','future']);
   const nestedGroups=new Set(['active','accepted','gated','documentation','future','planned']);
-  if(!data.objectives.every(o=>object(o)&&/^O\d+$/.test(o.id)&&boundedText(o.definition)&&boundedText(o.status)&&objectiveGroups.has(o.group)&&boundedText(o.progress)&&boundedText(o.time)&&Array.isArray(o.headlineKeyResults)&&o.headlineKeyResults.length>=3&&o.headlineKeyResults.length<=5&&new Set(o.headlineKeyResults).size===o.headlineKeyResults.length&&o.headlineKeyResults.every(id=>headlineSet.has(id))&&Array.isArray(o.keyResults)&&o.keyResults.length>0&&new Set(o.keyResults).size===o.keyResults.length&&o.keyResults.every(id=>krSet.has(id))&&o.epics===undefined))return false;
+  if(!data.objectives.every(o=>object(o)&&/^O\d+$/.test(o.id)&&boundedText(o.definition)&&boundedText(o.status)&&objectiveGroups.has(o.group)&&boundedText(o.progress)&&boundedText(o.time)&&Array.isArray(o.headlineKeyResults)&&o.headlineKeyResults.length>=2&&o.headlineKeyResults.length<=4&&new Set(o.headlineKeyResults).size===o.headlineKeyResults.length&&o.headlineKeyResults.every(id=>headlineSet.has(id))&&Array.isArray(o.keyResults)&&o.keyResults.length>0&&new Set(o.keyResults).size===o.keyResults.length&&o.keyResults.every(id=>krSet.has(id))&&o.epics===undefined))return false;
   if(!data.headlineKeyResults.every(h=>object(h)&&/^O\d+-HKR\d+$/.test(h.id)&&objectiveSet.has(h.objective)&&boundedText(h.title)&&Array.isArray(h.measures)&&h.measures.length>0&&new Set(h.measures).size===h.measures.length&&h.measures.every(id=>krSet.has(id))))return false;
   if(!data.keyResults.every(k=>{
     const sharedRangeOk=k.sharedRange===null||(boundedText(k.sharedRange)&&/^KR\d+\.\d+(?:-KR\d+\.\d+)?$/.test(k.sharedRange));
