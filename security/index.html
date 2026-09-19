@@ -209,6 +209,26 @@
 
 <section>
 <div class="security-wrap">
+<p class="eyebrow">CHANGE READINESS &amp; RETAINED HISTORY</p>
+<h2>Useful change documentation starts with knowing what exists, what is proposed and what evidence connects the two.</h2>
+<p class="section-lede">Infrastructure Product Works is designed to retain enough provenance-bound product and relationship history to explain a proposed change without becoming a shadow enterprise CMDB or silently taking over an organization's formal change process.</p>
+<div class="security-grid">
+<article><small>CHANGE READINESS</small><h3>Generate a starting point, not an approval</h3><p>Product, network, security, identity, evidence, implementation and rollback context can be assembled into organization-neutral starter packages for downstream change, security, network and architecture-review processes.</p></article>
+<article><small>STATE BASIS</small><h3>Observed is different from declared or proposed</h3><p>Current-state assertions should identify whether they are observed, declared, proposed, deterministically derived or unknown. A package must not quietly present an assumption or desired state as an observed fact.</p></article>
+<article><small>RELATIONSHIP HISTORY</small><h3>Preserve how components became related</h3><p>Product versions, environments, dependencies, network relationships, evidence bindings and superseded states should retain temporal provenance so later change analysis can reconstruct what changed and why.</p></article>
+<article><small>MINIMUM RETENTION</small><h3>Keep what is needed to explain the change</h3><p>The goal is bounded relationship and evidence history, not indiscriminate telemetry retention. Credentials, secrets and unrelated customer data should not be retained merely because a workflow exists.</p></article>
+<article><small>DELTA</small><h3>Compare retained state to desired state</h3><p>Before/after, dependency, network, identity and control-impact deltas should be derived from exact retained inputs and carry the evidence and source revisions that support them.</p></article>
+<article><small>HUMAN HANDOFF</small><h3>Organization-specific fields remain explicit</h3><p>IPW may identify missing fields and prepare reusable content, but submission, risk acceptance, approval and authorization remain with the organization's accountable people and systems.</p></article>
+</div>
+<div class="fail-strip">
+<h3>Why retained history is a security control</h3>
+<p>Without trustworthy history, a system can validate a proposed configuration while missing an existing dependency, superseded rule, prior exception or conflicting product relationship. Retained, tenant-scoped history makes change impact review reproducible and gives reviewers a way to distinguish known state from assumptions.</p>
+</div>
+</div>
+</section>
+
+<section>
+<div class="security-wrap">
 <p class="eyebrow">AUTHORITY MODEL</p>
 <h2>Proposal, validation, review, authorization and execution are different verbs for a reason.</h2>
 <p class="section-lede">Keeping these responsibilities distinct prevents useful automation from quietly becoming an all-powerful deployment system.</p>
@@ -281,6 +301,7 @@
 <li>Customer-selected assessor evidence and operational profiles.</li>
 <li>Customer identity, persistence, audit and replaceable integration boundaries.</li>
 <li>Operational evidence sufficient to support an explicit customer decision.</li>
+<li>Change-readiness package contracts and retained relationship-history proofs with explicit observed/declared/proposed/derived/unknown state basis.</li>
 </ul></article>
 <article><small>GATED / FUTURE</small><h3>Do not claim before proof</h3><ul>
 <li>Multi-customer isolation before cross-customer substitution tests pass.</li>
