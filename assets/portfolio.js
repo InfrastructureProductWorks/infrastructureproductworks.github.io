@@ -283,7 +283,7 @@ function renderRoadmapRelationships(data){
 }
 function epicExternallyBlocked(ep){
   if(!object(ep))return false;
-  return /externally blocked|external prerequisite|customer-dependent/i.test(`${ep.status||''} ${ep.progress||''} ${ep.progressBasis||''}`);
+  return /externally blocked|external prerequisite|customer-dependent/i.test(`${ep.status||''} ${ep.progress||''} ${ep.progressBasis||''} ${ep.time||''}`);
 }
 function milestoneEvidence(milestone,epicById){
   const rows=milestone.epics.map(id=>epicById[id]).filter(Boolean);
