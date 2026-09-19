@@ -23,7 +23,7 @@ The website support form submits only to the server-side `/api/support` endpoint
 Required for issue creation:
 
 - `SUPPORT_GITHUB_TOKEN`: server-side credential with the minimum repository issue-write permission required for the configured target.
-- `SUPPORT_GITHUB_REPO`: optional `owner/repository` target. Defaults to `InfrastructureProductWorks/infrastructureproductworks.github.io`.
+- `SUPPORT_GITHUB_REPO`: required private `owner/repository` target for support issues. There is intentionally no public-repository default.
 
 The endpoint:
 
@@ -33,7 +33,7 @@ The endpoint:
 - applies a basic per-IP rate limit;
 - includes a honeypot path for low-cost bot rejection;
 - returns a customer reference while withholding the internal GitHub issue URL;
-- refuses normal intake when the server-side issue credential is not configured;
+- refuses normal intake when the server-side issue credential or explicit private target repository is not configured;
 - does not accept security vulnerabilities or sensitive customer material.
 
 Security-sensitive reports remain on the separate security-reporting path and must never be converted into ordinary public support issues.
