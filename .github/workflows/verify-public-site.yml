@@ -30,7 +30,9 @@ jobs:
             echo "Attempt ${attempt}/30 for ${BASE_URL}/portfolio/"
             code="$(curl --location --silent --show-error               --connect-timeout 10 --max-time 20               --output "${portfolio}"               --write-out '%{http_code}'               "${BASE_URL}/portfolio/?verify=${EXPECTED_SHA}" || true)"
 
-            if [[ "${code}" == "200" ]]               && grep -Fq 'CONNECTED APPS UI QUALITY' "${portfolio}"               && grep -Fq 'BUILD → VALIDATE → EVIDENCE' "${portfolio}"; then
+            if [[ "${code}" == "200" ]]               && grep -Fq 'CONNECTED APPS UI QUALITY' "${portfolio}"               && grep -Fq 'BUILD → VALIDATE → EVIDENCE' "${portfolio}" \
+              && grep -Fq 'DELIVERY OUTLOOK' "${portfolio}" \
+              && grep -Fq 'delivery-outlook-grid' "${portfolio}"; then
               ok=1
               break
             fi
@@ -49,9 +51,12 @@ jobs:
           grep -Fq "['BUILD',p.state]" "${script}"
           grep -Fq "['VALIDATE',p.status]" "${script}"
           grep -Fq "['EVIDENCE',p.evidence]" "${script}"
+          grep -Fq 'renderDeliveryOutlook' "${script}"
+          grep -Fq 'DELIVERY_OUTLOOK_MILESTONES' "${script}"
 
           echo "Public deployment verified:"
           echo "  URL: ${BASE_URL}/portfolio/"
           echo "  HTTP: 200"
           echo "  Connected Apps validation panel: present"
           echo "  Build -> Validate -> Evidence product pattern: present"
+          echo "  Delivery Outlook: present"
