@@ -280,3 +280,74 @@
   .focus-copy .focus-increment{font-size:16px}
   .focus-caption{align-items:flex-start;margin-left:0;margin-right:0}
 }
+
+
+/* Roadmap relationship accordion — 2026-09-19 */
+.roadmap-map-section{padding-top:70px}
+.roadmap-timebar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:8px 0 10px}
+.roadmap-timebar>div{padding:18px 20px;border:1px solid #d7e1ea;border-radius:16px;background:#fff;box-shadow:0 9px 24px #0f172a08}
+.roadmap-timebar small{display:block;color:#738196;font-size:9px;font-weight:900;letter-spacing:.12em}
+.roadmap-timebar strong{display:block;margin-top:5px;color:#20344c;font-size:15px}
+.roadmap-time-note{margin:0 0 18px;color:#6c7a8d;font-size:12px;line-height:1.5}
+.roadmap-controls{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;margin:20px 0 14px}
+.roadmap-filters,.roadmap-expand-controls{display:flex;gap:7px;flex-wrap:wrap}
+.roadmap-filter,.roadmap-expand-controls button{appearance:none;border:1px solid #cdd9e4;border-radius:999px;background:#fff;color:#44566b;padding:8px 11px;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
+.roadmap-filter:hover,.roadmap-expand-controls button:hover{border-color:#8db9d1;background:#f6fafc}
+.roadmap-filter.active{border-color:#8e8ad5;background:#f1efff;color:#6255ba}
+.roadmap-relationship-list{display:grid;gap:12px}
+.roadmap-objective,.roadmap-kr{border:1px solid #d6e0e9;border-radius:18px;background:#fff;box-shadow:0 10px 26px #0f172a08;overflow:hidden}
+.roadmap-objective[hidden]{display:none}
+.roadmap-objective summary,.roadmap-kr summary{list-style:none;cursor:pointer}
+.roadmap-objective summary::-webkit-details-marker,.roadmap-kr summary::-webkit-details-marker{display:none}
+.roadmap-objective-summary{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;padding:22px 52px 22px 22px}
+.roadmap-objective-summary:after,.roadmap-kr-summary:after{content:"+";position:absolute;right:20px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#eef4f8;color:#446077;font-weight:900}
+.roadmap-objective[open]>.roadmap-objective-summary:after,.roadmap-kr[open]>.roadmap-kr-summary:after{content:"−"}
+.roadmap-objective-copy{min-width:0}
+.roadmap-id,.roadmap-kr-id,.roadmap-epic-id{display:inline-flex;width:max-content;align-items:center;border-radius:999px;background:#eeeafd;color:#6659bb;font-size:10px;font-weight:900;letter-spacing:.05em}
+.roadmap-id{padding:7px 10px;margin-bottom:8px}
+.roadmap-objective-copy strong{display:block;color:#1d3047;font-size:17px;line-height:1.25}
+.roadmap-objective-progress{display:block;margin-top:6px;color:#6a788b;font-size:12px;line-height:1.45}
+.roadmap-objective-meta,.roadmap-kr-meta,.roadmap-epic-badges{display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap;align-items:center}
+.roadmap-meta-pill,.roadmap-time-pill,.roadmap-count-pill{display:inline-flex;align-items:center;border-radius:999px;border:1px solid #d5dfe8;background:#f7f9fb;color:#57687b;padding:6px 8px;font-size:9px;font-weight:850;white-space:nowrap}
+.roadmap-time-pill{border-color:#c7d8e4;background:#f2f8fb;color:#45687e}
+.roadmap-count-pill{background:#fff;color:#718094}
+.roadmap-meta-pill.status-active{border-color:#a8dabb;background:#eef9f2;color:#267447}
+.roadmap-meta-pill.status-accepted{border-color:#b9d6ea;background:#eef7fc;color:#24688e}
+.roadmap-meta-pill.status-gated{border-color:#ebcf9d;background:#fff8e9;color:#8a6111}
+.roadmap-meta-pill.status-documentation{border-color:#d1bde8;background:#f7f2ff;color:#7146a0}
+.roadmap-meta-pill.status-future,.roadmap-meta-pill.status-planned{border-color:#d8dee6;background:#f5f7f9;color:#687588}
+.roadmap-objective-body{padding:0 22px 22px;border-top:1px solid #e8edf2;background:#fbfcfd}
+.roadmap-progress-block{margin:18px 0 14px;padding:16px 18px;border:1px solid #d8e4ec;border-radius:14px;background:#f7fbfd}
+.roadmap-progress-block small,.roadmap-contrib-label{display:block;color:#75869a;font-size:9px;font-weight:900;letter-spacing:.12em}
+.roadmap-progress-block p{margin:6px 0 5px;color:#344b63;font-size:13px;line-height:1.5}
+.roadmap-period-line{color:#65788c;font-size:11px}
+.roadmap-kr-list{display:grid;gap:9px}
+.roadmap-kr{box-shadow:none;border-radius:14px}
+.roadmap-kr-summary{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:17px 48px 17px 17px}
+.roadmap-kr-copy strong{display:block;margin-top:7px;color:#273b52;font-size:13px;line-height:1.45}
+.roadmap-kr-id{padding:5px 8px;background:#edf5fb;color:#0b658d}
+.roadmap-shared-note{display:block;margin-top:5px;color:#8995a4;font-size:10px;font-style:italic}
+.roadmap-kr-body{padding:15px 17px 17px;border-top:1px solid #edf0f4;background:#fcfdfe}
+.roadmap-contrib-label{margin-bottom:9px}
+.roadmap-epic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.roadmap-epic-card{padding:16px;border:1px solid #dbe4eb;border-radius:13px;background:#fff}
+.roadmap-epic-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.roadmap-epic-id{padding:5px 8px;background:#f3edff;color:#7550af}
+.roadmap-epic-card h4{margin:7px 0 0;color:#21374f;font-size:14px;line-height:1.3}
+.roadmap-epic-progress{margin:12px 0 9px;color:#65758a;font-size:12px;line-height:1.5}
+.roadmap-feature-count{color:#8794a4;font-size:10px}
+.roadmap-fallback-copy{margin:0;padding:0 22px 20px;color:#68798d;font-size:12px}
+@media(max-width:900px){
+  .roadmap-timebar{grid-template-columns:1fr}
+  .roadmap-objective-summary,.roadmap-kr-summary{grid-template-columns:1fr}
+  .roadmap-objective-meta,.roadmap-kr-meta{justify-content:flex-start}
+  .roadmap-epic-grid{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .roadmap-controls{align-items:flex-start;flex-direction:column}
+  .roadmap-objective-summary{padding:18px 46px 18px 17px}
+  .roadmap-objective-body{padding:0 13px 15px}
+  .roadmap-kr-summary{padding:15px 42px 15px 14px}
+  .roadmap-epic-top{display:block}
+  .roadmap-epic-badges{justify-content:flex-start;margin-top:9px}
+}
