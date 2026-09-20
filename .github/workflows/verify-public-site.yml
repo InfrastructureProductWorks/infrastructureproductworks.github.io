@@ -43,6 +43,25 @@ jobs:
           const fs=require('fs');
           const data=JSON.parse(fs.readFileSync('data/roadmap-relationships.json','utf8'));
           const allowed=new Set([0,25,50,75,100]);
+          if(data.schemaVersion!=='roadmap-relationship-view/v5') throw new Error('roadmap relationship schema');
+          if(data.relationshipModel?.epicContributionSemantics!=='relationship-specific-description-required') throw new Error('Epic contribution semantics');
+          const krById=new Map((data.keyResults||[]).map(k=>[k.id,k]));
+          const descriptionsByEpic=new Map();
+          for(const strategic of data.headlineKeyResults||[]){
+            if(!Array.isArray(strategic.epicContributions)||strategic.epicContributions.length<1) throw new Error(`missing Epic contributions for ${strategic.id}`);
+            const derived=[...new Set(strategic.measures.flatMap(id=>(krById.get(id)||{epics:[]}).epics))];
+            const declared=strategic.epicContributions.map(edge=>edge.epic);
+            if(new Set(declared).size!==declared.length||derived.length!==declared.length||derived.some(id=>!declared.includes(id))) throw new Error(`Epic contribution coverage mismatch for ${strategic.id}`);
+            for(const edge of strategic.epicContributions){
+              if(typeof edge.description!=='string'||!edge.description.trim()) throw new Error(`missing contribution description for ${strategic.id}/${edge.epic}`);
+              const entries=descriptionsByEpic.get(edge.epic)||[];
+              entries.push(edge.description.trim().toLowerCase());
+              descriptionsByEpic.set(edge.epic,entries);
+            }
+          }
+          for(const [epic,entries] of descriptionsByEpic){
+            if(entries.length>1&&new Set(entries).size!==entries.length) throw new Error(`duplicate multi-KR contribution description for ${epic}`);
+          }
           if(data.forecastModel?.method!=='linear-evidence-trend/v1') throw new Error('forecastModel method');
           if(data.forecastModel.minimumSnapshots!==2||data.forecastModel.minimumSpanDays!==7) throw new Error('forecast bounds');
           if(data.forecastModel.blockedBehavior!=='no-date-inferred'||data.forecastModel.planningWindows!=='explicit-roadmap-assumptions') throw new Error('forecast semantics');
@@ -124,6 +143,9 @@ jobs:
                 && grep -Fq 'epicExternallyBlocked' "${script}" \
                 && grep -Fq 'forecastSignal' "${script}" \
                 && grep -Fq 'AUTO FORECAST' "${script}" \
+                && grep -Fq 'strategicContributionMap' "${script}" \
+                && grep -Fq 'CONTRIBUTION TO THIS KR' "${script}" \
+                && grep -Fq 'roadmap-epic-contribution' "${stylesheet}" \
                 && grep -Fq 'delivery-outlook-card' "${stylesheet}"; then
                 ok=1
                 break
