@@ -39,7 +39,7 @@ jobs:
 
           grep -Fq "Evidence of capability, not a procurement request." index.html
           grep -Fq "not an official government product" index.html
-          grep -Fq "not an IRS or Treasury system" index.html
+          grep -Fq "not an official agency or department system" index.html
           grep -Fq "not a procurement proposal" index.html
           grep -Fq "not a commercial offer" index.html
 
@@ -74,9 +74,18 @@ jobs:
           grep -Fq "Guard output supports review. It does not replace one." docs/guard/index.html
           grep -Fq "not implementation support, production support, procurement guidance" docs/guard/index.html
 
-          if grep -R -nE "Public Beta|commercial model|Pilot Ready|Customer-hosted / Pilot Ready|customer-facing intake|Get Support|What you actually get|Open IaaP Guard App|Problems we solve" \
+          first_forbidden="IR"
+          first_forbidden="${first_forbidden}S"
+          second_forbidden="Treas"
+          second_forbidden="${second_forbidden}ury"
+          if grep -R -nE "${first_forbidden}|${second_forbidden}|Public Beta|commercial model|Pilot Ready|Customer-hosted / Pilot Ready|customer-facing intake|Get Support|What you actually get|Open IaaP Guard App|Problems we solve" \
             index.html about/index.html portfolio/index.html terms/index.html support/index.html guard/index.html console/index.html assurance/index.html docs/guard/index.html assets/portfolio.js; then
-            echo "::error::Retired product/service wording found on tightened portfolio-boundary surfaces."
+            echo "::error::Retired or named-organization wording found on tightened portfolio-boundary surfaces."
+            exit 1
+          fi
+
+          if grep -nE "${first_forbidden}|${second_forbidden}" .github/workflows/verify-public-site.yml; then
+            echo "::error::Named-organization wording found in workflow file."
             exit 1
           fi
 
@@ -123,6 +132,7 @@ jobs:
             if [[ "${home_code}" == "200" && "${portfolio_code}" == "200" && "${terms_code}" == "200" ]] \
               && grep -Fq 'Evidence of capability, not a procurement request.' "${home}" \
               && grep -Fq 'not an official government product' "${home}" \
+              && grep -Fq 'not an official agency or department system' "${home}" \
               && grep -Fq 'without implying production, pilot, deployment, approval, commercialization or government authority' "${portfolio}" \
               && grep -Fq 'Portfolio Use Notice' "${terms}" \
               && grep -Fq 'The website itself is not the adoption path' "${terms}"; then
