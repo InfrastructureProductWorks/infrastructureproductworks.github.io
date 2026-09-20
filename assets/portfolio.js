@@ -182,7 +182,30 @@ function bindRoadmapControls(host,{filtersEnabled=true}={}){
         b.setAttribute('aria-pressed',String(active));
       });
       const value=button.dataset.roadmapFilter;
-      host.querySelectorAll('.roadmap-objective').forEach(item=>{item.hidden=value!=='all'&&item.dataset.group!==value;});
+      host.querySelectorAll('.roadmap-objective').forEach(objective=>{
+        const headlines=[...objective.querySelectorAll('.roadmap-headline-kr')];
+        if(value==='all'){
+          objective.hidden=false;
+          headlines.forEach(headline=>{
+            headline.hidden=false;
+            headline.querySelectorAll('.roadmap-epic-card').forEach(epic=>{epic.hidden=false;});
+          });
+          return;
+        }
+        let descendantMatch=false;
+        headlines.forEach(headline=>{
+          let epicMatch=false;
+          headline.querySelectorAll('.roadmap-epic-card').forEach(epic=>{
+            const match=epic.dataset.group===value;
+            epic.hidden=!match;
+            epicMatch=epicMatch||match;
+          });
+          const match=headline.dataset.group===value||epicMatch;
+          headline.hidden=!match;
+          descendantMatch=descendantMatch||match;
+        });
+        objective.hidden=objective.dataset.group!==value&&!descendantMatch;
+      });
     };
   });
   const expand=document.getElementById('roadmap-expand-all');
