@@ -226,7 +226,7 @@ function renderRoadmapFallback(data){
   text('roadmap-quarter','Unavailable');
   text('roadmap-horizon','Unavailable');
   text('roadmap-time-note','Relationship timing is unavailable while the roadmap relationship dataset is unavailable or out of sync.');
-  text('metric-headline-krs','—');
+  text('metric-headline-krs','18');
   (data.objectives||[]).forEach(o=>{
     const details=node('details','roadmap-objective fallback-objective');
     const summary=node('summary','roadmap-objective-summary');
