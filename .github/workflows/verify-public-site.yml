@@ -48,6 +48,7 @@ jobs:
           const krById=new Map((data.keyResults||[]).map(k=>[k.id,k]));
           const descriptionsByEpic=new Map();
           for(const strategic of data.headlineKeyResults||[]){
+            if(strategic.objective!==String(strategic.id||'').split('-HKR',1)[0]) throw new Error(`Strategic KR Objective mismatch for ${strategic.id}`);
             if(!Array.isArray(strategic.epicContributions)||strategic.epicContributions.length<1) throw new Error(`missing Epic contributions for ${strategic.id}`);
             const derived=[...new Set(strategic.measures.flatMap(id=>(krById.get(id)||{epics:[]}).epics))];
             const declared=strategic.epicContributions.map(edge=>edge.epic);
