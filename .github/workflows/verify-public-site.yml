@@ -100,8 +100,10 @@ jobs:
           portfolio=/tmp/portfolio.html
           script=/tmp/portfolio.js
           stylesheet=/tmp/portfolio.css
+          relationships=/tmp/roadmap-relationships.json
           js_blob="$(git hash-object assets/portfolio.js)"
           css_blob="$(git hash-object assets/portfolio.css)"
+          relationships_blob="$(git hash-object data/roadmap-relationships.json)"
           js_ref="/assets/portfolio.js?v=${js_blob}"
           css_ref="/assets/portfolio.css?v=${css_blob}"
 
@@ -132,10 +134,16 @@ jobs:
                 --output "${stylesheet}" \
                 --write-out '%{http_code}' \
                 "${BASE_URL}${css_ref}&verify=${EXPECTED_SHA}" || true)"
+              relationships_code="$(curl --location --silent --show-error \
+                --connect-timeout 10 --max-time 20 \
+                --output "${relationships}" \
+                --write-out '%{http_code}' \
+                "${BASE_URL}/data/roadmap-relationships.json?verify=${EXPECTED_SHA}" || true)"
 
-              if [[ "${script_code}" == "200" && "${css_code}" == "200" ]] \
+              if [[ "${script_code}" == "200" && "${css_code}" == "200" && "${relationships_code}" == "200" ]] \
                 && [[ "$(git hash-object "${script}")" == "${js_blob}" ]] \
                 && [[ "$(git hash-object "${stylesheet}")" == "${css_blob}" ]] \
+                && [[ "$(git hash-object "${relationships}")" == "${relationships_blob}" ]] \
                 && grep -Fq 'proof-pattern' "${script}" \
                 && grep -Fq "['BUILD',p.state]" "${script}" \
                 && grep -Fq "['VALIDATE',p.status]" "${script}" \
@@ -168,3 +176,4 @@ jobs:
           echo "  Connected Apps validation panel: present"
           echo "  Build -> Validate -> Evidence product pattern: present"
           echo "  Delivery Outlook: history-backed forecast plumbing present"
+          echo "  Roadmap relationships: exact v5 repository blob deployed"
