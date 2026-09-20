@@ -269,6 +269,7 @@ function progressBar(percent,label){
   const track=node('div','okr-progress-track');const fill=node('span','okr-progress-fill');fill.style.width=`${percent}%`;track.append(fill);wrap.append(head,track);return wrap;
 }
 function strategicEpicIds(h,measureById){return [...new Set(h.measures.flatMap(id=>(measureById.get(id)||{epics:[]}).epics))]}
+function strategicContributionMap(h){return new Map((h.epicContributions||[]).map(edge=>[edge.epic,edge.description]))}
 function renderRoadmapRelationships(data){
   const host=document.getElementById('roadmap-relationship-list');if(!host)return;host.replaceChildren();
   text('roadmap-baseline',data.planning.baseline);text('roadmap-quarter',data.planning.evidenceQuarter);text('roadmap-horizon',data.planning.horizon);text('roadmap-time-note',data.planning.timingNote);text('metric-headline-krs',data.headlineKeyResults.length);
@@ -285,7 +286,7 @@ function renderRoadmapRelationships(data){
     const body=node('div','roadmap-objective-body');
     const headlineList=node('div','roadmap-headline-list');
     strategic.forEach(h=>{
-      const measures=h.measures.map(id=>measureById.get(id)).filter(Boolean),group=headlineGroup(measures),epicIds=strategicEpicIds(h,measureById),pct=pctMean(epicIds.map(id=>epicById[id].completionPercent));
+      const measures=h.measures.map(id=>measureById.get(id)).filter(Boolean),group=headlineGroup(measures),epicIds=strategicEpicIds(h,measureById),contributionByEpic=strategicContributionMap(h),pct=pctMean(epicIds.map(id=>epicById[id].completionPercent));
       const hDetails=node('details','roadmap-headline-kr');hDetails.dataset.group=group;
       const hSummary=node('summary','roadmap-headline-summary');
       const hCopy=node('div','roadmap-headline-copy');hCopy.append(node('span','roadmap-headline-id',h.id.replace(/^O\d+-/,'').replace('HKR','KR ')),node('strong','',h.title),progressBar(pct,`${epicIds.length} contributing Epic${epicIds.length===1?'':'s'}`));
@@ -297,7 +298,8 @@ function renderRoadmapRelationships(data){
         const ep=epicById[epicId];const card=node('article','roadmap-epic-card');card.dataset.group=ep.group;
         const top=node('div','roadmap-epic-top');const title=node('div');title.append(node('span','roadmap-epic-id',ep.id),node('h4','',ep.title));
         const badges=node('div','roadmap-epic-badges');badges.append(node('span','roadmap-percent-pill',`${ep.completionPercent}%`),metaPill(ep.status,ep.group),node('span','roadmap-time-pill',ep.time));
-        top.append(title,badges);card.append(top,progressBar(ep.completionPercent,'Epic completion'),node('p','roadmap-epic-progress',ep.progress),node('p','roadmap-progress-basis',ep.progressBasis));epicGrid.append(card);
+        const contribution=node('div','roadmap-epic-contribution');contribution.append(node('small','','CONTRIBUTION TO THIS KR'),node('p','',contributionByEpic.get(epicId)));
+        top.append(title,badges);card.append(top,contribution,progressBar(ep.completionPercent,'Epic completion'),node('p','roadmap-epic-progress',ep.progress),node('p','roadmap-progress-basis',ep.progressBasis));epicGrid.append(card);
       });
       hBody.append(epicGrid);hDetails.append(hBody);headlineList.append(hDetails);
     });
@@ -404,13 +406,15 @@ function renderDeliveryOutlook(data){
   text('delivery-outlook-updated',fmtDate(data.generatedAt||dashboardState?.generatedAt));
 }
 function validRoadmapRelationships(data){
-  if(!object(data)||data.schemaVersion!=='roadmap-relationship-view/v4')return false;
-  if(!object(data.relationshipModel)||data.relationshipModel.objectiveToHeadlineKeyResults!=='one-to-many'||data.relationshipModel.headlineKeyResultToEpics!=='derived-through-registered-measures'||data.relationshipModel.registeredMeasures!=='traceability-only-hidden-from-executive-view'||data.relationshipModel.objectiveToEpics!=='derived-through-registered-measures')return false;
+  if(!object(data)||data.schemaVersion!=='roadmap-relationship-view/v5')return false;
+  if(!object(data.relationshipModel)||data.relationshipModel.objectiveToHeadlineKeyResults!=='one-to-many'||data.relationshipModel.headlineKeyResultToEpics!=='derived-through-registered-measures-with-explicit-contributions'||data.relationshipModel.epicContributionSemantics!=='relationship-specific-description-required'||data.relationshipModel.registeredMeasures!=='traceability-only-hidden-from-executive-view'||data.relationshipModel.objectiveToEpics!=='derived-through-registered-measures')return false;
   if(!object(data.progressModel)||data.progressModel.method!=='evidence-backed-epic-rollup/v1'||!boundedText(data.progressModel.scale)||!boundedText(data.progressModel.strategicKeyResult)||!boundedText(data.progressModel.objective)||!boundedText(data.progressModel.note))return false;
   if(!object(data.forecastModel)||data.forecastModel.method!=='linear-evidence-trend/v1'||data.forecastModel.minimumSnapshots!==2||data.forecastModel.minimumSpanDays!==7||data.forecastModel.blockedBehavior!=='no-date-inferred'||data.forecastModel.planningWindows!=='explicit-roadmap-assumptions')return false;
   if(!boundedText(data.generatedAt)||!/^\d{4}-\d{2}-\d{2}$/.test(data.generatedAt))return false;
   if(!boundedText(data.sourceRevision)||!/^[0-9a-f]{40}$/.test(data.sourceRevision))return false;
   if(!boundedText(data.roadmapBlobSha)||!/^[0-9a-f]{40}$/.test(data.roadmapBlobSha))return false;
+  if(data.contributionSource!=='config/portfolio-strategic-kr-contributions.json')return false;
+  if(!boundedText(data.contributionBlobSha)||!/^[0-9a-f]{40}$/.test(data.contributionBlobSha))return false;
   if(!object(data.planning)||!boundedText(data.planning.baseline)||!normalizeRoadmapDate(data.planning.baseline)||!boundedText(data.planning.evidenceQuarter)||!/^Q[1-4]\s+\d{4}$/.test(data.planning.evidenceQuarter)||!boundedText(data.planning.horizon)||!boundedText(data.planning.timingNote))return false;
   if(!Array.isArray(data.objectives)||data.objectives.length<1||!Array.isArray(data.headlineKeyResults)||data.headlineKeyResults.length<1||!Array.isArray(data.keyResults)||data.keyResults.length<1||!object(data.epics)||Object.keys(data.epics).length<1)return false;
   const objectiveIds=data.objectives.map(o=>o?.id),headlineIds=data.headlineKeyResults.map(h=>h?.id),krIds=data.keyResults.map(k=>k?.id),epicIds=Object.keys(data.epics);
@@ -419,7 +423,14 @@ function validRoadmapRelationships(data){
   const objectiveGroups=new Set(['active','accepted','gated','documentation','future']);
   const nestedGroups=new Set(['active','accepted','gated','documentation','future','planned']);
   if(!data.objectives.every(o=>object(o)&&/^O\d+$/.test(o.id)&&boundedText(o.definition)&&boundedText(o.status)&&objectiveGroups.has(o.group)&&boundedText(o.progress)&&boundedText(o.time)&&Array.isArray(o.headlineKeyResults)&&o.headlineKeyResults.length>=2&&o.headlineKeyResults.length<=4&&new Set(o.headlineKeyResults).size===o.headlineKeyResults.length&&o.headlineKeyResults.every(id=>headlineSet.has(id))&&Array.isArray(o.keyResults)&&o.keyResults.length>0&&new Set(o.keyResults).size===o.keyResults.length&&o.keyResults.every(id=>krSet.has(id))&&o.epics===undefined))return false;
-  if(!data.headlineKeyResults.every(h=>object(h)&&/^O\d+-HKR\d+$/.test(h.id)&&objectiveSet.has(h.objective)&&boundedText(h.title)&&Array.isArray(h.measures)&&h.measures.length>0&&new Set(h.measures).size===h.measures.length&&h.measures.every(id=>krSet.has(id))))return false;
+  if(!data.headlineKeyResults.every(h=>{
+    if(!object(h)||!/^O\d+-HKR\d+$/.test(h.id)||!objectiveSet.has(h.objective)||h.objective!==h.id.split('-HKR',1)[0]||!boundedText(h.title)||!Array.isArray(h.measures)||h.measures.length<1||new Set(h.measures).size!==h.measures.length||!h.measures.every(id=>krSet.has(id)))return false;
+    if(!Array.isArray(h.epicContributions)||h.epicContributions.length<1)return false;
+    const derived=[...new Set(h.measures.flatMap(id=>(data.keyResults.find(k=>k.id===id)||{epics:[]}).epics))];
+    const contributionEpics=h.epicContributions.map(edge=>edge?.epic);
+    if(new Set(contributionEpics).size!==contributionEpics.length||derived.length!==contributionEpics.length||!derived.every(id=>contributionEpics.includes(id)))return false;
+    return h.epicContributions.every(edge=>object(edge)&&exactKeys(edge,['epic','description'])&&epicSet.has(edge.epic)&&boundedText(edge.description)&&edge.description.length<=500);
+  }))return false;
   if(!data.keyResults.every(k=>{
     const sharedRangeOk=k.sharedRange===null||(boundedText(k.sharedRange)&&/^KR\d+\.\d+(?:-KR\d+\.\d+)?$/.test(k.sharedRange));
     const sourceOk=boundedText(k.source)&&k.source.length<=240&&!k.source.includes('..')&&!k.source.startsWith('/')&&/^[A-Za-z0-9._\/-]+$/.test(k.source);
@@ -447,6 +458,13 @@ function validRoadmapRelationships(data){
     if(derivedMeasures.size!==o.keyResults.length||o.keyResults.some(id=>!derivedMeasures.has(id)))return false;
   }
   if([...headlineReach.values()].some(count=>count!==1)||[...krReach.values()].some(count=>count!==1)||epicIds.some(id=>!reachableEpics.has(id)))return false;
+  const descriptionsByEpic=new Map();
+  data.headlineKeyResults.forEach(h=>h.epicContributions.forEach(edge=>{
+    const entries=descriptionsByEpic.get(edge.epic)||[];
+    entries.push(edge.description.trim().toLowerCase());
+    descriptionsByEpic.set(edge.epic,entries);
+  }));
+  if([...descriptionsByEpic.values()].some(entries=>entries.length>1&&new Set(entries).size!==entries.length))return false;
   return true;
 }
 function normalizeRoadmapDate(value){

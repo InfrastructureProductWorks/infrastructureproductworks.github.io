@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "roadmap-relationship-view/v4",
+  "schemaVersion": "roadmap-relationship-view/v5",
   "generatedAt": "2026-09-19",
-  "sourceRevision": "a1cc194a01ee5f0b064310a7682edaab367ce642",
+  "sourceRevision": "12601918e997c6e45c73e6e79954a8d6a6e464ce",
   "planning": {
     "baseline": "September 19, 2026",
     "evidenceQuarter": "Q3 2026",
@@ -1446,9 +1446,10 @@
   },
   "relationshipModel": {
     "objectiveToHeadlineKeyResults": "one-to-many",
-    "headlineKeyResultToEpics": "derived-through-registered-measures",
+    "headlineKeyResultToEpics": "derived-through-registered-measures-with-explicit-contributions",
     "registeredMeasures": "traceability-only-hidden-from-executive-view",
-    "objectiveToEpics": "derived-through-registered-measures"
+    "objectiveToEpics": "derived-through-registered-measures",
+    "epicContributionSemantics": "relationship-specific-description-required"
   },
   "headlineKeyResults": [
     {
@@ -1458,6 +1459,12 @@
       "measures": [
         "KR1.1",
         "KR1.3"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-01",
+          "description": "Locks accepted changes and releases to immutable evidence, reviewed digests, and custody records so accepted state cannot drift silently."
+        }
       ]
     },
     {
@@ -1466,6 +1473,12 @@
       "title": "Accepted evidence is reproducible from exact pinned inputs",
       "measures": [
         "KR1.2"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-01",
+          "description": "Retains exact pinned inputs, digests, and replayable evidence needed to reproduce accepted findings independently."
+        }
       ]
     },
     {
@@ -1475,6 +1488,16 @@
       "measures": [
         "KR2.1",
         "KR2.2"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-02",
+          "description": "Defines the scorecard and bounded evaluation criteria used to demonstrate whether the evaluator produces a measurable user outcome."
+        },
+        {
+          "epic": "EP-03",
+          "description": "Provides trusted evidence intake and assessment-package inputs so evaluation results are grounded in verifiable evidence rather than assertion."
+        }
       ]
     },
     {
@@ -1483,6 +1506,12 @@
       "title": "Evaluation readiness requires zero operational authority or sensitive runtime dependency",
       "measures": [
         "KR2.3"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-02",
+          "description": "Keeps the evaluation profile synthetic and planning-only, explicitly excluding operational authority and sensitive runtime dependencies."
+        }
       ]
     },
     {
@@ -1499,6 +1528,40 @@
         "KR3.17",
         "KR3.20",
         "KR3.23"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-09",
+          "description": "Presents provider-neutral network products so consumers request connectivity outcomes instead of authoring cloud-specific network configuration."
+        },
+        {
+          "epic": "EP-10",
+          "description": "Packages approved security and policy profiles so consumers request security outcomes without designing provider-specific controls."
+        },
+        {
+          "epic": "EP-11",
+          "description": "Exposes identity and federation profiles as governed products so consumers do not author trust policies or credential mechanics."
+        },
+        {
+          "epic": "EP-12",
+          "description": "Turns hierarchy and tenant vending into bounded products so consumers request resource scopes without provider-specific hierarchy knowledge."
+        },
+        {
+          "epic": "EP-13",
+          "description": "Provides provider-neutral observability profiles so consumers request telemetry outcomes without supplying vendor-specific endpoints or workspace identifiers."
+        },
+        {
+          "epic": "EP-21",
+          "description": "Adds a replaceable enterprise telemetry adapter so Splunk-specific transport and routing stay behind the platform instead of leaking into consumer requests."
+        },
+        {
+          "epic": "EP-14",
+          "description": "Productizes resilience and recovery outcomes so consumers select recovery requirements without designing provider-specific backup or failover mechanics."
+        },
+        {
+          "epic": "EP-15",
+          "description": "Productizes cost and FinOps controls so consumers request governed cost outcomes without wiring provider-specific billing or budget configuration."
+        }
       ]
     },
     {
@@ -1516,6 +1579,44 @@
         "KR3.16",
         "KR3.19",
         "KR3.22"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-04",
+          "description": "Binds minimum-foundation instances to approved profiles, accountable owners, lifecycle state, and evidence before they can advance."
+        },
+        {
+          "epic": "EP-09",
+          "description": "Binds network products to approved connectivity profiles, accountable ownership, lifecycle expectations, and retained validation evidence."
+        },
+        {
+          "epic": "EP-10",
+          "description": "Attaches security products to approved policy profiles, accountable ownership, lifecycle constraints, and evidence references."
+        },
+        {
+          "epic": "EP-11",
+          "description": "Binds identity products to approved federation and role profiles, accountable owners, trust versions, and retained evidence."
+        },
+        {
+          "epic": "EP-12",
+          "description": "Binds hierarchy and vending products to approved naming, ownership, quota, policy, and lifecycle profiles with retained evidence."
+        },
+        {
+          "epic": "EP-13",
+          "description": "Binds observability products to approved logging, metrics, alerting, retention profiles, accountable owners, and coverage evidence."
+        },
+        {
+          "epic": "EP-21",
+          "description": "Preserves tenant-scoped routing, destination profile, redaction rules, and evidence references when telemetry leaves IPW for Splunk."
+        },
+        {
+          "epic": "EP-14",
+          "description": "Binds resilience products to approved recovery objectives, accountable ownership, lifecycle expectations, and observed recovery evidence."
+        },
+        {
+          "epic": "EP-15",
+          "description": "Binds FinOps products to approved cost policies, accountable ownership, budget expectations, and retained cost evidence."
+        }
       ]
     },
     {
@@ -1531,6 +1632,40 @@
         "KR3.21",
         "KR3.24",
         "KR3.27"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-04",
+          "description": "Rejects unsupported or unauthorized minimum-foundation states and keeps human authorization outside the product itself."
+        },
+        {
+          "epic": "EP-10",
+          "description": "Fails closed on policy mismatch, missing required security controls, or unsupported security states without self-approval."
+        },
+        {
+          "epic": "EP-11",
+          "description": "Fails closed on invalid trust, excessive privilege, missing identity bindings, or unsupported federation state without granting access."
+        },
+        {
+          "epic": "EP-13",
+          "description": "Fails closed when required telemetry, audit paths, destinations, or observability profiles are missing or invalid."
+        },
+        {
+          "epic": "EP-21",
+          "description": "Fails closed on unknown telemetry destinations, cross-tenant routing, invalid trust, redaction violations, or malformed Splunk delivery state."
+        },
+        {
+          "epic": "EP-14",
+          "description": "Fails closed when recovery prerequisites or evidence are missing rather than implying resilience from configuration alone."
+        },
+        {
+          "epic": "EP-15",
+          "description": "Fails closed on missing cost-governance evidence or unsupported spending paths instead of silently accepting unmanaged cost exposure."
+        },
+        {
+          "epic": "EP-12",
+          "description": "Fails closed on invalid hierarchy, ownership, naming, quota, or policy state instead of vending an unauthorized resource scope."
+        }
       ]
     },
     {
@@ -1542,6 +1677,36 @@
         "KR4.4",
         "KR4.5",
         "KR4.8"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-03",
+          "description": "Supplies verified assessment and evidence packages to decision surfaces without making the viewer the source of truth."
+        },
+        {
+          "epic": "EP-05",
+          "description": "Structures planning and outcome evidence for review while preserving authoritative producer and decision boundaries."
+        },
+        {
+          "epic": "EP-06",
+          "description": "Aggregates readiness evidence for a release or pilot decision without granting approval or operational authority."
+        },
+        {
+          "epic": "EP-10",
+          "description": "Projects security status and evidence references to decision surfaces while policy authority remains with approved profiles and owners."
+        },
+        {
+          "epic": "EP-11",
+          "description": "Projects identity and trust status plus evidence references for review without turning the viewer into an IAM authority."
+        },
+        {
+          "epic": "EP-13",
+          "description": "Projects telemetry coverage, health, and ownership evidence to Console without making Console the monitoring or policy authority."
+        },
+        {
+          "epic": "EP-21",
+          "description": "Returns Splunk delivery health, routing state, and evidence references to Console while Splunk remains an observation destination, not authority."
+        }
       ]
     },
     {
@@ -1552,6 +1717,20 @@
         "KR4.3",
         "KR4.6",
         "KR4.7"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-06",
+          "description": "Defines the explicit release, hold, or stop decision gate using accumulated operational evidence and accountable ownership."
+        },
+        {
+          "epic": "EP-14",
+          "description": "Provides recoverability evidence needed to judge whether the product can be operated and restored safely."
+        },
+        {
+          "epic": "EP-15",
+          "description": "Provides authoritative cost and FinOps evidence needed to judge whether the product is economically operable and governed."
+        }
       ]
     },
     {
@@ -1564,6 +1743,20 @@
         "KR4.10",
         "KR4.11",
         "KR4.12"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-05",
+          "description": "Keeps desired outcomes, planning assumptions, and decision context versioned so later change packages can be reconstructed."
+        },
+        {
+          "epic": "EP-19",
+          "description": "Builds retained current and desired-state history, dependency relationships, deterministic deltas, and handoff-ready change-readiness packages."
+        },
+        {
+          "epic": "EP-20",
+          "description": "Transforms the frozen IPW request and evidence context into a tenant-scoped ServiceNow workflow handoff while keeping approval fields explicit and execution separate."
+        }
       ]
     },
     {
@@ -1575,6 +1768,16 @@
         "KR5.2",
         "KR5.4",
         "KR5.6"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-07",
+          "description": "Provides documented, reversible distribution and adoption paths so products can be installed and evaluated in customer-controlled environments."
+        },
+        {
+          "epic": "EP-08",
+          "description": "Defines restricted-network and GHES portability paths that let customers adopt the portfolio without depending on public-SaaS-only execution."
+        }
       ]
     },
     {
@@ -1584,6 +1787,16 @@
       "measures": [
         "KR5.3",
         "KR5.5"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-07",
+          "description": "Binds compatibility and support claims to exact release and dependency evidence rather than broad marketing assertions."
+        },
+        {
+          "epic": "EP-08",
+          "description": "Requires authorized live GHES or customer-runner evidence before claiming support beyond the bounded synthetic portability baseline."
+        }
       ]
     },
     {
@@ -1593,6 +1806,12 @@
       "measures": [
         "KR6.1",
         "KR6.2"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-16",
+          "description": "Connects Storefront and Forge through authenticated, digest-bound transport while preserving preview isolation and tamper rejection."
+        }
       ]
     },
     {
@@ -1602,6 +1821,16 @@
       "measures": [
         "KR6.3",
         "KR6.4"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-16",
+          "description": "Surfaces adapter readiness, provenance, evidence state, and the human-review stop while keeping all autonomous execution authority false."
+        },
+        {
+          "epic": "EP-20",
+          "description": "Carries connected requests into ServiceNow and verifies returned decisions against exact request, product, and evidence bindings without treating workflow approval as provisioning authority."
+        }
       ]
     },
     {
@@ -1610,6 +1839,12 @@
       "title": "AI-assisted authoring stays bound to versioned inputs and explicit human acceptance",
       "measures": [
         "KR7.1"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-17",
+          "description": "Allows AI to propose requirements, mappings, and product configurations only against versioned inputs with explicit human acceptance."
+        }
       ]
     },
     {
@@ -1619,6 +1854,12 @@
       "measures": [
         "KR7.2",
         "KR7.3"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-17",
+          "description": "Constrains future agent actions with deterministic policy, least privilege, rollback and revocation, retained evidence, and operational gating."
+        }
       ]
     },
     {
@@ -1628,6 +1869,12 @@
       "measures": [
         "KR8.1",
         "KR8.2"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-18",
+          "description": "Propagates customer, organization, and environment scope through identity, profiles, evidence, approvals, products, secrets, integrations, and audit with cross-customer substitution tests."
+        }
       ]
     },
     {
@@ -1637,6 +1884,12 @@
       "measures": [
         "KR8.3",
         "KR8.4"
+      ],
+      "epicContributions": [
+        {
+          "epic": "EP-18",
+          "description": "Defines explicit tenant authority, custody, deployment, and isolation boundaries that must be proven before any shared-tenancy claim."
+        }
       ]
     }
   ],
@@ -1682,5 +1935,7 @@
     "objective": "rounded mean of unique contributing Epic completion percentages across all strategic Key Results",
     "note": "Percentages describe current bounded roadmap completion, not production readiness, authorization, or deployment readiness."
   },
-  "roadmapBlobSha": "59798415894fd120ba9cc952e9243af6a9119eea"
+  "roadmapBlobSha": "59798415894fd120ba9cc952e9243af6a9119eea",
+  "contributionSource": "config/portfolio-strategic-kr-contributions.json",
+  "contributionBlobSha": "e585efc86d8717aabbd7daf5e8207df5437a8c1e"
 }
