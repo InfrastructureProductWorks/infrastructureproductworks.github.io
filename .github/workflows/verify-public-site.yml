@@ -79,8 +79,13 @@ jobs:
           second_forbidden="Treas"
           second_forbidden="${second_forbidden}ury"
           if grep -R -nE "${first_forbidden}|${second_forbidden}|Public Beta|commercial model|Pilot Ready|Customer-hosted / Pilot Ready|customer-facing intake|Get Support|What you actually get|Open IaaP Guard App|Problems we solve" \
-            index.html about/index.html portfolio/index.html terms/index.html support/index.html guard/index.html console/index.html assurance/index.html docs/guard/index.html assets/portfolio.js .github/workflows/verify-public-site.yml; then
+            index.html about/index.html portfolio/index.html terms/index.html support/index.html guard/index.html console/index.html assurance/index.html docs/guard/index.html assets/portfolio.js; then
             echo "::error::Retired or named-organization wording found on tightened portfolio-boundary surfaces."
+            exit 1
+          fi
+
+          if grep -nE "${first_forbidden}|${second_forbidden}" .github/workflows/verify-public-site.yml; then
+            echo "::error::Named-organization wording found in workflow file."
             exit 1
           fi
 
