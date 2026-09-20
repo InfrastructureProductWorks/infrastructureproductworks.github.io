@@ -335,6 +335,9 @@
 .roadmap-epic-id{padding:5px 8px;background:#f3edff;color:#7550af}
 .roadmap-epic-card h4{margin:7px 0 0;color:#21374f;font-size:14px;line-height:1.3}
 .roadmap-epic-progress{margin:12px 0 9px;color:#65758a;font-size:12px;line-height:1.5}
+.roadmap-epic-contribution{margin:14px 0 4px;padding:12px 13px;border:1px solid #e2e8f0;border-radius:11px;background:#f8fafc}
+.roadmap-epic-contribution small{display:block;margin-bottom:5px;color:#7b6ab6;font-size:9px;font-weight:900;letter-spacing:.11em}
+.roadmap-epic-contribution p{margin:0;color:#334b61;font-size:12px;line-height:1.55}
 .roadmap-feature-count{color:#8794a4;font-size:10px}
 .roadmap-fallback-copy{margin:0;padding:0 22px 20px;color:#68798d;font-size:12px}
 @media(max-width:900px){
