@@ -1,7 +1,7 @@
 {
   "schemaVersion": "roadmap-relationship-view/v4",
   "generatedAt": "2026-09-19",
-  "sourceRevision": "0678e47a8fb31c3cf2a2c14fb5d57a9bfec60836",
+  "sourceRevision": "a1cc194a01ee5f0b064310a7682edaab367ce642",
   "planning": {
     "baseline": "September 19, 2026",
     "evidenceQuarter": "Q3 2026",
@@ -652,7 +652,8 @@
       "sharedRange": null,
       "source": "docs/EP-13_OBSERVABILITY_TELEMETRY_2026-09-08.md",
       "epics": [
-        "EP-13"
+        "EP-13",
+        "EP-21"
       ],
       "status": "Conditional / gated",
       "group": "gated",
@@ -665,7 +666,8 @@
       "sharedRange": null,
       "source": "docs/EP-13_OBSERVABILITY_TELEMETRY_2026-09-08.md",
       "epics": [
-        "EP-13"
+        "EP-13",
+        "EP-21"
       ],
       "status": "Conditional / gated",
       "group": "gated",
@@ -678,7 +680,8 @@
       "sharedRange": null,
       "source": "docs/EP-13_OBSERVABILITY_TELEMETRY_2026-09-08.md",
       "epics": [
-        "EP-13"
+        "EP-13",
+        "EP-21"
       ],
       "status": "Conditional / gated",
       "group": "gated",
@@ -691,7 +694,8 @@
       "sharedRange": null,
       "source": "docs/EP-13_OBSERVABILITY_TELEMETRY_2026-09-08.md",
       "epics": [
-        "EP-13"
+        "EP-13",
+        "EP-21"
       ],
       "status": "Conditional / gated",
       "group": "gated",
@@ -847,7 +851,8 @@
       "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CONNECTED-APPLICATIONS-2026-09-17.md",
       "epics": [
-        "EP-16"
+        "EP-16",
+        "EP-20"
       ],
       "status": "Active",
       "group": "active",
@@ -990,7 +995,8 @@
       "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CHANGE-READINESS-HISTORY-2026-09-19.md",
       "epics": [
-        "EP-19"
+        "EP-19",
+        "EP-20"
       ],
       "status": "Documentation-first",
       "group": "documentation",
@@ -1394,6 +1400,48 @@
       ],
       "completionPercent": 25,
       "progressBasis": "Documentation-first change-context/history contracts are defined before operational adapters."
+    },
+    "EP-20": {
+      "id": "EP-20",
+      "title": "Enterprise Workflow Integration (ServiceNow first)",
+      "status": "Documentation-first",
+      "group": "documentation",
+      "progress": "Architecture, contracts and future acceptance criteria are defined; runtime ServiceNow workflow transport, customer validation and CMDB integration remain separately gated",
+      "time": "Q3 2026 design",
+      "featureCount": 8,
+      "features": [
+        "EWI-01",
+        "EWI-02",
+        "EWI-03",
+        "EWI-04",
+        "EWI-05",
+        "EWI-06",
+        "EWI-07",
+        "EWI-08"
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Documentation-first ServiceNow integration architecture, contracts and acceptance gates are defined; no live workflow, approval callback, CMDB or execution authority is claimed."
+    },
+    "EP-21": {
+      "id": "EP-21",
+      "title": "Enterprise Telemetry Adapter (Splunk first)",
+      "status": "Documentation-first",
+      "group": "documentation",
+      "progress": "Vendor-neutral telemetry adapter architecture and future Splunk acceptance criteria are defined; runtime transport and authorized live validation remain separately gated",
+      "time": "Q3 2026 design",
+      "featureCount": 8,
+      "features": [
+        "ETA-01",
+        "ETA-02",
+        "ETA-03",
+        "ETA-04",
+        "ETA-05",
+        "ETA-06",
+        "ETA-07",
+        "ETA-08"
+      ],
+      "completionPercent": 25,
+      "progressBasis": "Documentation-first enterprise telemetry and Splunk adapter architecture is defined; no live endpoint, HEC token, customer telemetry or remediation authority is claimed."
     }
   },
   "relationshipModel": {
@@ -1614,7 +1662,9 @@
         "EP-16": 75,
         "EP-17": 0,
         "EP-18": 25,
-        "EP-19": 25
+        "EP-19": 25,
+        "EP-20": 25,
+        "EP-21": 25
       }
     }
   ],
@@ -1632,5 +1682,5 @@
     "objective": "rounded mean of unique contributing Epic completion percentages across all strategic Key Results",
     "note": "Percentages describe current bounded roadmap completion, not production readiness, authorization, or deployment readiness."
   },
-  "roadmapBlobSha": "f52ab21cceab3a2245ac5c5e775ddc1a8ad0e9a4"
+  "roadmapBlobSha": "59798415894fd120ba9cc952e9243af6a9119eea"
 }
