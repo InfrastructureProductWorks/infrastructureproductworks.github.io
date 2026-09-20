@@ -44,6 +44,7 @@ jobs:
           const data=JSON.parse(fs.readFileSync('data/roadmap-relationships.json','utf8'));
           const allowed=new Set([0,25,50,75,100]);
           if(data.schemaVersion!=='roadmap-relationship-view/v5') throw new Error('roadmap relationship schema');
+          if(data.contributionSource!=='config/portfolio-strategic-kr-contributions.json'||!/^[0-9a-f]{40}$/.test(data.contributionBlobSha||'')) throw new Error('contribution contract provenance');
           if(data.relationshipModel?.epicContributionSemantics!=='relationship-specific-description-required') throw new Error('Epic contribution semantics');
           const krById=new Map((data.keyResults||[]).map(k=>[k.id,k]));
           const descriptionsByEpic=new Map();
