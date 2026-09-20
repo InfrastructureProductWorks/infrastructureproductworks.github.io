@@ -59,6 +59,8 @@ const FALLBACK={
       'Connected Storefront and Forge preserve authenticated, integrity-bound handoff and the human-review boundary while durable evidence storage advances',
       'Customer identity, persistence, audit, Guard operational profiles, Crossplane and cloud/provider integrations remain separately gated',
       'EP-18 multi-customer isolation defines customer-bound identity, policy, evidence, secrets and cross-customer fail-closed testing before any tenant-isolation claim',
+      'EP-20 Enterprise Workflow Integration (ServiceNow first) is documentation-first and reuses existing strategic outcomes',
+      'EP-21 Enterprise Telemetry Adapter (Splunk first) is documentation-first and reuses existing observability outcomes',
       'EP-17 AI-assisted and agent-operated evolution remains evidence-gated after trusted connected and customer-operational foundations'
     ]
   },
@@ -66,10 +68,10 @@ const FALLBACK={
   objectives:[
     {id:'O1',definition:'Preserve trustworthy evidence and release integrity',keyResultCount:3,epics:['EP-01']},
     {id:'O2',definition:'Validate evaluator value without widening authority',keyResultCount:3,epics:['EP-02','EP-03']},
-    {id:'O3',definition:'Prove one minimum multi-cloud foundation safely and reversibly',keyResultCount:27,epics:['EP-04','EP-09','EP-10','EP-11','EP-12','EP-13','EP-14','EP-15']},
-    {id:'O4',definition:'Prepare customer-hosted planning and operational decisions',keyResultCount:12,epics:['EP-03','EP-05','EP-06','EP-10','EP-11','EP-13','EP-14','EP-15','EP-19']},
+    {id:'O3',definition:'Prove one minimum multi-cloud foundation safely and reversibly',keyResultCount:27,epics:['EP-04','EP-09','EP-10','EP-11','EP-12','EP-13','EP-14','EP-15','EP-21']},
+    {id:'O4',definition:'Prepare customer-hosted planning and operational decisions',keyResultCount:12,epics:['EP-03','EP-05','EP-06','EP-10','EP-11','EP-13','EP-14','EP-15','EP-19','EP-20','EP-21']},
     {id:'O5',definition:'Make the portfolio installable and portable in customer-controlled enterprise environments',keyResultCount:6,epics:['EP-07','EP-08']},
-    {id:'O6',definition:'Connect the product experience without widening execution authority',keyResultCount:4,epics:['EP-16']},
+    {id:'O6',definition:'Connect the product experience without widening execution authority',keyResultCount:4,epics:['EP-16','EP-20']},
     {id:'O7',definition:'Prepare evidence-gated AI-assisted and agent-operated evolution',keyResultCount:3,epics:['EP-17']},
     {id:'O8',definition:'Establish verifiable multi-customer isolation',keyResultCount:4,epics:['EP-18']}
   ],
