@@ -413,6 +413,8 @@ function validRoadmapRelationships(data){
   if(!boundedText(data.generatedAt)||!/^\d{4}-\d{2}-\d{2}$/.test(data.generatedAt))return false;
   if(!boundedText(data.sourceRevision)||!/^[0-9a-f]{40}$/.test(data.sourceRevision))return false;
   if(!boundedText(data.roadmapBlobSha)||!/^[0-9a-f]{40}$/.test(data.roadmapBlobSha))return false;
+  if(data.contributionSource!=='config/portfolio-strategic-kr-contributions.json')return false;
+  if(!boundedText(data.contributionBlobSha)||!/^[0-9a-f]{40}$/.test(data.contributionBlobSha))return false;
   if(!object(data.planning)||!boundedText(data.planning.baseline)||!normalizeRoadmapDate(data.planning.baseline)||!boundedText(data.planning.evidenceQuarter)||!/^Q[1-4]\s+\d{4}$/.test(data.planning.evidenceQuarter)||!boundedText(data.planning.horizon)||!boundedText(data.planning.timingNote))return false;
   if(!Array.isArray(data.objectives)||data.objectives.length<1||!Array.isArray(data.headlineKeyResults)||data.headlineKeyResults.length<1||!Array.isArray(data.keyResults)||data.keyResults.length<1||!object(data.epics)||Object.keys(data.epics).length<1)return false;
   const objectiveIds=data.objectives.map(o=>o?.id),headlineIds=data.headlineKeyResults.map(h=>h?.id),krIds=data.keyResults.map(k=>k?.id),epicIds=Object.keys(data.epics);
