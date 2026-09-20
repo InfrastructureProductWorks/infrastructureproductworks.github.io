@@ -1935,5 +1935,7 @@
     "objective": "rounded mean of unique contributing Epic completion percentages across all strategic Key Results",
     "note": "Percentages describe current bounded roadmap completion, not production readiness, authorization, or deployment readiness."
   },
-  "roadmapBlobSha": "59798415894fd120ba9cc952e9243af6a9119eea"
+  "roadmapBlobSha": "59798415894fd120ba9cc952e9243af6a9119eea",
+  "contributionSource": "config/portfolio-strategic-kr-contributions.json",
+  "contributionBlobSha": "e585efc86d8717aabbd7daf5e8207df5437a8c1e"
 }
