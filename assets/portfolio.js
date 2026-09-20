@@ -12,7 +12,7 @@ const PRODUCT_CONTRACT=[
 ];
 const FOCUS_CONTRACT={closedEpic:'EP-07',activeEpic:'EP-08',activeLabel:'GitHub Enterprise Server and restricted-network portability'};
 const DELIVERY_FOCUS={epic:'EP-16',title:'Connected Application Experience',increment:'EDA-06 — Immutable Evidence & Artifact Adapter',copy:'Separate immutable evidence and artifacts from the event store while preserving exact digest, provenance, tenant scope and zero-authority boundaries.'};
-const BASELINE={objectives:8,keyResults:62,epics:19,features:150};
+const BASELINE={objectives:8,keyResults:62,epics:21,features:166};
 const DELIVERY_OUTLOOK_MILESTONES=[
   {
     id:'core-v1',
