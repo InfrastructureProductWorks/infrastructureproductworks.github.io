@@ -6,6 +6,16 @@
 <main>
 <section class="hero"><p class="eyebrow">GUARD DOCUMENTATION</p><h1>Documentation for a bounded<br><em>portfolio validation surface.</em></h1><p class="lede">These notes explain the Guard demonstration boundary, the kinds of evidence it can produce, and the authority it does not carry.</p></section>
 <section class="boundary"><p class="eyebrow">NO DEPLOYMENT AUTHORITY</p><h2>Guard output supports review. It does not replace one.</h2><p>A Guard result does not constitute approval, merge authority, deployment authorization, privileged access, ATO, risk acceptance or permission to bypass organization-owned controls.</p></section>
+<section id="guard-docs-aha">
+<p class="eyebrow">HOW TO THINK ABOUT GUARD</p>
+<h2>Guard sits between valid code and trusted change.</h2>
+<p class="lede">Infrastructure code can compile, plan or render successfully and still violate architecture, security, entitlement or evidence expectations. Guard documents a deterministic validation boundary for checking those conditions before governed change moves forward.</p>
+<div class="cards">
+<article><small>INPUT</small><h3>Infrastructure intent and source context.</h3><p>Guard evaluates bounded infrastructure changes together with the source revision and rule context needed to make the result traceable.</p></article>
+<article><small>VALIDATION</small><h3>Deterministic checks, not hidden judgment.</h3><p>Repeatable rules produce reviewable findings so teams can understand why a condition passed, warned or failed.</p></article>
+<article><small>OUTPUT</small><h3>Evidence for the next accountable step.</h3><p>The result supports review and downstream decision-making while leaving approval, deployment and risk acceptance with the authorized organization-owned process.</p></article>
+</div>
+</section>
 <section><p class="eyebrow">WHAT GUARD DOCUMENTATION COVERS</p><h2>Validation concepts and evidence boundaries.</h2><div class="cards"><article><small>INPUT</small><h3>Infrastructure intent</h3><p>Guard treats proposed infrastructure changes as material to validate, not as authority to act.</p></article><article><small>RULES</small><h3>Deterministic checks</h3><p>Architecture, policy, security and evidence rules should produce repeatable findings from the same inputs.</p></article><article><small>OUTPUT</small><h3>Reviewable evidence</h3><p>Findings, reports, source context and digests are evidence for authorized people and systems to consider.</p></article><article><small>BOUNDARY</small><h3>Decision rights remain outside Guard</h3><p>Repository owners and organization governance retain approvals, credentials, deployment and risk decisions.</p></article></div></section>
 <section class="proof"><p class="eyebrow">PORTFOLIO NOTE</p><h2>This documentation is for public inspection.</h2><p>It is not implementation support, production support, procurement guidance or a substitute for an organization-owned security, architecture or authorization process.</p></section>
 </main><footer><strong>IaaP Guard Documentation</strong><div><a href="/guard/">Guard</a><a href="/work/">The Work</a><a href="/terms/">Use Notice</a><a href="/support/">Contact</a></div><p>Validation evidence · public documentation · bounded authority</p></footer>
