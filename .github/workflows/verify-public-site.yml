@@ -56,34 +56,44 @@ jobs:
           grep -Fq "The current public proof does not yet implement automated non-standard request intake, routing, fulfillment or productization." operating-model/index.html
 
           grep -Fq "IPW is evidence of experience." about/index.html
+          grep -Fq "The problem is bigger than provisioning." about/index.html
+          grep -Fq "The work spans disciplines on purpose." about/index.html
           grep -Fq "not a request that any agency adopt, buy, license or operate a private product" about/index.html
           grep -Fq "Any public-sector version should be government-owned." about/index.html
 
           grep -Fq "without implying production, pilot, deployment, approval, commercialization or government authority" portfolio/index.html
+          grep -Fq "Progress only matters if the evidence behind it is inspectable." portfolio/index.html
+          grep -Fq "A green bar should mean something." portfolio/index.html
           grep -Fq "Public previews demonstrate product thinking" portfolio/index.html
           grep -Fq "do not establish operational readiness" portfolio/index.html
           grep -Fq "VALIDATION STAGES" portfolio/index.html
           grep -Fq "OWNER-CONTROLLED VALIDATION" portfolio/index.html
 
           grep -Fq "Portfolio Use Notice" terms/index.html
+          grep -Fq "The portfolio is easiest to understand when evidence, demonstration and authority are kept separate." terms/index.html
           grep -Fq "not a commercial offer" terms/index.html
           grep -Fq "The website itself is not the adoption path" terms/index.html
           grep -Fq "Synthetic data only" terms/index.html
 
           grep -Fq "not production support, implementation support, procurement intake, consulting intake or an operational service desk" support/index.html
+          grep -Fq "Questions should have a clear place to land without turning the portfolio into a service desk." support/index.html
           grep -Fq "This website is not an official channel" support/index.html
 
           grep -Fq "View public engineering surface" guard/index.html
+          grep -Fq "Infrastructure can be valid code and still be the wrong architecture." guard/index.html
           grep -Fq "Guard is validated, not deployed." guard/index.html
           grep -Fq "WHAT THE PROOF DEMONSTRATES" guard/index.html
 
           grep -Fq "Review workspace proof, not production review service." console/index.html
+          grep -Fq "Evidence can exist everywhere and still be hard to govern." console/index.html
           grep -Fq "no approval authority" console/index.html
 
           grep -Fq "Bounded proof, not production authority." assurance/index.html
+          grep -Fq "Approval at the top is not enough if authority becomes ambiguous downstream." assurance/index.html
           grep -Fq "WHAT THE MODEL PRESERVES" assurance/index.html
 
           grep -Fq "Guard output supports review. It does not replace one." docs/guard/index.html
+          grep -Fq "Guard sits between valid code and trusted change." docs/guard/index.html
           grep -Fq "not implementation support, production support, procurement guidance" docs/guard/index.html
 
           first_forbidden="IR"
