@@ -24,9 +24,9 @@ const DELIVERY_OUTLOOK_MILESTONES=[
   },
   {
     id:'pilot-ready',
-    label:'Customer-hosted / Pilot Ready',
+    label:'Organization-hosted / Validation Ready',
     planningWindow:'Q1–Q2 2027',
-    summary:'Customer-controlled identity, execution, foundation, security and operational evidence validated in an authorized environment.',
+    summary:'Organization-controlled identity, execution, foundation, security and operational evidence validated in an authorized environment.',
     epics:['EP-04','EP-05','EP-08','EP-09','EP-10','EP-11','EP-12','EP-13','EP-14','EP-15','EP-18'],
     critical:['EP-04','EP-08','EP-10','EP-11']
   },
@@ -69,8 +69,8 @@ const FALLBACK={
     {id:'O1',definition:'Preserve trustworthy evidence and release integrity',keyResultCount:3,epics:['EP-01']},
     {id:'O2',definition:'Validate evaluator value without widening authority',keyResultCount:3,epics:['EP-02','EP-03']},
     {id:'O3',definition:'Prove one minimum multi-cloud foundation safely and reversibly',keyResultCount:27,epics:['EP-04','EP-09','EP-10','EP-11','EP-12','EP-13','EP-14','EP-15','EP-21']},
-    {id:'O4',definition:'Prepare customer-hosted planning and operational decisions',keyResultCount:12,epics:['EP-03','EP-05','EP-06','EP-10','EP-11','EP-13','EP-14','EP-15','EP-19','EP-20','EP-21']},
-    {id:'O5',definition:'Make the portfolio installable and portable in customer-controlled enterprise environments',keyResultCount:6,epics:['EP-07','EP-08']},
+    {id:'O4',definition:'Prepare organization-hosted planning and operational decisions',keyResultCount:12,epics:['EP-03','EP-05','EP-06','EP-10','EP-11','EP-13','EP-14','EP-15','EP-19','EP-20','EP-21']},
+    {id:'O5',definition:'Make the portfolio installable and portable in organization-controlled enterprise environments',keyResultCount:6,epics:['EP-07','EP-08']},
     {id:'O6',definition:'Connect the product experience without widening execution authority',keyResultCount:4,epics:['EP-16','EP-20']},
     {id:'O7',definition:'Prepare evidence-gated AI-assisted and agent-operated evolution',keyResultCount:3,epics:['EP-17']},
     {id:'O8',definition:'Establish verifiable multi-customer isolation',keyResultCount:4,epics:['EP-18']}
@@ -165,7 +165,7 @@ function fmtDate(value){
   return d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
 }
 function shortSha(value){return typeof value==='string'&&value.length>=7?value.slice(0,7):'snapshot'}
-function renderBaseline(data){text('metric-objectives',data.baseline.objectives);text('metric-krs',data.baseline.keyResults);text('metric-epics',data.baseline.epics);text('metric-features',data.baseline.features);text('live-posture',String(data.posture||'').replaceAll('_',' '));text('live-updated',fmtDate(data.generatedAt));text('focus-id',DELIVERY_FOCUS.epic);text('focus-title',DELIVERY_FOCUS.title);text('focus-increment',DELIVERY_FOCUS.increment);text('focus-copy',DELIVERY_FOCUS.copy);text('portability-id',data.portfolioFocus.activeEpic);text('portability-title',data.portfolioFocus.activeLabel);text('portability-accepted','GHE-06 bounded accepted');const blocked=(data.portfolioFocus.next||[]).some(item=>item.toLowerCase().includes('ghe-07')&&item.toLowerCase().includes('externally blocked'));text('portability-state',blocked?'EXTERNALLY BLOCKED':'ACTIVE TRACK');text('portability-copy',blocked?'Waiting on an authorized live GHES/customer-controlled GitHub target.':'Live customer-runner and GHES acceptance remains gated on authorized target evidence.');text('portability-note',blocked?'Not an unfinished synthetic engineering issue.':'Live target evidence remains required before support can be claimed.');}
+function renderBaseline(data){text('metric-objectives',data.baseline.objectives);text('metric-krs',data.baseline.keyResults);text('metric-epics',data.baseline.epics);text('metric-features',data.baseline.features);text('live-posture',String(data.posture||'').replaceAll('_',' '));text('live-updated',fmtDate(data.generatedAt));text('focus-id',DELIVERY_FOCUS.epic);text('focus-title',DELIVERY_FOCUS.title);text('focus-increment',DELIVERY_FOCUS.increment);text('focus-copy',DELIVERY_FOCUS.copy);text('portability-id',data.portfolioFocus.activeEpic);text('portability-title',data.portfolioFocus.activeLabel);text('portability-accepted','GHE-06 bounded accepted');const blocked=(data.portfolioFocus.next||[]).some(item=>item.toLowerCase().includes('ghe-07')&&item.toLowerCase().includes('externally blocked'));text('portability-state',blocked?'EXTERNALLY BLOCKED':'ACTIVE TRACK');text('portability-copy',blocked?'Waiting on an authorized live GHES/organization-controlled GitHub target.':'Live customer-runner and GHES acceptance remains gated on authorized target evidence.');text('portability-note',blocked?'Not an unfinished synthetic engineering issue.':'Live target evidence remains required before support can be claimed.');}
 function roadmapStatusClass(group){return ['active','accepted','gated','documentation','future','planned'].includes(group)?` status-${group}`:' status-planned'}
 function metaPill(value,group){const span=node('span',`roadmap-meta-pill${roadmapStatusClass(group)}`,value);return span}
 function bindRoadmapControls(host,{filtersEnabled=true}={}){
