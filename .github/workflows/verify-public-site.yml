@@ -59,6 +59,12 @@ jobs:
         run: |
           set -euo pipefail
           node --check assets/portfolio.js
+          grep -Fq "traceability-only-hidden-from-executive-view" assets/portfolio.js
+          grep -Fq '"registeredMeasures": "traceability-only-hidden-from-executive-view"' data/roadmap-relationships.json
+          grep -Fq "node('details','roadmap-objective')" assets/portfolio.js
+          grep -Fq "node('details','roadmap-headline-kr')" assets/portfolio.js
+          grep -Fq "roadmap-expand-all" portfolio/index.html
+          grep -Fq "roadmap-collapse-all" portfolio/index.html
           grep -Fq "epicExternallyBlocked" assets/portfolio.js
           grep -Fq "forecastSignal" assets/portfolio.js
           grep -Fq "progressHistory" assets/portfolio.js
