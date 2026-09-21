@@ -39,6 +39,13 @@ jobs:
           grep -Fq "independent-evidence-portfolio" assets/portfolio.js
 
           grep -Fq "Cloud resources are ingredients." index.html
+          grep -Fq "THE INGREDIENTS" index.html
+          grep -Fq "THE MISSING MIDDLE LAYER" index.html
+          grep -Fq "Cloud Infrastructure <span>Drive-Thru</span>" index.html
+          grep -Fq "Same Great Clouds. A Better Way to Order." index.html
+          grep -Fq "Simple outside. Engineered inside." index.html
+          grep -Fq "One portfolio. Bounded responsibilities." index.html
+          grep -Fq "Build the product boundary first." index.html
           grep -Fq "What happens when teams use the suite?" index.html
           grep -Fq "organizations do not merely need another infrastructure automation tool." index.html
           grep -Fq "ADOPT WITHOUT REPLATFORMING" index.html
@@ -159,6 +166,11 @@ jobs:
 
             if [[ "${home_code}" == "200" && "${portfolio_code}" == "200" && "${terms_code}" == "200" && "${operating_code}" == "200" ]] \
               && grep -Fq 'Cloud resources are ingredients.' "${home}" \
+              && grep -Fq 'THE INGREDIENTS' "${home}" \
+              && grep -Fq 'THE MISSING MIDDLE LAYER' "${home}" \
+              && grep -Fq 'Cloud Infrastructure <span>Drive-Thru</span>' "${home}" \
+              && grep -Fq 'Same Great Clouds. A Better Way to Order.' "${home}" \
+              && grep -Fq 'Simple outside. Engineered inside.' "${home}" \
               && grep -Fq 'What happens when teams use the suite?' "${home}" \
               && grep -Fq 'ADOPT WITHOUT REPLATFORMING' "${home}" \
               && grep -Fq 'Illustrative annual planning scenarios for large regulated organizations' "${home}" \
