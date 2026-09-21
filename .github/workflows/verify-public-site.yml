@@ -48,6 +48,7 @@ jobs:
           grep -Fq "Turn recurring exceptions into products." index.html
           grep -Fq "Leave the golden path without leaving the operating model." operating-model/index.html
           grep -Fq "Delegated fulfillment does not transfer lifecycle governance." operating-model/index.html
+          grep -Fq "The current public proof does not yet implement automated non-standard request intake, routing, fulfillment or productization." operating-model/index.html
 
           grep -Fq "IPW is evidence of experience." about/index.html
           grep -Fq "not a request that any agency adopt, buy, license or operate a private product" about/index.html
@@ -85,7 +86,7 @@ jobs:
           second_forbidden="Treas"
           second_forbidden="${second_forbidden}ury"
           if grep -R -nE "${first_forbidden}|${second_forbidden}|Public Beta|commercial model|Pilot Ready|Customer-hosted / Pilot Ready|customer-facing intake|Get Support|What you actually get|Open IaaP Guard App|Problems we solve" \
-            index.html about/index.html portfolio/index.html terms/index.html support/index.html guard/index.html console/index.html assurance/index.html docs/guard/index.html assets/portfolio.js; then
+            index.html operating-model/index.html about/index.html portfolio/index.html terms/index.html support/index.html guard/index.html console/index.html assurance/index.html docs/guard/index.html assets/portfolio.js; then
             echo "::error::Retired or named-organization wording found on tightened portfolio-boundary surfaces."
             exit 1
           fi
@@ -150,7 +151,8 @@ jobs:
               && grep -Fq 'The website itself is not the adoption path' "${terms}" \
               && grep -Fq 'Standard work is automated. Exceptional work is engineered. All work stays governed.' "${home}" \
               && grep -Fq 'Leave the golden path without leaving the operating model.' "${operating}" \
-              && grep -Fq 'Delegated fulfillment does not transfer lifecycle governance.' "${operating}"; then
+              && grep -Fq 'Delegated fulfillment does not transfer lifecycle governance.' "${operating}" \
+              && grep -Fq 'The current public proof does not yet implement automated non-standard request intake, routing, fulfillment or productization.' "${operating}"; then
               ok=1
               break
             fi
