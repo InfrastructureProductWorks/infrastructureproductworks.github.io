@@ -38,6 +38,11 @@ jobs:
           grep -Fq "IPW_PORTFOLIO_STATUS_BOUNDARY" assets/portfolio.js
           grep -Fq "independent-evidence-portfolio" assets/portfolio.js
 
+          grep -Fq "Cloud resources are ingredients." index.html
+          grep -Fq "What happens when teams use the suite?" index.html
+          grep -Fq "organizations do not merely need another infrastructure automation tool." index.html
+          grep -Fq "ADOPT WITHOUT REPLATFORMING" index.html
+          grep -Fq "Illustrative annual planning scenarios for large regulated organizations" index.html
           grep -Fq "Evidence of capability, not a procurement request." index.html
           grep -Fq "not an official government product" index.html
           grep -Fq "not an official agency or department system" index.html
@@ -143,6 +148,10 @@ jobs:
               "${BASE_URL}/operating-model/?verify=${EXPECTED_SHA}" || true)"
 
             if [[ "${home_code}" == "200" && "${portfolio_code}" == "200" && "${terms_code}" == "200" && "${operating_code}" == "200" ]] \
+              && grep -Fq 'Cloud resources are ingredients.' "${home}" \
+              && grep -Fq 'What happens when teams use the suite?' "${home}" \
+              && grep -Fq 'ADOPT WITHOUT REPLATFORMING' "${home}" \
+              && grep -Fq 'Illustrative annual planning scenarios for large regulated organizations' "${home}" \
               && grep -Fq 'Evidence of capability, not a procurement request.' "${home}" \
               && grep -Fq 'not an official government product' "${home}" \
               && grep -Fq 'not an official agency or department system' "${home}" \
