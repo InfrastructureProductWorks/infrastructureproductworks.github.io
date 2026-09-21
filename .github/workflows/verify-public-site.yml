@@ -65,6 +65,14 @@ jobs:
           grep -Fq "node('details','roadmap-headline-kr')" assets/portfolio.js
           grep -Fq "roadmap-expand-all" portfolio/index.html
           grep -Fq "roadmap-collapse-all" portfolio/index.html
+          grep -Fq "PORTFOLIO INQUIRY" support/index.html
+          grep -Fq "PORTFOLIO USE NOTICE" terms/index.html
+          grep -Fq "Organization-hosted concept. Synthetic validation. Non-authoritative." console/index.html
+          grep -Fq "Organization-hosted / Validation Ready" assets/portfolio.js
+          if grep -R -nE "Public Beta|CUSTOMER-FACING INTAKE|Get Support|commercial model|commercial activation|Customer-hosted / Pilot Ready"             support/index.html terms/index.html console/index.html portfolio/index.html assets/portfolio.js; then
+            echo "::error::Retired business-facing wording found on surgically patched surfaces."
+            exit 1
+          fi
           grep -Fq "epicExternallyBlocked" assets/portfolio.js
           grep -Fq "forecastSignal" assets/portfolio.js
           grep -Fq "progressHistory" assets/portfolio.js
