@@ -63,7 +63,7 @@
 <p>You do not need a GitHub account and you do not need to know which repository owns the problem. Pick the closest product and request type, then describe what happened.</p>
 <div class="support-points">
 <div class="support-point"><strong>Product questions</strong><span>How a capability works, intended boundaries, adoption or product behavior.</span></div>
-<div class="support-point"><strong>Technical support</strong><span>Installation, configuration, documentation or unexpected behavior.</span></div>
+<div class="support-point"><strong>Documentation &amp; demo questions</strong><span>Questions about public documentation, examples or synthetic demo behavior.</span></div>
 <div class="support-point"><strong>Product feedback</strong><span>Feature requests, usability feedback or ideas for improvement.</span></div>
 </div>
 <div class="security-callout">
@@ -74,13 +74,13 @@
 </aside>
 
 <form class="support-form" id="ipw-support-form" action="https://ipw-marketplace-webhook.onrender.com/api/support" method="post">
-<p class="eyebrow">SUPPORT REQUEST</p>
+<p class="eyebrow">PORTFOLIO INQUIRY</p>
 <h2>How can we help?</h2>
 <div class="form-grid">
 <div class="field"><label for="name">Name</label><input id="name" name="name" autocomplete="name" maxlength="100" required></div>
 <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
 <div class="field"><label for="product">Product</label><select id="product" name="product" required><option value="">Select a product</option><option>Storefront</option><option>IaaP Guard</option><option>IaaP Forge</option><option>IaaP Console</option><option>IaaP Assurance</option><option>Crossplane</option><option>Website</option><option>General</option></select></div>
-<div class="field"><label for="type">Request type</label><select id="type" name="type" required><option value="">Select a type</option><option>Product question</option><option>Bug</option><option>Documentation</option><option>Installation</option><option>Feature request</option><option>Other</option></select></div>
+<div class="field"><label for="type">Request type</label><select id="type" name="type" required><option value="">Select a type</option><option>Portfolio question</option><option>Public demo issue</option><option>Documentation</option><option>Evidence question</option><option>Feedback</option><option>Other</option></select></div>
 <div class="field full"><label for="title">Short summary</label><input id="title" name="title" maxlength="140" minlength="4" placeholder="A short description of the request" required></div>
 <div class="field full"><label for="description">What happened or what do you need?</label><textarea id="description" name="description" maxlength="5000" minlength="10" required></textarea></div>
 <div class="field full"><label for="steps">Reproduction steps or additional details <span style="font-weight:500">(optional)</span></label><textarea id="steps" name="steps" maxlength="4000"></textarea></div>
