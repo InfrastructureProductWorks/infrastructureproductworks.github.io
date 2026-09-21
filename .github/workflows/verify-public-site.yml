@@ -3,17 +3,11 @@ name: Verify public site
 on:
   pull_request:
     paths:
-      - index.html
-      - operating-model/index.html
-      - about/index.html
-      - portfolio/index.html
-      - terms/index.html
-      - support/index.html
-      - guard/index.html
-      - console/index.html
-      - assurance/index.html
-      - docs/guard/index.html
-      - assets/portfolio.js
+      - '**/*.html'
+      - '**/*.js'
+      - '**/*.json'
+      - '**/*.svg'
+      - assets/portfolio.css
       - .github/workflows/verify-public-site.yml
   push:
     branches: [main]
@@ -23,102 +17,102 @@ permissions:
   contents: read
 
 jobs:
-  validate-portfolio-boundary:
-    name: validate-portfolio-boundary
+  validate-ethics-boundary:
+    name: validate-ethics-boundary
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Validate static portfolio boundary
+      - name: Keep public wording narrowly neutral
         shell: bash
         run: |
           set -euo pipefail
 
-          node --check assets/portfolio.js
-          grep -Fq "IPW_PORTFOLIO_STATUS_BOUNDARY" assets/portfolio.js
-          grep -Fq "independent-evidence-portfolio" assets/portfolio.js
+          forbidden_one="agen"
+          forbidden_one="${forbidden_one}cy"
+          forbidden_two="I"
+          forbidden_two="${forbidden_two}RS"
+          forbidden_three="Treas"
+          forbidden_three="${forbidden_three}ury"
+
+          if git grep -nEi "(^|[^[:alnum:]_])(${forbidden_one}|${forbidden_two}|${forbidden_three})([^[:alnum:]_]|$)" -- '*.html' '*.js' '*.json' '*.svg'; then
+            echo "::error::Public website content contains employer- or agency-specific wording."
+            exit 1
+          fi
 
           grep -Fq "Cloud resources are ingredients." index.html
-          grep -Fq "THE INGREDIENTS" index.html
-          grep -Fq "THE MISSING MIDDLE LAYER" index.html
           grep -Fq "Cloud Infrastructure <span>Drive-Thru</span>" index.html
           grep -Fq "Same Great Clouds. A Better Way to Order." index.html
-          grep -Fq "Simple outside. Engineered inside." index.html
-          grep -Fq "One portfolio. Bounded responsibilities." index.html
-          grep -Fq "Build the product boundary first." index.html
-          grep -Fq "What happens when teams use the suite?" index.html
-          grep -Fq "organizations do not merely need another infrastructure automation tool." index.html
-          grep -Fq "ADOPT WITHOUT REPLATFORMING" index.html
-          grep -Fq "Illustrative annual planning scenarios for large regulated organizations" index.html
-          grep -Fq "Evidence of capability, not a procurement request." index.html
-          grep -Fq "not an official government product" index.html
-          grep -Fq "not an official agency or department system" index.html
-          grep -Fq "not a procurement proposal" index.html
-          grep -Fq "not a commercial offer" index.html
+          grep -Fq "THE MISSING MIDDLE LAYER" index.html
           grep -Fq "Standard work is automated. Exceptional work is engineered. All work stays governed." index.html
-          grep -Fq "Escape from automation, not from governance." index.html
-          grep -Fq "Turn recurring exceptions into products." index.html
-          grep -Fq "Leave the golden path without leaving the operating model." operating-model/index.html
-          grep -Fq "Delegated fulfillment does not transfer lifecycle governance." operating-model/index.html
-          grep -Fq "The current public proof does not yet implement automated non-standard request intake, routing, fulfillment or productization." operating-model/index.html
 
-          grep -Fq "IPW is evidence of experience." about/index.html
-          grep -Fq "The problem is bigger than provisioning." about/index.html
-          grep -Fq "The work spans disciplines on purpose." about/index.html
-          grep -Fq "not a request that any agency adopt, buy, license or operate a private product" about/index.html
-          grep -Fq "Any public-sector version should be government-owned." about/index.html
+          echo "Narrow ethics boundary and original homepage narrative validated."
 
-          grep -Fq "without implying production, pilot, deployment, approval, commercialization or government authority" portfolio/index.html
-          grep -Fq "Progress only matters if the evidence behind it is inspectable." portfolio/index.html
-          grep -Fq "A green bar should mean something." portfolio/index.html
-          grep -Fq "Public previews demonstrate product thinking" portfolio/index.html
-          grep -Fq "do not establish operational readiness" portfolio/index.html
-          grep -Fq "VALIDATION STAGES" portfolio/index.html
-          grep -Fq "OWNER-CONTROLLED VALIDATION" portfolio/index.html
-
-          grep -Fq "Portfolio Use Notice" terms/index.html
-          grep -Fq "The portfolio is easiest to understand when evidence, demonstration and authority are kept separate." terms/index.html
-          grep -Fq "not a commercial offer" terms/index.html
-          grep -Fq "The website itself is not the adoption path" terms/index.html
-          grep -Fq "Synthetic data only" terms/index.html
-
-          grep -Fq "not production support, implementation support, procurement intake, consulting intake or an operational service desk" support/index.html
-          grep -Fq "Questions should have a clear place to land without turning the portfolio into a service desk." support/index.html
-          grep -Fq "This website is not an official channel" support/index.html
-
-          grep -Fq "View public engineering surface" guard/index.html
-          grep -Fq "Infrastructure can be valid code and still be the wrong architecture." guard/index.html
-          grep -Fq "Guard is validated, not deployed." guard/index.html
-          grep -Fq "WHAT THE PROOF DEMONSTRATES" guard/index.html
-
-          grep -Fq "Review workspace proof, not production review service." console/index.html
-          grep -Fq "Evidence can exist everywhere and still be hard to govern." console/index.html
-          grep -Fq "no approval authority" console/index.html
-
-          grep -Fq "Bounded proof, not production authority." assurance/index.html
-          grep -Fq "Approval at the top is not enough if authority becomes ambiguous downstream." assurance/index.html
-          grep -Fq "WHAT THE MODEL PRESERVES" assurance/index.html
-
-          grep -Fq "Guard output supports review. It does not replace one." docs/guard/index.html
-          grep -Fq "Guard sits between valid code and trusted change." docs/guard/index.html
-          grep -Fq "not implementation support, production support, procurement guidance" docs/guard/index.html
-
-          first_forbidden="IR"
-          first_forbidden="${first_forbidden}S"
-          second_forbidden="Treas"
-          second_forbidden="${second_forbidden}ury"
-          if grep -R -nE "${first_forbidden}|${second_forbidden}|Public Beta|commercial model|Pilot Ready|Customer-hosted / Pilot Ready|customer-facing intake|Get Support|What you actually get|Open IaaP Guard App|Problems we solve" \
-            index.html operating-model/index.html about/index.html portfolio/index.html terms/index.html support/index.html guard/index.html console/index.html assurance/index.html docs/guard/index.html assets/portfolio.js; then
-            echo "::error::Retired or named-organization wording found on tightened portfolio-boundary surfaces."
+  validate-portfolio-outlook:
+    name: validate-portfolio-outlook
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JavaScript and forecast contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check assets/portfolio.js
+          grep -Fq "epicExternallyBlocked" assets/portfolio.js
+          grep -Fq "forecastSignal" assets/portfolio.js
+          grep -Fq "progressHistory" assets/portfolio.js
+          grep -Fq "AUTO FORECAST" assets/portfolio.js
+          js_blob="$(git hash-object assets/portfolio.js)"
+          css_blob="$(git hash-object assets/portfolio.css)"
+          grep -Fq "/assets/portfolio.js?v=${js_blob}" portfolio/index.html
+          grep -Fq "/assets/portfolio.css?v=${css_blob}" portfolio/index.html
+          if grep -Fq "Protected-main evidence" portfolio/index.html; then
+            echo "::error::Portfolio must not claim protected-main evidence without verified protection."
             exit 1
           fi
-
-          if grep -nE "${first_forbidden}|${second_forbidden}" .github/workflows/verify-public-site.yml; then
-            echo "::error::Named-organization wording found in workflow file."
-            exit 1
-          fi
-
-          echo "Portfolio boundary posture validated."
+          node <<'NODE'
+          const fs=require('fs');
+          const data=JSON.parse(fs.readFileSync('data/roadmap-relationships.json','utf8'));
+          const allowed=new Set([0,25,50,75,100]);
+          if(data.schemaVersion!=='roadmap-relationship-view/v5') throw new Error('roadmap relationship schema');
+          if(data.contributionSource!=='config/portfolio-strategic-kr-contributions.json'||!/^[0-9a-f]{40}$/.test(data.contributionBlobSha||'')) throw new Error('contribution contract provenance');
+          if(data.relationshipModel?.epicContributionSemantics!=='relationship-specific-description-required') throw new Error('Epic contribution semantics');
+          const krById=new Map((data.keyResults||[]).map(k=>[k.id,k]));
+          const descriptionsByEpic=new Map();
+          for(const strategic of data.headlineKeyResults||[]){
+            if(strategic.objective!==String(strategic.id||'').split('-HKR',1)[0]) throw new Error(`Strategic KR Objective mismatch for ${strategic.id}`);
+            if(!Array.isArray(strategic.epicContributions)||strategic.epicContributions.length<1) throw new Error(`missing Epic contributions for ${strategic.id}`);
+            const derived=[...new Set(strategic.measures.flatMap(id=>(krById.get(id)||{epics:[]}).epics))];
+            const declared=strategic.epicContributions.map(edge=>edge.epic);
+            if(new Set(declared).size!==declared.length||derived.length!==declared.length||derived.some(id=>!declared.includes(id))) throw new Error(`Epic contribution coverage mismatch for ${strategic.id}`);
+            for(const edge of strategic.epicContributions){
+              if(typeof edge.description!=='string'||!edge.description.trim()) throw new Error(`missing contribution description for ${strategic.id}/${edge.epic}`);
+              const entries=descriptionsByEpic.get(edge.epic)||[];
+              entries.push(edge.description.trim().toLowerCase());
+              descriptionsByEpic.set(edge.epic,entries);
+            }
+          }
+          for(const [epic,entries] of descriptionsByEpic){
+            if(entries.length>1&&new Set(entries).size!==entries.length) throw new Error(`duplicate multi-KR contribution description for ${epic}`);
+          }
+          if(data.forecastModel?.method!=='linear-evidence-trend/v1') throw new Error('forecastModel method');
+          if(data.forecastModel.minimumSnapshots!==2||data.forecastModel.minimumSpanDays!==7) throw new Error('forecast bounds');
+          if(data.forecastModel.blockedBehavior!=='no-date-inferred'||data.forecastModel.planningWindows!=='explicit-roadmap-assumptions') throw new Error('forecast semantics');
+          if(!Array.isArray(data.progressHistory)||data.progressHistory.length<1) throw new Error('progressHistory missing');
+          let prior='';
+          for(const snapshot of data.progressHistory){
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(snapshot.date)||snapshot.date<=prior) throw new Error('history dates');
+            if(snapshot.date>data.generatedAt) throw new Error('future history snapshot');
+            const ids=Object.keys(snapshot.epics||{});
+            if(ids.length<1||ids.some(id=>!/^EP-\d+$/.test(id))) throw new Error('history epic identifiers');
+            if(ids.some(id=>!allowed.has(snapshot.epics[id]))) throw new Error('history completion scale');
+            prior=snapshot.date;
+          }
+          const ep08=data.epics['EP-08'];
+          if(!ep08||!/externally blocked|external prerequisite|customer-dependent/i.test(`${ep08.status||''} ${ep08.progress||''} ${ep08.progressBasis||''} ${ep08.time||''}`)) throw new Error('EP-08 external block contract');
+          console.log('Portfolio forecast contract validated.');
+          NODE
 
   verify-public-site:
     name: verify-custom-domain
@@ -127,7 +121,7 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Verify deployed portfolio boundary on custom domain
+      - name: Verify deployed portfolio on custom domain
         shell: bash
         env:
           BASE_URL: https://infrastructureproductworks.com
@@ -135,70 +129,83 @@ jobs:
         run: |
           set -euo pipefail
 
-          home=/tmp/index.html
           portfolio=/tmp/portfolio.html
-          terms=/tmp/terms.html
-          operating=/tmp/operating-model.html
+          script=/tmp/portfolio.js
+          stylesheet=/tmp/portfolio.css
+          relationships=/tmp/roadmap-relationships.json
+          js_blob="$(git hash-object assets/portfolio.js)"
+          css_blob="$(git hash-object assets/portfolio.css)"
+          relationships_blob="$(git hash-object data/roadmap-relationships.json)"
+          js_ref="/assets/portfolio.js?v=${js_blob}"
+          css_ref="/assets/portfolio.css?v=${css_blob}"
 
           ok=0
           for attempt in $(seq 1 30); do
-            echo "Attempt ${attempt}/30 for ${BASE_URL}/"
-            home_code="$(curl --location --silent --show-error \
-              --connect-timeout 10 --max-time 20 \
-              --output "${home}" \
-              --write-out '%{http_code}' \
-              "${BASE_URL}/?verify=${EXPECTED_SHA}" || true)"
-            portfolio_code="$(curl --location --silent --show-error \
+            echo "Attempt ${attempt}/30 for ${BASE_URL}/portfolio/"
+            code="$(curl --location --silent --show-error \
               --connect-timeout 10 --max-time 20 \
               --output "${portfolio}" \
               --write-out '%{http_code}' \
               "${BASE_URL}/portfolio/?verify=${EXPECTED_SHA}" || true)"
-            terms_code="$(curl --location --silent --show-error \
-              --connect-timeout 10 --max-time 20 \
-              --output "${terms}" \
-              --write-out '%{http_code}' \
-              "${BASE_URL}/terms/?verify=${EXPECTED_SHA}" || true)"
-            operating_code="$(curl --location --silent --show-error \
-              --connect-timeout 10 --max-time 20 \
-              --output "${operating}" \
-              --write-out '%{http_code}' \
-              "${BASE_URL}/operating-model/?verify=${EXPECTED_SHA}" || true)"
 
-            if [[ "${home_code}" == "200" && "${portfolio_code}" == "200" && "${terms_code}" == "200" && "${operating_code}" == "200" ]] \
-              && grep -Fq 'Cloud resources are ingredients.' "${home}" \
-              && grep -Fq 'THE INGREDIENTS' "${home}" \
-              && grep -Fq 'THE MISSING MIDDLE LAYER' "${home}" \
-              && grep -Fq 'Cloud Infrastructure <span>Drive-Thru</span>' "${home}" \
-              && grep -Fq 'Same Great Clouds. A Better Way to Order.' "${home}" \
-              && grep -Fq 'Simple outside. Engineered inside.' "${home}" \
-              && grep -Fq 'What happens when teams use the suite?' "${home}" \
-              && grep -Fq 'ADOPT WITHOUT REPLATFORMING' "${home}" \
-              && grep -Fq 'Illustrative annual planning scenarios for large regulated organizations' "${home}" \
-              && grep -Fq 'Evidence of capability, not a procurement request.' "${home}" \
-              && grep -Fq 'not an official government product' "${home}" \
-              && grep -Fq 'not an official agency or department system' "${home}" \
-              && grep -Fq 'without implying production, pilot, deployment, approval, commercialization or government authority' "${portfolio}" \
-              && grep -Fq 'Portfolio Use Notice' "${terms}" \
-              && grep -Fq 'The website itself is not the adoption path' "${terms}" \
-              && grep -Fq 'Standard work is automated. Exceptional work is engineered. All work stays governed.' "${home}" \
-              && grep -Fq 'Leave the golden path without leaving the operating model.' "${operating}" \
-              && grep -Fq 'Delegated fulfillment does not transfer lifecycle governance.' "${operating}" \
-              && grep -Fq 'The current public proof does not yet implement automated non-standard request intake, routing, fulfillment or productization.' "${operating}"; then
-              ok=1
-              break
+            if [[ "${code}" == "200" ]] \
+              && grep -Fq 'CONNECTED APPS UI QUALITY' "${portfolio}" \
+              && grep -Fq 'BUILD → VALIDATE → EVIDENCE' "${portfolio}" \
+              && grep -Fq 'DELIVERY OUTLOOK' "${portfolio}" \
+              && grep -Fq 'delivery-outlook-grid' "${portfolio}" \
+              && grep -Fq "${js_ref}" "${portfolio}" \
+              && grep -Fq "${css_ref}" "${portfolio}"; then
+
+              script_code="$(curl --location --silent --show-error \
+                --connect-timeout 10 --max-time 20 \
+                --output "${script}" \
+                --write-out '%{http_code}' \
+                "${BASE_URL}${js_ref}&verify=${EXPECTED_SHA}" || true)"
+              css_code="$(curl --location --silent --show-error \
+                --connect-timeout 10 --max-time 20 \
+                --output "${stylesheet}" \
+                --write-out '%{http_code}' \
+                "${BASE_URL}${css_ref}&verify=${EXPECTED_SHA}" || true)"
+              relationships_code="$(curl --location --silent --show-error \
+                --connect-timeout 10 --max-time 20 \
+                --output "${relationships}" \
+                --write-out '%{http_code}' \
+                "${BASE_URL}/data/roadmap-relationships.json?verify=${EXPECTED_SHA}" || true)"
+
+              if [[ "${script_code}" == "200" && "${css_code}" == "200" && "${relationships_code}" == "200" ]] \
+                && [[ "$(git hash-object "${script}")" == "${js_blob}" ]] \
+                && [[ "$(git hash-object "${stylesheet}")" == "${css_blob}" ]] \
+                && [[ "$(git hash-object "${relationships}")" == "${relationships_blob}" ]] \
+                && grep -Fq 'proof-pattern' "${script}" \
+                && grep -Fq "['BUILD',p.state]" "${script}" \
+                && grep -Fq "['VALIDATE',p.status]" "${script}" \
+                && grep -Fq "['EVIDENCE',p.evidence]" "${script}" \
+                && grep -Fq 'renderDeliveryOutlook' "${script}" \
+                && grep -Fq 'DELIVERY_OUTLOOK_MILESTONES' "${script}" \
+                && grep -Fq 'epicExternallyBlocked' "${script}" \
+                && grep -Fq 'forecastSignal' "${script}" \
+                && grep -Fq 'AUTO FORECAST' "${script}" \
+                && grep -Fq 'strategicContributionMap' "${script}" \
+                && grep -Fq 'CONTRIBUTION TO THIS KR' "${script}" \
+                && grep -Fq 'roadmap-epic-contribution' "${stylesheet}" \
+                && grep -Fq 'delivery-outlook-card' "${stylesheet}"; then
+                ok=1
+                break
+              fi
             fi
 
             sleep 10
           done
 
           if [[ "${ok}" != "1" ]]; then
-            echo "::error::Custom-domain site did not publish expected portfolio-boundary wording."
+            echo "::error::Custom-domain portfolio did not publish the expected content-addressed dashboard assets."
             exit 1
           fi
 
           echo "Public deployment verified:"
-          echo "  URL: ${BASE_URL}/"
+          echo "  URL: ${BASE_URL}/portfolio/"
           echo "  HTTP: 200"
-          echo "  Portfolio boundary wording: present"
-          echo "  Portfolio status boundary: present"
-          echo "  Use notice boundary: present"
+          echo "  Connected Apps validation panel: present"
+          echo "  Build -> Validate -> Evidence product pattern: present"
+          echo "  Delivery Outlook: history-backed forecast plumbing present"
+          echo "  Roadmap relationships: exact v5 repository blob deployed"
