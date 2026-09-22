@@ -1,9 +1,9 @@
 {
   "schemaVersion": "roadmap-relationship-view/v5",
-  "generatedAt": "2026-09-19",
-  "sourceRevision": "12601918e997c6e45c73e6e79954a8d6a6e464ce",
+  "generatedAt": "2026-09-22",
+  "sourceRevision": "4bc7f34b32fb11e453592ef662395f4d240765fc",
   "planning": {
-    "baseline": "September 19, 2026",
+    "baseline": "September 22, 2026",
     "evidenceQuarter": "Q3 2026",
     "horizon": "September 2026 through August 2027",
     "timingNote": "Quarter labels show when planning or evidence was recorded. They are not delivery commitments unless the roadmap explicitly says so."
@@ -77,7 +77,11 @@
         "KR3.21",
         "KR3.22",
         "KR3.23",
-        "KR3.24"
+        "KR3.24",
+        "KR3.28",
+        "KR3.29",
+        "KR3.30",
+        "KR3.31"
       ],
       "headlineKeyResults": [
         "O3-HKR1",
@@ -1001,6 +1005,58 @@
       "status": "Documentation-first",
       "group": "documentation",
       "time": "Q3 2026 design"
+    },
+    {
+      "id": "KR3.28",
+      "objective": "O3",
+      "definition": "100% of domain capabilities consumed through EP-22 bind the exact domain, capability revision, trusted profile/version/digest, system, scope, and accountable domain authority before acceptance.",
+      "sharedRange": null,
+      "source": "docs/EP-22_DOMAIN_CAPABILITY_PROVIDER_CONTRACTS_2026-09-22.md",
+      "epics": [
+        "EP-22"
+      ],
+      "status": "Documentation-first + synthetic",
+      "group": "documentation",
+      "time": "Q3 2026 design / synthetic proof"
+    },
+    {
+      "id": "KR3.29",
+      "objective": "O3",
+      "definition": "The Networking reference proves one provider-neutral capability can be consumed by an infrastructure product without transferring network-policy ownership or requiring consumer-authored raw network implementation identifiers.",
+      "sharedRange": null,
+      "source": "docs/EP-22_DOMAIN_CAPABILITY_PROVIDER_CONTRACTS_2026-09-22.md",
+      "epics": [
+        "EP-22"
+      ],
+      "status": "Documentation-first + synthetic",
+      "group": "documentation",
+      "time": "Q3 2026 design / synthetic proof"
+    },
+    {
+      "id": "KR3.30",
+      "objective": "O3",
+      "definition": "MANUAL, ASSISTED, and AUTOMATED execution modes preserve the same capability contract, approval binding, evidence requirements, and separately authorized executor boundary.",
+      "sharedRange": null,
+      "source": "docs/EP-22_DOMAIN_CAPABILITY_PROVIDER_CONTRACTS_2026-09-22.md",
+      "epics": [
+        "EP-22"
+      ],
+      "status": "Documentation-first + synthetic",
+      "group": "documentation",
+      "time": "Q3 2026 design / synthetic proof"
+    },
+    {
+      "id": "KR3.31",
+      "objective": "O3",
+      "definition": "Pending, expired, superseded, withdrawn, mismatched, tampered, incomplete, or outside-envelope states fail closed; outside-envelope requests require explicit domain exception handling and never self-approve.",
+      "sharedRange": null,
+      "source": "docs/EP-22_DOMAIN_CAPABILITY_PROVIDER_CONTRACTS_2026-09-22.md",
+      "epics": [
+        "EP-22"
+      ],
+      "status": "Documentation-first + synthetic",
+      "group": "documentation",
+      "time": "Q3 2026 design / synthetic proof"
     }
   ],
   "epics": {
@@ -1442,6 +1498,26 @@
       ],
       "completionPercent": 25,
       "progressBasis": "Documentation-first enterprise telemetry and Splunk adapter architecture is defined; no live endpoint, HEC token, customer telemetry or remediation authority is claimed."
+    },
+    "EP-22": {
+      "id": "EP-22",
+      "title": "Domain Capability Provider Contracts",
+      "status": "Documentation-first + synthetic",
+      "group": "documentation",
+      "progress": "Generic domain contract, deterministic evaluator, exact trusted-profile binding, domain-owned exceptions, execution-maturity modes, and Networking reference fixtures are under protected validation",
+      "time": "Q3 2026 design / synthetic proof",
+      "featureCount": 7,
+      "features": [
+        "DCP-01",
+        "DCP-02",
+        "DCP-03",
+        "DCP-04",
+        "DCP-05",
+        "DCP-06",
+        "DCP-07"
+      ],
+      "completionPercent": 35,
+      "progressBasis": "The reusable domain-authority/productization boundary is implemented synthetically with Networking first; Guard-native, Forge-native, and live domain integrations remain separately gated."
     }
   },
   "relationshipModel": {
@@ -1527,7 +1603,8 @@
         "KR3.25",
         "KR3.17",
         "KR3.20",
-        "KR3.23"
+        "KR3.23",
+        "KR3.29"
       ],
       "epicContributions": [
         {
@@ -1561,6 +1638,10 @@
         {
           "epic": "EP-15",
           "description": "Productizes cost and FinOps controls so consumers request governed cost outcomes without wiring provider-specific billing or budget configuration."
+        },
+        {
+          "epic": "EP-22",
+          "description": "Lets domain authorities publish governed capability contracts so consumers receive approved infrastructure outcomes without inheriting domain-specific implementation mechanics."
         }
       ]
     },
@@ -1578,7 +1659,9 @@
         "KR3.26",
         "KR3.16",
         "KR3.19",
-        "KR3.22"
+        "KR3.22",
+        "KR3.28",
+        "KR3.30"
       ],
       "epicContributions": [
         {
@@ -1616,6 +1699,10 @@
         {
           "epic": "EP-15",
           "description": "Binds FinOps products to approved cost policies, accountable ownership, budget expectations, and retained cost evidence."
+        },
+        {
+          "epic": "EP-22",
+          "description": "Binds each consumed capability to exact trusted profile, revision, system, scope, accountable owner, evidence requirements, and an explicit execution-maturity mode."
         }
       ]
     },
@@ -1631,7 +1718,8 @@
         "KR3.18",
         "KR3.21",
         "KR3.24",
-        "KR3.27"
+        "KR3.27",
+        "KR3.31"
       ],
       "epicContributions": [
         {
@@ -1665,6 +1753,10 @@
         {
           "epic": "EP-12",
           "description": "Fails closed on invalid hierarchy, ownership, naming, quota, or policy state instead of vending an unauthorized resource scope."
+        },
+        {
+          "epic": "EP-22",
+          "description": "Fails closed on stale, superseded, mismatched, incomplete, tampered, or outside-envelope capability state and routes exceptions back to accountable domain authority."
         }
       ]
     },
@@ -1919,6 +2011,11 @@
         "EP-20": 25,
         "EP-21": 25
       }
+    },
+    {
+      "date": "2026-09-22",
+      "label": "EP-22 registered",
+      "detail": "Domain Capability Provider Contracts adds a reusable domain-authority boundary with Networking as the first synthetic reference; no live execution authority is granted."
     }
   ],
   "forecastModel": {
