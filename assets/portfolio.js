@@ -12,7 +12,7 @@ const PRODUCT_CONTRACT=[
 ];
 const FOCUS_CONTRACT={closedEpic:'EP-07',activeEpic:'EP-08',activeLabel:'GitHub Enterprise Server and restricted-network portability'};
 const DELIVERY_FOCUS={epic:'EP-16',title:'Connected Application Experience',increment:'EDA-06 — Immutable Evidence & Artifact Adapter',copy:'Separate immutable evidence and artifacts from the event store while preserving exact digest, provenance, tenant scope and zero-authority boundaries.'};
-const BASELINE={objectives:8,keyResults:62,epics:21,features:166};
+const BASELINE={objectives:8,keyResults:66,epics:22,features:173};
 const DELIVERY_OUTLOOK_MILESTONES=[
   {
     id:'core-v1',
@@ -27,7 +27,7 @@ const DELIVERY_OUTLOOK_MILESTONES=[
     label:'Organization-hosted / Validation Ready',
     planningWindow:'Q1–Q2 2027',
     summary:'Organization-controlled identity, execution, foundation, security and operational evidence validated in an authorized environment.',
-    epics:['EP-04','EP-05','EP-08','EP-09','EP-10','EP-11','EP-12','EP-13','EP-14','EP-15','EP-18'],
+    epics:['EP-04','EP-05','EP-08','EP-09','EP-10','EP-11','EP-12','EP-13','EP-14','EP-15','EP-18','EP-22'],
     critical:['EP-04','EP-08','EP-10','EP-11']
   },
   {
@@ -61,6 +61,7 @@ const FALLBACK={
       'EP-18 multi-customer isolation defines customer-bound identity, policy, evidence, secrets and cross-customer fail-closed testing before any tenant-isolation claim',
       'EP-20 Enterprise Workflow Integration (ServiceNow first) is documentation-first and reuses existing strategic outcomes',
       'EP-21 Enterprise Telemetry Adapter (Splunk first) is documentation-first and reuses existing observability outcomes',
+      'EP-22 Domain Capability Provider Contracts makes Networking the first reference domain for a reusable authority-to-product contract without transferring execution authority',
       'EP-17 AI-assisted and agent-operated evolution remains evidence-gated after trusted connected and customer-operational foundations'
     ]
   },
@@ -68,7 +69,7 @@ const FALLBACK={
   objectives:[
     {id:'O1',definition:'Preserve trustworthy evidence and release integrity',keyResultCount:3,epics:['EP-01']},
     {id:'O2',definition:'Validate evaluator value without widening authority',keyResultCount:3,epics:['EP-02','EP-03']},
-    {id:'O3',definition:'Prove one minimum multi-cloud foundation safely and reversibly',keyResultCount:27,epics:['EP-04','EP-09','EP-10','EP-11','EP-12','EP-13','EP-14','EP-15','EP-21']},
+    {id:'O3',definition:'Prove one minimum multi-cloud foundation safely and reversibly',keyResultCount:31,epics:['EP-04','EP-09','EP-10','EP-11','EP-12','EP-13','EP-14','EP-15','EP-21','EP-22']},
     {id:'O4',definition:'Prepare organization-hosted planning and operational decisions',keyResultCount:12,epics:['EP-03','EP-05','EP-06','EP-10','EP-11','EP-13','EP-14','EP-15','EP-19','EP-20','EP-21']},
     {id:'O5',definition:'Make the portfolio installable and portable in organization-controlled enterprise environments',keyResultCount:6,epics:['EP-07','EP-08']},
     {id:'O6',definition:'Connect the product experience without widening execution authority',keyResultCount:4,epics:['EP-16','EP-20']},
