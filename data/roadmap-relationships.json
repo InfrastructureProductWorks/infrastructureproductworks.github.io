@@ -2011,11 +2011,6 @@
         "EP-20": 25,
         "EP-21": 25
       }
-    },
-    {
-      "date": "2026-09-22",
-      "label": "EP-22 registered",
-      "detail": "Domain Capability Provider Contracts adds a reusable domain-authority boundary with Networking as the first synthetic reference; no live execution authority is granted."
     }
   ],
   "forecastModel": {
