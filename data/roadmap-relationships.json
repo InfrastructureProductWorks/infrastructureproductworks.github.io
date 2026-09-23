@@ -1516,7 +1516,7 @@
         "DCP-06",
         "DCP-07"
       ],
-      "completionPercent": 35,
+      "completionPercent": 25,
       "progressBasis": "The reusable domain-authority/productization boundary is implemented synthetically with Networking first; Guard-native, Forge-native, and live domain integrations remain separately gated."
     }
   },
