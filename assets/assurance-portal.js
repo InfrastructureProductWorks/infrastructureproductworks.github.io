@@ -5,49 +5,47 @@ const PORTAL_MODEL={
   posture:{
     overall:'HEALTHY',
     sentry:'PROFILE PREVIEW',
-    shield:'BOUNDed PROOF',
-    custody:'BOUNDed PROOF',
+    shield:'BOUNDED PROOF',
+    custody:'BOUNDED PROOF',
     openReviewItems:0,
     evidenceContinuity:'VERIFIED'
   },
   services:[
     {
-      id:'svc-managed-interconnect',
-      name:'Managed Interconnect',
+      id:'svc-runtime-reconciliation',
+      name:'Runtime Reconciliation Proof',
       assuranceState:'HEALTHY',
       predeployment:'ALLOW',
       runtimeAuthority:'ACTIVE',
       runtimeState:'APPLIED',
-      custody:'VERIFIED',
+      custody:'SEPARATE PROOF',
       evidence:'COMPLETE',
       serviceHealth:'NOMINAL',
-      costVisibility:'SYNTHETIC ESTIMATE',
+      costVisibility:'NOT MODELED',
       authority:{
         packageRef:'auth:gate-5-runtime-reconciliation',
         purpose:'synthetic-runtime-reconciliation',
         scope:'1 synthetic resource',
         approvers:2,
         validUntil:'2026-08-31T12:15:00Z',
-        delegation:'ATTENUATED'
+        delegation:'NOT MODELED'
       },
       timeline:[
-        'Candidate evaluated',
-        'Bounded correction verified',
         'Authority Package issued',
         'Runtime gate allowed',
         'Synthetic action applied',
-        'Custody proof verified',
-        'Evidence retained'
+        'Post-apply verification passed',
+        'Evidence record produced'
       ]
     },
     {
       id:'svc-protected-storage',
-      name:'Protected Storage',
+      name:'Protected Storage Predeployment Proof',
       assuranceState:'HEALTHY',
       predeployment:'DENY → CORRECTED',
       runtimeAuthority:'NOT REQUESTED',
       runtimeState:'NO ACTION',
-      custody:'VERIFIED',
+      custody:'SEPARATE PROOF',
       evidence:'COMPLETE',
       serviceHealth:'NOMINAL',
       costVisibility:'NOT MODELED',
