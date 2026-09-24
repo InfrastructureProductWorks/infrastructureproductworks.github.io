@@ -91,6 +91,12 @@ jobs:
           grep -Fq "GATE 6 · PROTECTED DATA CUSTODY" assurance/demo/index.html
           grep -Fq "SENTRY_PROFILE_STATUS='PROPOSED_PROFILE_PREVIEW'" assets/assurance-demo.js
           grep -Fq "PROTECTED_STORAGE_PUBLIC_ACCESS" assets/assurance-demo.js
+          grep -Fq "attributes:{public_access:true}" assets/assurance-demo.js
+          grep -Fq "renderCustodyScenario();" assets/assurance-demo.js
+          if grep -Fq 'role="tablist"' assurance/demo/index.html; then
+            echo "::error::Assurance view switcher must not advertise an incomplete ARIA tab pattern."
+            exit 1
+          fi
           grep -Fq "DELEGATION_BROADENED" assets/assurance-demo.js
           grep -Fq "AUDIT_SUPPRESSION_ATTEMPT" assets/assurance-demo.js
           grep -Fq "GATE6_ENGINE_BUILD_DIGEST='sha256:065e43f824d78d7949c95465f9d7daa7623cf4322f2ec08e6d3b4c90b3be5995'" assets/assurance-demo.js
