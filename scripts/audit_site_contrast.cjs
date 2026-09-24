@@ -33,21 +33,23 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           for(const c of checks)if(c.data.contrastRatio<parseFloat(c.data.expectedContrastRatio))violations.push(node);
           continue;
         }
-        // Reviewed overlap cases: adjacent badges/cards confuse axe's hit test.
-        // Still calculate their actual foreground against composited solid ancestor backgrounds;
-        // a changed color must pass, and new unknown selectors fail closed.
-        const overlap=route==='/portfolio/'?'.validation-badge,.roadmap-meta-pill,.roadmap-time-pill':route==='/security/'?'article:nth-child(2) > ul > li:nth-child(6)':null;
-        const measured=overlap&&checks.every(c=>c.data?.messageKey==='elmPartiallyObscured')&&await page.evaluate(({target,overlap})=>{
+        // Independently measure solid-color text that axe cannot hit-test reliably.
+        // Only accept an unobstructed element; unknown images/opacity still fail closed.
+        const measured=checks.every(c=>['elmPartiallyObscured','bgOverlap'].includes(c.data?.messageKey))&&await page.evaluate(({target})=>{
           if(target.length!==1)return null;
-          const el=document.querySelector(target[0]);if(!el?.matches(overlap))return null;
+          const el=document.querySelector(target[0]);if(!el)return null;
+          const old=[scrollX,scrollY];el.scrollIntoView({block:'center',inline:'center'});
+          const rect=el.getBoundingClientRect();
+          const hit=document.elementFromPoint(Math.max(0,Math.min(innerWidth-1,rect.x+rect.width/2)),Math.max(0,Math.min(innerHeight-1,rect.y+rect.height/2)));
+          scrollTo(...old);if(hit!==el&&!el.contains(hit))return null;
           const parse=s=>s.match(/[\d.]+/g)?.map(Number);
           const blend=(a,b)=>a.slice(0,3).map((v,i)=>v*(a[3]??1)+b[i]*(1-(a[3]??1)));
-          const chain=[];for(let n=el;n;n=n.parentElement){const s=getComputedStyle(n);if(s.backgroundImage!=='none')return null;chain.push(parse(s.backgroundColor));}
+          const chain=[];for(let n=el;n;n=n.parentElement){const s=getComputedStyle(n);if(s.backgroundImage!=='none'||Number(s.opacity)!==1||s.filter!=='none')return null;chain.push(parse(s.backgroundColor));}
           let bg=[255,255,255];for(const c of chain.reverse())bg=blend(c,bg);
           const style=getComputedStyle(el),fg=blend(parse(style.color),bg);
           const lum=c=>c.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
           return (Math.max(lum(fg),lum(bg))+.05)/(Math.min(lum(fg),lum(bg))+.05);
-        },{target:node.target,overlap});
+        },{target:node.target});
         if(!measured||measured<Math.max(...checks.map(c=>parseFloat(c.data?.expectedContrastRatio)||4.5)))violations.push({...node,unresolved:!measured,measured});
       }
       reports.push({route,state,viewport,violations,incomplete});
