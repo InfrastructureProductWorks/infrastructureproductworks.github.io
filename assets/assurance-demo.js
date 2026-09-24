@@ -119,11 +119,19 @@ function check(label,ok,reason){
   return {label,status:ok?'PASS':'FAIL',reason};
 }
 
-async function buildScenario(name){
+async function buildScenario(name,order=null){
   const authority=clone(AUTHORITY_TEMPLATE);
   const request=clone(REQUEST_TEMPLATE);
   let evaluatedAt=FIXTURE_EVALUATED_AT;
   let simulateVerificationFailure=false;
+
+  if(order){
+    request.request_id=`runtime-request:${order.id.toLowerCase()}`;
+    request.requester_ref=`person:synthetic-${order.developer}`;
+    authority.requester_ref=request.requester_ref;
+    authority.authority_id=`auth:${order.id.toLowerCase()}`;
+    request.authority_package_ref=authority.authority_id;
+  }
 
   if(name==='expired') evaluatedAt=EXPIRED_EVALUATED_AT;
   if(name==='broadened'){
@@ -138,11 +146,16 @@ async function buildScenario(name){
   if(name==='digest') request.observed_state_digest='sha256:'+'0'.repeat(64);
   if(name==='rollback') simulateVerificationFailure=true;
 
+  if(order){
+    authority.provenance.package_digest=await authorityDigest(authority);
+    request.authority_package_digest=authority.provenance.package_digest;
+  }
+
   return {authority,request,evaluatedAt,simulateVerificationFailure};
 }
 
-async function evaluateScenario(name){
-  const {authority,request,evaluatedAt,simulateVerificationFailure}=await buildScenario(name);
+async function evaluateScenario(name,order=null){
+  const {authority,request,evaluatedAt,simulateVerificationFailure}=await buildScenario(name,order);
   const calculatedAuthorityDigest=await authorityDigest(authority);
   const desiredDigest=await digestObject(DESIRED_STATE);
   const observedDigest=await digestObject(OBSERVED_STATE);
@@ -213,6 +226,32 @@ async function evaluateScenario(name){
   record.recordDigest=await digestObject(record);
 
   return {authority,request,evaluatedAt,checks,decision,outcome,reasonCode,actionPerformed,reviewRequired,record,calculatedAuthorityDigest,desiredDigest,observedDigest};
+}
+
+const BATCH_ORDERS=Object.freeze([
+  Object.freeze({id:'ORDER-482',developer:'maya',scenario:'baseline'}),
+  Object.freeze({id:'ORDER-483',developer:'eli',scenario:'expired'}),
+  Object.freeze({id:'ORDER-484',developer:'jo',scenario:'approver'})
+]);
+
+async function renderIndependentRequests(){
+  const panel=byId('independent-requests');
+  if(!panel)return;
+  panel.textContent='Evaluating three independent synthetic requests…';
+  try{
+    const results=await Promise.all(BATCH_ORDERS.map(async order=>({order,result:await evaluateScenario(order.scenario,order)})));
+    panel.replaceChildren(...results.map(({order,result})=>{
+      const card=document.createElement('article');
+      card.className='batch-request';
+      const title=document.createElement('h3');title.textContent=order.id;
+      const person=document.createElement('p');person.textContent=`${result.request.requester_ref} · ${SCENARIOS[order.scenario].label}`;
+      const outcome=document.createElement('strong');outcome.textContent=`${result.decision} · ${result.outcome}`;
+      const reason=document.createElement('p');reason.textContent=result.reasonCode;
+      const record=document.createElement('code');record.textContent=`Record ${shortDigest(result.record.recordDigest)}`;
+      card.append(title,person,outcome,reason,record);
+      return card;
+    }));
+  }catch(error){panel.textContent=`Independent request verification unavailable: ${error.message}`;}
 }
 
 function shortDigest(value){
@@ -354,6 +393,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   byId('export-record').addEventListener('click',exportRecord);
   renderScenarioInfo();
   await runScenario();
+  await renderIndependentRequests();
 });
 
 
