@@ -75,6 +75,8 @@ jobs:
           grep -Fq "EXPECTED_DIGEST='2325359a4f6a7cc23bab39e5cfb7ff905192b98301ed3478392f218af19647eb'" assets/console-demo.js
           grep -Fq "DIGEST MISMATCH · FAIL CLOSED" assets/console-demo.js
           grep -Fq "Record Review Note" console/demo/index.html
+          demo_js_blob="$(git hash-object assets/console-demo.js)"
+          grep -Fq "/assets/console-demo.js?v=${demo_js_blob}" console/demo/index.html
           node --check assets/console-demo.js
           grep -Fq "Organization-hosted / Validation Ready" assets/portfolio.js
           if grep -R -nE "Public Beta|CUSTOMER-FACING INTAKE|Get Support|commercial model|commercial activation|Customer-hosted / Pilot Ready|SUPPORT REQUEST|Technical support|<option>Installation|Customer responsibility|<h3>Beta status</h3>" \
@@ -162,6 +164,7 @@ jobs:
           css_blob="$(git hash-object assets/portfolio.css)"
           relationships_blob="$(git hash-object data/roadmap-relationships.json)"
           console_demo_js_blob="$(git hash-object assets/console-demo.js)"
+          console_demo_js_ref="/assets/console-demo.js?v=${console_demo_js_blob}"
           js_ref="/assets/portfolio.js?v=${js_blob}"
           css_ref="/assets/portfolio.css?v=${css_blob}"
 
@@ -207,7 +210,7 @@ jobs:
                 --connect-timeout 10 --max-time 20 \
                 --output "${console_demo_js}" \
                 --write-out '%{http_code}' \
-                "${BASE_URL}/assets/console-demo.js?verify=${EXPECTED_SHA}" || true)"
+                "${BASE_URL}${console_demo_js_ref}&verify=${EXPECTED_SHA}" || true)"
 
               if [[ "${script_code}" == "200" && "${css_code}" == "200" && "${relationships_code}" == "200" && "${console_demo_code}" == "200" && "${console_demo_js_code}" == "200" ]] \
                 && [[ "$(git hash-object "${script}")" == "${js_blob}" ]] \
@@ -216,6 +219,7 @@ jobs:
                 && [[ "$(git hash-object "${console_demo_js}")" == "${console_demo_js_blob}" ]] \
                 && grep -Fq 'IAAP CONSOLE · INTERACTIVE SYNTHETIC WORKBENCH' "${console_demo}" \
                 && grep -Fq 'VERIFICATION PENDING' "${console_demo}" \
+                && grep -Fq "${console_demo_js_ref}" "${console_demo}" \
                 && grep -Fq 'AWAITING_HUMAN_REVIEW' "${console_demo_js}" \
                 && grep -Fq 'EXPECTED_DIGEST=' "${console_demo_js}" \
                 && grep -Fq 'proof-pattern' "${script}" \
