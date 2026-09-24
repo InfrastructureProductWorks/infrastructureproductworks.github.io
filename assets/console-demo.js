@@ -49,6 +49,7 @@ const PACKAGE_TEMPLATE={
 
 let activePackage=null;
 let lastVerification=null;
+let recordedReviewNote='';
 
 const byId=id=>document.getElementById(id);
 const clonePackage=()=>JSON.parse(JSON.stringify(PACKAGE_TEMPLATE));
@@ -237,7 +238,7 @@ function exportReview(){
     expectedDigest:EXPECTED_DIGEST,
     actualDigest:lastVerification.actualDigest,
     decisionState:lastVerification.verified?activePackage.decisionState:'UNAVAILABLE_FAIL_CLOSED',
-    reviewerNote:byId('review-note').value,
+    reviewerNote:recordedReviewNote,
     authority:activePackage.authority,
     notice:'Synthetic demonstration only. No approval, provisioning, deployment, or reconciliation authority.'
   };
@@ -255,9 +256,13 @@ function exportReview(){
 function recordReviewNote(){
   const value=byId('review-note').value.trim();
   const message=byId('note-status');
-  message.textContent=value
-    ? 'Review note recorded locally for this browser session. No decision or approval was recorded.'
-    : 'Add a synthetic review note first.';
+  if(!value){
+    recordedReviewNote='';
+    message.textContent='Add a synthetic review note first.';
+    return;
+  }
+  recordedReviewNote=value;
+  message.textContent='Review note recorded locally for this browser session. No decision or approval was recorded.';
 }
 
 function activateView(name){
@@ -279,5 +284,16 @@ document.addEventListener('DOMContentLoaded',async()=>{
   byId('restore-demo').addEventListener('click',restorePackage);
   byId('export-demo').addEventListener('click',exportReview);
   byId('record-note').addEventListener('click',recordReviewNote);
+  byId('review-note').addEventListener('input',()=>{
+    const draft=byId('review-note').value.trim();
+    const status=byId('note-status');
+    if(recordedReviewNote&&draft!==recordedReviewNote){
+      status.textContent='Draft changed since the recorded note. Record Review Note again to include the new text in export.';
+    }else if(recordedReviewNote&&draft===recordedReviewNote){
+      status.textContent='Review note recorded locally for this browser session. No decision or approval was recorded.';
+    }else{
+      status.textContent='Synthetic note only. Nothing is persisted.';
+    }
+  });
   await restorePackage();
 });
