@@ -71,8 +71,9 @@ jobs:
           grep -Fq "Open Synthetic Console Demo" console/index.html
           grep -Fq "IAAP CONSOLE · SYNTHETIC DEMO" console/demo/index.html
           grep -Fq "AWAITING_HUMAN_REVIEW" console/demo/index.html
-          grep -Fq "EXPECTED_DIGEST='dcc8d60a0d3bb830a90248e927b82e438f50c4bf6dde83686dc7c1d1b493d8fc'" assets/console-demo.js
-          grep -Fq "receiptRemainingMs" /dev/null || true
+          grep -Fq "EXPECTED_DIGEST='2325359a4f6a7cc23bab39e5cfb7ff905192b98301ed3478392f218af19647eb'" assets/console-demo.js
+          grep -Fq "DIGEST MISMATCH · FAIL CLOSED" assets/console-demo.js
+          grep -Fq "Record Review Note" console/demo/index.html
           node --check assets/console-demo.js
           grep -Fq "Organization-hosted / Validation Ready" assets/portfolio.js
           if grep -R -nE "Public Beta|CUSTOMER-FACING INTAKE|Get Support|commercial model|commercial activation|Customer-hosted / Pilot Ready|SUPPORT REQUEST|Technical support|<option>Installation|Customer responsibility|<h3>Beta status</h3>" \
@@ -154,9 +155,12 @@ jobs:
           script=/tmp/portfolio.js
           stylesheet=/tmp/portfolio.css
           relationships=/tmp/roadmap-relationships.json
+          console_demo=/tmp/console-demo.html
+          console_demo_js=/tmp/console-demo.js
           js_blob="$(git hash-object assets/portfolio.js)"
           css_blob="$(git hash-object assets/portfolio.css)"
           relationships_blob="$(git hash-object data/roadmap-relationships.json)"
+          console_demo_js_blob="$(git hash-object assets/console-demo.js)"
           js_ref="/assets/portfolio.js?v=${js_blob}"
           css_ref="/assets/portfolio.css?v=${css_blob}"
 
@@ -193,10 +197,25 @@ jobs:
                 --write-out '%{http_code}' \
                 "${BASE_URL}/data/roadmap-relationships.json?verify=${EXPECTED_SHA}" || true)"
 
-              if [[ "${script_code}" == "200" && "${css_code}" == "200" && "${relationships_code}" == "200" ]] \
+              console_demo_code="$(curl --location --silent --show-error \
+                --connect-timeout 10 --max-time 20 \
+                --output "${console_demo}" \
+                --write-out '%{http_code}' \
+                "${BASE_URL}/console/demo/?verify=${EXPECTED_SHA}" || true)"
+              console_demo_js_code="$(curl --location --silent --show-error \
+                --connect-timeout 10 --max-time 20 \
+                --output "${console_demo_js}" \
+                --write-out '%{http_code}' \
+                "${BASE_URL}/assets/console-demo.js?verify=${EXPECTED_SHA}" || true)"
+
+              if [[ "${script_code}" == "200" && "${css_code}" == "200" && "${relationships_code}" == "200" && "${console_demo_code}" == "200" && "${console_demo_js_code}" == "200" ]] \
                 && [[ "$(git hash-object "${script}")" == "${js_blob}" ]] \
                 && [[ "$(git hash-object "${stylesheet}")" == "${css_blob}" ]] \
                 && [[ "$(git hash-object "${relationships}")" == "${relationships_blob}" ]] \
+                && [[ "$(git hash-object "${console_demo_js}")" == "${console_demo_js_blob}" ]] \
+                && grep -Fq 'IAAP CONSOLE · INTERACTIVE SYNTHETIC WORKBENCH' "${console_demo}" \
+                && grep -Fq 'AWAITING HUMAN REVIEW' "${console_demo}" \
+                && grep -Fq 'EXPECTED_DIGEST=' "${console_demo_js}" \
                 && grep -Fq 'proof-pattern' "${script}" \
                 && grep -Fq "['BUILD',p.state]" "${script}" \
                 && grep -Fq "['VALIDATE',p.status]" "${script}" \
