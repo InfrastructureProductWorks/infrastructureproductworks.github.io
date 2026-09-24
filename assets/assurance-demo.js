@@ -247,8 +247,15 @@ async function renderIndependentRequests(){
       const person=document.createElement('p');person.textContent=`${result.request.requester_ref} · ${SCENARIOS[order.scenario].label}`;
       const outcome=document.createElement('strong');outcome.textContent=`${result.decision} · ${result.outcome}`;
       const reason=document.createElement('p');reason.textContent=result.reasonCode;
+      const plain=window.assurancePlainLanguage({decision:result.decision,outcome:result.outcome,reasonCode:result.reasonCode});
+      const summary=document.createElement('div');summary.className='batch-plain';
+      for(const [label,value] of [['In plain language',plain.decision],['What happened',plain.action],['Why',plain.why],['Next step',plain.next]]){
+        const line=document.createElement('p');
+        const heading=document.createElement('b');heading.textContent=`${label}: `;
+        line.append(heading,document.createTextNode(value));summary.append(line);
+      }
       const record=document.createElement('code');record.textContent=`Record ${shortDigest(result.record.recordDigest)}`;
-      card.append(title,person,outcome,reason,record);
+      card.append(title,person,summary,outcome,reason,record);
       return card;
     }));
   }catch(error){panel.textContent=`Independent request verification unavailable: ${error.message}`;}
