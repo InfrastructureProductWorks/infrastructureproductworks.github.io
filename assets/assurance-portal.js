@@ -10,6 +10,11 @@ const PORTAL_MODEL={
     openReviewItems:0,
     evidenceContinuity:'SEPARATE PROOFS VERIFIED'
   },
+  orderOutcomes:[
+    {id:'ORDER-482',requester:'developer:maya',decision:'ALLOW',result:'Synthetic action applied',reason:'RECONCILIATION_APPLIED'},
+    {id:'ORDER-483',requester:'developer:eli',decision:'DENY',result:'No action',reason:'AUTHORITY_EXPIRED'},
+    {id:'ORDER-484',requester:'developer:jo',decision:'DENY',result:'Review required',reason:'APPROVAL_THRESHOLD_NOT_MET'}
+  ],
   services:[
     {
       id:'svc-runtime-reconciliation',
@@ -148,6 +153,10 @@ function updateServiceButtons(){
   });
 }
 
+function renderOrderOutcomes(){
+  byId('portal-order-outcomes').innerHTML=PORTAL_MODEL.orderOutcomes.map(item=>`<article class="portal-order-card"><h3>${escapeHtml(item.id)}</h3><p>${escapeHtml(item.requester)}</p><strong>${escapeHtml(item.decision)} · ${escapeHtml(item.result)}</strong><code>${escapeHtml(item.reason)}</code></article>`).join('');
+}
+
 function renderReviews(){
   byId('portal-review-list').innerHTML=PORTAL_MODEL.reviews.map(item=>`
     <div class="portal-review-row">
@@ -172,6 +181,7 @@ function bindServiceButtons(){
 
 document.addEventListener('DOMContentLoaded',()=>{
   renderPosture();
+  renderOrderOutcomes();
   renderServiceList();
   bindServiceButtons();
   renderService();
