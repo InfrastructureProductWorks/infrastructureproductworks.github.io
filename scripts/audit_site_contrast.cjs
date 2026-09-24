@@ -10,11 +10,14 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
   return item.isDirectory()?pages(file):item.name.endsWith('.html')?[file]:[];
 });}
 (async()=>{
-  const browser=await chromium.launch({headless:true});
+  const launch={headless:true};
+  if(process.env.CHROMIUM_MODULE){const binary=require(process.env.CHROMIUM_MODULE);launch.executablePath=await binary.executablePath();launch.args=binary.args;}
+  const browser=await chromium.launch(launch);
   const reports=[],unique=new Map(),reviews=new Map();
   const output=`/tmp/site-contrast-${mode}`;fs.mkdirSync(output,{recursive:true});
   try{
-    const page=await browser.newPage({viewport});
+    const context=await browser.newContext({viewport});
+    const page=await context.newPage();
     page.setDefaultTimeout(15000);
     async function audit(route,state){
       const result=await new AxeBuilder({page}).withRules(['color-contrast']).analyze();
