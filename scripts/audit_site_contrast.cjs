@@ -38,10 +38,15 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const measured=checks.every(c=>['elmPartiallyObscured','bgOverlap'].includes(c.data?.messageKey))&&await page.evaluate(({target})=>{
           if(target.length!==1)return null;
           const el=document.querySelector(target[0]);if(!el)return null;
-          const old=[scrollX,scrollY];el.scrollIntoView({block:'center',inline:'center'});
+          const old=[scrollX,scrollY];el.scrollIntoView({block:'center',inline:'center',behavior:'instant'});
           const rect=el.getBoundingClientRect();
           const hit=document.elementFromPoint(Math.max(0,Math.min(innerWidth-1,rect.x+rect.width/2)),Math.max(0,Math.min(innerHeight-1,rect.y+rect.height/2)));
-          scrollTo(...old);if(hit!==el&&!el.contains(hit))return null;
+          scrollTo({left:old[0],top:old[1],behavior:'instant'});
+          if(hit!==el&&!el.contains(hit)){
+            // Transparent arrow boxes and clipped timing pills do not change the text colors.
+            const hs=hit&&getComputedStyle(hit);
+            if(!el.matches('.roadmap-time-pill')&&(!hs||hs.backgroundColor!=='rgba(0, 0, 0, 0)'||hs.backgroundImage!=='none'||hs.boxShadow!=='none'))return null;
+          }
           const parse=s=>s.match(/[\d.]+/g)?.map(Number);
           const blend=(a,b)=>a.slice(0,3).map((v,i)=>v*(a[3]??1)+b[i]*(1-(a[3]??1)));
           const chain=[];for(let n=el;n;n=n.parentElement){const s=getComputedStyle(n);if(s.backgroundImage!=='none'||Number(s.opacity)!==1||s.filter!=='none')return null;chain.push(parse(s.backgroundColor));}
