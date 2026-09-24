@@ -115,6 +115,30 @@ jobs:
           assurance_demo_js_blob="$(git hash-object assets/assurance-demo.js)"
           grep -Fq "/assets/assurance-demo.js?v=${assurance_demo_js_blob}" assurance/demo/index.html
           node --check assets/assurance-demo.js
+          grep -Fq "Open Assurance Portal" assurance/index.html
+          grep -Fq "IAAP ASSURANCE PORTAL · SANITIZED SYNTHETIC PROJECTION" assurance/portal/index.html
+          grep -Fq "Raw findings</span><strong>EXCLUDED" assurance/portal/index.html
+          grep -Fq "Portal remains downstream of the source records." assurance/portal/index.html
+          grep -Fq "Runtime Reconciliation Proof" assets/assurance-portal.js
+          grep -Fq "runtimeAuthority:'ACTIVE AT FIXTURE TIME'" assets/assurance-portal.js
+          grep -Fq "evaluatedAt:'2026-08-31T12:10:00Z'" assets/assurance-portal.js
+          grep -Fq 'portal-authority-evaluated' assurance/portal/index.html
+          grep -Fq "serviceHealth:'NOT OBSERVED'" assets/assurance-portal.js
+          grep -Fq "overall:'BOUNDED FIXTURES READY'" assets/assurance-portal.js
+          if grep -Fq "runtimeAuthority:'ACTIVE'" assets/assurance-portal.js || grep -Fq "serviceHealth:'NOMINAL'" assets/assurance-portal.js; then
+            echo "::error::Portal must not convert historical synthetic proof state into current operational status."
+            exit 1
+          fi
+          grep -Fq "Protected Storage Predeployment Proof" assets/assurance-portal.js
+          if grep -Fq "Managed Interconnect" assets/assurance-portal.js; then
+            echo "::error::Portal must not synthesize one continuous Managed Interconnect assurance transaction from separate proof scopes."
+            exit 1
+          fi
+          portal_js_blob="$(git hash-object assets/assurance-portal.js)"
+          grep -Fq "/assets/assurance-portal.js?v=${portal_js_blob}" assurance/portal/index.html
+          node --check assets/assurance-portal.js
+          grep -Fq "function updateServiceButtons()" assets/assurance-portal.js
+          test "$(grep -Fc "renderServiceList();" assets/assurance-portal.js)" -eq 1
           grep -Fq "Organization-hosted / Validation Ready" assets/portfolio.js
           if grep -R -nE "Public Beta|CUSTOMER-FACING INTAKE|Get Support|commercial model|commercial activation|Customer-hosted / Pilot Ready|SUPPORT REQUEST|Technical support|<option>Installation|Customer responsibility|<h3>Beta status</h3>" \
             support/index.html terms/index.html console/index.html portfolio/index.html assets/portfolio.js; then
@@ -199,6 +223,8 @@ jobs:
           console_demo_js=/tmp/console-demo.js
           assurance_demo=/tmp/assurance-demo.html
           assurance_demo_js=/tmp/assurance-demo.js
+          assurance_portal=/tmp/assurance-portal.html
+          assurance_portal_js=/tmp/assurance-portal.js
           js_blob="$(git hash-object assets/portfolio.js)"
           css_blob="$(git hash-object assets/portfolio.css)"
           relationships_blob="$(git hash-object data/roadmap-relationships.json)"
@@ -206,6 +232,8 @@ jobs:
           console_demo_js_ref="/assets/console-demo.js?v=${console_demo_js_blob}"
           assurance_demo_js_blob="$(git hash-object assets/assurance-demo.js)"
           assurance_demo_js_ref="/assets/assurance-demo.js?v=${assurance_demo_js_blob}"
+          assurance_portal_js_blob="$(git hash-object assets/assurance-portal.js)"
+          assurance_portal_js_ref="/assets/assurance-portal.js?v=${assurance_portal_js_blob}"
           js_ref="/assets/portfolio.js?v=${js_blob}"
           css_ref="/assets/portfolio.css?v=${css_blob}"
 
@@ -264,12 +292,24 @@ jobs:
                 --write-out '%{http_code}' \
                 "${BASE_URL}${assurance_demo_js_ref}&verify=${EXPECTED_SHA}" || true)"
 
-              if [[ "${script_code}" == "200" && "${css_code}" == "200" && "${relationships_code}" == "200" && "${console_demo_code}" == "200" && "${console_demo_js_code}" == "200" && "${assurance_demo_code}" == "200" && "${assurance_demo_js_code}" == "200" ]] \
+              assurance_portal_code="$(curl --location --silent --show-error \
+                --connect-timeout 10 --max-time 20 \
+                --output "${assurance_portal}" \
+                --write-out '%{http_code}' \
+                "${BASE_URL}/assurance/portal/?verify=${EXPECTED_SHA}" || true)"
+              assurance_portal_js_code="$(curl --location --silent --show-error \
+                --connect-timeout 10 --max-time 20 \
+                --output "${assurance_portal_js}" \
+                --write-out '%{http_code}' \
+                "${BASE_URL}${assurance_portal_js_ref}&verify=${EXPECTED_SHA}" || true)"
+
+              if [[ "${script_code}" == "200" && "${css_code}" == "200" && "${relationships_code}" == "200" && "${console_demo_code}" == "200" && "${console_demo_js_code}" == "200" && "${assurance_demo_code}" == "200" && "${assurance_demo_js_code}" == "200" && "${assurance_portal_code}" == "200" && "${assurance_portal_js_code}" == "200" ]] \
                 && [[ "$(git hash-object "${script}")" == "${js_blob}" ]] \
                 && [[ "$(git hash-object "${stylesheet}")" == "${css_blob}" ]] \
                 && [[ "$(git hash-object "${relationships}")" == "${relationships_blob}" ]] \
                 && [[ "$(git hash-object "${console_demo_js}")" == "${console_demo_js_blob}" ]] \
                 && [[ "$(git hash-object "${assurance_demo_js}")" == "${assurance_demo_js_blob}" ]] \
+                && [[ "$(git hash-object "${assurance_portal_js}")" == "${assurance_portal_js_blob}" ]] \
                 && grep -Fq 'IAAP CONSOLE · INTERACTIVE SYNTHETIC WORKBENCH' "${console_demo}" \
                 && grep -Fq 'VERIFICATION PENDING' "${console_demo}" \
                 && grep -Fq "${console_demo_js_ref}" "${console_demo}" \
@@ -285,6 +325,10 @@ jobs:
                 && grep -Fq "SENTRY_PROFILE_STATUS='PROPOSED_PROFILE_PREVIEW'" "${assurance_demo_js}" \
                 && grep -Fq 'DELEGATION_BROADENED' "${assurance_demo_js}" \
                 && grep -Fq 'AUDIT_SUPPRESSION_ATTEMPT' "${assurance_demo_js}" \
+                && grep -Fq 'IAAP ASSURANCE PORTAL · SANITIZED SYNTHETIC PROJECTION' "${assurance_portal}" \
+                && grep -Fq "${assurance_portal_js_ref}" "${assurance_portal}" \
+                && grep -Fq 'Runtime Reconciliation Proof' "${assurance_portal_js}" \
+                && grep -Fq 'Protected Storage Predeployment Proof' "${assurance_portal_js}" \
                 && grep -Fq 'proof-pattern' "${script}" \
                 && grep -Fq "['BUILD',p.state]" "${script}" \
                 && grep -Fq "['VALIDATE',p.status]" "${script}" \
