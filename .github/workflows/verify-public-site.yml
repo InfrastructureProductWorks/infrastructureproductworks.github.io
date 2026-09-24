@@ -175,11 +175,15 @@ jobs:
           relationships=/tmp/roadmap-relationships.json
           console_demo=/tmp/console-demo.html
           console_demo_js=/tmp/console-demo.js
+          assurance_demo=/tmp/assurance-demo.html
+          assurance_demo_js=/tmp/assurance-demo.js
           js_blob="$(git hash-object assets/portfolio.js)"
           css_blob="$(git hash-object assets/portfolio.css)"
           relationships_blob="$(git hash-object data/roadmap-relationships.json)"
           console_demo_js_blob="$(git hash-object assets/console-demo.js)"
           console_demo_js_ref="/assets/console-demo.js?v=${console_demo_js_blob}"
+          assurance_demo_js_blob="$(git hash-object assets/assurance-demo.js)"
+          assurance_demo_js_ref="/assets/assurance-demo.js?v=${assurance_demo_js_blob}"
           js_ref="/assets/portfolio.js?v=${js_blob}"
           css_ref="/assets/portfolio.css?v=${css_blob}"
 
@@ -227,16 +231,32 @@ jobs:
                 --write-out '%{http_code}' \
                 "${BASE_URL}${console_demo_js_ref}&verify=${EXPECTED_SHA}" || true)"
 
-              if [[ "${script_code}" == "200" && "${css_code}" == "200" && "${relationships_code}" == "200" && "${console_demo_code}" == "200" && "${console_demo_js_code}" == "200" ]] \
+              assurance_demo_code="$(curl --location --silent --show-error \
+                --connect-timeout 10 --max-time 20 \
+                --output "${assurance_demo}" \
+                --write-out '%{http_code}' \
+                "${BASE_URL}/assurance/demo/?verify=${EXPECTED_SHA}" || true)"
+              assurance_demo_js_code="$(curl --location --silent --show-error \
+                --connect-timeout 10 --max-time 20 \
+                --output "${assurance_demo_js}" \
+                --write-out '%{http_code}' \
+                "${BASE_URL}${assurance_demo_js_ref}&verify=${EXPECTED_SHA}" || true)"
+
+              if [[ "${script_code}" == "200" && "${css_code}" == "200" && "${relationships_code}" == "200" && "${console_demo_code}" == "200" && "${console_demo_js_code}" == "200" && "${assurance_demo_code}" == "200" && "${assurance_demo_js_code}" == "200" ]] \
                 && [[ "$(git hash-object "${script}")" == "${js_blob}" ]] \
                 && [[ "$(git hash-object "${stylesheet}")" == "${css_blob}" ]] \
                 && [[ "$(git hash-object "${relationships}")" == "${relationships_blob}" ]] \
                 && [[ "$(git hash-object "${console_demo_js}")" == "${console_demo_js_blob}" ]] \
+                && [[ "$(git hash-object "${assurance_demo_js}")" == "${assurance_demo_js_blob}" ]] \
                 && grep -Fq 'IAAP CONSOLE · INTERACTIVE SYNTHETIC WORKBENCH' "${console_demo}" \
                 && grep -Fq 'VERIFICATION PENDING' "${console_demo}" \
                 && grep -Fq "${console_demo_js_ref}" "${console_demo}" \
                 && grep -Fq 'AWAITING_HUMAN_REVIEW' "${console_demo_js}" \
                 && grep -Fq 'EXPECTED_DIGEST=' "${console_demo_js}" \
+                && grep -Fq 'IAAP ASSURANCE · INTERACTIVE SYNTHETIC AUTHORITY GATE' "${assurance_demo}" \
+                && grep -Fq "${assurance_demo_js_ref}" "${assurance_demo}" \
+                && grep -Fq "EXPECTED_AUTHORITY_DIGEST='sha256:31333df3a6e63e684ca4d75a33e4c0a3a59e547fe6a426e0a435878bbe4ccaa0'" "${assurance_demo_js}" \
+                && grep -Fq 'VERIFICATION_FAILED_ROLLBACK_SUCCEEDED' "${assurance_demo_js}" \
                 && grep -Fq 'proof-pattern' "${script}" \
                 && grep -Fq "['BUILD',p.state]" "${script}" \
                 && grep -Fq "['VALIDATE',p.status]" "${script}" \
