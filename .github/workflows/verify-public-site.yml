@@ -120,6 +120,13 @@ jobs:
           grep -Fq "Raw findings</span><strong>EXCLUDED" assurance/portal/index.html
           grep -Fq "Portal remains downstream of the source records." assurance/portal/index.html
           grep -Fq "Runtime Reconciliation Proof" assets/assurance-portal.js
+          grep -Fq "runtimeAuthority:'ACTIVE AT FIXTURE TIME'" assets/assurance-portal.js
+          grep -Fq "serviceHealth:'NOT OBSERVED'" assets/assurance-portal.js
+          grep -Fq "overall:'BOUNDED FIXTURES READY'" assets/assurance-portal.js
+          if grep -Fq "runtimeAuthority:'ACTIVE'" assets/assurance-portal.js || grep -Fq "serviceHealth:'NOMINAL'" assets/assurance-portal.js; then
+            echo "::error::Portal must not convert historical synthetic proof state into current operational status."
+            exit 1
+          fi
           grep -Fq "Protected Storage Predeployment Proof" assets/assurance-portal.js
           if grep -Fq "Managed Interconnect" assets/assurance-portal.js; then
             echo "::error::Portal must not synthesize one continuous Managed Interconnect assurance transaction from separate proof scopes."
