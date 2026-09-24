@@ -2,7 +2,7 @@
 
 End to end instructions for Sentry Shield custody and Portal
 
-Infrastructure Product Works | Version 1.0 | September 24, 2026
+Infrastructure Product Works | Version 1.1 | September 24, 2026
 
 Use this guide to inspect a predeployment decision, evaluate bounded runtime authority, replay protected-data custody outcomes, export a runtime record, and read the sanitized Portal. All examples in these interfaces are synthetic.
 
@@ -104,16 +104,21 @@ These steps replay accepted fixed examples. They do not read or transfer real pr
 
 Open [Assurance Portal](https://infrastructureproductworks.com/assurance/portal/).
 
-1. Review the independent request outcomes at the top and the overall fixture posture.
-2. Select **Runtime Reconciliation Proof** in the service list.
-3. Read the predeployment result, runtime authority, runtime state, evidence completeness, service health, and cost visibility separately.
-4. Inspect the sanitized authority summary and timeline.
-5. Select **Protected Storage Predeployment Proof**. Compare its predeployment correction path with its **NOT REQUESTED** runtime authority and **NO ACTION** runtime state.
-6. Read the high-impact review state, disclosure boundary, and evidence summaries.
+1. Wait for the published request records to verify. The summary counts only the loaded requests.
+2. Choose **Management and leadership**, **Security and operations**, or **Governance and evidence**. These choices change the explanation and emphasis; they do not grant access or approval authority.
+3. Use **Show requests** to find items needing attention, waiting for approval, stopped before action, applied in the simulation, or rolled back. Summary totals continue to cover the full loaded set.
+4. Read the request, decision, action, reason, next step, and responsible role. Individual assignments are not recorded.
+5. Open **Decision record and source evidence** to inspect the exact request, fingerprints, original record, and pinned source revision.
+6. In the Assurance demo, select **Export requests for Portal** to download the three independent request records. Use **Import demo records** in the Portal to load that file. You can also import a single record exported from the active Shield scenario, including rollback.
+7. An import replaces the loaded snapshot only after every record passes verification. A changed record, unknown source, duplicate request, conflicting result, or oversized file is rejected; the previous verified set remains visible. Only the published synthetic source catalog is supported.
+8. Use **Export loaded records** to retain the verified source records, or **Load published examples** to restore the three-request snapshot. The browser does not upload imported files or persist the loaded set across reloads.
+9. Below the request snapshot, inspect the separate historical service proofs. Select **Runtime Reconciliation Proof** or **Protected Storage Predeployment Proof** to read their fixed authority summaries and timelines.
+
+**Request to decision** is the interval between the recorded request timestamp and evaluation timestamp. **Time since decision** is measured at the fixed snapshot time. Neither measures delivery time, review waiting time, or present queue age. The examples cannot establish an improvement in delivery speed.
 
 **NOT OBSERVED** means the Portal has no service-health observation. **NOT MODELED** means a value such as cost is not modeled. Neither means healthy, zero cost, or failed. **SEPARATE PROOF** and **SEPARATE PROOFS VERIFIED** do not claim a continuous transaction across Gates 3, 5, and 6.
 
-The displayed open-review count and review entries belong to the fixed Portal model. They are not a live count of every denial displayed elsewhere. There is no resolve, approve, export, or execute control on this Portal view.
+Historical service review counts remain separate from the loaded request summary. Request IDs are local to the Assurance demonstration; similar IDs in Console do not establish a shared transaction. A matching fingerprint proves record integrity within the pinned synthetic catalog, not a production signature, live authority, or independent custody.
 
 ## 9 Troubleshooting and completion
 

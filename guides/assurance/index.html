@@ -68,15 +68,19 @@
 <h2 id="read-the-assurance-portal">8 Read the Assurance Portal</h2>
 <p>Open <a href="https://infrastructureproductworks.com/assurance/portal/">Assurance Portal</a>.</p>
 <ol>
-<li>Review the independent request outcomes at the top and the overall fixture posture.</li>
-<li>Select <strong>Runtime Reconciliation Proof</strong> in the service list.</li>
-<li>Read the predeployment result, runtime authority, runtime state, evidence completeness, service health, and cost visibility separately.</li>
-<li>Inspect the sanitized authority summary and timeline.</li>
-<li>Select <strong>Protected Storage Predeployment Proof</strong>. Compare its predeployment correction path with its <strong>NOT REQUESTED</strong> runtime authority and <strong>NO ACTION</strong> runtime state.</li>
-<li>Read the high-impact review state, disclosure boundary, and evidence summaries.</li>
+<li>Wait for the published request records to verify. The summary counts only the loaded requests.</li>
+<li>Choose <strong>Management and leadership</strong>, <strong>Security and operations</strong>, or <strong>Governance and evidence</strong>. These choices change the explanation and emphasis; they do not grant access or approval authority.</li>
+<li>Use <strong>Show requests</strong> to find items needing attention, waiting for approval, stopped before action, applied in the simulation, or rolled back. Summary totals continue to cover the full loaded set.</li>
+<li>Read the request, decision, action, reason, next step, and responsible role. Individual assignments are not recorded.</li>
+<li>Open <strong>Decision record and source evidence</strong> to inspect the exact request, fingerprints, original record, and pinned source revision.</li>
+<li>In the Assurance demo, select <strong>Export requests for Portal</strong> to download the three independent request records. Use <strong>Import demo records</strong> in the Portal to load that file. You can also import a single record exported from the active Shield scenario, including rollback.</li>
+<li>An import replaces the loaded snapshot only after every record passes verification. A changed record, unknown source, duplicate request, conflicting result, or oversized file is rejected; the previous verified set remains visible. Only the published synthetic source catalog is supported.</li>
+<li>Use <strong>Export loaded records</strong> to retain the verified source records, or <strong>Load published examples</strong> to restore the three-request snapshot. The browser does not upload imported files or persist the loaded set across reloads.</li>
+<li>Below the request snapshot, inspect the separate historical service proofs. Select <strong>Runtime Reconciliation Proof</strong> or <strong>Protected Storage Predeployment Proof</strong> to read their fixed authority summaries and timelines.</li>
 </ol>
+<p><strong>Request to decision</strong> is the interval between the recorded request timestamp and evaluation timestamp. <strong>Time since decision</strong> is measured at the fixed snapshot time. Neither measures delivery time, review waiting time, or present queue age. The examples cannot establish an improvement in delivery speed.</p>
 <p><strong>NOT OBSERVED</strong> means the Portal has no service-health observation. <strong>NOT MODELED</strong> means a value such as cost is not modeled. Neither means healthy, zero cost, or failed. <strong>SEPARATE PROOF</strong> and <strong>SEPARATE PROOFS VERIFIED</strong> do not claim a continuous transaction across Gates 3, 5, and 6.</p>
-<p>The displayed open-review count and review entries belong to the fixed Portal model. They are not a live count of every denial displayed elsewhere. There is no resolve, approve, export, or execute control on this Portal view.</p>
+<p>Historical service review counts remain separate from the loaded request summary. Request IDs are local to the Assurance demonstration; similar IDs in Console do not establish a shared transaction. A matching fingerprint proves record integrity within the pinned synthetic catalog, not a production signature, live authority, or independent custody.</p>
 <h2 id="troubleshooting-and-completion">9 Troubleshooting and completion</h2>
 <p><strong>The result did not change.</strong> Confirm the intended view and scenario are selected. In Shield, use Run Assurance Gate after checking the active scenario label.</p>
 <p><strong>The dates appear expired.</strong> Compare the validity window with the displayed fixture clock. The demonstration intentionally uses recorded times.</p>

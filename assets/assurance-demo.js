@@ -75,6 +75,7 @@ const SCENARIOS={
 
 let activeScenario='baseline';
 let latestEvaluation=null;
+let latestIndependentRecords=[];
 
 const byId=id=>document.getElementById(id);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -240,6 +241,8 @@ async function renderIndependentRequests(){
   panel.textContent='Evaluating three independent synthetic requests…';
   try{
     const results=await Promise.all(BATCH_ORDERS.map(async order=>({order,result:await evaluateScenario(order.scenario,order)})));
+    latestIndependentRecords=results.map(item=>item.result.record);
+    byId('export-requests').disabled=false;
     panel.replaceChildren(...results.map(({order,result})=>{
       const card=document.createElement('article');
       card.className='batch-request';
@@ -398,6 +401,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
   });
   byId('run-gate').addEventListener('click',runScenario);
   byId('export-record').addEventListener('click',exportRecord);
+  byId('export-requests').addEventListener('click',()=>{
+    if(!latestIndependentRecords.length)return;
+    const blob=new Blob([JSON.stringify({schemaVersion:'iaap-assurance-portal-package/v1',records:latestIndependentRecords},null,2)+'\n'],{type:'application/json'});
+    const url=URL.createObjectURL(blob);const link=document.createElement('a');
+    link.href=url;link.download='iaap-assurance-request-set.json';link.click();URL.revokeObjectURL(url);
+  });
   renderScenarioInfo();
   await runScenario();
   await renderIndependentRequests();
