@@ -207,3 +207,6 @@ main>section:not(.drive-section):not(.principle):not(.boundary){background-color
 .button:not(.ghost){color:#082b19}
 .principle span{color:#4ade80}
 .drive-intro>.eyebrow{color:#7dd3fc}
+
+.drive-steps article:nth-child(3) b{color:#162536}
+.storefront-node:not(.configure) b{color:#071b2e}
