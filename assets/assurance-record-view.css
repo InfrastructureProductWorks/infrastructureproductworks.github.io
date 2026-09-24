@@ -1,0 +1,16 @@
+.record-tools{display:flex;flex-wrap:wrap;gap:14px;align-items:end;margin:20px 0;color:#dce8f5}
+.record-tools label{display:grid;gap:6px;max-width:100%;font-size:14px}
+.record-tools select,.record-tools button,.record-tools input{font:inherit;max-width:100%;padding:9px;border:1px solid #92b4d0;border-radius:6px}
+.record-tools select,.record-tools button{background:#f5f8fc;color:#18304a}
+.record-tools button{cursor:pointer}
+.record-tools button:disabled{opacity:.5;cursor:default}
+.record-tools :focus-visible,.portal-order-card summary:focus-visible{outline:3px solid #f3be5f;outline-offset:3px}
+.record-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.record-metrics article{padding:16px;border-radius:10px;background:#f5f8fc;color:#18304a}
+.record-metrics span{display:block;font-size:13px}.record-metrics b{display:block;font-size:25px;margin-top:8px}
+.portal-order-card pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
+.portal-order-card details{margin-top:12px}.portal-order-card summary{cursor:pointer}
+.record-status{padding:12px;border:1px solid #92b4d0;border-radius:8px;color:#e1edf8}
+.record-note{color:#d1ddeb;font-size:14px;line-height:1.5}
+@media(max-width:750px){.record-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.record-tools{align-items:stretch;flex-direction:column}.portal-order-preview{padding:16px}.record-tools input{width:100%;box-sizing:border-box}}
+@media(max-width:380px){.record-metrics{grid-template-columns:1fr}}

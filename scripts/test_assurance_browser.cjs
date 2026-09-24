@@ -1,0 +1,45 @@
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const assert=require('node:assert/strict'),fs=require('node:fs');
+(async()=>{
+  const browser=await chromium.launch({headless:true});
+  try{
+    const page=await browser.newPage({viewport:{width:1280,height:900}});
+    const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    const base=process.env.ASSURANCE_BASE_URL||'http://127.0.0.1:8765';
+    await page.goto(base+'/assurance/demo/');
+    await page.waitForFunction(()=>!document.getElementById('export-requests').disabled);
+    const downloadPromise=page.waitForEvent('download');await page.locator('#export-requests').click();
+    const download=await downloadPromise;const exported=await download.path();
+    const producer=JSON.parse(fs.readFileSync(exported,'utf8'));
+    assert.equal(producer.records.length,3);
+    await page.goto(base+'/assurance/portal/');
+    await page.waitForFunction(()=>!document.getElementById('record-import').disabled);
+    assert.equal(await page.locator('.portal-order-card').count(),3);
+    await page.locator('#record-import').setInputFiles(exported);
+    await page.locator('#record-import-status').filter({hasText:'Imported file: 3 records verified'}).waitFor();
+    for(const record of producer.records)assert.ok((await page.locator('#portal-order-outcomes').textContent()).includes(record.recordDigest));
+    await page.locator('#record-filter').selectOption('attention');assert.equal(await page.locator('.portal-order-card').count(),2);
+    assert.match(await page.locator('#record-visible-count').textContent(),/2 of 3/);
+    await page.locator('#record-audience').selectOption('governance');assert.match(await page.locator('#record-audience-note').textContent(),/Governance/);
+    const tampered=structuredClone(producer);tampered.records[0].requesterRef='<img src=x onerror=alert(1)>';
+    await page.locator('#record-import').setInputFiles({name:'tampered.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(tampered))});
+    await page.locator('#record-import-status').filter({hasText:'Import rejected'}).waitFor();
+    assert.equal(await page.locator('.portal-order-card').count(),2);assert.equal(await page.locator('#portal-order-outcomes img').count(),0);
+    await page.locator('#record-filter').selectOption('all');
+    const secondDownload=page.waitForEvent('download');await page.locator('#record-export').click();
+    assert.deepEqual(JSON.parse(fs.readFileSync(await (await secondDownload).path(),'utf8')),producer);
+    await page.setViewportSize({width:375,height:812});
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'mobile horizontal overflow');
+    fs.mkdirSync('/tmp/assurance-ui',{recursive:true});await page.screenshot({path:'/tmp/assurance-ui/portal-mobile.png',fullPage:true});
+    await page.goto(base+'/assurance/demo/');await page.waitForFunction(()=>document.getElementById('run-state').textContent==='AUTHORITY VALID');
+    await page.locator('[data-scenario="rollback"]').click();await page.locator('#outcome-badge').filter({hasText:'ROLLED BACK'}).waitFor();
+    const singlePromise=page.waitForEvent('download');await page.locator('#export-record').click();const single=await (await singlePromise).path();
+    await page.goto(base+'/assurance/portal/');await page.waitForFunction(()=>!document.getElementById('record-import').disabled);
+    await page.locator('#record-import').setInputFiles(single);await page.locator('#record-import-status').filter({hasText:'Imported file: 1 records verified'}).waitFor();
+    assert.match(await page.locator('#portal-order-outcomes').textContent(),/Allowed, then rolled back/);
+    await page.locator('#record-reset').click();await page.locator('#record-import-status').filter({hasText:'Published fixture set: 3 records verified'}).waitFor();
+    assert.equal(await page.locator('.portal-order-card').count(),3);
+    assert.deepEqual(errors,[]);
+    console.log('Browser export/import roundtrip, role views, filtering, rejection retention, reset, and mobile layout passed.');
+  }finally{await browser.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

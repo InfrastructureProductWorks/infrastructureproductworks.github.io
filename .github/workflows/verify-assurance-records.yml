@@ -1,0 +1,45 @@
+name: Verify Assurance record views
+on:
+  pull_request:
+    paths:
+      - 'assets/assurance*'
+      - 'assurance/**'
+      - 'scripts/*assurance*'
+      - '.github/workflows/verify-assurance-records.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/assurance*'
+      - 'assurance/**'
+      - 'scripts/*assurance*'
+      - '.github/workflows/verify-assurance-records.yml'
+permissions:
+  contents: read
+jobs:
+  verify-records:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reproduce and verify source records
+        run: |
+          node scripts/build_assurance_records.cjs --check
+          node scripts/test_assurance_records.cjs
+      - name: Install browser test dependencies
+        run: |
+          npm install --prefix /tmp/assurance-test playwright@1.62.1
+          /tmp/assurance-test/node_modules/.bin/playwright install --with-deps chromium
+      - name: Exercise record workflow in browser
+        env:
+          PLAYWRIGHT_MODULE: /tmp/assurance-test/node_modules/playwright
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/assurance-server.log 2>&1 &
+          node scripts/test_assurance_browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assurance-browser-evidence
+          path: /tmp/assurance-ui/

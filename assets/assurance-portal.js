@@ -10,11 +10,6 @@ const PORTAL_MODEL={
     openReviewItems:0,
     evidenceContinuity:'SEPARATE PROOFS VERIFIED'
   },
-  orderOutcomes:[
-    {id:'ORDER-482',requester:'developer:maya',decision:'ALLOW',outcome:'APPLIED',reason:'RECONCILIATION_APPLIED'},
-    {id:'ORDER-483',requester:'developer:eli',decision:'DENY',outcome:'NO ACTION',reason:'AUTHORITY_EXPIRED'},
-    {id:'ORDER-484',requester:'developer:jo',decision:'DENY',outcome:'REVIEW REQUIRED',reason:'APPROVAL_THRESHOLD_NOT_MET'}
-  ],
   services:[
     {
       id:'svc-runtime-reconciliation',
@@ -153,13 +148,6 @@ function updateServiceButtons(){
   });
 }
 
-function renderOrderOutcomes(){
-  byId('portal-order-outcomes').innerHTML=PORTAL_MODEL.orderOutcomes.map(item=>{
-    const plain=window.assurancePlainLanguage({decision:item.decision,outcome:item.outcome,reasonCode:item.reason});
-    return `<article class="portal-order-card"><h3>${escapeHtml(item.id)}</h3><p>${escapeHtml(item.requester)}</p><div class="portal-plain"><b>${escapeHtml(plain.decision)}</b><p><strong>What happened:</strong> ${escapeHtml(plain.action)}</p><p><strong>Why:</strong> ${escapeHtml(plain.why)}</p><p><strong>Next step:</strong> ${escapeHtml(plain.next)}</p></div><details><summary>Technical result</summary><strong>${escapeHtml(item.decision)} · ${escapeHtml(item.outcome)}</strong><code>${escapeHtml(item.reason)}</code></details></article>`;
-  }).join('');
-}
-
 function renderReviews(){
   byId('portal-review-list').innerHTML=PORTAL_MODEL.reviews.map(item=>`
     <div class="portal-review-row">
@@ -184,7 +172,6 @@ function bindServiceButtons(){
 
 document.addEventListener('DOMContentLoaded',()=>{
   renderPosture();
-  renderOrderOutcomes();
   renderServiceList();
   bindServiceButtons();
   renderService();
