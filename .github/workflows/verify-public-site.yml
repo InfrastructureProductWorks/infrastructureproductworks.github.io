@@ -92,6 +92,11 @@ jobs:
           grep -Fq "SENTRY_PROFILE_STATUS='PROPOSED_PROFILE_PREVIEW'" assets/assurance-demo.js
           grep -Fq "PROTECTED_STORAGE_PUBLIC_ACCESS" assets/assurance-demo.js
           grep -Fq "attributes:{public_access:true}" assets/assurance-demo.js
+          test "$(grep -o "source:'synthetic-infrastructure-candidate'" assets/assurance-demo.js | wc -l)" -ge 2
+          if grep -Fq "synthetic-corrected-candidate" assets/assurance-demo.js; then
+            echo "::error::Sentry corrected candidate must remain a one-field candidate delta."
+            exit 1
+          fi
           grep -Fq "renderCustodyScenario();" assets/assurance-demo.js
           if grep -Fq 'role="tablist"' assurance/demo/index.html; then
             echo "::error::Assurance view switcher must not advertise an incomplete ARIA tab pattern."
