@@ -139,8 +139,13 @@ function renderService(){
   byId('portal-timeline').innerHTML=service.timeline.map((item,index)=>`
     <li><span>${String(index+1).padStart(2,'0')}</span><b>${escapeHtml(item)}</b></li>`).join('');
 
-  renderServiceList();
-  bindServiceButtons();
+  updateServiceButtons();
+}
+
+function updateServiceButtons(){
+  document.querySelectorAll('[data-portal-service]').forEach(button=>{
+    button.setAttribute('aria-pressed',String(button.dataset.portalService===activeServiceId));
+  });
 }
 
 function renderReviews(){
@@ -161,12 +166,14 @@ function bindServiceButtons(){
     button.addEventListener('click',()=>{
       activeServiceId=button.dataset.portalService;
       renderService();
-    },{once:true});
+    });
   });
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
   renderPosture();
+  renderServiceList();
+  bindServiceButtons();
   renderService();
   renderReviews();
   renderEvidence();
