@@ -366,7 +366,7 @@ const SENTRY_SCENARIOS={
   violation:{
     label:'Policy Violation',
     description:'A normalized protected-storage candidate arrives with public access enabled and an open critical finding.',
-    candidate:{resourceRef:'storage:protected-records-demo',publicAccess:true,protectedConstraintRequired:true,source:'synthetic-infrastructure-candidate'},
+    candidate:{resourceRef:'storage:protected-records-demo',attributes:{public_access:true},protectedConstraintRequired:true,source:'synthetic-infrastructure-candidate'},
     finding:{id:'finding:synthetic-public-access-001',category:'PUBLIC_ACCESS',severity:'CRITICAL',status:'OPEN',controlRef:'NIST-SP-800-53:AC-3'},
     decision:{outcome:'DENY',reason:'PROTECTED_STORAGE_PUBLIC_ACCESS'},
     correction:{field:'/attributes/public_access',from:true,to:false,guidance:'Set public_access to false, rescan, and resubmit the candidate.'}
@@ -374,7 +374,7 @@ const SENTRY_SCENARIOS={
   corrected:{
     label:'Bounded Correction',
     description:'The one-field correction is applied to the synthetic candidate and the finding is represented as resolved before deterministic reevaluation.',
-    candidate:{resourceRef:'storage:protected-records-demo',publicAccess:false,protectedConstraintRequired:true,source:'synthetic-corrected-candidate'},
+    candidate:{resourceRef:'storage:protected-records-demo',attributes:{public_access:false},protectedConstraintRequired:true,source:'synthetic-corrected-candidate'},
     finding:{id:'finding:synthetic-public-access-001',category:'PUBLIC_ACCESS',severity:'CRITICAL',status:'RESOLVED',controlRef:'NIST-SP-800-53:AC-3'},
     decision:{outcome:'ALLOW',reason:'BOUNDED_CORRECTION_VERIFIED'},
     correction:{field:'/attributes/public_access',from:true,to:false,guidance:'Correction is bounded to the demonstrated public_access field.'}
@@ -472,7 +472,7 @@ function activateAssuranceView(name){
   document.querySelectorAll('[data-assurance-tab]').forEach(button=>{
     const active=button.dataset.assuranceTab===name;
     button.classList.toggle('active',active);
-    button.setAttribute('aria-selected',String(active));
+    button.setAttribute('aria-pressed',String(active));
   });
   document.querySelectorAll('[data-assurance-view]').forEach(panel=>{
     panel.hidden=panel.dataset.assuranceView!==name;
@@ -502,7 +502,7 @@ async function renderSentryScenario(){
   byId('sentry-scenario-name').textContent=scenario.label;
   byId('sentry-scenario-description').textContent=scenario.description;
   byId('sentry-resource').textContent=scenario.candidate.resourceRef;
-  byId('sentry-public-access').textContent=String(scenario.candidate.publicAccess);
+  byId('sentry-public-access').textContent=String(scenario.candidate.attributes.public_access);
   byId('sentry-finding-status').textContent=`${scenario.finding.status} · ${scenario.finding.severity}`;
   byId('sentry-control').textContent=scenario.finding.controlRef;
   byId('sentry-candidate-digest').textContent=shortDigest(candidateDigest);
@@ -585,6 +585,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
     });
   });
   activateAssuranceView('shield');
-  await renderSentryScenario();
   renderCustodyScenario();
+  try{
+    await renderSentryScenario();
+  }catch(error){
+    byId('sentry-scenario-name').textContent='Preview unavailable';
+    byId('sentry-scenario-description').textContent='This browser cannot perform the local SHA-256 operations used by the Sentry preview.';
+    byId('sentry-reason').textContent='LOCAL_DIGEST_UNAVAILABLE';
+    byId('sentry-outcome-copy').textContent=error.message;
+  }
 });
