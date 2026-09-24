@@ -72,7 +72,8 @@ jobs:
           grep -Fq "IAAP CONSOLE · INTERACTIVE SYNTHETIC WORKBENCH" console/demo/index.html
           grep -Fq "VERIFICATION PENDING" console/demo/index.html
           grep -Fq "AWAITING_HUMAN_REVIEW" assets/console-demo.js
-          grep -Fq "EXPECTED_DIGEST='2325359a4f6a7cc23bab39e5cfb7ff905192b98301ed3478392f218af19647eb'" assets/console-demo.js
+          grep -Fq "ORDER-483" assets/console-demo.js
+          grep -Fq "ORDER-484" assets/console-demo.js
           grep -Fq "DIGEST MISMATCH · FAIL CLOSED" assets/console-demo.js
           grep -Fq "Record Review Note" console/demo/index.html
           demo_js_blob="$(git hash-object assets/console-demo.js)"
