@@ -1,9 +1,9 @@
 'use strict';
 
-const EXPECTED_DIGEST='dcc8d60a0d3bb830a90248e927b82e438f50c4bf6dde83686dc7c1d1b493d8fc';
+const EXPECTED_DIGEST='2325359a4f6a7cc23bab39e5cfb7ff905192b98301ed3478392f218af19647eb';
 
 const PACKAGE_TEMPLATE={
-  schemaVersion:'iaap-console-demo-package/v1',
+  schemaVersion:'iaap-console-demo-package/v2',
   packageId:'SYN-CONSOLE-001',
   assessmentId:'ASSESS-482',
   profile:{ref:'trusted-profile/network-foundation',version:'v3'},
@@ -14,11 +14,23 @@ const PACKAGE_TEMPLATE={
     systemId:'managed-interconnect'
   },
   source:{product:'IaaP Guard',revision:'synthetic-guard-rev-482'},
+  change:{
+    title:'Managed Interconnect · Change 482',
+    summary:'Add GCP support while preserving the AWS and Azure consumer contract'
+  },
+  guardSummary:{passed:18,review:2},
+  forge:{
+    productName:'Managed Interconnect',
+    version:'v1.3',
+    outcome:'Private, encrypted, highly available interconnect',
+    consumerChoices:['provider pair','environments','classification'],
+    platformOwned:['routing','gateways','encryption implementation','Crossplane composition']
+  },
   requirements:[
-    {id:'NET-001',title:'CIDR ranges do not overlap',status:'PASS'},
-    {id:'SEC-014',title:'Encryption remains mandatory',status:'PASS'},
-    {id:'DNS-007',title:'Enterprise DNS ownership confirmed',status:'REVIEW'},
-    {id:'FIN-004',title:'Cost owner acknowledges planning range',status:'REVIEW'}
+    {id:'NET-001',category:'NETWORK',title:'CIDRs do not overlap across selected environments',status:'PASS'},
+    {id:'SEC-014',category:'SECURITY',title:'Encryption and workload identity remain mandatory',status:'PASS'},
+    {id:'DNS-007',category:'DNS',title:'Enterprise DNS ownership needs reviewer confirmation',status:'REVIEW'},
+    {id:'FIN-004',category:'FINOPS',title:'Planning range requires cost-owner acknowledgment',status:'REVIEW'}
   ],
   evidence:[
     {id:'EVD-101',requirementId:'NET-001',artifact:'network-plan.synthetic.json',sourceRevision:'synthetic-guard-rev-482'},
@@ -26,12 +38,18 @@ const PACKAGE_TEMPLATE={
     {id:'EVD-103',requirementId:'DNS-007',artifact:'dns-ownership.synthetic.json',sourceRevision:'synthetic-guard-rev-482'},
     {id:'EVD-104',requirementId:'FIN-004',artifact:'cost-plan.synthetic.json',sourceRevision:'synthetic-guard-rev-482'}
   ],
+  planning:{
+    okr:'Expand governed multi-cloud products',
+    epic:'Managed Interconnect provider expansion',
+    feature:'Add bounded GCP implementation'
+  },
   decisionState:'AWAITING_HUMAN_REVIEW',
   authority:{approve:false,provision:false,deploy:false,reconcile:false}
 };
 
 let activePackage=null;
 let lastVerification=null;
+let recordedReviewNote='';
 
 const byId=id=>document.getElementById(id);
 const clonePackage=()=>JSON.parse(JSON.stringify(PACKAGE_TEMPLATE));
@@ -55,119 +73,164 @@ async function sha256Hex(value){
 }
 
 function setBusy(isBusy){
-  for(const id of ['load-demo','tamper-demo','restore-demo','export-demo']){
-    const button=byId(id);
-    if(button) button.disabled=isBusy;
-  }
+  document.querySelectorAll('[data-demo-action]').forEach(button=>{button.disabled=isBusy;});
 }
 
-function pill(status){
-  const normalized=status==='PASS'?'pass':'review';
-  return `<span class="demo-pill ${normalized}">${escapeHtml(status)}</span>`;
-}
-
-function renderRequirements(){
-  const target=byId('requirements-list');
-  target.innerHTML=activePackage.requirements.map(item=>`
-    <article class="demo-row">
-      <div><strong>${escapeHtml(item.id)}</strong><span>${escapeHtml(item.title)}</span></div>
-      ${pill(item.status)}
-    </article>`).join('');
-}
-
-function renderEvidence(){
-  const target=byId('evidence-list');
-  target.innerHTML=activePackage.evidence.map(item=>`
-    <article class="demo-row evidence-row">
-      <div><strong>${escapeHtml(item.id)}</strong><span>${escapeHtml(item.artifact)}</span></div>
-      <code>${escapeHtml(item.requirementId)}</code>
-    </article>`).join('');
+function requirementPill(status){
+  const cls=status==='PASS'?'pass':'review';
+  return '<span class="cw-pill '+cls+'">'+escapeHtml(status)+'</span>';
 }
 
 function renderFindings(){
-  const target=byId('findings-list');
-  target.innerHTML=activePackage.requirements.map(item=>`
-    <article class="demo-finding">
-      <strong>${escapeHtml(item.id)}</strong>
+  const html=activePackage.requirements.map(item=>`
+    <div class="cw-finding" data-requirement="${escapeHtml(item.id)}">
+      <b>${escapeHtml(item.category)}</b>
       <span>${escapeHtml(item.title)}</span>
-      ${pill(item.status)}
-    </article>`).join('');
+      ${requirementPill(item.status)}
+    </div>`).join('');
+  byId('overview-findings').innerHTML=html;
+  byId('findings-detail').innerHTML=html;
 }
 
-function renderPackageFields(){
+function renderEvidence(){
+  byId('evidence-detail').innerHTML=activePackage.evidence.map(item=>`
+    <div class="evidence-item" data-evidence="${escapeHtml(item.id)}">
+      <div><b>${escapeHtml(item.id)}</b><span>${escapeHtml(item.artifact)}</span></div>
+      <div><small>REQUIREMENT</small><code>${escapeHtml(item.requirementId)}</code></div>
+      <div><small>SOURCE REVISION</small><code>${escapeHtml(item.sourceRevision)}</code></div>
+    </div>`).join('');
+}
+
+function renderStaticPackage(){
+  byId('change-title').textContent=activePackage.change.title;
+  byId('change-summary').textContent=activePackage.change.summary;
+  byId('guard-summary').textContent=`${activePackage.guardSummary.passed} passed · ${activePackage.guardSummary.review} review`;
+  byId('forge-product').textContent=`${activePackage.forge.productName} ${activePackage.forge.version}`;
+  byId('forge-outcome').textContent=activePackage.forge.outcome.toLowerCase();
+  byId('forge-choices').textContent=activePackage.forge.consumerChoices.join(', ');
+  byId('forge-owned').textContent=activePackage.forge.platformOwned.join(', ');
+  byId('plan-okr').textContent=activePackage.planning.okr;
+  byId('plan-epic').textContent=activePackage.planning.epic;
+  byId('plan-feature').textContent=activePackage.planning.feature;
   byId('package-id').textContent=activePackage.packageId;
   byId('assessment-id').textContent=activePackage.assessmentId;
   byId('profile-id').textContent=`${activePackage.profile.ref} @ ${activePackage.profile.version}`;
   byId('scope-id').textContent=`${activePackage.scope.organizationId} / ${activePackage.scope.environmentId} / ${activePackage.scope.systemId}`;
-  byId('source-id').textContent=`${activePackage.source.product} · ${activePackage.source.revision}`;
+  byId('source-revision').textContent=activePackage.source.revision;
   byId('expected-digest').textContent=EXPECTED_DIGEST;
-  renderRequirements();
-  renderEvidence();
   renderFindings();
+  renderEvidence();
+}
+
+function renderPending(){
+  lastVerification=null;
+
+  const trust=byId('trust-state');
+  trust.textContent='… VERIFYING SOURCE & DIGEST';
+  trust.className='cw-trust pending';
+
+  const headerState=byId('header-state');
+  headerState.textContent='VERIFICATION PENDING';
+  headerState.className='cw-state pending';
+
+  const binding=byId('evidence-binding');
+  binding.textContent='Pending';
+  binding.className='';
+
+  const decision=byId('decision-summary');
+  decision.textContent='Unavailable until verified';
+  decision.className='';
+
+  byId('actual-digest').textContent='pending';
+  byId('trace-digest').textContent='pending';
+  byId('decision-state').textContent='VERIFICATION_REQUIRED';
+  byId('decision-state').className='decision-state failed';
+
+  const alert=byId('integrity-alert');
+  alert.innerHTML='<b>Verification pending.</b> Console will not present this package as verified until the browser digest matches the pinned value.';
+  alert.className='integrity-alert pending';
+
+  byId('decision-copy').textContent='Console will not expose a review state until the synthetic package passes digest verification.';
+  document.querySelectorAll('[data-evidence],[data-requirement]').forEach(el=>el.classList.remove('tampered'));
 }
 
 function renderVerification(result){
   lastVerification=result;
   const verified=result.verified;
   const state=verified?activePackage.decisionState:'UNAVAILABLE_FAIL_CLOSED';
+
   const trust=byId('trust-state');
-  const decision=byId('decision-state');
-  const actual=byId('actual-digest');
-  const banner=byId('verification-banner');
-  const traceDigest=byId('trace-digest');
+  trust.textContent=verified?'✓ SOURCE & DIGEST VERIFIED':'✕ DIGEST MISMATCH · FAIL CLOSED';
+  trust.className='cw-trust '+(verified?'verified':'rejected');
 
-  trust.textContent=verified?'VERIFIED':'REJECTED';
-  trust.className=`demo-status ${verified?'verified':'rejected'}`;
-  decision.textContent=state;
-  decision.className=`decision-state ${verified?'review':'failed'}`;
-  actual.textContent=result.actualDigest;
-  traceDigest.textContent=result.actualDigest.slice(0,16)+'…';
+  const headerState=byId('header-state');
+  headerState.textContent=verified?'AWAITING HUMAN REVIEW':'EVIDENCE REJECTED';
+  headerState.className='cw-state '+(verified?'review':'failed');
 
-  banner.innerHTML=verified
-    ? '<strong>Integrity verified.</strong><span>The synthetic payload matches the pinned SHA-256 digest. Console may present it for review, but cannot approve or execute it.</span>'
-    : '<strong>Fail closed.</strong><span>The synthetic payload no longer matches the pinned digest. Console refuses to present the altered package as verified evidence.</span>';
-  banner.className=`verification-banner ${verified?'verified':'rejected'}`;
+  const binding=byId('evidence-binding');
+  binding.textContent=verified?'Verified':'Rejected';
+  binding.className=verified?'pass':'failed';
+
+  const decision=byId('decision-summary');
+  decision.textContent=verified?'Human review':'Unavailable';
+  decision.className=verified?'reviewing':'failed';
+
+  byId('actual-digest').textContent=result.actualDigest;
+  byId('trace-digest').textContent=result.actualDigest.slice(0,16)+'…';
+  byId('decision-state').textContent=state;
+  byId('decision-state').className='decision-state '+(verified?'review':'failed');
+
+  const alert=byId('integrity-alert');
+  alert.innerHTML=verified
+    ? '<b>Integrity verified.</b> Synthetic evidence matches the pinned package digest and is eligible for review.'
+    : '<b>Fail closed.</b> The package digest changed. Console will not present the altered evidence as verified.';
+  alert.className='integrity-alert '+(verified?'verified':'rejected');
 
   byId('decision-copy').textContent=verified
-    ? 'Evidence is verified and reviewable. The demo stops here: an authorized human decision remains outside Console.'
-    : 'The altered package is not eligible for review as verified evidence. Restore the synthetic package and verify it again.';
+    ? 'The evidence is verified and reviewable. Console stops at human review and does not acquire approval or execution authority.'
+    : 'The altered package is not eligible for verified review. Restore the synthetic package before continuing.';
+
+  const tampered=activePackage.evidence.find(item=>item.artifact.includes('tampered'));
+  document.querySelectorAll('[data-evidence],[data-requirement]').forEach(el=>el.classList.remove('tampered'));
+  if(!verified&&tampered){
+    document.querySelectorAll(`[data-evidence="${tampered.id}"],[data-requirement="${tampered.requirementId}"]`).forEach(el=>el.classList.add('tampered'));
+  }
 }
 
 async function verifyPackage(){
+  renderPending();
   setBusy(true);
   try{
     const actualDigest=await sha256Hex(JSON.stringify(activePackage));
     renderVerification({verified:actualDigest===EXPECTED_DIGEST,actualDigest});
   }catch(error){
     renderVerification({verified:false,actualDigest:'verification-unavailable'});
-    byId('verification-banner').innerHTML=`<strong>Verification unavailable.</strong><span>${escapeHtml(error.message)}</span>`;
+    byId('integrity-alert').innerHTML='<b>Verification unavailable.</b> '+escapeHtml(error.message);
   }finally{
     setBusy(false);
   }
 }
 
-async function loadDemo(){
+async function restorePackage(){
+  renderPending();
+  clearRecordedReviewNote();
   activePackage=clonePackage();
-  renderPackageFields();
-  byId('demo-workbench').hidden=false;
-  byId('empty-state').hidden=true;
+  renderStaticPackage();
   await verifyPackage();
 }
 
-async function tamperDemo(){
-  if(!activePackage) await loadDemo();
+async function tamperEvidence(){
+  if(!activePackage) await restorePackage();
+  renderPending();
+  clearRecordedReviewNote();
+  setBusy(true);
   activePackage.evidence[2].artifact='dns-ownership.tampered.json';
   renderEvidence();
+  activateView('evidence');
   await verifyPackage();
 }
 
-async function restoreDemo(){
-  activePackage=clonePackage();
-  renderPackageFields();
-  await verifyPackage();
-}
-
-function exportDemo(){
+function exportReview(){
   if(!activePackage||!lastVerification) return;
   const summary={
     demo:'IaaP Console synthetic review',
@@ -177,6 +240,7 @@ function exportDemo(){
     expectedDigest:EXPECTED_DIGEST,
     actualDigest:lastVerification.actualDigest,
     decisionState:lastVerification.verified?activePackage.decisionState:'UNAVAILABLE_FAIL_CLOSED',
+    reviewerNote:recordedReviewNote,
     authority:activePackage.authority,
     notice:'Synthetic demonstration only. No approval, provisioning, deployment, or reconciliation authority.'
   };
@@ -191,22 +255,52 @@ function exportDemo(){
   URL.revokeObjectURL(url);
 }
 
-function activateTab(button){
-  const name=button.dataset.tab;
-  document.querySelectorAll('.demo-tab').forEach(tab=>{
-    const active=tab===button;
-    tab.classList.toggle('active',active);
-    tab.setAttribute('aria-selected',String(active));
+function clearRecordedReviewNote(){
+  recordedReviewNote='';
+  byId('note-status').textContent='Package state changed. Any previously recorded review note was invalidated.';
+}
+
+function recordReviewNote(){
+  const value=byId('review-note').value.trim();
+  const message=byId('note-status');
+  if(!value){
+    recordedReviewNote='';
+    message.textContent='Add a synthetic review note first.';
+    return;
+  }
+  recordedReviewNote=value;
+  message.textContent='Review note recorded locally for this browser session. No decision or approval was recorded.';
+}
+
+function activateView(name){
+  document.querySelectorAll('[data-view-target]').forEach(button=>{
+    const active=button.dataset.viewTarget===name;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-selected',String(active));
   });
-  document.querySelectorAll('.demo-panel').forEach(panel=>{
-    panel.hidden=panel.dataset.panel!==name;
+  document.querySelectorAll('[data-view]').forEach(panel=>{
+    panel.hidden=panel.dataset.view!==name;
   });
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  byId('load-demo').addEventListener('click',loadDemo);
-  byId('tamper-demo').addEventListener('click',tamperDemo);
-  byId('restore-demo').addEventListener('click',restoreDemo);
-  byId('export-demo').addEventListener('click',exportDemo);
-  document.querySelectorAll('.demo-tab').forEach(tab=>tab.addEventListener('click',()=>activateTab(tab)));
+document.addEventListener('DOMContentLoaded',async()=>{
+  document.querySelectorAll('[data-view-target]').forEach(button=>{
+    button.addEventListener('click',()=>activateView(button.dataset.viewTarget));
+  });
+  byId('tamper-demo').addEventListener('click',tamperEvidence);
+  byId('restore-demo').addEventListener('click',restorePackage);
+  byId('export-demo').addEventListener('click',exportReview);
+  byId('record-note').addEventListener('click',recordReviewNote);
+  byId('review-note').addEventListener('input',()=>{
+    const draft=byId('review-note').value.trim();
+    const status=byId('note-status');
+    if(recordedReviewNote&&draft!==recordedReviewNote){
+      status.textContent='Draft changed since the recorded note. Record Review Note again to include the new text in export.';
+    }else if(recordedReviewNote&&draft===recordedReviewNote){
+      status.textContent='Review note recorded locally for this browser session. No decision or approval was recorded.';
+    }else{
+      status.textContent='Synthetic note only. Nothing is persisted.';
+    }
+  });
+  await restorePackage();
 });

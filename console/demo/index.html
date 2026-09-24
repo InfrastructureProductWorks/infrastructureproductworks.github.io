@@ -10,12 +10,12 @@
 <link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#ffffff">
 <title>Console Synthetic Demo | Infrastructure Product Works</title>
-<meta name="description" content="A bounded synthetic IaaP Console demo showing package integrity verification, evidence traceability, findings and the human-review stop.">
+<meta name="description" content="Interactive synthetic IaaP Console workbench demonstrating digest verification, evidence review, traceability and the human-review boundary.">
 <link rel="stylesheet" href="/assets/site.css">
 <style>
-.demo-shell{max-width:1180px;margin:0 auto}.demo-notice{margin-top:22px;padding:12px 16px;border:1px solid #7dd3fc55;border-radius:14px;background:#071a2c;color:#d8e8f7;font-size:13px}.demo-actions{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0}.demo-actions button{appearance:none;border:1px solid #38bdf866;border-radius:10px;padding:11px 14px;background:#0d2438;color:#fff;font:800 13px/1.2 inherit;cursor:pointer}.demo-actions button.primary{background:#2563eb;border-color:#2563eb}.demo-actions button.danger{background:#381725;border-color:#ec489966}.demo-actions button:disabled{opacity:.55;cursor:not-allowed}.demo-empty{padding:42px;border:1px dashed #365875;border-radius:22px;text-align:center;background:#08182b}.demo-workbench{background:#f5f7fb;color:#17253b;border-radius:22px;overflow:hidden;box-shadow:0 28px 70px #0005}.demo-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 19px;background:#fff;border-bottom:1px solid #dbe4ee}.demo-head strong{font-size:15px}.demo-status{display:inline-flex;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.06em}.demo-status.verified{background:#e7f7ef;color:#126a3e}.demo-status.rejected{background:#fee8ee;color:#a11b45}.verification-banner{display:grid;gap:4px;padding:13px 18px;font-size:12px}.verification-banner.verified{background:#eaf8f1;color:#185f3e}.verification-banner.rejected{background:#fff0f3;color:#8f1d3f}.demo-tabs{display:flex;overflow:auto;background:#0c1d34;padding:0 10px}.demo-tab{appearance:none;border:0;border-bottom:3px solid transparent;background:transparent;color:#b8c9db;padding:13px 12px;font:800 11px/1.2 inherit;cursor:pointer;white-space:nowrap}.demo-tab.active{color:#fff;border-bottom-color:#38bdf8}.demo-panel{padding:22px}.demo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.demo-card{background:#fff;border:1px solid #dbe4ee;border-radius:11px;padding:13px}.demo-card small{display:block;font-size:10px;letter-spacing:.08em;color:#718197;font-weight:900}.demo-card strong{display:block;margin-top:5px;font-size:13px;overflow-wrap:anywhere}.demo-card code{display:block;margin-top:6px;font-size:10px;color:#3d5570;overflow-wrap:anywhere}.demo-list{display:grid;gap:8px}.demo-row,.demo-finding{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;background:#fff;border:1px solid #dbe4ee;border-radius:10px;padding:12px}.demo-row div{display:grid;gap:2px}.demo-row span,.demo-finding span{font-size:12px;color:#586b82}.demo-row code{font-size:11px;color:#526b85}.demo-finding{grid-template-columns:80px minmax(0,1fr) auto}.demo-pill{padding:4px 7px;border-radius:999px;font-size:10px;font-weight:900}.demo-pill.pass{background:#e8f7ef;color:#126a3e}.demo-pill.review{background:#fff1d6;color:#8a5a00}.trace-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:8px}.trace-node{background:#fff;border:1px solid #b9cbe0;border-radius:10px;padding:15px;text-align:center}.trace-node small{display:block;color:#718197;font-size:10px;font-weight:900;letter-spacing:.06em}.trace-node strong,.trace-node code{display:block;margin-top:5px;font-size:11px;overflow-wrap:anywhere}.trace-arrow{color:#2563eb;font-size:20px;font-weight:900}.decision-box{max-width:760px;margin:0 auto;text-align:center;background:#fff;border:1px solid #dbe4ee;border-radius:16px;padding:32px}.decision-state{display:inline-block;margin:8px 0 14px;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:950;letter-spacing:.05em}.decision-state.review{background:#fff1d6;color:#8a5a00}.decision-state.failed{background:#fee8ee;color:#a11b45}.authority-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}.authority-grid span{padding:10px;border-radius:8px;background:#f2f5f9;font-size:11px;font-weight:800;color:#5c6f86}.demo-boundary{margin-top:18px;padding:14px;border-radius:12px;background:#fff8e7;color:#765100;font-size:12px}.demo-explain{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}.demo-explain article{padding:18px;border:1px solid #244663;border-radius:16px;background:#0b1730}.demo-explain h3{font-size:15px;margin:5px 0}.demo-explain p{font-size:12px;color:#c0ccda;margin:0}@media(max-width:850px){.demo-grid,.demo-explain,.authority-grid{grid-template-columns:1fr 1fr}.trace-flow{grid-template-columns:1fr}.trace-arrow{transform:rotate(90deg);text-align:center}}@media(max-width:560px){.demo-grid,.demo-explain,.authority-grid{grid-template-columns:1fr}.demo-finding{grid-template-columns:70px 1fr}.demo-finding .demo-pill{grid-column:2;justify-self:start}.demo-head{align-items:flex-start;flex-direction:column}}
+.console-demo{max-width:1180px;margin:auto}.demo-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:22px 0}.demo-toolbar-copy{max-width:670px}.demo-toolbar-copy p{margin:3px 0 0;color:#c0ccda;font-size:13px}.demo-controls{display:flex;flex-wrap:wrap;gap:8px}.demo-controls button{appearance:none;border:1px solid #315473;border-radius:9px;padding:9px 12px;background:#0b1d32;color:#fff;font:800 12px/1.2 inherit;cursor:pointer}.demo-controls button.danger{background:#351526;border-color:#8b3155}.demo-controls button:disabled{opacity:.55;cursor:wait}.demo-boundary{padding:11px 14px;border:1px solid #244663;border-radius:12px;background:#091a2d;color:#d9e7f3;font-size:12px;margin-bottom:14px}.cw-shell{background:#f5f7fb;color:#17253b;border-radius:22px;overflow:hidden;box-shadow:0 25px 70px #0005}.cw-head{padding:15px 18px;background:#fff;border-bottom:1px solid #dbe4ee;display:flex;align-items:center;justify-content:space-between;gap:16px;font-weight:800}.cw-head b{color:#2563eb}.cw-state{padding:6px 9px;border-radius:999px;font-size:11px;white-space:nowrap;font-weight:900}.cw-state.review{border:1px solid #f2c46d;background:#fff8e7;color:#8a5a00}.cw-state.pending{border:1px solid #b8c7d8;background:#f2f5f9;color:#52657b}.cw-state.failed{border:1px solid #ef9aad;background:#fff1f4;color:#9a2040}.integrity-alert{padding:10px 18px;font-size:11px;border-bottom:1px solid #dbe4ee}.integrity-alert.pending{background:#f2f5f9;color:#52657b}.integrity-alert.verified{background:#ecf8f1;color:#145f3b}.integrity-alert.rejected{background:#fff0f3;color:#8d1f3e}.cw-body{display:grid;grid-template-columns:180px minmax(0,1fr) 260px;min-height:650px}.cw-nav{background:#0c1d34;color:#c9d6e5;padding:18px 12px}.cw-nav strong{display:block;color:#fff;padding:8px}.cw-nav button{display:block;width:100%;text-align:left;padding:9px;border:0;border-radius:7px;background:transparent;color:#c9d6e5;font:500 12px/1.3 inherit;cursor:pointer}.cw-nav button.active{background:#193956;color:#fff}.cw-main{padding:20px;min-width:0}.cw-title{display:flex;justify-content:space-between;gap:12px;align-items:start}.cw-title h3{font-size:25px;margin:0}.cw-sub{font-size:12px;color:#61738a;margin:5px 0}.cw-trust{font-size:11px;font-weight:900;white-space:nowrap}.cw-trust.pending{color:#607188}.cw-trust.verified{color:#16834c}.cw-trust.rejected{color:#a11b45}.cw-tabs{display:flex;gap:4px;overflow:auto;padding:14px 0 10px;border-bottom:1px solid #dbe4ee}.cw-tabs button{appearance:none;border:0;background:transparent;padding:4px 7px;color:#607188;font:800 10px/1.2 inherit;cursor:pointer;white-space:nowrap}.cw-tabs button.active{color:#2563eb}.cw-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.cw-metric,.cw-card{background:#fff;border:1px solid #dbe4ee;border-radius:11px;padding:12px}.cw-metric small,.cw-card small{display:block;font-size:10px;font-weight:900;letter-spacing:.06em;color:#6b7c91}.cw-metric b{display:block;font-size:15px;margin-top:5px}.cw-metric .pass{color:#16834c}.cw-metric .reviewing{color:#9a6400}.cw-metric .failed{color:#a11b45}.cw-grid{display:grid;grid-template-columns:1.25fr .9fr;gap:9px;margin-top:9px}.cw-card h4{font-size:14px;margin:6px 0 8px}.cw-card p,.cw-card li{font-size:11px;line-height:1.55;color:#586b82}.cw-card ul{padding-left:15px;margin-bottom:0}.cw-findings{display:grid;gap:6px;margin-top:8px}.cw-finding{display:grid;grid-template-columns:68px 1fr auto;align-items:center;gap:8px;padding:8px;border-radius:7px;background:#f7f9fc;font-size:11px}.cw-finding b{color:#17253b}.cw-finding.tampered{outline:2px solid #ec4899;background:#fff1f4}.cw-pill{padding:4px 6px;border-radius:999px;font-size:10px;font-weight:900}.cw-pill.pass{background:#e8f7ef;color:#126a3e}.cw-pill.review{background:#fff1d6;color:#8a5a00}.cw-trace{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:5px;margin-top:13px}.cw-trace span{padding:9px 5px;border:1px solid #b9cbe0;border-radius:7px;text-align:center;font-size:11px;background:#f8fafc}.cw-trace b{color:#2563eb}.cw-plan{grid-column:1/-1}.cw-plan-row{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:6px;margin-top:10px}.cw-plan-row span{padding:8px;border-radius:7px;background:#eef4fb;font-size:11px}.cw-plan-row b{color:#7c3aed}.cw-review{background:#fff;border-left:1px solid #dbe4ee;padding:18px}.cw-review h4{font-size:16px;margin:0 0 6px}.cw-review p{font-size:11px;line-height:1.5;color:#586b82}.cw-review label{display:block;margin:12px 0 5px;font-size:10px;font-weight:900;color:#51647b}.cw-marker{padding:9px;margin:7px 0;border:1px solid #dbe4ee;border-radius:7px;font-size:11px}.cw-marker b{display:block;color:#17253b}.cw-review textarea{width:100%;min-height:88px;padding:9px;border:1px solid #dbe4ee;border-radius:8px;background:#f8fafc;color:#42566e;font:500 11px/1.5 inherit;resize:vertical}.cw-action{width:100%;margin-top:8px;border:0;padding:10px;text-align:center;border-radius:7px;background:#2563eb;color:#fff;font:800 11px/1.2 inherit;cursor:pointer}.cw-boundary{margin-top:10px;padding:10px;border-radius:8px;background:#fff7e7;color:#795000!important}.note-status{margin-top:6px!important;color:#43617d!important}.detail-stack{display:grid;gap:8px;margin-top:12px}.evidence-item{display:grid;grid-template-columns:1.2fr .7fr 1fr;gap:10px;align-items:center;padding:11px;border:1px solid #dbe4ee;border-radius:9px;background:#fff}.evidence-item.tampered{outline:2px solid #ec4899;background:#fff1f4}.evidence-item div{display:grid;gap:3px}.evidence-item span{font-size:11px;color:#586b82}.evidence-item code{font-size:10px;color:#455d76;overflow-wrap:anywhere}.decision-box{text-align:center;background:#fff;border:1px solid #dbe4ee;border-radius:12px;padding:28px;margin-top:12px}.decision-state{display:inline-block;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:900}.decision-state.review{background:#fff1d6;color:#8a5a00}.decision-state.failed{background:#fee8ee;color:#a11b45}.decision-box p{max-width:650px;margin:12px auto;color:#586b82;font-size:12px}.authority-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}.authority-grid span{padding:9px;border-radius:8px;background:#f2f5f9;color:#5c6f86;font-size:10px;font-weight:900}.package-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}.package-grid div{background:#fff;border:1px solid #dbe4ee;border-radius:9px;padding:11px}.package-grid small{display:block;font-size:10px;font-weight:900;color:#6b7c91}.package-grid code,.package-grid strong{display:block;margin-top:5px;font-size:10px;color:#42566e;overflow-wrap:anywhere}.demo-footnotes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}.demo-footnotes article{padding:18px;border:1px solid #244663;border-radius:16px;background:#0b1730;color:#fff}.demo-footnotes h3{font-size:15px;margin:5px 0;color:#fff}.demo-footnotes p{font-size:11px;color:#c0ccda;margin:0}.demo-footnotes small{color:#7dd3fc;font-weight:900;letter-spacing:.08em}@media(max-width:1020px){.cw-body{grid-template-columns:1fr}.cw-nav{display:flex;overflow:auto;gap:4px;padding:10px}.cw-nav strong{display:none}.cw-nav button{width:auto;white-space:nowrap}.cw-review{border-left:0;border-top:1px solid #dbe4ee}.cw-summary{grid-template-columns:1fr 1fr}.demo-footnotes{grid-template-columns:1fr}.evidence-item{grid-template-columns:1fr 1fr}.evidence-item div:first-child{grid-column:1/-1}}@media(max-width:640px){.demo-toolbar{align-items:flex-start}.demo-controls{width:100%}.demo-controls button{flex:1 1 44%}.cw-summary,.cw-grid,.package-grid,.authority-grid{grid-template-columns:1fr}.cw-plan{grid-column:1}.cw-head{align-items:flex-start;flex-direction:column}.cw-title{display:block}.cw-trust{display:block;margin-top:6px;white-space:normal}.cw-trace,.cw-plan-row{grid-template-columns:1fr}.cw-trace b,.cw-plan-row b{transform:rotate(90deg);text-align:center}.cw-finding{grid-template-columns:68px 1fr}.cw-finding .cw-pill{grid-column:2;justify-self:start}.evidence-item{grid-template-columns:1fr}.evidence-item div:first-child{grid-column:auto}.cw-main{padding:14px}.cw-review{padding:14px}}
 </style>
-<script src="/assets/console-demo.js" defer></script>
+<script src="/assets/console-demo.js?v=9819cd0df307274f7c0d94e0d37623d346701136" defer></script>
 </head>
 <body>
 <header>
@@ -23,102 +23,120 @@
 <nav>
 <a href="/">Home</a><a href="/portfolio/">Portfolio Status</a>
 <details class="nav-products"><summary>Products</summary><div class="nav-menu">
-<a href="/storefront/"><small>EXPERIENCE</small>Storefront</a>
-<a href="/guard/"><small>VALIDATE</small>IaaP Guard</a>
-<a href="/forge/"><small>CONSTRUCT</small>IaaP Forge</a>
-<a href="/console/"><small>REVIEW</small>IaaP Console</a>
-<a href="/assurance/"><small>ASSURE</small>IaaP Assurance</a>
-<a href="/crossplane/"><small>ARCHITECTURE</small>Crossplane Control Plane</a>
+<a href="/storefront/"><small>EXPERIENCE</small>Storefront</a><a href="/guard/"><small>VALIDATE</small>IaaP Guard</a><a href="/forge/"><small>CONSTRUCT</small>IaaP Forge</a><a href="/console/"><small>REVIEW</small>IaaP Console</a><a href="/assurance/"><small>ASSURE</small>IaaP Assurance</a><a href="/crossplane/"><small>ARCHITECTURE</small>Crossplane Control Plane</a>
 </div></details>
 <a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/docs/guard/">Docs</a>
 </nav>
-<details class="mobile-nav"><summary>Menu</summary><div class="nav-menu">
-<a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><a href="/storefront/">Storefront</a><a href="/guard/">IaaP Guard</a><a href="/forge/">IaaP Forge</a><a href="/console/">IaaP Console</a><a href="/assurance/">IaaP Assurance</a><a href="/crossplane/">Crossplane</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a>
-</div></details>
+<details class="mobile-nav"><summary>Menu</summary><div class="nav-menu"><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><a href="/storefront/">Storefront</a><a href="/guard/">IaaP Guard</a><a href="/forge/">IaaP Forge</a><a href="/console/">IaaP Console</a><a href="/assurance/">IaaP Assurance</a><a href="/crossplane/">Crossplane</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/docs/guard/">Documentation</a><a href="/support/">Support</a></div></details>
 </header>
 <main>
 <section class="hero">
-<p class="eyebrow">IAAP CONSOLE · SYNTHETIC DEMO</p>
-<h1>Verify the evidence.<br><em>Stop before authority.</em></h1>
-<p class="lede">This public demo loads one synthetic assessment package, verifies its pinned SHA-256 digest in your browser, exposes requirements and traceability, and stops at <strong>AWAITING_HUMAN_REVIEW</strong>.</p>
+<p class="eyebrow">IAAP CONSOLE · INTERACTIVE SYNTHETIC WORKBENCH</p>
+<h1>Review verified evidence.<br><em>Keep authority outside the UI.</em></h1>
+<p class="lede">The same Console workbench shown on the product page is interactive here. A fixed synthetic package is verified locally in your browser before it is presented for review.</p>
 <div class="actions"><a class="button ghost" href="/console/">Back to Console</a></div>
 </section>
 <section class="visual-section">
-<div class="demo-shell">
-<div class="demo-notice"><strong>SYNTHETIC ONLY.</strong> No live connectors, customer data, credentials, approvals, provisioning, deployment or reconciliation. Everything on this page runs locally in the browser from a fixed demonstration package.</div>
-<div class="demo-actions">
-<button id="load-demo" class="primary" type="button">Load Synthetic Assessment</button>
-<button id="tamper-demo" class="danger" type="button">Tamper Synthetic Evidence</button>
-<button id="restore-demo" type="button">Restore Verified Package</button>
-<button id="export-demo" type="button">Export Synthetic Review Summary</button>
-</div>
-<div id="empty-state" class="demo-empty">
-<p class="eyebrow">START HERE</p>
-<h2>Load the bounded demonstration package.</h2>
-<p>Console will compute the package digest locally and compare it to the pinned expected digest before presenting it as verified evidence.</p>
-</div>
-<div id="demo-workbench" class="demo-workbench" hidden>
-<div class="demo-head"><strong>IaaP Console · Synthetic Evidence Review</strong><span id="trust-state" class="demo-status">NOT VERIFIED</span></div>
-<div id="verification-banner" class="verification-banner"><strong>Verification pending.</strong></div>
-<div class="demo-tabs" role="tablist" aria-label="Console demo views">
-<button class="demo-tab active" type="button" role="tab" aria-selected="true" data-tab="overview">OVERVIEW</button>
-<button class="demo-tab" type="button" role="tab" aria-selected="false" data-tab="requirements">REQUIREMENTS</button>
-<button class="demo-tab" type="button" role="tab" aria-selected="false" data-tab="evidence">EVIDENCE</button>
-<button class="demo-tab" type="button" role="tab" aria-selected="false" data-tab="findings">FINDINGS</button>
-<button class="demo-tab" type="button" role="tab" aria-selected="false" data-tab="traceability">TRACEABILITY</button>
-<button class="demo-tab" type="button" role="tab" aria-selected="false" data-tab="decision">DECISION STATUS</button>
-</div>
-<section class="demo-panel" data-panel="overview">
-<div class="demo-grid">
-<article class="demo-card"><small>PACKAGE</small><strong id="package-id"></strong></article>
-<article class="demo-card"><small>ASSESSMENT</small><strong id="assessment-id"></strong></article>
-<article class="demo-card"><small>PROFILE</small><strong id="profile-id"></strong></article>
-<article class="demo-card"><small>SCOPE</small><strong id="scope-id"></strong></article>
-</div>
-<div class="demo-grid" style="margin-top:10px">
-<article class="demo-card"><small>SOURCE</small><strong id="source-id"></strong></article>
-<article class="demo-card" style="grid-column:span 3"><small>EXPECTED SHA-256</small><code id="expected-digest"></code><small style="margin-top:8px">ACTUAL SHA-256</small><code id="actual-digest"></code></article>
-</div>
-</section>
-<section class="demo-panel" data-panel="requirements" hidden><div id="requirements-list" class="demo-list"></div></section>
-<section class="demo-panel" data-panel="evidence" hidden><div id="evidence-list" class="demo-list"></div></section>
-<section class="demo-panel" data-panel="findings" hidden><div id="findings-list" class="demo-list"></div></section>
-<section class="demo-panel" data-panel="traceability" hidden>
-<div class="trace-flow">
-<div class="trace-node"><small>SOURCE</small><strong>IaaP Guard</strong></div><b class="trace-arrow">→</b>
-<div class="trace-node"><small>DIGEST</small><code id="trace-digest">pending</code></div><b class="trace-arrow">→</b>
-<div class="trace-node"><small>ASSESSMENT</small><strong>ASSESS-482</strong></div><b class="trace-arrow">→</b>
-<div class="trace-node"><small>BOUNDARY</small><strong>Human Review</strong></div>
-</div>
-<div class="demo-boundary"><strong>Traceability does not transfer authority.</strong> The source owns its assessment facts; Console verifies and presents the package for review.</div>
-</section>
-<section class="demo-panel" data-panel="decision" hidden>
-<div class="decision-box">
-<p class="eyebrow">DECISION BOUNDARY</p>
-<h2>Console stops here.</h2>
-<div id="decision-state" class="decision-state review">AWAITING_HUMAN_REVIEW</div>
-<p id="decision-copy">Evidence is verified and reviewable. The demo stops here: an authorized human decision remains outside Console.</p>
-<div class="authority-grid"><span>APPROVE · FALSE</span><span>PROVISION · FALSE</span><span>DEPLOY · FALSE</span><span>RECONCILE · FALSE</span></div>
-</div>
-</section>
-</div>
-<div class="demo-explain">
-<article><small>VERIFY</small><h3>Digest-bound evidence</h3><p>The browser computes SHA-256 over the complete synthetic package and compares it to the pinned expected digest.</p></article>
-<article><small>FAIL CLOSED</small><h3>Tampering is visible</h3><p>Change one synthetic evidence reference and the digest no longer matches. Console refuses to call the altered package verified.</p></article>
-<article><small>HUMAN AUTHORITY</small><h3>Review is the stop</h3><p>A verified package can be organized and understood here, but approval and infrastructure execution remain outside Console.</p></article>
+<div class="console-demo">
+<div class="demo-boundary"><strong>SYNTHETIC ONLY.</strong> No live connectors, customer data, credentials, approvals, provisioning, deployment or reconciliation. The fixed package is verified with browser-side SHA-256 and the workbench stops at human review.</div>
+<div class="demo-toolbar">
+<div class="demo-toolbar-copy"><p class="eyebrow">DEMO CONTROLS</p><p>Tamper with one synthetic evidence reference to see the workbench fail closed, then restore the verified package.</p></div>
+<div class="demo-controls">
+<button id="tamper-demo" class="danger" data-demo-action type="button">Tamper Evidence</button>
+<button id="restore-demo" data-demo-action type="button">Restore Verified Package</button>
+<button id="export-demo" data-demo-action type="button">Export Review Summary</button>
 </div>
 </div>
-</section>
-<section class="boundary">
-<p class="eyebrow">DEMO BOUNDARY</p>
-<h2>Useful enough to understand the product. Bounded enough to stay honest.</h2>
-<p>This demonstration intentionally avoids uploads, accounts, live APIs and hidden automation. It illustrates integrity verification, traceability and review-state behavior without claiming production connectivity or decision authority.</p>
+<div class="cw-shell">
+<div class="cw-head">
+<div><b>◈</b> IaaP Console · Evidence Review Workspace</div>
+<span id="header-state" class="cw-state pending">VERIFICATION PENDING</span>
+</div>
+<div id="integrity-alert" class="integrity-alert pending"><b>Verification pending.</b> Console will not present this package as verified until the browser digest matches the pinned value.</div>
+<div class="cw-body">
+<aside class="cw-nav" aria-label="Console demo navigation">
+<strong>Console</strong>
+<button class="active" type="button" data-view-target="overview" aria-selected="true">Review Queue</button>
+<button type="button" data-view-target="findings" aria-selected="false">Guard Findings</button>
+<button type="button" data-view-target="product" aria-selected="false">Product Context</button>
+<button type="button" data-view-target="planning" aria-selected="false">Planning Trace</button>
+<button type="button" data-view-target="evidence" aria-selected="false">Evidence Library</button>
+<button type="button" data-view-target="traceability" aria-selected="false">Traceability</button>
+<button type="button" data-view-target="decision" aria-selected="false">Decision State</button>
+</aside>
+<div class="cw-main">
+<div class="cw-title">
+<div><h3 id="change-title">Managed Interconnect · Change 482</h3><p id="change-summary" class="cw-sub">Add GCP support while preserving the AWS and Azure consumer contract</p></div>
+<span id="trust-state" class="cw-trust pending">… VERIFYING SOURCE &amp; DIGEST</span>
+</div>
+<div class="cw-tabs" role="tablist" aria-label="Workbench views">
+<button class="active" type="button" data-view-target="overview" aria-selected="true">OVERVIEW</button>
+<button type="button" data-view-target="findings" aria-selected="false">FINDINGS</button>
+<button type="button" data-view-target="product" aria-selected="false">PRODUCT</button>
+<button type="button" data-view-target="planning" aria-selected="false">PLANNING</button>
+<button type="button" data-view-target="traceability" aria-selected="false">TRACEABILITY</button>
+<button type="button" data-view-target="evidence" aria-selected="false">EVIDENCE</button>
+<button type="button" data-view-target="decision" aria-selected="false">DECISION</button>
+</div>
+
+<div data-view="overview">
+<div class="cw-summary">
+<article class="cw-metric"><small>GUARD ASSESSMENT</small><b id="guard-summary" class="pass">18 passed · 2 review</b></article>
+<article class="cw-metric"><small>FORGE PRODUCT</small><b id="forge-product">Managed Interconnect v1.3</b></article>
+<article class="cw-metric"><small>EVIDENCE BINDING</small><b id="evidence-binding">Pending</b></article>
+<article class="cw-metric"><small>DECISION STATE</small><b id="decision-summary">Unavailable until verified</b></article>
+</div>
+<div class="cw-grid">
+<article class="cw-card"><small>GUARD FINDINGS</small><h4>What requires attention</h4><div id="overview-findings" class="cw-findings"></div></article>
+<article class="cw-card"><small>PRODUCT CONTEXT</small><h4>What Forge is proposing</h4><p><b>Outcome:</b> <span id="forge-outcome"></span></p><p><b>Consumer choices:</b> <span id="forge-choices"></span></p><p><b>Platform-owned:</b> <span id="forge-owned"></span></p></article>
+<article class="cw-card"><small>TRACEABILITY</small><h4>One verifiable evidence chain</h4><div class="cw-trace"><span>Source<br>revision</span><b>→</b><span>Guard<br>digest</span><b>→</b><span>Human<br>review</span></div><p>Displayed findings remain tied to the verified synthetic producer record.</p></article>
+<article class="cw-card"><small>REVIEW READINESS</small><h4>Material needed for the human decision</h4><ul><li>Assessment and exceptions</li><li>Product context</li><li>Owner acknowledgments</li><li>Evidence manifest and source history</li></ul></article>
+<article class="cw-card cw-plan"><small>OKR → EPIC → FEATURE TRACE</small><h4>Why this change exists</h4><div class="cw-plan-row"><span><b>OKR</b><br><span id="plan-okr"></span></span><b>→</b><span><b>Epic</b><br><span id="plan-epic"></span></span><b>→</b><span><b>Feature</b><br><span id="plan-feature"></span></span></div></article>
+</div>
+</div>
+
+<div data-view="findings" hidden><div class="cw-card" style="margin-top:12px"><small>GUARD FINDINGS</small><h4>Assessment results carried into Console</h4><div id="findings-detail" class="cw-findings"></div></div></div>
+
+<div data-view="product" hidden><div class="cw-card" style="margin-top:12px"><small>FORGE PRODUCT CONTEXT</small><h4>Managed Interconnect v1.3</h4><p><b>Outcome:</b> <span id="forge-outcome-copy">Private, encrypted, highly available interconnect</span></p><p>Console presents this context for review. It does not alter the product contract or acquire Forge authority.</p></div></div>
+
+<div data-view="planning" hidden><div class="cw-card cw-plan" style="margin-top:12px"><small>PLANNING TRACE</small><h4>Strategy to bounded implementation</h4><div class="cw-plan-row"><span><b>OKR</b><br>Expand governed multi-cloud products</span><b>→</b><span><b>Epic</b><br>Managed Interconnect provider expansion</span><b>→</b><span><b>Feature</b><br>Add bounded GCP implementation</span></div></div></div>
+
+<div data-view="evidence" hidden><div class="detail-stack" id="evidence-detail"></div><div class="package-grid"><div><small>PACKAGE</small><strong id="package-id"></strong></div><div><small>ASSESSMENT</small><strong id="assessment-id"></strong></div><div><small>PROFILE</small><code id="profile-id"></code></div><div><small>SCOPE</small><code id="scope-id"></code></div></div></div>
+
+<div data-view="traceability" hidden>
+<div class="cw-card" style="margin-top:12px"><small>TRACEABILITY</small><h4>Verified source and digest chain</h4><div class="cw-trace"><span>Source<br><code id="source-revision"></code></span><b>→</b><span>SHA-256<br><code id="trace-digest"></code></span><b>→</b><span>Human<br>review</span></div></div>
+<div class="package-grid"><div><small>EXPECTED SHA-256</small><code id="expected-digest"></code></div><div><small>ACTUAL SHA-256</small><code id="actual-digest"></code></div></div>
+</div>
+
+<div data-view="decision" hidden>
+<div class="decision-box"><small>DECISION BOUNDARY</small><h3>Console stops here.</h3><span id="decision-state" class="decision-state failed">VERIFICATION_REQUIRED</span><p id="decision-copy">Console will not expose a review state until the synthetic package passes digest verification.</p><div class="authority-grid"><span>APPROVE · FALSE</span><span>PROVISION · FALSE</span><span>DEPLOY · FALSE</span><span>RECONCILE · FALSE</span></div></div>
+</div>
+</div>
+
+<aside class="cw-review">
+<h4>Reviewer Workspace</h4>
+<p>Review context is kept separate from producer verdicts and product proposals.</p>
+<label>MATERIALITY MARKERS</label>
+<div class="cw-marker"><b>Architecture</b>Provider behavior changes</div>
+<div class="cw-marker"><b>Security</b>No control weakening detected</div>
+<div class="cw-marker"><b>Cost</b>Estimate acknowledgment needed</div>
+<label for="review-note">REVIEW NOTE</label>
+<textarea id="review-note">Confirm DNS ownership and the planning estimate with accountable domain owners.</textarea>
+<button id="record-note" class="cw-action" type="button">Record Review Note</button>
+<p id="note-status" class="note-status">Synthetic note only. Nothing is persisted.</p>
+<p class="cw-boundary"><b>No approval control.</b><br>Console records context and exports verified evidence. Authorized decisions remain outside this application.</p>
+</aside>
+</div>
+</div>
+
+<div class="demo-footnotes">
+<article><small>ONE RECORD</small><h3>Every team reviews the same evidence.</h3><p>Architecture, Security, Platform, Product and Audit can use different lenses without copying producer material.</p></article>
+<article><small>FAIL CLOSED</small><h3>Tampering changes the workbench state.</h3><p>The synthetic package becomes rejected and the altered evidence is highlighted instead of being displayed as verified.</p></article>
+<article><small>AUTHORITY</small><h3>The workflow stops at human review.</h3><p>The demo can organize, explain and export review context. It cannot approve, deploy, provision or reconcile infrastructure.</p></article>
+</div>
+</div>
 </section>
 </main>
-<footer>
-<strong>IaaP Console™</strong>
-<div><a href="/console/">Console</a><a href="/work/">The Work</a><a href="/guard/">Guard</a><a href="/forge/">Forge</a></div>
-<p>Synthetic evidence · local verification · human review boundary</p>
-</footer>
+<footer><strong>IaaP Console™</strong><div><a href="/console/">Console</a><a href="/work/">The Work</a><a href="/guard/">Guard</a><a href="/forge/">Forge</a></div><p>Verified evidence · human review · organization-controlled visibility</p></footer>
 </body>
 </html>
