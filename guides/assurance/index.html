@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IaaP Assurance User Guide | Infrastructure Product Works</title><meta name="description" content="Work through Sentry, Shield, custody, and the Portal; understand allowed, denied, and rolled-back outcomes.">
+<link rel="icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><meta name="theme-color" content="#ffffff">
+<link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/guides.css?v=2de5b949c1d5d153679ff6424ffa26f655fab91c"></head>
+<body class="guide-page"><a class="guide-skip" href="#guide-content">Skip to instructions</a><header><a class="brand" href="/">Infrastructure <span>Product Works</span></a><nav><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><details class="nav-products"><summary>Products</summary><div class="nav-menu"><a href="/storefront/"><small>EXPERIENCE</small>Storefront</a><a href="/guard/"><small>VALIDATE</small>IaaP Guard</a><a href="/forge/"><small>CONSTRUCT</small>IaaP Forge</a><a href="/console/"><small>REVIEW</small>IaaP Console</a><a href="/assurance/"><small>ASSURE</small>IaaP Assurance</a><a href="/crossplane/"><small>ARCHITECTURE</small>Crossplane Control Plane</a></div></details><a href="/operating-model/">How It Works</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/guides/">Guides</a></nav><details class="mobile-nav"><summary>Menu</summary><div class="nav-menu"><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><a href="/operating-model/">How It Works</a><a href="/storefront/">Storefront</a><a href="/guard/">IaaP Guard</a><a href="/forge/">IaaP Forge</a><a href="/console/">IaaP Console</a><a href="/assurance/">IaaP Assurance</a><a href="/crossplane/">Crossplane</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/guides/">User guides</a><a href="/support/">Support</a></div></details></header>
+<main id="guide-content"><section class="guide-hero"><p class="guide-breadcrumb"><a href="/guides/">User guides</a> / IaaP Assurance</p><p class="eyebrow">EXPLORE BOUNDED AUTHORITY</p><h1>IaaP Assurance User Guide</h1><p class="lede">Work through Sentry, Shield, custody, and the Portal; understand allowed, denied, and rolled-back outcomes.</p><p class="guide-meta">Updated September 24, 2026 · Read in your browser or print from the browser menu.</p><div class="actions"><a class="button" href="/assurance/demo/" target="_blank" rel="noopener noreferrer">Open Assurance demo <span aria-hidden="true">↗</span><span class="guide-new-tab"> (new tab)</span></a><a class="button ghost" href="/assurance/portal/" target="_blank" rel="noopener noreferrer">Open Assurance Portal</a><a class="button ghost" href="/assurance/">Product overview</a></div></section>
+<div class="guide-layout"><nav class="guide-toc" aria-label="On this page"><strong>On this page</strong><ol><li><a href="#open-assurance-and-understand-the-views">Open Assurance and understand the views</a></li><li><a href="#complete-the-sentry-predeployment-exercise">Complete the Sentry predeployment exercise</a></li><li><a href="#complete-the-shield-runtime-exercise">Complete the Shield runtime exercise</a></li><li><a href="#test-the-runtime-exception-paths">Test the runtime exception paths</a></li><li><a href="#understand-independent-requests">Understand independent requests</a></li><li><a href="#export-the-runtime-decision-record">Export the runtime decision record</a></li><li><a href="#complete-the-custody-exercise">Complete the custody exercise</a></li><li><a href="#read-the-assurance-portal">Read the Assurance Portal</a></li><li><a href="#troubleshooting-and-completion">Troubleshooting and completion</a></li><li><a href="#references">References</a></li></ol></nav><div><details class="guide-jump"><summary>Jump to a step</summary><ol><li><a href="#open-assurance-and-understand-the-views">Open Assurance and understand the views</a></li><li><a href="#complete-the-sentry-predeployment-exercise">Complete the Sentry predeployment exercise</a></li><li><a href="#complete-the-shield-runtime-exercise">Complete the Shield runtime exercise</a></li><li><a href="#test-the-runtime-exception-paths">Test the runtime exception paths</a></li><li><a href="#understand-independent-requests">Understand independent requests</a></li><li><a href="#export-the-runtime-decision-record">Export the runtime decision record</a></li><li><a href="#complete-the-custody-exercise">Complete the custody exercise</a></li><li><a href="#read-the-assurance-portal">Read the Assurance Portal</a></li><li><a href="#troubleshooting-and-completion">Troubleshooting and completion</a></li><li><a href="#references">References</a></li></ol></details><article class="guide-article" aria-label="IaaP Assurance instructions"><p>Use this guide to inspect a predeployment decision, evaluate bounded runtime authority, replay protected-data custody outcomes, export a runtime record, and read the sanitized Portal. All examples in these interfaces are synthetic.</p>
+<h2 id="open-assurance-and-understand-the-views">1 Open Assurance and understand the views</h2>
+<p>Open the <a href="https://infrastructureproductworks.com/assurance/demo/">Assurance demo</a>. It uses preloaded fixtures and requires no credentials, customer records, or uploaded Authority Package.</p>
+<div class="guide-table" role="region" tabindex="0" aria-label="Table: View, Current capability"><table><thead><tr><th scope="col">View</th><th scope="col">Current capability</th></tr></thead><tbody><tr><td>Sentry · Predeployment</td><td>Proposed operating-profile preview using the protected-storage policy example.</td></tr><tr><td>Shield · Runtime</td><td>Interactive browser simulation of bounded Gate 5 runtime reconciliation.</td></tr><tr><td>Protected Data Custody</td><td>Replay of fixed Gate 6 custody proof outcomes.</td></tr><tr><td>Assurance Portal</td><td>Separate sanitized fixture presentation of authority, evidence, review, and service posture.</td></tr></tbody></table></div>
+<p>The demo opens in Shield. The displayed validity times use a fixed fixture clock. A historical timestamp shown as active at fixture time is not live authorization today.</p>
+<h2 id="complete-the-sentry-predeployment-exercise">2 Complete the Sentry predeployment exercise</h2>
+<ol>
+<li>Select <strong>Sentry · Predeployment</strong>.</li>
+<li>Select <strong>Policy Violation</strong>.</li>
+<li>Inspect the normalized storage candidate. It has public access enabled and an open critical finding.</li>
+<li>Read the candidate and finding digests, the control reference, and the proposed correction to <code>/attributes/public_access</code>.</li>
+<li>Confirm <strong>DENY</strong> with reason <code>PROTECTED_STORAGE_PUBLIC_ACCESS</code>.</li>
+<li>Select <strong>Bounded Correction</strong>. The fixture now represents public access set to false and the finding resolved after a synthetic rescan.</li>
+<li>Confirm <strong>ALLOW</strong> with reason <code>BOUNDED_CORRECTION_VERIFIED</code>.</li>
+<li>Read <strong>Preview Provenance</strong>, including the profile status and proof basis.</li>
+</ol>
+<p>The expected learning outcome is the complete deny, correct, rescan, and reevaluate sequence. Choosing Bounded Correction selects the corrected fixture; it does not modify a real resource. Sentry remains a proposed operating-profile preview, even when this example returns ALLOW.</p>
+<h2 id="complete-the-shield-runtime-exercise">3 Complete the Shield runtime exercise</h2>
+<ol>
+<li>Select <strong>Shield · Runtime</strong>, then <strong>Valid Authority</strong>.</li>
+<li>Review the <strong>Authority Package</strong>: authority ID, requester, purpose, validity window, fixture clock, package digests, and the two distinct approvers.</li>
+<li>Review <strong>Requested Action</strong>. The example changes <code>public_access</code> from true to false on one synthetic storage resource.</li>
+<li>Check the desired and observed state digests and the one-resource blast radius.</li>
+<li>Review all deterministic checks: package binding, time window, identity and purpose, exact scope, distinct approvers, state digests, managed field, rollback, and notification.</li>
+<li>Select <strong>Run Assurance Gate</strong> if you want to rerun the active scenario. Selecting a scenario also reevaluates it.</li>
+<li>Confirm <strong>ALLOW → APPLIED</strong> with reason <code>RECONCILIATION_APPLIED</code>.</li>
+<li>Read <strong>Evidence Handoff Preview</strong> and match its request, resource, decision, and record digest to the active scenario.</li>
+</ol>
+<p>APPLIED refers to the synthetic example. The browser does not call a cloud provider or apply a production change.</p>
+<h2 id="test-the-runtime-exception-paths">4 Test the runtime exception paths</h2>
+<p>Choose each condition and wait for the result to update. Read the failed check and reason code before moving to the next example.</p>
+<div class="guide-table" role="region" tabindex="0" aria-label="Table: Control, Expected behavior"><table><thead><tr><th scope="col">Control</th><th scope="col">Expected behavior</th></tr></thead><tbody><tr><td>Expire Authority</td><td>Deny the request because the fixture time is beyond the validity window.</td></tr><tr><td>Broaden Scope</td><td>Deny an attempt to exceed the permitted resource scope.</td></tr><tr><td>Remove Approver</td><td>Deny because the required distinct-approver threshold is no longer met.</td></tr><tr><td>Change Digest</td><td>Deny because the presented state digest does not match the fixed state.</td></tr><tr><td>Fail Verification</td><td>Allow the bounded attempt, then show ROLLED BACK when verification fails and rollback succeeds.</td></tr><tr><td>Valid Authority</td><td>Return to the baseline allowed and applied synthetic example.</td></tr></tbody></table></div>
+<p>For <strong>Fail Verification</strong>, expect reason <code>VERIFICATION_FAILED_ROLLBACK_SUCCEEDED</code>. Distinguish the initial authorization decision from the final action result: ALLOW can accompany ROLLED BACK.</p>
+<p>These controls let you understand a failure. They do not give a user a way to remove required approvers, extend real authority, or override a policy denial.</p>
+<h2 id="understand-independent-requests">5 Understand independent requests</h2>
+<p>In the Shield view, the three request cards are evaluated independently:</p>
+<div class="guide-table" role="region" tabindex="0" aria-label="Table: Request, Result"><table><thead><tr><th scope="col">Request</th><th scope="col">Result</th></tr></thead><tbody><tr><td>ORDER-482</td><td>Valid authority; ALLOW and APPLIED.</td></tr><tr><td>ORDER-483</td><td>Expired authority; DENY and NO ACTION.</td></tr><tr><td>ORDER-484</td><td>Missing required approver; DENY and REVIEW REQUIRED.</td></tr></tbody></table></div>
+<p>One allowed request does not authorize another request. These cards are fixed demonstrations, not selectable live orders. The scenario controls beneath them operate the separate detailed runtime example; they do not turn the cards into an operational queue.</p>
+<p>The same order numbers may appear in Console. Matching labels do not establish a connected transaction between these public demos.</p>
+<h2 id="export-the-runtime-decision-record">6 Export the runtime decision record</h2>
+<ol>
+<li>In <strong>Shield · Runtime</strong>, select the scenario whose result you need to retain.</li>
+<li>Confirm evaluation has completed and read the final decision and action outcome.</li>
+<li>Select <strong>Export Record Preview</strong>.</li>
+<li>Save <code>iaap-assurance-synthetic-decision-record.json</code>. Rename a retained copy with the scenario name if comparing several runs.</li>
+<li>Inspect the downloaded record&#x27;s request, resource, decision, outcome, reason, and digest fields against the screen.</li>
+</ol>
+<p>Export belongs to the detailed active runtime scenario, not all three request cards. It is a synthetic record preview. Downloading it does not put evidence in an independent custodian&#x27;s durable store.</p>
+<p>Sentry and the custody replay do not expose that Shield record-export control. Do not describe a Shield export as proof from another view.</p>
+<h2 id="complete-the-custody-exercise">7 Complete the custody exercise</h2>
+<ol>
+<li>Select <strong>Protected Data Custody</strong> and <strong>Authorized Access</strong>.</li>
+<li>Inspect the READ request, object, parent, purpose, subject, recipient, destination, retention floor, request digest, and delegated authority digest.</li>
+<li>Confirm <strong>ALLOW</strong> with reason <strong>AUTHORIZED</strong>, along with the displayed attenuation and custody checks.</li>
+<li>Select <strong>Authorized Transfer</strong>. Inspect the child object&#x27;s parent reference and inherited restrictions. Confirm the fixed transfer outcome is allowed.</li>
+<li>Select <strong>Broaden Delegation</strong>. Confirm attenuation fails and the result is <strong>DENY</strong>, reason <code>DELEGATION_BROADENED</code>.</li>
+<li>Select <strong>Suppress Audit</strong>. Confirm <strong>DENY</strong>, reason <code>AUDIT_SUPPRESSION_ATTEMPT</code>, and that the attempted suppression is represented in the audit path.</li>
+<li>Review the engine, policy, and adapter identities under <strong>Provenance</strong>.</li>
+</ol>
+<p>These steps replay accepted fixed examples. They do not read or transfer real protected data. Verified labels refer to the synthetic proof, not the present condition of a production service.</p>
+<h2 id="read-the-assurance-portal">8 Read the Assurance Portal</h2>
+<p>Open <a href="https://infrastructureproductworks.com/assurance/portal/">Assurance Portal</a>.</p>
+<ol>
+<li>Review the independent request outcomes at the top and the overall fixture posture.</li>
+<li>Select <strong>Runtime Reconciliation Proof</strong> in the service list.</li>
+<li>Read the predeployment result, runtime authority, runtime state, evidence completeness, service health, and cost visibility separately.</li>
+<li>Inspect the sanitized authority summary and timeline.</li>
+<li>Select <strong>Protected Storage Predeployment Proof</strong>. Compare its predeployment correction path with its <strong>NOT REQUESTED</strong> runtime authority and <strong>NO ACTION</strong> runtime state.</li>
+<li>Read the high-impact review state, disclosure boundary, and evidence summaries.</li>
+</ol>
+<p><strong>NOT OBSERVED</strong> means the Portal has no service-health observation. <strong>NOT MODELED</strong> means a value such as cost is not modeled. Neither means healthy, zero cost, or failed. <strong>SEPARATE PROOF</strong> and <strong>SEPARATE PROOFS VERIFIED</strong> do not claim a continuous transaction across Gates 3, 5, and 6.</p>
+<p>The displayed open-review count and review entries belong to the fixed Portal model. They are not a live count of every denial displayed elsewhere. There is no resolve, approve, export, or execute control on this Portal view.</p>
+<h2 id="troubleshooting-and-completion">9 Troubleshooting and completion</h2>
+<p><strong>The result did not change.</strong> Confirm the intended view and scenario are selected. In Shield, use Run Assurance Gate after checking the active scenario label.</p>
+<p><strong>The dates appear expired.</strong> Compare the validity window with the displayed fixture clock. The demonstration intentionally uses recorded times.</p>
+<p><strong>A downloaded record seems wrong.</strong> Return to Shield, select the required scenario, wait for its result, and export again. Preserve each scenario&#x27;s file under a distinct name.</p>
+<p><strong>Cryptography or evaluation is unavailable.</strong> Use the HTTPS page in a current browser. Retain the error for the product owner if it persists; do not treat an incomplete view as a successful evaluation.</p>
+<p>You have completed the current Assurance workflow when you can explain the Sentry correction, the Shield allowed and denied paths, the rollback result, the four custody cases, the exported runtime record, and the Portal&#x27;s observation limits.</p>
+<p>An operational Console-to-human-to-Assurance path still requires an authenticated, scoped Authority Package and a separately accepted runtime integration. A Console note or export does not create that authority.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://infrastructureproductworks.com/assurance/demo/">Assurance demo</a></li>
+<li><a href="https://infrastructureproductworks.com/assurance/portal/">Assurance Portal</a></li>
+<li><a href="https://infrastructureproductworks.com/assurance/">Assurance product overview</a></li>
+</ul></article></div></div></main>
+<footer><strong>Infrastructure Product Works</strong><div><a href="/guides/">All user guides</a><a href="/docs/guard/">Guard documentation</a><a href="/operating-model/">How It Works</a><a href="/support/">Contact</a></div><p>Step-by-step guidance for the current evaluation experiences.</p></footer></body></html>
