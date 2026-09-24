@@ -47,12 +47,28 @@ const PACKAGE_TEMPLATE={
   authority:{approve:false,provision:false,deploy:false,reconcile:false}
 };
 
-let activePackage=null;
+const ORDERS=[
+  {id:'ORDER-482',requester:'developer:maya',label:'Managed Interconnect · Change 482',template:PACKAGE_TEMPLATE,expectedDigest:EXPECTED_DIGEST},
+  {id:'ORDER-483',requester:'developer:eli',label:'Application Network · Order 483',template:{...PACKAGE_TEMPLATE,packageId:'SYN-CONSOLE-002',assessmentId:'ASSESS-483',change:{title:'Application Network · Order 483',summary:'Standard development network request with complete checks'},guardSummary:{passed:20,review:0},requirements:PACKAGE_TEMPLATE.requirements.map(item=>({...item,status:'PASS'})),decisionState:'VALIDATED_AWAITING_AUTHORIZED_HANDOFF'},expectedDigest:'1437f2242f137f6833401d8821ce13775bc8d9b3e7a431951aa7e6b137c1c3bf'},
+  {id:'ORDER-484',requester:'developer:jo',label:'Managed Interconnect · Change 484',template:{...PACKAGE_TEMPLATE,packageId:'SYN-CONSOLE-003',assessmentId:'ASSESS-484',change:{title:'Managed Interconnect · Change 484',summary:'Separate developer request requiring DNS ownership review'},source:{product:'IaaP Guard',revision:'synthetic-guard-rev-484'},evidence:PACKAGE_TEMPLATE.evidence.map(item=>({...item,sourceRevision:'synthetic-guard-rev-484'}))},expectedDigest:'f5caed9791cabd392df53a268a46e5235745c2cbdb3cdfb9261c1cf25ca819df'}
+];
+const orderStates=new Map(ORDERS.map(order=>[order.id,{activePackage:JSON.parse(JSON.stringify(order.template)),lastVerification:null,recordedReviewNote:'',draftNote:order.id==='ORDER-482'?'Confirm DNS ownership and the planning estimate with accountable domain owners.':''}]));
+let activeOrder=ORDERS[0];
+let activePackage=orderStates.get(activeOrder.id).activePackage;
 let lastVerification=null;
 let recordedReviewNote='';
 
 const byId=id=>document.getElementById(id);
-const clonePackage=()=>JSON.parse(JSON.stringify(PACKAGE_TEMPLATE));
+const clonePackage=()=>JSON.parse(JSON.stringify(activeOrder.template));
+const state=()=>orderStates.get(activeOrder.id);
+function renderOrderQueue(){
+  byId('order-queue').innerHTML=ORDERS.map(order=>{
+    const entry=orderStates.get(order.id),verification=entry.lastVerification;
+    const status=verification?(verification.verified?(order.template.guardSummary.review?'Human review':'Validated · authorized handoff pending'):'Evidence rejected'):'Verification pending';
+    return `<button type="button" data-order-id="${order.id}" aria-current="${order.id===activeOrder.id?'true':'false'}"><strong>${escapeHtml(order.id)}</strong> ${escapeHtml(order.label)}<small>${escapeHtml(order.requester)} · ${escapeHtml(status)}</small></button>`;
+  }).join('');
+  byId('queue-count').textContent=`${ORDERS.length} independent synthetic orders · ${ORDERS.filter(order=>orderStates.get(order.id).lastVerification?.verified&&order.template.guardSummary.review).length} require human review`;
+}
 
 function escapeHtml(value){
   return String(value)
@@ -73,7 +89,7 @@ async function sha256Hex(value){
 }
 
 function setBusy(isBusy){
-  document.querySelectorAll('[data-demo-action]').forEach(button=>{button.disabled=isBusy;});
+  document.querySelectorAll('[data-demo-action],[data-order-id]').forEach(button=>{button.disabled=isBusy;});
 }
 
 function requirementPill(status){
@@ -117,7 +133,8 @@ function renderStaticPackage(){
   byId('profile-id').textContent=`${activePackage.profile.ref} @ ${activePackage.profile.version}`;
   byId('scope-id').textContent=`${activePackage.scope.organizationId} / ${activePackage.scope.environmentId} / ${activePackage.scope.systemId}`;
   byId('source-revision').textContent=activePackage.source.revision;
-  byId('expected-digest').textContent=EXPECTED_DIGEST;
+  byId('expected-digest').textContent=activeOrder.expectedDigest;
+  byId('order-context').textContent=`${activeOrder.id} · ${activeOrder.requester}`;
   renderFindings();
   renderEvidence();
 }
@@ -156,15 +173,16 @@ function renderPending(){
 
 function renderVerification(result){
   lastVerification=result;
+  state().lastVerification=result;
   const verified=result.verified;
-  const state=verified?activePackage.decisionState:'UNAVAILABLE_FAIL_CLOSED';
+  const decisionState=verified?activePackage.decisionState:'UNAVAILABLE_FAIL_CLOSED';
 
   const trust=byId('trust-state');
   trust.textContent=verified?'✓ SOURCE & DIGEST VERIFIED':'✕ DIGEST MISMATCH · FAIL CLOSED';
   trust.className='cw-trust '+(verified?'verified':'rejected');
 
   const headerState=byId('header-state');
-  headerState.textContent=verified?'AWAITING HUMAN REVIEW':'EVIDENCE REJECTED';
+  headerState.textContent=verified?(activePackage.guardSummary.review?'AWAITING HUMAN REVIEW':'VALIDATED · HANDOFF PENDING'):'EVIDENCE REJECTED';
   headerState.className='cw-state '+(verified?'review':'failed');
 
   const binding=byId('evidence-binding');
@@ -172,12 +190,12 @@ function renderVerification(result){
   binding.className=verified?'pass':'failed';
 
   const decision=byId('decision-summary');
-  decision.textContent=verified?'Human review':'Unavailable';
+  decision.textContent=verified?(activePackage.guardSummary.review?'Human review':'Authorized handoff pending'):'Unavailable';
   decision.className=verified?'reviewing':'failed';
 
   byId('actual-digest').textContent=result.actualDigest;
   byId('trace-digest').textContent=result.actualDigest.slice(0,16)+'…';
-  byId('decision-state').textContent=state;
+  byId('decision-state').textContent=decisionState;
   byId('decision-state').className='decision-state '+(verified?'review':'failed');
 
   const alert=byId('integrity-alert');
@@ -187,7 +205,7 @@ function renderVerification(result){
   alert.className='integrity-alert '+(verified?'verified':'rejected');
 
   byId('decision-copy').textContent=verified
-    ? 'The evidence is verified and reviewable. Console stops at human review and does not acquire approval or execution authority.'
+    ? (activePackage.guardSummary.review?'The evidence is verified and reviewable. This order stops at human review; Console has no approval or execution authority.':'All synthetic checks passed. This order can move to the next authorized boundary independently; Console cannot create a decision or execute it.')
     : 'The altered package is not eligible for verified review. Restore the synthetic package before continuing.';
 
   const tampered=activePackage.evidence.find(item=>item.artifact.includes('tampered'));
@@ -202,11 +220,12 @@ async function verifyPackage(){
   setBusy(true);
   try{
     const actualDigest=await sha256Hex(JSON.stringify(activePackage));
-    renderVerification({verified:actualDigest===EXPECTED_DIGEST,actualDigest});
+    renderVerification({verified:actualDigest===activeOrder.expectedDigest,actualDigest});
   }catch(error){
     renderVerification({verified:false,actualDigest:'verification-unavailable'});
     byId('integrity-alert').innerHTML='<b>Verification unavailable.</b> '+escapeHtml(error.message);
   }finally{
+    renderOrderQueue();
     setBusy(false);
   }
 }
@@ -215,6 +234,7 @@ async function restorePackage(){
   renderPending();
   clearRecordedReviewNote();
   activePackage=clonePackage();
+  state().activePackage=activePackage;
   renderStaticPackage();
   await verifyPackage();
 }
@@ -234,10 +254,12 @@ function exportReview(){
   if(!activePackage||!lastVerification) return;
   const summary={
     demo:'IaaP Console synthetic review',
+    orderId:activeOrder.id,
+    requesterRef:activeOrder.requester,
     packageId:activePackage.packageId,
     assessmentId:activePackage.assessmentId,
     verification:lastVerification.verified?'VERIFIED':'REJECTED',
-    expectedDigest:EXPECTED_DIGEST,
+    expectedDigest:activeOrder.expectedDigest,
     actualDigest:lastVerification.actualDigest,
     decisionState:lastVerification.verified?activePackage.decisionState:'UNAVAILABLE_FAIL_CLOSED',
     reviewerNote:recordedReviewNote,
@@ -248,7 +270,7 @@ function exportReview(){
   const url=URL.createObjectURL(blob);
   const link=document.createElement('a');
   link.href=url;
-  link.download='iaap-console-synthetic-review.json';
+  link.download=`iaap-console-${activeOrder.id.toLowerCase()}-synthetic-review.json`;
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -258,6 +280,7 @@ function exportReview(){
 function clearRecordedReviewNote(){
   const hadRecordedNote=Boolean(recordedReviewNote);
   recordedReviewNote='';
+  state().recordedReviewNote='';
   byId('note-status').textContent=hadRecordedNote
     ? 'Package state changed. The previously recorded review note was invalidated.'
     : 'No review note recorded. Add a synthetic note if review context is needed.';
@@ -272,6 +295,7 @@ function recordReviewNote(){
     return;
   }
   recordedReviewNote=value;
+  state().recordedReviewNote=value;
   message.textContent='Review note recorded locally for this browser session. No decision or approval was recorded.';
 }
 
@@ -287,6 +311,20 @@ function activateView(name){
 }
 
 document.addEventListener('DOMContentLoaded',async()=>{
+  byId('order-queue').addEventListener('click',async event=>{
+    const button=event.target.closest('[data-order-id]');
+    const next=ORDERS.find(order=>order.id===button?.dataset.orderId);
+    if(!next||next===activeOrder)return;
+    state().draftNote=byId('review-note').value;
+    activeOrder=next;
+    activePackage=state().activePackage;
+    recordedReviewNote=state().recordedReviewNote;
+    byId('review-note').value=state().draftNote;
+    byId('note-status').textContent=recordedReviewNote?'Review note recorded locally for this order. No decision or approval was recorded.':'No review note recorded for this order.';
+    renderStaticPackage();
+    renderOrderQueue();
+    await verifyPackage();
+  });
   document.querySelectorAll('[data-view-target]').forEach(button=>{
     button.addEventListener('click',()=>activateView(button.dataset.viewTarget));
   });
