@@ -355,3 +355,243 @@ document.addEventListener('DOMContentLoaded',async()=>{
   renderScenarioInfo();
   await runScenario();
 });
+
+
+// --- Full Assurance story: proposed Sentry profile preview + Gate 6 custody proof replay ---
+
+const SENTRY_PROFILE_STATUS='PROPOSED_PROFILE_PREVIEW';
+const SENTRY_BASIS='Gate 3 synthetic protected-storage vertical slice';
+
+const SENTRY_SCENARIOS={
+  violation:{
+    label:'Policy Violation',
+    description:'A normalized protected-storage candidate arrives with public access enabled and an open critical finding.',
+    candidate:{resourceRef:'storage:protected-records-demo',attributes:{public_access:true},protectedConstraintRequired:true,source:'synthetic-infrastructure-candidate'},
+    finding:{id:'finding:synthetic-public-access-001',category:'PUBLIC_ACCESS',severity:'CRITICAL',status:'OPEN',controlRef:'NIST-SP-800-53:AC-3'},
+    decision:{outcome:'DENY',reason:'PROTECTED_STORAGE_PUBLIC_ACCESS'},
+    correction:{field:'/attributes/public_access',from:true,to:false,guidance:'Set public_access to false, rescan, and resubmit the candidate.'}
+  },
+  corrected:{
+    label:'Bounded Correction',
+    description:'The one-field correction is applied to the synthetic candidate and the finding is represented as resolved before deterministic reevaluation.',
+    candidate:{resourceRef:'storage:protected-records-demo',attributes:{public_access:false},protectedConstraintRequired:true,source:'synthetic-infrastructure-candidate'},
+    finding:{id:'finding:synthetic-public-access-001',category:'PUBLIC_ACCESS',severity:'CRITICAL',status:'RESOLVED',controlRef:'NIST-SP-800-53:AC-3'},
+    decision:{outcome:'ALLOW',reason:'BOUNDED_CORRECTION_VERIFIED'},
+    correction:{field:'/attributes/public_access',from:true,to:false,guidance:'Correction is bounded to the demonstrated public_access field.'}
+  }
+};
+
+const GATE6_ENGINE_BUILD_DIGEST='sha256:065e43f824d78d7949c95465f9d7daa7623cf4322f2ec08e6d3b4c90b3be5995';
+const GATE6_POLICY_DIGEST='sha256:3fde15d8c5392aba2cdc8b63fdb4cad6c95b5b7c6d61bea12685d8cd7c197ad1';
+const GATE6_ADAPTER_DIGEST='sha256:244bb439e1f811a3bda14de367e115624e25935dbd9ff47203ca5c8320ff7ca4';
+const GATE6_GRANTOR_DIGEST='sha256:96689f1e91b1f7e464a526d0f05637de06163c670ff75e9dd73821fdb32dcbfd';
+
+const CUSTODY_SCENARIOS={
+  access:{
+    label:'Authorized Access',
+    description:'Synthetic READ stays inside the delegated authority and inherited custody constraints.',
+    requestId:'custody:synthetic-access-001',
+    requestDigest:'sha256:f36354556bbb4e5f513c45e4bf8ec3bcc9b29408b677927593f6e6cd0aeb7541',
+    authorityDigest:'sha256:59b6e6d637946418be634616b0fde8a9613a81352dcf8591a8a119b0f286ae80',
+    operation:'READ',
+    dataObjectRef:'data:synthetic-person-001',
+    parentDataObjectRef:'data:synthetic-person-001',
+    purposeId:'purpose:synthetic-benefit-review',
+    subjectRef:'subject:synthetic-001',
+    recipientRef:'service:synthetic-case-review',
+    destinationRef:'zone:synthetic-review',
+    retention:'2026-10-02T00:00:00Z',
+    attenuationVerified:true,
+    outcome:'ALLOW',
+    reason:'AUTHORIZED',
+    auditSuppressionAttempted:false
+  },
+  transfer:{
+    label:'Authorized Transfer',
+    description:'Synthetic TRANSFER creates a child object while preserving the parent reference and inherited restrictions.',
+    requestId:'custody:synthetic-transfer-001',
+    requestDigest:'sha256:4f802d5a9aee683c6ebcb41aac58e410eed87632f30cb90fa90ec28214c63dd9',
+    authorityDigest:'sha256:b274084b659973b933ffbbf69a5d530eee9accbdbd6dd6e96ab59ecdd1a78084',
+    operation:'TRANSFER',
+    dataObjectRef:'data:synthetic-person-001-transfer',
+    parentDataObjectRef:'data:synthetic-person-001',
+    purposeId:'purpose:synthetic-benefit-review',
+    subjectRef:'subject:synthetic-001',
+    recipientRef:'service:synthetic-case-review',
+    destinationRef:'zone:synthetic-review',
+    retention:'2026-10-02T00:00:00Z',
+    attenuationVerified:true,
+    outcome:'ALLOW',
+    reason:'AUTHORIZED',
+    auditSuppressionAttempted:false
+  },
+  broadened:{
+    label:'Broaden Delegation',
+    description:'The delegated authority tries to add a purpose that the grantor did not allow. Gate 6 denies the request.',
+    requestId:'custody:synthetic-delegation-broadened-001',
+    requestDigest:'sha256:0b3a470fcb24e34ac99c282169f884cb6bf6f6fcdbf191aae16e436086f78bd2',
+    authorityDigest:'sha256:8c30b8dd71e9316c3b6561b649974ef2b85afe8cca01f79326abff7e3db21600',
+    operation:'READ',
+    dataObjectRef:'data:synthetic-person-001',
+    parentDataObjectRef:'data:synthetic-person-001',
+    purposeId:'purpose:synthetic-benefit-review',
+    subjectRef:'subject:synthetic-001',
+    recipientRef:'service:synthetic-case-review',
+    destinationRef:'zone:synthetic-review',
+    retention:'2026-10-02T00:00:00Z',
+    attenuationVerified:false,
+    outcome:'DENY',
+    reason:'DELEGATION_BROADENED',
+    auditSuppressionAttempted:false
+  },
+  audit:{
+    label:'Suppress Audit',
+    description:'A request to suppress audit evidence is itself recorded and denied rather than erasing the evidence path.',
+    requestId:'custody:synthetic-audit-suppression-001',
+    requestDigest:'sha256:fa04c1223c8aaf52f26f644584b3e725d36d4e664e059dc3c1b5087ea237f87f',
+    authorityDigest:'sha256:59b6e6d637946418be634616b0fde8a9613a81352dcf8591a8a119b0f286ae80',
+    operation:'READ',
+    dataObjectRef:'data:synthetic-person-001',
+    parentDataObjectRef:'data:synthetic-person-001',
+    purposeId:'purpose:synthetic-benefit-review',
+    subjectRef:'subject:synthetic-001',
+    recipientRef:'service:synthetic-case-review',
+    destinationRef:'zone:synthetic-review',
+    retention:'2026-10-02T00:00:00Z',
+    attenuationVerified:true,
+    outcome:'DENY',
+    reason:'AUDIT_SUPPRESSION_ATTEMPT',
+    auditSuppressionAttempted:true
+  }
+};
+
+let activeSentryScenario='violation';
+let activeCustodyScenario='access';
+
+function activateAssuranceView(name){
+  document.querySelectorAll('[data-assurance-tab]').forEach(button=>{
+    const active=button.dataset.assuranceTab===name;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  document.querySelectorAll('[data-assurance-view]').forEach(panel=>{
+    panel.hidden=panel.dataset.assuranceView!==name;
+  });
+}
+
+async function renderSentryScenario(){
+  const scenario=SENTRY_SCENARIOS[activeSentryScenario];
+  const candidateDigest=await digestObject(scenario.candidate);
+  const findingDigest=await digestObject(scenario.finding);
+  const decisionRecord={
+    profile:'IaaP Assurance Sentry',
+    profileStatus:SENTRY_PROFILE_STATUS,
+    proofBasis:SENTRY_BASIS,
+    resourceRef:scenario.candidate.resourceRef,
+    candidateDigest,
+    findingDigest,
+    policySetId:'policy:gate-3-protected-storage',
+    policyVersion:'0.3.0',
+    outcome:scenario.decision.outcome,
+    reasonCode:scenario.decision.reason,
+    controlRefs:[scenario.finding.controlRef],
+    correction:scenario.correction
+  };
+  decisionRecord.previewDigest=await digestObject(decisionRecord);
+
+  byId('sentry-scenario-name').textContent=scenario.label;
+  byId('sentry-scenario-description').textContent=scenario.description;
+  byId('sentry-resource').textContent=scenario.candidate.resourceRef;
+  byId('sentry-public-access').textContent=String(scenario.candidate.attributes.public_access);
+  byId('sentry-finding-status').textContent=`${scenario.finding.status} · ${scenario.finding.severity}`;
+  byId('sentry-control').textContent=scenario.finding.controlRef;
+  byId('sentry-candidate-digest').textContent=shortDigest(candidateDigest);
+  byId('sentry-finding-digest').textContent=shortDigest(findingDigest);
+  byId('sentry-correction-field').textContent=scenario.correction.field;
+  byId('sentry-correction-change').textContent=`${String(scenario.correction.from)} → ${String(scenario.correction.to)}`;
+  byId('sentry-correction-guidance').textContent=scenario.correction.guidance;
+  byId('sentry-reason').textContent=scenario.decision.reason;
+  byId('sentry-preview-digest').textContent=decisionRecord.previewDigest;
+
+  const badge=byId('sentry-outcome');
+  badge.textContent=scenario.decision.outcome;
+  badge.className='ad-outcome '+(scenario.decision.outcome==='ALLOW'?'applied':'stopped');
+  byId('sentry-outcome-copy').textContent=scenario.decision.outcome==='ALLOW'
+    ? 'The corrected synthetic candidate satisfies the demonstrated protected-storage rule. This remains a Sentry profile preview, not a production release authorization.'
+    : 'The deterministic policy path denies release and produces a bounded one-field correction proposal. Syntactic validity alone does not make the candidate trusted.';
+
+  document.querySelectorAll('[data-sentry-scenario]').forEach(button=>{
+    const active=button.dataset.sentryScenario===activeSentryScenario;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+}
+
+function renderCustodyScenario(){
+  const scenario=CUSTODY_SCENARIOS[activeCustodyScenario];
+  byId('custody-scenario-name').textContent=scenario.label;
+  byId('custody-scenario-description').textContent=scenario.description;
+  byId('custody-request-id').textContent=scenario.requestId;
+  byId('custody-operation').textContent=scenario.operation;
+  byId('custody-data-object').textContent=scenario.dataObjectRef;
+  byId('custody-parent-object').textContent=scenario.parentDataObjectRef;
+  byId('custody-purpose').textContent=scenario.purposeId;
+  byId('custody-subject').textContent=scenario.subjectRef;
+  byId('custody-recipient').textContent=scenario.recipientRef;
+  byId('custody-destination').textContent=scenario.destinationRef;
+  byId('custody-retention').textContent=scenario.retention;
+  byId('custody-request-digest').textContent=shortDigest(scenario.requestDigest);
+  byId('custody-authority-digest').textContent=shortDigest(scenario.authorityDigest);
+  byId('custody-grantor-digest').textContent=shortDigest(GATE6_GRANTOR_DIGEST);
+  byId('custody-engine-digest').textContent=shortDigest(GATE6_ENGINE_BUILD_DIGEST);
+  byId('custody-policy-digest').textContent=shortDigest(GATE6_POLICY_DIGEST);
+  byId('custody-adapter-digest').textContent=shortDigest(GATE6_ADAPTER_DIGEST);
+  byId('custody-attenuation').textContent=scenario.attenuationVerified?'VERIFIED':'FAILED';
+  byId('custody-evidence-independence').textContent='VERIFIED';
+  byId('custody-notification-independence').textContent='VERIFIED';
+  byId('custody-audit').textContent=scenario.auditSuppressionAttempted?'SUPPRESSION ATTEMPT RECORDED':'ACTIVE';
+  byId('custody-reason').textContent=scenario.reason;
+
+  const outcome=byId('custody-outcome');
+  outcome.textContent=scenario.outcome;
+  outcome.className='ad-decision '+(scenario.outcome==='ALLOW'?'allow':'deny');
+  byId('custody-outcome-copy').textContent=scenario.outcome==='ALLOW'
+    ? 'The recorded Gate 6 proof allows this fixed synthetic request while preserving delegated authority, inherited constraints, independent notification and independent evidence custody.'
+    : (scenario.reason==='DELEGATION_BROADENED'
+        ? 'The delegated authority became broader than its grantor. Gate 6 records attenuation failure and denies the request.'
+        : 'Audit suppression was requested. Gate 6 records the suppression attempt in evidence and denies the request.');
+
+  document.querySelectorAll('[data-custody-scenario]').forEach(button=>{
+    const active=button.dataset.custodyScenario===activeCustodyScenario;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+}
+
+document.addEventListener('DOMContentLoaded',async()=>{
+  document.querySelectorAll('[data-assurance-tab]').forEach(button=>{
+    button.addEventListener('click',()=>activateAssuranceView(button.dataset.assuranceTab));
+  });
+  document.querySelectorAll('[data-sentry-scenario]').forEach(button=>{
+    button.addEventListener('click',async()=>{
+      activeSentryScenario=button.dataset.sentryScenario;
+      await renderSentryScenario();
+    });
+  });
+  document.querySelectorAll('[data-custody-scenario]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      activeCustodyScenario=button.dataset.custodyScenario;
+      renderCustodyScenario();
+    });
+  });
+  activateAssuranceView('shield');
+  renderCustodyScenario();
+  try{
+    await renderSentryScenario();
+  }catch(error){
+    byId('sentry-scenario-name').textContent='Preview unavailable';
+    byId('sentry-scenario-description').textContent='This browser cannot perform the local SHA-256 operations used by the Sentry preview.';
+    byId('sentry-reason').textContent='LOCAL_DIGEST_UNAVAILABLE';
+    byId('sentry-outcome-copy').textContent=error.message;
+  }
+});
