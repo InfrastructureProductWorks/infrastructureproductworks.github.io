@@ -374,7 +374,7 @@ const SENTRY_SCENARIOS={
   corrected:{
     label:'Bounded Correction',
     description:'The one-field correction is applied to the synthetic candidate and the finding is represented as resolved before deterministic reevaluation.',
-    candidate:{resourceRef:'storage:protected-records-demo',attributes:{public_access:false},protectedConstraintRequired:true,source:'synthetic-corrected-candidate'},
+    candidate:{resourceRef:'storage:protected-records-demo',attributes:{public_access:false},protectedConstraintRequired:true,source:'synthetic-infrastructure-candidate'},
     finding:{id:'finding:synthetic-public-access-001',category:'PUBLIC_ACCESS',severity:'CRITICAL',status:'RESOLVED',controlRef:'NIST-SP-800-53:AC-3'},
     decision:{outcome:'ALLOW',reason:'BOUNDED_CORRECTION_VERIFIED'},
     correction:{field:'/attributes/public_access',from:true,to:false,guidance:'Correction is bounded to the demonstrated public_access field.'}
