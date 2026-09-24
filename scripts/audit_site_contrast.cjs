@@ -49,9 +49,11 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           }
           const parse=s=>s.match(/[\d.]+/g)?.map(Number);
           const blend=(a,b)=>a.slice(0,3).map((v,i)=>v*(a[3]??1)+b[i]*(1-(a[3]??1)));
-          const chain=[];for(let n=el;n;n=n.parentElement){const s=getComputedStyle(n);if(s.backgroundImage!=='none'||Number(s.opacity)!==1||s.filter!=='none')return null;chain.push(parse(s.backgroundColor));}
+          const chain=[],filters=[];for(let n=el;n;n=n.parentElement){const s=getComputedStyle(n);if(s.backgroundImage!=='none'||Number(s.opacity)!==1)return null;const color=parse(s.backgroundColor);if(s.filter!=='none'){const match=s.filter.match(/^saturate\(([\d.]+)\)$/);if(!match||(color[3]??1)!==1||filters.length)return null;filters.push(Number(match[1]));}chain.push(color);}
           let bg=[255,255,255];for(const c of chain.reverse())bg=blend(c,bg);
-          const style=getComputedStyle(el),fg=blend(parse(style.color),bg);
+          const style=getComputedStyle(el);let fg=blend(parse(style.color),bg);
+          // CSS saturate() on the opaque completed-action card affects both colors.
+          for(const amount of filters){const saturate=c=>{const gray=c[0]*.213+c[1]*.715+c[2]*.072;return c.map(v=>Math.max(0,Math.min(255,gray+(v-gray)*amount)));};fg=saturate(fg);bg=saturate(bg);}
           const lum=c=>c.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
           return (Math.max(lum(fg),lum(bg))+.05)/(Math.min(lum(fg),lum(bg))+.05);
         },{target:node.target});
