@@ -13,7 +13,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
   const launch={headless:true};
   if(process.env.CHROMIUM_MODULE){const module=require(process.env.CHROMIUM_MODULE);const binary=module.default||module;launch.executablePath=await binary.executablePath();launch.args=binary.args;}
   const browser=await chromium.launch(launch);
-  const reports=[],unique=new Map(),reviews=new Map();
+  const reports=[],unique=new Map(),reviews=new Map(),verified=new Map();
   const output=`/tmp/site-contrast-${mode}`;fs.mkdirSync(output,{recursive:true});
   try{
     const context=await browser.newContext({viewport});
@@ -24,6 +24,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
       const summarize=node=>({target:node.target,html:node.html,checks:[...node.any,...node.all,...node.none].map(c=>({message:c.message,data:c.data}))});
       const violations=result.violations.flatMap(v=>v.nodes.map(summarize));
       const incomplete=result.incomplete.flatMap(v=>v.nodes.map(summarize));
+      if(state.includes(' / gradient-'))for(const rule of result.passes)for(const node of rule.nodes){const key=JSON.stringify([route,node.target]);if(!verified.has(key))verified.set(key,new Set());verified.get(key).add(state.split(' / gradient-')[1]);}
       // Gate unresolved text after the gradient passes. Decorative symbols have no text contrast requirement.
       if(state.includes(' / gradient-'))for(const node of incomplete){
         const checks=node.checks.filter(c=>!c.message.includes('only non-text characters'));
@@ -47,7 +48,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           const lum=c=>c.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
           return (Math.max(lum(fg),lum(bg))+.05)/(Math.min(lum(fg),lum(bg))+.05);
         },{target:node.target,overlap});
-        if(!measured||measured<Math.max(...checks.map(c=>parseFloat(c.data?.expectedContrastRatio)||4.5)))violations.push({...node,unresolved:true,measured});
+        if(!measured||measured<Math.max(...checks.map(c=>parseFloat(c.data?.expectedContrastRatio)||4.5)))violations.push({...node,unresolved:!measured,measured});
       }
       reports.push({route,state,viewport,violations,incomplete});
       for(const item of violations)unique.set(JSON.stringify([route,item.target,item.checks]),{route,state,...item});
@@ -128,6 +129,8 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('.portal-order-card details').first().evaluate(el=>el.open=true);await audit(route,'evidence details');
       }
     }
+    // A menu may cover text already verified with that menu closed.
+    for(const [key,item] of unique)if(item.unresolved&&verified.get(JSON.stringify([item.route,item.target]))?.size===2)unique.delete(key);
     fs.writeFileSync(`${output}/report.json`,JSON.stringify({mode,reports,violations:[...unique.values()],review:[...reviews.values()]},null,2));
     for(const item of unique.values())console.log('CONTRAST',JSON.stringify(item));
     for(const item of reviews.values())console.log('REVIEW',JSON.stringify(item));
