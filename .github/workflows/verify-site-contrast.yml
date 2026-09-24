@@ -1,0 +1,39 @@
+name: Verify site text contrast
+on:
+  pull_request:
+    paths: ['**/*.html', '**/*.css', '**/*.js', 'scripts/audit_site_contrast.cjs', '.github/workflows/verify-site-contrast.yml']
+  push:
+    branches: [main]
+    paths: ['**/*.html', '**/*.css', '**/*.js', 'scripts/audit_site_contrast.cjs', '.github/workflows/verify-site-contrast.yml']
+permissions:
+  contents: read
+jobs:
+  contrast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        viewport: [desktop, mobile]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install audit browser
+        run: |
+          npm install --prefix /tmp/contrast-test playwright@1.62.1 @axe-core/playwright@4.13.0
+          /tmp/contrast-test/node_modules/.bin/playwright install --with-deps chromium
+      - name: Audit every page and demo view
+        env:
+          PLAYWRIGHT_MODULE: /tmp/contrast-test/node_modules/playwright
+          AXE_MODULE: /tmp/contrast-test/node_modules/@axe-core/playwright
+          CONTRAST_VIEWPORT: ${{ matrix.viewport }}
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/contrast-server.log 2>&1 &
+          node scripts/audit_site_contrast.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: contrast-${{ matrix.viewport }}
+          path: /tmp/site-contrast-${{ matrix.viewport }}/
