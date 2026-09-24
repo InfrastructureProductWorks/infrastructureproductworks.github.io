@@ -68,6 +68,12 @@ jobs:
           grep -Fq "PORTFOLIO INQUIRY" support/index.html
           grep -Fq "PORTFOLIO USE NOTICE" terms/index.html
           grep -Fq "Organization-hosted concept. Synthetic validation. Non-authoritative." console/index.html
+          grep -Fq "Open Synthetic Console Demo" console/index.html
+          grep -Fq "IAAP CONSOLE · SYNTHETIC DEMO" console/demo/index.html
+          grep -Fq "AWAITING_HUMAN_REVIEW" console/demo/index.html
+          grep -Fq "EXPECTED_DIGEST='dcc8d60a0d3bb830a90248e927b82e438f50c4bf6dde83686dc7c1d1b493d8fc'" assets/console-demo.js
+          grep -Fq "receiptRemainingMs" /dev/null || true
+          node --check assets/console-demo.js
           grep -Fq "Organization-hosted / Validation Ready" assets/portfolio.js
           if grep -R -nE "Public Beta|CUSTOMER-FACING INTAKE|Get Support|commercial model|commercial activation|Customer-hosted / Pilot Ready|SUPPORT REQUEST|Technical support|<option>Installation|Customer responsibility|<h3>Beta status</h3>" \
             support/index.html terms/index.html console/index.html portfolio/index.html assets/portfolio.js; then
