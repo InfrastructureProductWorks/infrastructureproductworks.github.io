@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#ffffff">
+<title>Assurance Synthetic Demo | Infrastructure Product Works</title>
+<meta name="description" content="Interactive synthetic IaaP Assurance demo showing bounded authority validation, fail-closed decisions, rollback behavior and evidence handoff.">
+<link rel="stylesheet" href="/assets/site.css">
+<style>
+.assurance-demo{max-width:1180px;margin:auto}.demo-boundary{padding:12px 15px;border:1px solid #4b3475;border-radius:12px;background:#15102a;color:#e9ddff;font-size:12px;margin-bottom:16px}.demo-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;margin:20px 0}.demo-toolbar p{margin:4px 0 0;color:#c0ccda;font-size:13px}.scenario-controls{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px}.scenario-controls button,.ad-actions button{appearance:none;border:1px solid #62469b;border-radius:9px;padding:9px 11px;background:#17102c;color:#fff;font:800 11px/1.2 inherit;cursor:pointer}.scenario-controls button:hover,.scenario-controls button.active{background:#4c1d95;border-color:#a78bfa}.scenario-controls button:disabled,.ad-actions button:disabled{opacity:.55;cursor:wait}.ad-shell{overflow:hidden;border:1px solid #ffffff18;border-radius:24px;background:#07172b;color:#f8fafc;box-shadow:0 24px 70px #0005}.ad-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:17px 20px;border-bottom:1px solid #ffffff18;background:#0b1930}.ad-head strong{font-size:14px}.ad-head strong span{color:#d8b4fe}.ad-run-state{padding:6px 9px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.04em;white-space:nowrap}.ad-run-state.pending{background:#28364a;color:#d8e2ec}.ad-run-state.allow{background:#113d27;color:#9ef0b8}.ad-run-state.deny{background:#4a1728;color:#ffc1d5}.ad-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:10px;align-items:center;padding:18px 20px;border-bottom:1px solid #ffffff18}.ad-node{min-height:92px;padding:14px;border:2px solid #8b5cf6;border-radius:15px;background:#39206b;transition:.15s ease}.ad-node.gate{border-color:#f59e0b;background:#33240d}.ad-node.action{border-color:#22c55e;background:#123a24}.ad-node.evidence{border-color:#3b82f6;background:#102d55}.ad-node.current{box-shadow:0 0 0 4px #ffffff18}.ad-node.failed{border-color:#ec4899;background:#46152d}.ad-node.complete{filter:saturate(1.12)}.ad-node small{display:block;color:#d8b4fe;font-weight:900;letter-spacing:.06em}.ad-node h3{font-size:16px;margin:4px 0 3px;color:#fff}.ad-node p{font-size:11px;line-height:1.45;color:#d6e0ee;margin:0}.ad-arrow{font-size:22px;color:#7dd3fc;font-weight:900}.ad-scenario{display:flex;justify-content:space-between;gap:20px;padding:14px 20px;background:#0a1f33;border-bottom:1px solid #ffffff18}.ad-scenario div{min-width:0}.ad-scenario small{color:#7dd3fc;font-weight:900}.ad-scenario b{display:block;margin-top:3px}.ad-scenario p{margin:3px 0 0;color:#b8c7d8;font-size:11px;line-height:1.45}.ad-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.ad-actions button.primary{background:#5b21b6;border-color:#8b5cf6}.ad-body{display:grid;grid-template-columns:1.08fr .92fr;gap:0}.ad-column{padding:20px}.ad-column+.ad-column{border-left:1px solid #ffffff18}.ad-section{padding:16px;border:1px solid #ffffff1c;border-radius:15px;background:#0b1d31;margin-bottom:12px}.ad-section:last-child{margin-bottom:0}.ad-section>small{color:#7dd3fc;font-weight:900;letter-spacing:.07em}.ad-section h3{font-size:17px;margin:5px 0 12px;color:#fff}.ad-kv{display:grid;grid-template-columns:150px minmax(0,1fr);gap:8px 12px;font-size:11px}.ad-kv span{color:#91a5ba}.ad-kv strong,.ad-kv code{overflow-wrap:anywhere;color:#f3f7fb}.ad-digest-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.ad-digest-grid div{padding:10px;border-radius:9px;background:#081525;border:1px solid #ffffff12}.ad-digest-grid small{display:block;color:#8ea3b9;font-size:9px;font-weight:900}.ad-digest-grid code{display:block;margin-top:5px;font-size:10px;color:#dbeafe;overflow-wrap:anywhere}.ad-approvers{display:grid;gap:7px;margin-top:12px}.ad-approver{display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:center;padding:8px;border-radius:9px;background:#17152b}.ad-approver>span{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#4c1d95;color:#fff;font-size:10px;font-weight:900}.ad-approver b,.ad-approver code{display:block}.ad-approver b{font-size:10px;color:#f3e8ff}.ad-approver code{font-size:9px;color:#aab9ca;overflow-wrap:anywhere;margin-top:2px}.ad-checks{display:grid;gap:7px}.ad-check{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px;border-radius:9px;border:1px solid #ffffff12;background:#081525}.ad-check.pass{border-color:#235c3a}.ad-check.fail{border-color:#87304f;background:#2e1320}.ad-check-mark{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;font-weight:900}.ad-check.pass .ad-check-mark{background:#123a24;color:#9ef0b8}.ad-check.fail .ad-check-mark{background:#4a1728;color:#ffc1d5}.ad-check b{display:block;font-size:11px;color:#f8fafc}.ad-check small{display:block;margin-top:2px;color:#91a5ba;font-size:9px;line-height:1.35}.ad-check strong{font-size:9px}.ad-check.pass strong{color:#86efac}.ad-check.fail strong{color:#f9a8d4}.ad-outcome-panel{text-align:center;padding:24px 16px;border:2px solid #8b5cf6;border-radius:16px;background:#100f25}.ad-outcome-line{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap}.ad-decision,.ad-outcome{padding:7px 10px;border-radius:999px;font-size:11px;font-weight:900}.ad-decision.allow{background:#123a24;color:#9ef0b8}.ad-decision.deny{background:#4a1728;color:#ffc1d5}.ad-outcome.applied{background:#163d2a;color:#a7f3d0}.ad-outcome.rolled{background:#422006;color:#fcd34d}.ad-outcome.review{background:#3f2c08;color:#fde68a}.ad-outcome.stopped{background:#38202a;color:#fecdd3}.ad-outcome-panel code{display:block;margin-top:9px;font-size:10px;color:#c4b5fd}.ad-outcome-panel p{max-width:650px;margin:10px auto 0;color:#aebed0;font-size:11px;line-height:1.55}.ad-record{display:grid;gap:7px}.ad-record-row{display:grid;grid-template-columns:120px minmax(0,1fr);gap:10px;padding:8px 0;border-bottom:1px solid #ffffff10;font-size:10px}.ad-record-row:last-child{border-bottom:0}.ad-record-row span{color:#8ea3b9}.ad-record-row code,.ad-record-row strong{color:#edf4fb;overflow-wrap:anywhere}.ad-record-note{margin:10px 0 0;padding:9px;border-radius:9px;background:#102d55;color:#bfd7f4;font-size:10px;line-height:1.45}.demo-notes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}.demo-notes article{padding:16px;border:1px solid #244663;border-radius:15px;background:#0b1730;color:#fff}.demo-notes small{color:#7dd3fc;font-weight:900}.demo-notes h3{font-size:14px;margin:5px 0}.demo-notes p{font-size:11px;color:#c0ccda;margin:0;line-height:1.5}@media(max-width:980px){.demo-toolbar{grid-template-columns:1fr}.scenario-controls{justify-content:flex-start}.ad-flow{grid-template-columns:1fr}.ad-arrow{transform:rotate(90deg);text-align:center}.ad-body{grid-template-columns:1fr}.ad-column+.ad-column{border-left:0;border-top:1px solid #ffffff18}.demo-notes{grid-template-columns:1fr}.ad-scenario{flex-direction:column}}@media(max-width:640px){.scenario-controls button{flex:1 1 44%}.ad-flow,.ad-column{padding:14px}.ad-head{align-items:flex-start;flex-direction:column}.ad-kv,.ad-record-row{grid-template-columns:1fr}.ad-digest-grid{grid-template-columns:1fr}.ad-check{grid-template-columns:26px 1fr}.ad-check strong{grid-column:2}.ad-actions{width:100%}.ad-actions button{flex:1}}
+</style>
+<script src="/assets/assurance-demo.js?v=b8a460bed3e077f9d79ba3db4444a8f07f77ebfd" defer></script>
+</head>
+<body>
+<header>
+<a class="brand" href="/">Infrastructure <span>Product Works</span></a>
+<nav>
+<a href="/">Home</a><a href="/portfolio/">Portfolio Status</a>
+<details class="nav-products"><summary>Products</summary><div class="nav-menu">
+<a href="/storefront/"><small>EXPERIENCE</small>Storefront</a><a href="/guard/"><small>VALIDATE</small>IaaP Guard</a><a href="/forge/"><small>CONSTRUCT</small>IaaP Forge</a><a href="/console/"><small>REVIEW</small>IaaP Console</a><a href="/assurance/"><small>ASSURE</small>IaaP Assurance</a><a href="/crossplane/"><small>ARCHITECTURE</small>Crossplane Control Plane</a>
+</div></details>
+<a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/docs/guard/">Docs</a>
+</nav>
+<details class="mobile-nav"><summary>Menu</summary><div class="nav-menu"><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><a href="/storefront/">Storefront</a><a href="/guard/">IaaP Guard</a><a href="/forge/">IaaP Forge</a><a href="/console/">IaaP Console</a><a href="/assurance/">IaaP Assurance</a><a href="/crossplane/">Crossplane</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/docs/guard/">Documentation</a><a href="/support/">Support</a></div></details>
+</header>
+<main>
+<section class="hero">
+<p class="eyebrow">IAAP ASSURANCE · INTERACTIVE SYNTHETIC AUTHORITY GATE</p>
+<h1>See authorization stay bounded.<br><em>Then deliberately break it.</em></h1>
+<p class="lede">Console helps people understand what should happen. This demo begins after a human decision, with a synthetic Authority Package that binds identity, purpose, scope, time limits and approvals to one bounded runtime action.</p>
+<div class="actions"><a class="button ghost" href="/assurance/">Back to Assurance</a></div>
+</section>
+<section class="visual-section">
+<div class="assurance-demo">
+<div class="demo-boundary"><strong>SYNTHETIC ONLY.</strong> This browser demo mirrors the bounded Gate 5 assurance contract. It uses fixed fixtures and local SHA-256 checks. No live identities, approvals, credentials, connectors, infrastructure, protected data, production authorization or durable evidence writes are used.</div>
+<div class="demo-toolbar">
+<div><p class="eyebrow">BREAK THE AUTHORITY</p><p>Select a condition and the gate reevaluates immediately. The normal path is a single-resource, single-field synthetic correction.</p></div>
+<div class="scenario-controls" aria-label="Assurance demo scenarios">
+<button type="button" data-demo-action data-scenario="baseline" aria-pressed="true">Valid Authority</button>
+<button type="button" data-demo-action data-scenario="expired" aria-pressed="false">Expire Authority</button>
+<button type="button" data-demo-action data-scenario="broadened" aria-pressed="false">Broaden Scope</button>
+<button type="button" data-demo-action data-scenario="approver" aria-pressed="false">Remove Approver</button>
+<button type="button" data-demo-action data-scenario="digest" aria-pressed="false">Change Digest</button>
+<button type="button" data-demo-action data-scenario="rollback" aria-pressed="false">Fail Verification</button>
+</div>
+</div>
+<div class="ad-shell">
+<div class="ad-head"><strong><span>◆</span> IaaP Assurance · Synthetic Runtime Reconciliation</strong><span id="run-state" class="ad-run-state pending">EVALUATING</span></div>
+<div class="ad-flow" aria-label="Assurance decision flow">
+<article id="flow-package" data-flow-node class="ad-node"><small>01 · AUTHORITY</small><h3>Authority Package</h3><p>Identity · purpose · scope · time · approvals</p></article>
+<div class="ad-arrow">→</div>
+<article id="flow-gate" data-flow-node class="ad-node gate"><small>02 · VERIFY</small><h3>Assurance Gate</h3><p>Deterministic checks · fail closed</p></article>
+<div class="ad-arrow">→</div>
+<article id="flow-action" data-flow-node class="ad-node action"><small>03 · ACT</small><h3>Scoped Action</h3><p>One resource · one managed field · rollback proven</p></article>
+<div class="ad-arrow">→</div>
+<article id="flow-evidence" data-flow-node class="ad-node evidence"><small>04 · RECORD</small><h3>Evidence Handoff</h3><p>Decision provenance for independent custody</p></article>
+</div>
+<div class="ad-scenario"><div><small>ACTIVE SCENARIO</small><b id="scenario-name">Valid authority</b><p id="scenario-description"></p></div><div class="ad-actions"><button id="run-gate" data-demo-action class="primary" type="button">Run Assurance Gate</button><button id="export-record" data-demo-action type="button">Export Record Preview</button></div></div>
+<div class="ad-body">
+<div class="ad-column">
+<section class="ad-section"><small>AUTHORITY PACKAGE</small><h3>Who authorized what, for what purpose, and for how long?</h3><div class="ad-kv"><span>Authority ID</span><code id="authority-id"></code><span>Requester</span><code id="requester-ref"></code><span>Purpose</span><code id="purpose-id"></code><span>Validity</span><code id="authority-window"></code><span>Fixture clock</span><code id="fixture-clock"></code></div><div class="ad-digest-grid"><div><small>ISSUED PACKAGE DIGEST</small><code id="authority-digest"></code></div><div><small>RECOMPUTED DIGEST</small><code id="calculated-digest"></code></div></div><div class="ad-approvers" id="approver-list"></div></section>
+<section class="ad-section"><small>REQUESTED ACTION</small><h3>One exact change against one exact synthetic resource.</h3><div class="ad-kv"><span>Resource</span><code id="request-resource"></code><span>Operation</span><strong id="request-operation"></strong><span>Value change</span><strong id="request-change"></strong><span>Risk tier</span><strong id="request-risk"></strong><span>Blast radius</span><strong id="blast-radius"></strong></div><div class="ad-digest-grid"><div><small>DESIRED STATE DIGEST</small><code id="desired-digest"></code></div><div><small>OBSERVED STATE DIGEST</small><code id="observed-digest"></code></div></div></section>
+</div>
+<div class="ad-column">
+<section class="ad-section"><small>DETERMINISTIC ASSURANCE</small><h3>Every condition must remain valid.</h3><div id="gate-checks" class="ad-checks"></div></section>
+<section class="ad-section"><small>DECISION</small><div class="ad-outcome-panel"><div class="ad-outcome-line"><span id="decision-badge" class="ad-decision deny">VERIFICATION REQUIRED</span><span>→</span><span id="outcome-badge" class="ad-outcome stopped">NO ACTION</span></div><code id="reason-code">VERIFICATION_PENDING</code><p id="outcome-copy">No authorization result is shown until the fixed synthetic Authority Package and request are evaluated in this browser.</p></div></section>
+<section class="ad-section"><small>EVIDENCE HANDOFF PREVIEW</small><h3>Decision evidence is shaped for custody outside the actor.</h3><div class="ad-record"><div class="ad-record-row"><span>Record digest</span><code id="record-digest"></code></div><div class="ad-record-row"><span>Custodian</span><code id="record-custodian"></code></div><div class="ad-record-row"><span>Decision</span><strong id="record-decision"></strong></div><div class="ad-record-row"><span>Request</span><code id="record-request"></code></div><div class="ad-record-row"><span>Resource</span><code id="record-resource"></code></div></div><p id="record-notice" class="ad-record-note"></p></section>
+</div>
+</div>
+</div>
+<div class="demo-notes">
+<article><small>CONSOLE → HUMAN → ASSURANCE</small><h3>Review evidence is not authorization.</h3><p>Console can organize verified evidence for a person. Assurance starts only after an accountable decision has been expressed as bounded authority.</p></article>
+<article><small>FAIL CLOSED</small><h3>A broken condition does not become a guess.</h3><p>Expired authority, wider scope, missing approval or a changed state digest stops the path instead of silently widening permission.</p></article>
+<article><small>EVIDENCE BOUNDARY</small><h3>The browser does not pretend to be independent custody.</h3><p>The page renders and exports a synthetic record preview. The Gate 5 proof separately models an independent evidence custodian and deterministic chain.</p></article>
+</div>
+</div>
+</section>
+<section class="principle"><h2>Console explains the decision context.<br><span>Assurance proves the technical action is still authorized.</span></h2><p>The handoff between the two is deliberate: verified review evidence may inform a human decision, but only a bounded Authority Package can authorize the downstream technical path.</p></section>
+</main>
+<footer><strong>IaaP Assurance™</strong><div><a href="/assurance/">Assurance</a><a href="/console/">Console</a><a href="/work/">The Work</a><a href="/insights/">Insights</a></div><p>Governed authority · deterministic assurance · bounded action · independent evidence</p></footer>
+</body>
+</html>
