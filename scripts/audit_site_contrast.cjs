@@ -56,8 +56,9 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
             el.style.setProperty('background-color',`rgb(${selected.slice(0,3).map(Math.round).join(',')})`,'important');
           }
         },endpoint);
+        const decorationStyle=await page.addStyleTag({content:'.metric-card::before,.roadmap-objective-summary::after,.roadmap-kr-summary::after,.roadmap-headline-summary::after,.roadmap-measure-summary::after{display:none!important}'});
         try{await analyze(route,state+' / gradient-'+endpoint);}
-        finally{await page.evaluate(()=>{for(const [el,style] of window.__contrastRestore){if(style===null)el.removeAttribute('style');else el.setAttribute('style',style);}delete window.__contrastRestore;});}
+        finally{await decorationStyle.evaluate(el=>el.remove());await page.evaluate(()=>{for(const [el,style] of window.__contrastRestore){if(style===null)el.removeAttribute('style');else el.setAttribute('style',style);}delete window.__contrastRestore;});}
       }
     }
     for(const file of pages(root).sort()){
@@ -69,6 +70,13 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
       const menu=page.locator(mode==='mobile'?'.mobile-nav':'.nav-products');
       if(await menu.count()&&await menu.isVisible()){
         await menu.evaluate(el=>el.open=true);await audit(route,'navigation');await menu.evaluate(el=>el.open=false);
+      }
+      const disclosures=page.locator('main details');
+      if(await disclosures.count()){
+        const original=await disclosures.evaluateAll(items=>items.map(el=>el.open));
+        await disclosures.evaluateAll(items=>items.forEach(el=>el.open=true));
+        await audit(route,'expanded details');
+        await disclosures.evaluateAll((items,original)=>items.forEach((el,i)=>el.open=original[i]),original);
       }
       if(route==='/console/demo/'){
         for(const name of ['findings','product','planning','evidence','traceability','decision']){

@@ -306,7 +306,7 @@
 .roadmap-id,.roadmap-kr-id,.roadmap-epic-id{display:inline-flex;width:max-content;align-items:center;border-radius:999px;background:#eeeafd;color:#6659bb;font-size:10px;font-weight:900;letter-spacing:.05em}
 .roadmap-id{padding:7px 10px;margin-bottom:8px}
 .roadmap-objective-copy strong{display:block;color:#1d3047;font-size:17px;line-height:1.25}
-.roadmap-objective-progress{display:block;margin-top:6px;color:#6a788b;font-size:12px;line-height:1.45}
+.roadmap-objective-progress{display:block;margin-top:6px;color:#5d6d80;font-size:12px;line-height:1.45}
 .roadmap-objective-meta,.roadmap-kr-meta,.roadmap-epic-badges{display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap;align-items:center}
 .roadmap-meta-pill,.roadmap-time-pill,.roadmap-count-pill{display:inline-flex;align-items:center;border-radius:999px;border:1px solid #d5dfe8;background:#f7f9fb;color:#57687b;padding:6px 8px;font-size:9px;font-weight:850;white-space:nowrap}
 .roadmap-time-pill{border-color:#c7d8e4;background:#f2f8fb;color:#45687e}
@@ -318,15 +318,15 @@
 .roadmap-meta-pill.status-future,.roadmap-meta-pill.status-planned{border-color:#d8dee6;background:#f5f7f9;color:#5d6d80}
 .roadmap-objective-body{padding:0 22px 22px;border-top:1px solid #e8edf2;background:#fbfcfd}
 .roadmap-progress-block{margin:18px 0 14px;padding:16px 18px;border:1px solid #d8e4ec;border-radius:14px;background:#f7fbfd}
-.roadmap-progress-block small,.roadmap-contrib-label{display:block;color:#75869a;font-size:9px;font-weight:900;letter-spacing:.12em}
+.roadmap-progress-block small,.roadmap-contrib-label{display:block;color:#5d6d80;font-size:9px;font-weight:900;letter-spacing:.12em}
 .roadmap-progress-block p{margin:6px 0 5px;color:#344b63;font-size:13px;line-height:1.5}
-.roadmap-period-line{color:#65788c;font-size:11px}
+.roadmap-period-line{color:#5d6d80;font-size:11px}
 .roadmap-kr-list{display:grid;gap:9px}
 .roadmap-kr{box-shadow:none;border-radius:14px}
 .roadmap-kr-summary{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:17px 48px 17px 17px}
 .roadmap-kr-copy strong{display:block;margin-top:7px;color:#273b52;font-size:13px;line-height:1.45}
 .roadmap-kr-id{padding:5px 8px;background:#edf5fb;color:#0b658d}
-.roadmap-shared-note{display:block;margin-top:5px;color:#8995a4;font-size:10px;font-style:italic}
+.roadmap-shared-note{display:block;margin-top:5px;color:#5d6d80;font-size:10px;font-style:italic}
 .roadmap-kr-body{padding:15px 17px 17px;border-top:1px solid #edf0f4;background:#fcfdfe}
 .roadmap-contrib-label{margin-bottom:9px}
 .roadmap-epic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -338,8 +338,8 @@
 .roadmap-epic-contribution{margin:14px 0 4px;padding:12px 13px;border:1px solid #e2e8f0;border-radius:11px;background:#f8fafc}
 .roadmap-epic-contribution small{display:block;margin-bottom:5px;color:#7b6ab6;font-size:9px;font-weight:900;letter-spacing:.11em}
 .roadmap-epic-contribution p{margin:0;color:#334b61;font-size:12px;line-height:1.55}
-.roadmap-feature-count{color:#8794a4;font-size:10px}
-.roadmap-fallback-copy{margin:0;padding:0 22px 20px;color:#68798d;font-size:12px}
+.roadmap-feature-count{color:#5d6d80;font-size:10px}
+.roadmap-fallback-copy{margin:0;padding:0 22px 20px;color:#5d6d80;font-size:12px}
 @media(max-width:900px){
   .roadmap-timebar{grid-template-columns:1fr}
   .roadmap-objective-summary,.roadmap-kr-summary{grid-template-columns:1fr}
@@ -390,7 +390,7 @@
 @media(max-width:900px){.roadmap-headline-summary,.roadmap-measure-summary{grid-template-columns:1fr}.roadmap-headline-meta{justify-content:flex-start}}
 
 /* Direct Epic rollup progress */
-.okr-progress{margin-top:10px;max-width:560px}.okr-progress-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:6px;font-size:10px;color:#6d7d8f}.okr-progress-head strong{color:#294258;font-size:11px}.okr-progress-track{height:7px;border-radius:999px;background:#e8eef3;overflow:hidden}.okr-progress-fill{display:block;height:100%;border-radius:999px;background:currentColor;color:#7898ac}.roadmap-percent-pill{display:inline-flex;align-items:center;border-radius:999px;border:1px solid #bfd5e2;background:#eef7fb;color:#315e78;padding:6px 8px;font-size:9px;font-weight:900}.roadmap-progress-basis{margin:8px 0 0;color:#8491a0;font-size:10px;line-height:1.45}
+.okr-progress{margin-top:10px;max-width:560px}.okr-progress-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:6px;font-size:10px;color:#5d6d80}.okr-progress-head strong{color:#294258;font-size:11px}.okr-progress-track{height:7px;border-radius:999px;background:#e8eef3;overflow:hidden}.okr-progress-fill{display:block;height:100%;border-radius:999px;background:currentColor;color:#7898ac}.roadmap-percent-pill{display:inline-flex;align-items:center;border-radius:999px;border:1px solid #bfd5e2;background:#eef7fb;color:#315e78;padding:6px 8px;font-size:9px;font-weight:900}.roadmap-progress-basis{margin:8px 0 0;color:#5d6d80;font-size:10px;line-height:1.45}
 
 
 /* Delivery Outlook */
@@ -402,19 +402,19 @@
 .delivery-outlook-card[data-group="documentation"]{border-color:#d1bde8;background:linear-gradient(145deg,#faf7ff,#fff)}
 .delivery-outlook-card[data-group="accepted"]{border-color:#b9d6ea;background:linear-gradient(145deg,#f4fafe,#fff)}
 .delivery-outlook-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
-.delivery-outlook-label{display:block;color:#74869a;font-size:9px;font-weight:900;letter-spacing:.12em}
+.delivery-outlook-label{display:block;color:#5d6d80;font-size:9px;font-weight:900;letter-spacing:.12em}
 .delivery-outlook-card h3{margin:6px 0 0;color:#20364e;font-size:22px;line-height:1.1}
 .delivery-outlook-window{color:#1d3047;font-size:32px;font-weight:900;letter-spacing:-.04em}
 .delivery-outlook-summary{margin:0;color:#607286;font-size:13px;line-height:1.55;min-height:82px}
 .delivery-outlook-facts{display:grid;grid-template-columns:1fr .75fr 1.5fr;gap:12px;padding-top:13px;border-top:1px solid #e6edf2}
 .delivery-outlook-facts small,.delivery-outlook-meta small{display:block;color:#5d6d80;font-size:9px;font-weight:900;letter-spacing:.11em}
 .delivery-outlook-facts strong{display:block;margin-top:4px;color:#2a4259;font-size:12px;line-height:1.4}
-.delivery-outlook-forecast-note{margin:0;padding:10px 12px;border-radius:10px;background:#f7f9fb;color:#5d6d80;font-size:10px;line-height:1.5}.delivery-outlook-path{margin:0;color:#6f8193;font-size:11px;line-height:1.5}
+.delivery-outlook-forecast-note{margin:0;padding:10px 12px;border-radius:10px;background:#f7f9fb;color:#5d6d80;font-size:10px;line-height:1.5}.delivery-outlook-path{margin:0;color:#5d6d80;font-size:11px;line-height:1.5}
 .delivery-outlook-meta{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:12px;margin-top:15px;padding:18px 20px;border:1px solid #dbe4eb;border-radius:16px;background:#fbfcfd}
 .delivery-outlook-meta strong{display:block;margin-top:5px;font-size:12px;line-height:1.45;color:#314a61}
 .delivery-outlook-method{margin-top:12px;padding:15px 18px;border:1px solid #dbe4eb;border-radius:14px;background:#fbfcfd}
 .delivery-outlook-method summary{cursor:pointer;color:#314a61;font-weight:800;font-size:12px}
-.delivery-outlook-method p{color:#6f8193;font-size:12px;line-height:1.6;margin:12px 0 0}
+.delivery-outlook-method p{color:#5d6d80;font-size:12px;line-height:1.6;margin:12px 0 0}
 @media(max-width:1000px){.delivery-outlook-grid{grid-template-columns:1fr}.delivery-outlook-summary{min-height:auto}.delivery-outlook-meta{grid-template-columns:1fr}}
 @media(max-width:720px){.delivery-outlook-card-top{flex-direction:column}.delivery-outlook-window{font-size:28px}.delivery-outlook-facts{grid-template-columns:1fr}}
 
