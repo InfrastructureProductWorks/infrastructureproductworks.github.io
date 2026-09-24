@@ -3,24 +3,24 @@
 const PORTAL_MODEL={
   schemaVersion:'iaap-assurance-portal-fixture/v1',
   posture:{
-    overall:'HEALTHY',
+    overall:'BOUNDED FIXTURES READY',
     sentry:'PROFILE PREVIEW',
     shield:'BOUNDED PROOF',
     custody:'BOUNDED PROOF',
     openReviewItems:0,
-    evidenceContinuity:'VERIFIED'
+    evidenceContinuity:'SEPARATE PROOFS VERIFIED'
   },
   services:[
     {
       id:'svc-runtime-reconciliation',
       name:'Runtime Reconciliation Proof',
-      assuranceState:'HEALTHY',
+      assuranceState:'FIXTURE VERIFIED',
       predeployment:'ALLOW',
-      runtimeAuthority:'ACTIVE',
+      runtimeAuthority:'ACTIVE AT FIXTURE TIME',
       runtimeState:'APPLIED',
       custody:'SEPARATE PROOF',
       evidence:'COMPLETE',
-      serviceHealth:'NOMINAL',
+      serviceHealth:'NOT OBSERVED',
       costVisibility:'NOT MODELED',
       authority:{
         packageRef:'auth:gate-5-runtime-reconciliation',
@@ -41,13 +41,13 @@ const PORTAL_MODEL={
     {
       id:'svc-protected-storage',
       name:'Protected Storage Predeployment Proof',
-      assuranceState:'HEALTHY',
+      assuranceState:'FIXTURE VERIFIED',
       predeployment:'DENY → CORRECTED',
       runtimeAuthority:'NOT REQUESTED',
       runtimeState:'NO ACTION',
       custody:'SEPARATE PROOF',
       evidence:'COMPLETE',
-      serviceHealth:'NOMINAL',
+      serviceHealth:'NOT OBSERVED',
       costVisibility:'NOT MODELED',
       authority:{
         packageRef:'not-requested',
