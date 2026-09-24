@@ -38,11 +38,11 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
       }
       if(route==='/console/demo/'){
         for(const name of ['findings','product','planning','evidence','traceability','decision']){
-          await page.locator(`[data-view-target="${name}"]`).first().click();await audit(route,name);
+          await page.locator(`[data-view-target="${name}"]:visible`).first().click();await audit(route,name);
         }
       }
       if(route==='/assurance/demo/'){
-        for(const selector of ['[data-scenario="expired"]','[data-scenario="approver"]','[data-scenario="rollback"]','[data-assurance-tab="sentry"]','[data-sentry-scenario="correction"]','[data-assurance-tab="custody"]','[data-custody-scenario="broadened"]']){
+        for(const selector of ['[data-scenario="expired"]','[data-scenario="approver"]','[data-scenario="rollback"]','[data-assurance-tab="sentry"]','[data-sentry-scenario="corrected"]','[data-assurance-tab="custody"]','[data-custody-scenario="broadened"]']){
           const button=page.locator(selector);if(await button.count()&&await button.isVisible()){await button.click();await page.waitForTimeout(100);await audit(route,selector);}
         }
       }
