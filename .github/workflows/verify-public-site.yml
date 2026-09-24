@@ -138,8 +138,8 @@ jobs:
           grep -Fq "/assets/assurance-portal.js?v=${portal_js_blob}" assurance/portal/index.html
           node --check assets/assurance-portal.js
           grep -Fq "function updateServiceButtons()" assets/assurance-portal.js
-          grep -Fq "renderServiceList();" assets/assurance-portal.js
-          if grep -Fq "renderServiceList();"          grep -Fq "Organization-hosted / Validation Ready" assets/portfolio.js
+          test "$(grep -Fc "renderServiceList();" assets/assurance-portal.js)" -eq 1
+          grep -Fq "Organization-hosted / Validation Ready" assets/portfolio.js
           if grep -R -nE "Public Beta|CUSTOMER-FACING INTAKE|Get Support|commercial model|commercial activation|Customer-hosted / Pilot Ready|SUPPORT REQUEST|Technical support|<option>Installation|Customer responsibility|<h3>Beta status</h3>" \
             support/index.html terms/index.html console/index.html portfolio/index.html assets/portfolio.js; then
             echo "::error::Retired business-facing wording found on surgically patched surfaces."
