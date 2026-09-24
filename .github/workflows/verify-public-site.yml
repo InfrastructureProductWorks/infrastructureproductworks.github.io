@@ -85,6 +85,15 @@ jobs:
           grep -Fq "Remove Approver" assurance/demo/index.html
           grep -Fq "Change Digest" assurance/demo/index.html
           grep -Fq "Fail Verification" assurance/demo/index.html
+          grep -Fq "Sentry · Predeployment" assurance/demo/index.html
+          grep -Fq "Protected Data Custody" assurance/demo/index.html
+          grep -Fq "PROPOSED_PROFILE_PREVIEW" assurance/demo/index.html
+          grep -Fq "GATE 6 · PROTECTED DATA CUSTODY" assurance/demo/index.html
+          grep -Fq "SENTRY_PROFILE_STATUS='PROPOSED_PROFILE_PREVIEW'" assets/assurance-demo.js
+          grep -Fq "PROTECTED_STORAGE_PUBLIC_ACCESS" assets/assurance-demo.js
+          grep -Fq "DELEGATION_BROADENED" assets/assurance-demo.js
+          grep -Fq "AUDIT_SUPPRESSION_ATTEMPT" assets/assurance-demo.js
+          grep -Fq "GATE6_ENGINE_BUILD_DIGEST='sha256:065e43f824d78d7949c95465f9d7daa7623cf4322f2ec08e6d3b4c90b3be5995'" assets/assurance-demo.js
           grep -Fq "EXPECTED_AUTHORITY_DIGEST='sha256:31333df3a6e63e684ca4d75a33e4c0a3a59e547fe6a426e0a435878bbe4ccaa0'" assets/assurance-demo.js
           grep -Fq "APPROVAL_THRESHOLD_NOT_MET" assets/assurance-demo.js
           grep -Fq "AUTHORITY_REFERENCE_MISMATCH" assets/assurance-demo.js
@@ -260,6 +269,11 @@ jobs:
                 && grep -Fq "EXPECTED_AUTHORITY_DIGEST='sha256:31333df3a6e63e684ca4d75a33e4c0a3a59e547fe6a426e0a435878bbe4ccaa0'" "${assurance_demo_js}" \
                 && grep -Fq 'VERIFICATION_FAILED_ROLLBACK_SUCCEEDED' "${assurance_demo_js}" \
                 && grep -Fq 'AUTHORITY_REFERENCE_MISMATCH' "${assurance_demo_js}" \
+                && grep -Fq 'Sentry · Predeployment' "${assurance_demo}" \
+                && grep -Fq 'Protected Data Custody' "${assurance_demo}" \
+                && grep -Fq "SENTRY_PROFILE_STATUS='PROPOSED_PROFILE_PREVIEW'" "${assurance_demo_js}" \
+                && grep -Fq 'DELEGATION_BROADENED' "${assurance_demo_js}" \
+                && grep -Fq 'AUDIT_SUPPRESSION_ATTEMPT' "${assurance_demo_js}" \
                 && grep -Fq 'proof-pattern' "${script}" \
                 && grep -Fq "['BUILD',p.state]" "${script}" \
                 && grep -Fq "['VALIDATE',p.status]" "${script}" \
