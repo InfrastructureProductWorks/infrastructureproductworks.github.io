@@ -27,6 +27,7 @@ const PORTAL_MODEL={
         purpose:'synthetic-runtime-reconciliation',
         scope:'1 synthetic resource',
         approvers:2,
+        evaluatedAt:'2026-08-31T12:10:00Z',
         validUntil:'2026-08-31T12:15:00Z',
         delegation:'NOT MODELED'
       },
@@ -54,6 +55,7 @@ const PORTAL_MODEL={
         purpose:'synthetic-assurance-evaluation',
         scope:'predeployment only',
         approvers:0,
+        evaluatedAt:'2026-08-30T12:00:05Z',
         validUntil:'n/a',
         delegation:'NOT APPLICABLE'
       },
@@ -130,6 +132,7 @@ function renderService(){
   byId('portal-authority-purpose').textContent=authority.purpose;
   byId('portal-authority-scope').textContent=authority.scope;
   byId('portal-authority-approvers').textContent=String(authority.approvers);
+  byId('portal-authority-evaluated').textContent=authority.evaluatedAt;
   byId('portal-authority-validity').textContent=authority.validUntil;
   byId('portal-authority-delegation').textContent=authority.delegation;
 
