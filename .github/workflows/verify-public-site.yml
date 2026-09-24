@@ -87,6 +87,8 @@ jobs:
           grep -Fq "Fail Verification" assurance/demo/index.html
           grep -Fq "EXPECTED_AUTHORITY_DIGEST='sha256:31333df3a6e63e684ca4d75a33e4c0a3a59e547fe6a426e0a435878bbe4ccaa0'" assets/assurance-demo.js
           grep -Fq "APPROVAL_THRESHOLD_NOT_MET" assets/assurance-demo.js
+          grep -Fq "AUTHORITY_REFERENCE_MISMATCH" assets/assurance-demo.js
+          grep -Fq "authorityPackageRef:request.authority_package_ref" assets/assurance-demo.js
           grep -Fq "BLAST_RADIUS_EXCEEDED" assets/assurance-demo.js
           grep -Fq "OBSERVED_STATE_DIGEST_MISMATCH" assets/assurance-demo.js
           grep -Fq "VERIFICATION_FAILED_ROLLBACK_SUCCEEDED" assets/assurance-demo.js
@@ -257,6 +259,7 @@ jobs:
                 && grep -Fq "${assurance_demo_js_ref}" "${assurance_demo}" \
                 && grep -Fq "EXPECTED_AUTHORITY_DIGEST='sha256:31333df3a6e63e684ca4d75a33e4c0a3a59e547fe6a426e0a435878bbe4ccaa0'" "${assurance_demo_js}" \
                 && grep -Fq 'VERIFICATION_FAILED_ROLLBACK_SUCCEEDED' "${assurance_demo_js}" \
+                && grep -Fq 'AUTHORITY_REFERENCE_MISMATCH' "${assurance_demo_js}" \
                 && grep -Fq 'proof-pattern' "${script}" \
                 && grep -Fq "['BUILD',p.state]" "${script}" \
                 && grep -Fq "['VALIDATE',p.status]" "${script}" \
