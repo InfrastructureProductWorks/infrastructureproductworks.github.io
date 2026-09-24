@@ -201,3 +201,9 @@ main>section:not(.drive-section):not(.principle):not(.boundary){background-color
 @media(max-width:700px){
   header{background:#fffffff7}
 }
+
+/* Text contrast corrections; retain existing surface colors and typography. */
+.order-state.ready{background:#086dd1}
+.button:not(.ghost){color:#082b19}
+.principle span{color:#4ade80}
+.drive-intro>.eyebrow{color:#7dd3fc}

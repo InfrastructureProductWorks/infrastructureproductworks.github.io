@@ -11,7 +11,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
 });}
 (async()=>{
   const launch={headless:true};
-  if(process.env.CHROMIUM_MODULE){const binary=require(process.env.CHROMIUM_MODULE);launch.executablePath=await binary.executablePath();launch.args=binary.args;}
+  if(process.env.CHROMIUM_MODULE){const module=require(process.env.CHROMIUM_MODULE);const binary=module.default||module;launch.executablePath=await binary.executablePath();launch.args=binary.args;}
   const browser=await chromium.launch(launch);
   const reports=[],unique=new Map(),reviews=new Map();
   const output=`/tmp/site-contrast-${mode}`;fs.mkdirSync(output,{recursive:true});
@@ -19,7 +19,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
     const context=await browser.newContext({viewport});
     const page=await context.newPage();
     page.setDefaultTimeout(15000);
-    async function audit(route,state){
+    async function analyze(route,state){
       const result=await new AxeBuilder({page}).withRules(['color-contrast']).analyze();
       const summarize=node=>({target:node.target,html:node.html,checks:[...node.any,...node.all,...node.none].map(c=>({message:c.message,data:c.data}))});
       const violations=result.violations.flatMap(v=>v.nodes.map(summarize));
@@ -29,9 +29,40 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
       for(const item of incomplete)reviews.set(JSON.stringify([route,item.target,item.checks]),{route,state,...item});
       if(state==='default')await page.screenshot({path:`${output}/${route.replace(/\W+/g,'_')||'home'}.png`});
       console.log('SCANNED',mode,route,state,violations.length,incomplete.length);
+      fs.writeFileSync(`${output}/report.json`,JSON.stringify({mode,reports,violations:[...unique.values()],review:[...reviews.values()]},null,2));
+    }
+    async function audit(route,state){
+      await analyze(route,state);
+      // Axe cannot resolve CSS gradients. Check both luminance endpoints as well.
+      // This is a test-only background substitution; production styles are restored.
+      for(const endpoint of ['dark','light']){
+        await page.evaluate(endpoint=>{
+          const parse=color=>{const n=color.match(/[\d.]+/g)?.map(Number);return n&&n.length>=3?[...n.slice(0,3),n[3]??1]:[255,255,255,1];};
+          const blend=(a,b)=>a.slice(0,3).map((v,i)=>v*a[3]+b[i]*(1-a[3]));
+          const lum=c=>c.slice(0,3).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+          window.__contrastRestore=[];
+          for(const el of document.querySelectorAll('*')){
+            const style=getComputedStyle(el);if(!style.backgroundImage.includes('gradient('))continue;
+            const stops=(style.backgroundImage.match(/rgba?\([^)]*\)/g)||[]).map(parse);
+            if(!stops.length)continue;
+            const opaque=stops.filter(c=>c[3]===1);
+            let base=[255,255,255];
+            for(let parent=el.parentElement;parent;parent=parent.parentElement){const c=parse(getComputedStyle(parent).backgroundColor);if(c[3]===1){base=c;break;}}
+            const backgrounds=opaque.length?opaque:[blend(parse(style.backgroundColor),base)];
+            const choices=backgrounds.flatMap(bg=>[bg,...stops.filter(c=>c[3]>0&&c[3]<1).map(c=>blend(c,bg))]).sort((a,b)=>lum(a)-lum(b));
+            const selected=endpoint==='dark'?choices[0]:choices.at(-1);
+            window.__contrastRestore.push([el,el.getAttribute('style')]);
+            el.style.setProperty('background-image','none','important');
+            el.style.setProperty('background-color',`rgb(${selected.slice(0,3).map(Math.round).join(',')})`,'important');
+          }
+        },endpoint);
+        try{await analyze(route,state+' / gradient-'+endpoint);}
+        finally{await page.evaluate(()=>{for(const [el,style] of window.__contrastRestore){if(style===null)el.removeAttribute('style');else el.setAttribute('style',style);}delete window.__contrastRestore;});}
+      }
     }
     for(const file of pages(root).sort()){
       const route='/'+path.relative(root,file).replace(/index\.html$/,'');
+      if(process.env.CONTRAST_ROUTES&&!process.env.CONTRAST_ROUTES.split(',').includes(route))continue;
       await page.goto(base+route,{waitUntil:'networkidle'});
       await audit(route,'default');
       // Expose navigation text that is hidden at the initial viewport.
