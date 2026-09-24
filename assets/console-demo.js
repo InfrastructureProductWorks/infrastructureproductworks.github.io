@@ -213,6 +213,7 @@ async function verifyPackage(){
 
 async function restorePackage(){
   renderPending();
+  clearRecordedReviewNote();
   activePackage=clonePackage();
   renderStaticPackage();
   await verifyPackage();
@@ -221,6 +222,7 @@ async function restorePackage(){
 async function tamperEvidence(){
   if(!activePackage) await restorePackage();
   renderPending();
+  clearRecordedReviewNote();
   setBusy(true);
   activePackage.evidence[2].artifact='dns-ownership.tampered.json';
   renderEvidence();
@@ -251,6 +253,11 @@ function exportReview(){
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function clearRecordedReviewNote(){
+  recordedReviewNote='';
+  byId('note-status').textContent='Package state changed. Any previously recorded review note was invalidated.';
 }
 
 function recordReviewNote(){
