@@ -121,6 +121,38 @@ function renderStaticPackage(){
   renderEvidence();
 }
 
+function renderPending(){
+  lastVerification=null;
+
+  const trust=byId('trust-state');
+  trust.textContent='… VERIFYING SOURCE & DIGEST';
+  trust.className='cw-trust pending';
+
+  const headerState=byId('header-state');
+  headerState.textContent='VERIFICATION PENDING';
+  headerState.className='cw-state pending';
+
+  const binding=byId('evidence-binding');
+  binding.textContent='Pending';
+  binding.className='';
+
+  const decision=byId('decision-summary');
+  decision.textContent='Unavailable until verified';
+  decision.className='';
+
+  byId('actual-digest').textContent='pending';
+  byId('trace-digest').textContent='pending';
+  byId('decision-state').textContent='VERIFICATION_REQUIRED';
+  byId('decision-state').className='decision-state failed';
+
+  const alert=byId('integrity-alert');
+  alert.innerHTML='<b>Verification pending.</b> Console will not present this package as verified until the browser digest matches the pinned value.';
+  alert.className='integrity-alert pending';
+
+  byId('decision-copy').textContent='Console will not expose a review state until the synthetic package passes digest verification.';
+  document.querySelectorAll('[data-evidence],[data-requirement]').forEach(el=>el.classList.remove('tampered'));
+}
+
 function renderVerification(result){
   lastVerification=result;
   const verified=result.verified;
@@ -165,6 +197,7 @@ function renderVerification(result){
 }
 
 async function verifyPackage(){
+  renderPending();
   setBusy(true);
   try{
     const actualDigest=await sha256Hex(JSON.stringify(activePackage));
@@ -178,6 +211,7 @@ async function verifyPackage(){
 }
 
 async function restorePackage(){
+  renderPending();
   activePackage=clonePackage();
   renderStaticPackage();
   await verifyPackage();
@@ -185,10 +219,12 @@ async function restorePackage(){
 
 async function tamperEvidence(){
   if(!activePackage) await restorePackage();
+  renderPending();
+  setBusy(true);
   activePackage.evidence[2].artifact='dns-ownership.tampered.json';
   renderEvidence();
-  await verifyPackage();
   activateView('evidence');
+  await verifyPackage();
 }
 
 function exportReview(){
