@@ -70,7 +70,8 @@ jobs:
           grep -Fq "Organization-hosted concept. Synthetic validation. Non-authoritative." console/index.html
           grep -Fq "Open Synthetic Console Demo" console/index.html
           grep -Fq "IAAP CONSOLE · INTERACTIVE SYNTHETIC WORKBENCH" console/demo/index.html
-          grep -Fq "AWAITING HUMAN REVIEW" console/demo/index.html
+          grep -Fq "VERIFICATION PENDING" console/demo/index.html
+          grep -Fq "AWAITING_HUMAN_REVIEW" assets/console-demo.js
           grep -Fq "EXPECTED_DIGEST='2325359a4f6a7cc23bab39e5cfb7ff905192b98301ed3478392f218af19647eb'" assets/console-demo.js
           grep -Fq "DIGEST MISMATCH · FAIL CLOSED" assets/console-demo.js
           grep -Fq "Record Review Note" console/demo/index.html
@@ -214,7 +215,8 @@ jobs:
                 && [[ "$(git hash-object "${relationships}")" == "${relationships_blob}" ]] \
                 && [[ "$(git hash-object "${console_demo_js}")" == "${console_demo_js_blob}" ]] \
                 && grep -Fq 'IAAP CONSOLE · INTERACTIVE SYNTHETIC WORKBENCH' "${console_demo}" \
-                && grep -Fq 'AWAITING HUMAN REVIEW' "${console_demo}" \
+                && grep -Fq 'VERIFICATION PENDING' "${console_demo}" \
+                && grep -Fq 'AWAITING_HUMAN_REVIEW' "${console_demo_js}" \
                 && grep -Fq 'EXPECTED_DIGEST=' "${console_demo_js}" \
                 && grep -Fq 'proof-pattern' "${script}" \
                 && grep -Fq "['BUILD',p.state]" "${script}" \
