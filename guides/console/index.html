@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IaaP Console User Guide | Infrastructure Product Works</title><meta name="description" content="Review independent orders, trace findings, record notes, and follow your role-specific procedure.">
+<link rel="icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><meta name="theme-color" content="#ffffff">
+<link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/guides.css?v=2de5b949c1d5d153679ff6424ffa26f655fab91c"></head>
+<body class="guide-page"><a class="guide-skip" href="#guide-content">Skip to instructions</a><header><a class="brand" href="/">Infrastructure <span>Product Works</span></a><nav><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><details class="nav-products"><summary>Products</summary><div class="nav-menu"><a href="/storefront/"><small>EXPERIENCE</small>Storefront</a><a href="/guard/"><small>VALIDATE</small>IaaP Guard</a><a href="/forge/"><small>CONSTRUCT</small>IaaP Forge</a><a href="/console/"><small>REVIEW</small>IaaP Console</a><a href="/assurance/"><small>ASSURE</small>IaaP Assurance</a><a href="/crossplane/"><small>ARCHITECTURE</small>Crossplane Control Plane</a></div></details><a href="/operating-model/">How It Works</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/guides/">Guides</a></nav><details class="mobile-nav"><summary>Menu</summary><div class="nav-menu"><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><a href="/operating-model/">How It Works</a><a href="/storefront/">Storefront</a><a href="/guard/">IaaP Guard</a><a href="/forge/">IaaP Forge</a><a href="/console/">IaaP Console</a><a href="/assurance/">IaaP Assurance</a><a href="/crossplane/">Crossplane</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/guides/">User guides</a><a href="/support/">Support</a></div></details></header>
+<main id="guide-content"><section class="guide-hero"><p class="guide-breadcrumb"><a href="/guides/">User guides</a> / IaaP Console</p><p class="eyebrow">REVIEW THE EVIDENCE</p><h1>IaaP Console User Guide</h1><p class="lede">Review independent orders, trace findings, record notes, and follow your role-specific procedure.</p><p class="guide-meta">Updated September 24, 2026 · Read in your browser or print from the browser menu.</p><div class="actions"><a class="button" href="/console/demo/" target="_blank" rel="noopener noreferrer">Open Console demo <span aria-hidden="true">↗</span><span class="guide-new-tab"> (new tab)</span></a><a class="button ghost" href="/console/">Product overview</a></div><div class="guide-role-links" aria-label="Role-specific instructions"><a href="#security-reviewer">Security</a><a href="#architecture-reviewer">Architecture</a><a href="#platform-reviewer">Platform</a><a href="#product-reviewer">Product</a><a href="#audit-or-assessor-reviewer">Audit</a></div></section>
+<div class="guide-layout"><nav class="guide-toc" aria-label="On this page"><strong>On this page</strong><ol><li><a href="#open-the-workbench">Open the workbench</a></li><li><a href="#select-the-correct-request">Select the correct request</a></li><li><a href="#review-the-package-from-start-to-finish">Review the package from start to finish</a></li><li><a href="#record-a-review-note">Record a review note</a></li><li><a href="#handle-several-requests">Handle several requests</a></li><li><a href="#export-the-review-summary">Export the review summary</a></li><li><a href="#exercise-and-recover-from-an-integrity-failure">Exercise and recover from an integrity failure</a></li><li><a href="#troubleshooting">Troubleshooting</a></li><li><a href="#completion-and-scope">Completion and scope</a></li><li><a href="#role-specific-review-procedures">Role specific review procedures</a></li><li><a href="#references">References</a></li></ol></nav><div><details class="guide-jump"><summary>Jump to a step</summary><ol><li><a href="#open-the-workbench">Open the workbench</a></li><li><a href="#select-the-correct-request">Select the correct request</a></li><li><a href="#review-the-package-from-start-to-finish">Review the package from start to finish</a></li><li><a href="#record-a-review-note">Record a review note</a></li><li><a href="#handle-several-requests">Handle several requests</a></li><li><a href="#export-the-review-summary">Export the review summary</a></li><li><a href="#exercise-and-recover-from-an-integrity-failure">Exercise and recover from an integrity failure</a></li><li><a href="#troubleshooting">Troubleshooting</a></li><li><a href="#completion-and-scope">Completion and scope</a></li><li><a href="#role-specific-review-procedures">Role specific review procedures</a></li><li><a href="#references">References</a></li></ol></details><article class="guide-article" aria-label="IaaP Console instructions"><p>Use this guide to select a request, review its evidence, record a local review note, export the summary, and recover from an evidence integrity failure. The public workbench contains three independent synthetic developer orders.</p>
+<p>Architecture, Security, Platform, Product, and Audit review the same record for different purposes. Section 10 gives each audience a review procedure and expected handoff. These responsibilities do not require a role selector in the demo and do not create approval permissions.</p>
+<h2 id="open-the-workbench">1 Open the workbench</h2>
+<p>Open the <a href="https://infrastructureproductworks.com/console/demo/">Console demo</a> in a current browser with JavaScript and browser cryptography available. No installation, sign-in, cloud account, or uploaded evidence package is required for this demonstration.</p>
+<p>The workbench verifies a package in your browser before presenting it as verified. These are preloaded synthetic packages. The page does not fetch live developer orders from Storefront, accept an arbitrary customer package, or send an approved action to Assurance.</p>
+<p>Notes and altered demo state are temporary. Export what you need before closing or reloading the page. Use fictional review notes only.</p>
+<h2 id="select-the-correct-request">2 Select the correct request</h2>
+<ol>
+<li>Locate the three order buttons above <strong>Evidence Review Workspace</strong>.</li>
+<li>Select the required order and confirm its order ID, requester, title, and package identity.</li>
+<li>Wait for verification to finish. Do not interpret <strong>Verification pending</strong> as approval or rejection.</li>
+<li>Read both the integrity message and the decision state.</li>
+</ol>
+<div class="guide-table" role="region" tabindex="0" aria-label="Table: Order, Demonstrated path"><table><thead><tr><th scope="col">Order</th><th scope="col">Demonstrated path</th></tr></thead><tbody><tr><td>ORDER-482</td><td>Managed Interconnect change with findings requiring human review.</td></tr><tr><td>ORDER-483</td><td>Routine Application Network order with complete checks and authorized handoff pending.</td></tr><tr><td>ORDER-484</td><td>Routine Managed Interconnect change with complete checks and authorized handoff pending.</td></tr></tbody></table></div>
+<p>The order selector changes the active request. The <strong>Review Queue</strong> navigation control returns to the overview of the active request; it does not submit or approve it.</p>
+<p>Some secondary product, planning, and evidence text is reused across the current synthetic fixtures. If an order title and secondary context differ, do not interpret that as verified applicability to a real application. Identify the fixture discrepancy in your evaluation notes. This is particularly relevant to the Application Network example.</p>
+<h2 id="review-the-package-from-start-to-finish">3 Review the package from start to finish</h2>
+<p>Follow the views in this order for a first review. Either the left navigation or the uppercase view controls can open the corresponding section.</p>
+<div class="guide-table" role="region" tabindex="0" aria-label="Table: View, Review task"><table><thead><tr><th scope="col">View</th><th scope="col">Review task</th></tr></thead><tbody><tr><td>OVERVIEW or Review Queue</td><td>Read the request purpose, Guard summary, evidence state, and review readiness.</td></tr><tr><td>FINDINGS or Guard Findings</td><td>Read each finding, requirement, status, and supporting context. Identify items marked REVIEW.</td></tr><tr><td>PRODUCT or Product Context</td><td>Confirm the proposed outcome, consumer choices, and platform-owned decisions.</td></tr><tr><td>PLANNING or Planning Trace</td><td>Follow the displayed objective, epic, and feature relationships.</td></tr><tr><td>TRACEABILITY</td><td>Inspect the source revision and producer evidence relationships.</td></tr><tr><td>EVIDENCE or Evidence Library</td><td>Inspect evidence references, requirement IDs, source revisions, package, assessment, profile, and scope.</td></tr><tr><td>DECISION or Decision State</td><td>Read the current stop or handoff state and the authority boundary.</td></tr></tbody></table></div>
+<p>For ORDER-482, the fixture shows DNS ownership and cost-owner acknowledgment as review items. Identify which accountable domain owner would need to address each point. Console presents the context; it does not perform that person&#x27;s decision.</p>
+<p>A verified digest means the package matches its pinned content. It does not independently prove that a finding is correct, that a profile has been approved for your organization, or that a request may execute.</p>
+<h2 id="record-a-review-note">4 Record a review note</h2>
+<ol>
+<li>Confirm you are on the intended order and its evidence is verified.</li>
+<li>Enter a fictional note in <strong>REVIEW NOTE</strong>. For example: “Confirm DNS ownership and the planning estimate with the accountable domain owners.”</li>
+<li>Select <strong>Record Review Note</strong>.</li>
+<li>Confirm the message says the note was recorded locally and that no decision or approval was recorded.</li>
+<li>If you edit the text afterward, select <strong>Record Review Note</strong> again before exporting.</li>
+</ol>
+<p>Typing changes the draft. Export uses the recorded note, so edited draft text is not included until you record it again. A note does not change a Guard verdict, approve a proposal, or remove the human review stop.</p>
+<h2 id="handle-several-requests">5 Handle several requests</h2>
+<p>Select another order using its order button. Its package verification, draft note, recorded note, tamper state, and export belong to that order. Return to the first order to continue its review.</p>
+<p>Routine requests can reach <strong>VALIDATED · HANDOFF PENDING</strong> without waiting for an unrelated request&#x27;s review. The exception remains at <strong>AWAITING HUMAN REVIEW</strong>. The handoff-pending label describes the next authorized boundary; it does not mean the public demo delivered the request or ran infrastructure.</p>
+<p>The current three-order demonstration is session behavior. It does not establish authenticated collaboration, durable multi-user queues, reviewer assignments, notifications, or measured throughput.</p>
+<h2 id="export-the-review-summary">6 Export the review summary</h2>
+<ol>
+<li>Select the order you intend to export.</li>
+<li>Confirm the package verification state and record the final version of any note.</li>
+<li>Select <strong>Export Review Summary</strong>.</li>
+<li>Save the JSON download. The filename includes the order ID, for example <code>iaap-console-order-482-synthetic-review.json</code>.</li>
+<li>Check that the file contains the expected order ID, requester, package ID, assessment ID, verification state, expected and actual digests, decision state, reviewer note, and authority record.</li>
+</ol>
+<p>Keep the file associated with the relevant order. A summary export contains review metadata and the recorded note. It does not contain a complete operational assessment package, every underlying evidence file, or an authenticated approval.</p>
+<p>The export control can also capture rejected evidence state. In that case, preserve the REJECTED result for troubleshooting and do not present it as verified review evidence.</p>
+<h2 id="exercise-and-recover-from-an-integrity-failure">7 Exercise and recover from an integrity failure</h2>
+<ol>
+<li>On a verified synthetic order, record a short test note.</li>
+<li>Select <strong>Tamper Evidence</strong>. The demonstration changes an evidence reference for the active order.</li>
+<li>Confirm <strong>EVIDENCE REJECTED</strong> and <strong>DIGEST MISMATCH · FAIL CLOSED</strong>. The altered artifact is visible in the evidence view.</li>
+<li>Confirm the previously recorded note is invalidated. The message is expected when an existing recorded note is cleared because its package changed.</li>
+<li>Optionally export this rejected summary as failure evidence.</li>
+<li>Select <strong>Restore Verified Package</strong> and wait for integrity verification to pass.</li>
+<li>Read the restored package again. Record a new note if needed, then export the verified summary.</li>
+</ol>
+<p>Restoring the package does not restore the earlier recorded note as a valid review. Text that remains in the input box is not proof that it has been recorded for export. Check the note status explicitly.</p>
+<p>If no note had been recorded, the page should say that no review note is recorded rather than claim it invalidated one. Tampering with one order does not change the other orders&#x27; packages.</p>
+<h2 id="troubleshooting">8 Troubleshooting</h2>
+<p><strong>The page stays at verification pending.</strong> Give the cryptographic check time to finish. If it does not, reload the HTTPS page in a current browser after retaining any output already needed. Browser cryptography must be available.</p>
+<p><strong>A note is missing from export.</strong> Select the correct order, check the note status, and record the final text again. A draft, an invalidated note, and a note belonging to another order are different states.</p>
+<p><strong>Package state changed appears.</strong> Treat the note as invalidated. Restore or obtain the intended verified package, review it again, and record a new note.</p>
+<p><strong>The request is validated but has not progressed.</strong> Handoff pending is the current stop for the routine synthetic path. There is no connected approval or execution action to run from this page.</p>
+<p><strong>The package remains rejected after restore.</strong> Preserve the order ID, displayed digests, and failure summary for the product owner. Do not modify the expected digest to make the evidence pass.</p>
+<h2 id="completion-and-scope">9 Completion and scope</h2>
+<p>You have completed the Console demo workflow when you can select the correct order, explain its findings and decision state, trace the evidence, record the intended note, and retain the correct per-order summary. Follow your accountable review process outside this demo for any real decision.</p>
+<p>The customer-hosted Console codebase also contains separately versioned projections for planning, evidence, catalog, operations, access visibility, retention previews, health, and outcomes. Those deployment-specific modules are not all exposed by this public workbench. Use the accepted distribution&#x27;s instructions and profile when evaluating them; the controls in this guide describe the public workbench.</p>
+<h2 id="role-specific-review-procedures">10 Role specific review procedures</h2>
+<p>Choose the procedure that matches your responsibility. All reviewers first select the exact order and verify its package using sections 2 and 3. If verification fails, preserve the failure and follow section 7 before continuing. Reviewers use the same evidence; the public workbench does not provide separate authenticated role workspaces, role assignment, or a shared review record.</p>
+<p>The procedures below translate the documented review audiences into tasks using the existing screens. They do not imply that the application enforces those job responsibilities.</p>
+<h3 id="security-reviewer">Security reviewer</h3>
+<ol>
+<li>Open <strong>FINDINGS</strong> and identify security requirements, control-related findings, and any item requiring review. In ORDER-482, inspect SEC-014, <strong>Encryption and workload identity remain mandatory</strong>.</li>
+<li>Open <strong>EVIDENCE</strong> and match the requirement to its evidence reference, source revision, assessment, profile, and scope. In the fixture, EVD-102 references SEC-014 and <code>security-envelope.synthetic.json</code>. This is an evidence reference, not a claim that the underlying operational file was downloaded or assessed here.</li>
+<li>Open <strong>TRACEABILITY</strong> and confirm that the displayed source and package context belong to the selected request. Treat missing, inconsistent, or synthetic-only information as a review limitation.</li>
+<li>Check <strong>PRODUCT</strong> and <strong>DECISION</strong> for the proposed change and its authority boundary. A PASS finding or the marker <strong>No control weakening detected</strong> does not establish risk acceptance, an exception, or permission to execute.</li>
+<li>Record a note naming the requirement, evidence reference, unresolved question, and responsible owner. Example: “Security review: SEC-014 maps to EVD-102 in this synthetic package. Confirm the required operational encryption and workload-identity evidence before a real decision.”</li>
+<li>Export the selected order&#x27;s summary. Hand the exact package identity, note, and unresolved items to the accountable review process. Any actual security approval or exception remains outside this public workbench.</li>
+</ol>
+<p><strong>Finished output:</strong> a source-bound security review note and summary, with evidence gaps explicitly retained.</p>
+<h3 id="architecture-reviewer">Architecture reviewer</h3>
+<ol>
+<li>Open <strong>PRODUCT</strong> and confirm the intended outcome, consumer choices, and platform-owned decisions.</li>
+<li>Inspect <strong>FINDINGS</strong> for topology, provider behavior, connectivity, DNS, and compatibility concerns relevant to the request. For ORDER-482, distinguish the passing network finding from the DNS ownership item still marked REVIEW.</li>
+<li>Follow <strong>TRACEABILITY</strong> and <strong>PLANNING</strong> to the supplied source and work relationships. Do not fill missing architecture or planning relationships by inference.</li>
+<li>Record the proposed design disposition, open dependencies, and domain owners as review context. Export the summary and pass unresolved Network or DNS questions to the accountable owner through the established process.</li>
+</ol>
+<p><strong>Finished output:</strong> a design review note tied to the exact request, including unresolved architecture dependencies. The note is not an architecture approval.</p>
+<h3 id="platform-reviewer">Platform reviewer</h3>
+<ol>
+<li>Inspect <strong>PRODUCT</strong> for supported behavior and responsibilities retained by the platform.</li>
+<li>Use <strong>FINDINGS</strong>, <strong>EVIDENCE</strong>, and <strong>TRACEABILITY</strong> to check the supplied implementation evidence and revision. Flag the fixture context mismatch described in section 2 if encountered.</li>
+<li>Open <strong>DECISION</strong> and distinguish <strong>AWAITING HUMAN REVIEW</strong> from <strong>VALIDATED · HANDOFF PENDING</strong>. Identify the next responsible owner without treating either label as deployment.</li>
+<li>Record missing implementation evidence and handoff prerequisites. Export the summary for the platform&#x27;s change process; this page cannot merge, apply, reconcile, or provision the change.</li>
+</ol>
+<p><strong>Finished output:</strong> an implementation review note and a clear account of what is still needed before an authorized handoff.</p>
+<h3 id="product-reviewer">Product reviewer</h3>
+<ol>
+<li>Confirm the order, requester, and consumer outcome in <strong>OVERVIEW</strong> and <strong>PRODUCT</strong>.</li>
+<li>Follow <strong>PLANNING</strong> to the supplied objective, epic, and feature. Check whether the proposed work supports that outcome; preserve any missing relationships.</li>
+<li>Inspect <strong>FINDINGS</strong> for owner acknowledgments or cost questions. ORDER-482 includes a planning estimate requiring cost-owner acknowledgment. Use the established process to obtain that owner&#x27;s input.</li>
+<li>Record the outcome, open business questions, and responsible owners. Export the summary for the product review process. Console does not commit backlog work, approve spending, or make the owner acknowledgment on another person&#x27;s behalf.</li>
+</ol>
+<p><strong>Finished output:</strong> a product review note linking the request to the supplied planning context and outstanding business decisions.</p>
+<h3 id="audit-or-assessor-reviewer">Audit or assessor reviewer</h3>
+<ol>
+<li>Identify the order, package, assessment, profile, and scope in <strong>OVERVIEW</strong> and <strong>EVIDENCE</strong>.</li>
+<li>Follow <strong>TRACEABILITY</strong> and compare source revisions, evidence references, and displayed digests. Record missing or inconsistent provenance.</li>
+<li>Inspect <strong>DECISION</strong> and distinguish verified content from human authorization. A recorded local note is not an authenticated approval record.</li>
+<li>Export the summary and retain its verification state and digests with the review record. Identify any underlying evidence files or accountable decisions still needed. The export contains metadata and the note, not a complete assessor evidence package.</li>
+</ol>
+<p><strong>Finished output:</strong> an evidence inventory and traceability summary that states what was inspected and what remains unavailable.</p>
+<h3 id="separate-role-and-capability-demonstration">Separate role and capability demonstration</h3>
+<p>The customer-hosted Console validation distribution also contains a display-only access-control projection. Its labels describe sample capability groupings, rather than the five review audiences above.</p>
+<div class="guide-table" role="region" tabindex="0" aria-label="Table: Illustrative role, Visibility described in FULL_VISIBILITY"><table><thead><tr><th scope="col">Illustrative role</th><th scope="col">Visibility described in FULL_VISIBILITY</th></tr></thead><tbody><tr><td>Portfolio viewer</td><td>Guard assessments, planning outputs, and evidence metadata.</td></tr><tr><td>Human reviewer</td><td>The portfolio viewer capabilities plus human-review queues.</td></tr><tr><td>Operations viewer</td><td>Operations posture.</td></tr><tr><td>Forge viewer</td><td>Forge catalog and lifecycle, aggregate outcomes, FoundationTarget visibility, and optional integration posture.</td></tr></tbody></table></div>
+<p>When evaluating that distribution, verify the selected runtime profile, inspect the listed roles and capabilities, and confirm <strong>DISPLAY_ONLY</strong>, default <strong>DENY</strong>, and <strong>UNASSIGNED</strong> roles. GUARD_ONLY physically excludes Forge and integration capabilities. Authentication, identity-provider connection, role assignment, and access enforcement are not implemented by this projection. It has no assign-role or grant-access procedure and is not a Security login. These controls are not exposed by the public demo described in sections 1 through 9.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://infrastructureproductworks.com/console/demo/">Console workbench</a></li>
+<li><a href="https://infrastructureproductworks.com/console/">Console product overview</a></li>
+</ul></article></div></div></main>
+<footer><strong>Infrastructure Product Works</strong><div><a href="/guides/">All user guides</a><a href="/docs/guard/">Guard documentation</a><a href="/operating-model/">How It Works</a><a href="/support/">Contact</a></div><p>Step-by-step guidance for the current evaluation experiences.</p></footer></body></html>

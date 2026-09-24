@@ -8,6 +8,10 @@ on:
       - '**/*.json'
       - '**/*.svg'
       - assets/portfolio.css
+      - assets/guides.css
+      - guides/content/*.md
+      - scripts/build_guides.py
+      - scripts/validate_guides.py
       - .github/workflows/verify-public-site.yml
   push:
     branches: [main]
@@ -17,6 +21,17 @@ permissions:
   contents: read
 
 jobs:
+  validate-demo-guides:
+    name: validate-demo-guides
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify generated instructions and navigation
+        run: |
+          python3 scripts/build_guides.py --check
+          python3 scripts/validate_guides.py
+
   validate-ethics-boundary:
     name: validate-ethics-boundary
     runs-on: ubuntu-latest
