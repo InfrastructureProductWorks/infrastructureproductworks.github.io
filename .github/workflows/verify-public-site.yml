@@ -121,6 +121,8 @@ jobs:
           grep -Fq "Portal remains downstream of the source records." assurance/portal/index.html
           grep -Fq "Runtime Reconciliation Proof" assets/assurance-portal.js
           grep -Fq "runtimeAuthority:'ACTIVE AT FIXTURE TIME'" assets/assurance-portal.js
+          grep -Fq "evaluatedAt:'2026-08-31T12:10:00Z'" assets/assurance-portal.js
+          grep -Fq 'portal-authority-evaluated' assurance/portal/index.html
           grep -Fq "serviceHealth:'NOT OBSERVED'" assets/assurance-portal.js
           grep -Fq "overall:'BOUNDED FIXTURES READY'" assets/assurance-portal.js
           if grep -Fq "runtimeAuthority:'ACTIVE'" assets/assurance-portal.js || grep -Fq "serviceHealth:'NOMINAL'" assets/assurance-portal.js; then
