@@ -256,8 +256,11 @@ function exportReview(){
 }
 
 function clearRecordedReviewNote(){
+  const hadRecordedNote=Boolean(recordedReviewNote);
   recordedReviewNote='';
-  byId('note-status').textContent='Package state changed. Any previously recorded review note was invalidated.';
+  byId('note-status').textContent=hadRecordedNote
+    ? 'Package state changed. The previously recorded review note was invalidated.'
+    : 'No review note recorded. Add a synthetic note if review context is needed.';
 }
 
 function recordReviewNote(){

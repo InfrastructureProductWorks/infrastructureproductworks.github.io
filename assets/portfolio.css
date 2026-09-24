@@ -417,3 +417,5 @@
 .delivery-outlook-method p{color:#6f8193;font-size:12px;line-height:1.6;margin:12px 0 0}
 @media(max-width:1000px){.delivery-outlook-grid{grid-template-columns:1fr}.delivery-outlook-summary{min-height:auto}.delivery-outlook-meta{grid-template-columns:1fr}}
 @media(max-width:720px){.delivery-outlook-card-top{flex-direction:column}.delivery-outlook-window{font-size:28px}.delivery-outlook-facts{grid-template-columns:1fr}}
+
+.demo-validation{margin-top:16px}.demo-validation .validation-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.demo-validation .validation-boundary a{color:#174d73;text-decoration:underline}@media(max-width:720px){.demo-validation .validation-grid{grid-template-columns:1fr}}
