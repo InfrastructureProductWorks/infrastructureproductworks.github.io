@@ -71,6 +71,11 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
       if(await menu.count()&&await menu.isVisible()){
         await menu.evaluate(el=>el.open=true);await audit(route,'navigation');await menu.evaluate(el=>el.open=false);
       }
+      if(route==='/portfolio/'){
+        // Exercise the full roadmap renderer even when the external telemetry feed is unavailable.
+        await page.evaluate(async()=>{const response=await fetch('/data/roadmap-relationships.json');renderRoadmapRelationships(await response.json());});
+        await audit(route,'local roadmap renderer');
+      }
       const disclosures=page.locator('main details');
       if(await disclosures.count()){
         const original=await disclosures.evaluateAll(items=>items.map(el=>el.open));
