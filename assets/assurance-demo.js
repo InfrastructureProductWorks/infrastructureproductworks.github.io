@@ -147,7 +147,9 @@ async function evaluateScenario(name){
   const desiredDigest=await digestObject(DESIRED_STATE);
   const observedDigest=await digestObject(OBSERVED_STATE);
 
-  const packageIntegrity=calculatedAuthorityDigest===authority.provenance.package_digest && request.authority_package_digest===authority.provenance.package_digest;
+  const authorityReferenceBound=request.authority_package_ref===authority.authority_id;
+  const authorityDigestBound=calculatedAuthorityDigest===authority.provenance.package_digest && request.authority_package_digest===authority.provenance.package_digest;
+  const packageIntegrity=authorityReferenceBound&&authorityDigestBound;
   const now=parseUtc(evaluatedAt);
   const timeValid=now>=parseUtc(authority.valid_from)&&now<=parseUtc(authority.valid_until)&&now>=parseUtc(request.requested_at)&&now<=parseUtc(request.expires_at);
   const identityPurpose=request.requester_ref===authority.requester_ref&&request.purpose_id===authority.purpose_id&&authority.status==='ACTIVE'&&authority.authority_type==='STANDARD';
@@ -160,7 +162,7 @@ async function evaluateScenario(name){
   const notificationReady=request.notification.required===true&&request.notification.recipient_refs.length>0;
 
   const checks=[
-    check('Package integrity',packageIntegrity,packageIntegrity?'Authority digest matches the issued package.':'AUTHORITY_DIGEST_MISMATCH'),
+    check('Package binding',packageIntegrity,packageIntegrity?'Authority reference and digest match the issued package.':(!authorityReferenceBound?'AUTHORITY_REFERENCE_MISMATCH':'AUTHORITY_DIGEST_MISMATCH')),
     check('Active time window',timeValid,timeValid?'Authority and request windows include the fixture clock.':'AUTHORITY_EXPIRED'),
     check('Identity & purpose',identityPurpose,identityPurpose?'Requester and purpose remain bound.':'REQUESTER_OR_PURPOSE_MISMATCH'),
     check('Exact scope',scopeValid,scopeValid?'One authorized resource and ALTER operation.':'BLAST_RADIUS_EXCEEDED'),
@@ -191,8 +193,10 @@ async function evaluateScenario(name){
   const record={
     schemaVersion:'iaap-assurance-browser-record/v1',
     evaluatedAt,
-    authorityPackageRef:authority.authority_id,
-    authorityPackageDigest:authority.provenance.package_digest,
+    authorityPackageRef:request.authority_package_ref,
+    presentedAuthorityId:authority.authority_id,
+    authorityPackageDigest:request.authority_package_digest,
+    presentedAuthorityDigest:authority.provenance.package_digest,
     requestRef:request.request_id,
     requesterRef:request.requester_ref,
     resourceRef:request.resource_ref,
