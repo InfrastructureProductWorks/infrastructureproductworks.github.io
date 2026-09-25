@@ -30,6 +30,16 @@ ROADMAP_TOP={
     "epics","relationshipModel","headlineKeyResults","progressHistory","forecastModel",
     "progressModel","roadmapBlobSha","contributionSource","contributionBlobSha"
 }
+ROADMAP_PLANNING={"baseline","evidenceQuarter","horizon","timingNote"}
+ROADMAP_OBJECTIVE={"definition","group","headlineKeyResults","id","keyResults","progress","status","time"}
+ROADMAP_KEY_RESULT={"definition","epics","group","id","objective","sharedRange","source","status","time"}
+ROADMAP_EPIC={"completionPercent","featureCount","features","group","id","progress","progressBasis","status","time","title"}
+ROADMAP_RELATIONSHIP_MODEL={"epicContributionSemantics","headlineKeyResultToEpics","objectiveToEpics","objectiveToHeadlineKeyResults","registeredMeasures"}
+ROADMAP_HEADLINE_KR={"epicContributions","id","measures","objective","title"}
+ROADMAP_EPIC_CONTRIBUTION={"description","epic"}
+ROADMAP_PROGRESS_HISTORY={"date","epics"}
+ROADMAP_FORECAST_MODEL={"blockedBehavior","method","minimumSnapshots","minimumSpanDays","planningWindows"}
+ROADMAP_PROGRESS_MODEL={"method","note","objective","scale","strategicKeyResult"}
 
 errors=[]
 
@@ -37,7 +47,8 @@ def reject_sensitive(obj,path="$"):
     if isinstance(obj,dict):
         for key,value in obj.items():
             child=f"{path}.{key}"
-            if SENSITIVE_KEY.search(key):
+            canonical=re.sub(r"(?<!^)(?=[A-Z])","_",key).replace("-","_").replace(" ","_").lower()
+            if SENSITIVE_KEY.search(canonical):
                 errors.append(f"{child}: sensitive field name is not allowed in public projection")
             reject_sensitive(value,child)
     elif isinstance(obj,list):
@@ -102,6 +113,28 @@ else:
                 errors.append(f"assurance.entries[{i}].record.notice: synthetic boundary marker missing")
 
 exact_keys(roadmap,ROADMAP_TOP,"roadmap")
+exact_keys(roadmap.get("planning"),ROADMAP_PLANNING,"roadmap.planning")
+for i,item in enumerate(roadmap.get("objectives") or []):
+    exact_keys(item,ROADMAP_OBJECTIVE,f"roadmap.objectives[{i}]")
+for i,item in enumerate(roadmap.get("keyResults") or []):
+    exact_keys(item,ROADMAP_KEY_RESULT,f"roadmap.keyResults[{i}]")
+epics=roadmap.get("epics")
+if not isinstance(epics,dict):
+    errors.append("roadmap.epics: expected object")
+else:
+    for key,item in epics.items():
+        exact_keys(item,ROADMAP_EPIC,f"roadmap.epics[{key}]")
+exact_keys(roadmap.get("relationshipModel"),ROADMAP_RELATIONSHIP_MODEL,"roadmap.relationshipModel")
+for i,item in enumerate(roadmap.get("headlineKeyResults") or []):
+    exact_keys(item,ROADMAP_HEADLINE_KR,f"roadmap.headlineKeyResults[{i}]")
+    for j,edge in enumerate((item or {}).get("epicContributions") or []):
+        exact_keys(edge,ROADMAP_EPIC_CONTRIBUTION,f"roadmap.headlineKeyResults[{i}].epicContributions[{j}]")
+for i,item in enumerate(roadmap.get("progressHistory") or []):
+    exact_keys(item,ROADMAP_PROGRESS_HISTORY,f"roadmap.progressHistory[{i}]")
+    if isinstance(item,dict) and not isinstance(item.get("epics"),dict):
+        errors.append(f"roadmap.progressHistory[{i}].epics: expected object")
+exact_keys(roadmap.get("forecastModel"),ROADMAP_FORECAST_MODEL,"roadmap.forecastModel")
+exact_keys(roadmap.get("progressModel"),ROADMAP_PROGRESS_MODEL,"roadmap.progressModel")
 if roadmap.get("schemaVersion")!="roadmap-relationship-view/v5":
     errors.append("roadmap.schemaVersion: unexpected public roadmap schema version")
 planning=roadmap.get("planning")
