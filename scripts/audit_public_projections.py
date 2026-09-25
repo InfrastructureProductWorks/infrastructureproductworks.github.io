@@ -47,7 +47,10 @@ def reject_sensitive(obj,path="$"):
     if isinstance(obj,dict):
         for key,value in obj.items():
             child=f"{path}.{key}"
-            canonical=re.sub(r"(?<!^)(?=[A-Z])","_",key).replace("-","_").replace(" ","_").lower()
+            canonical=key.replace("-","_").replace(" ","_")
+            if not canonical.isupper():
+                canonical=re.sub(r"(?<=[a-z0-9])(?=[A-Z])","_",canonical)
+            canonical=canonical.lower()
             if SENSITIVE_KEY.search(canonical):
                 errors.append(f"{child}: sensitive field name is not allowed in public projection")
             reject_sensitive(value,child)
