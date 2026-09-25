@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fail closed on credentials and non-site artifacts in the public repository."""
 from pathlib import Path
-import json, os, re, subprocess, sys
+import io, json, os, re, subprocess, sys, zipfile
 
 ROOT=Path(__file__).resolve().parents[1]
 SKIP={".git"}
@@ -90,17 +90,13 @@ def looks_like_source_map_json(raw):
         return False
     return looks_like_source_map_object(obj)
 
-ARCHIVE_SIGNATURES=(
-    b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08",
-    b"\x1f\x8b", b"BZh", b"\xfd7zXZ\x00",
-    b"7z\xbc\xaf\x27\x1c", b"Rar!\x1a\x07\x00",
-    b"Rar!\x1a\x07\x01\x00", b"\x28\xb5\x2f\xfd",
-)
-
 def embedded_container(raw):
-    return any(sig in raw for sig in ARCHIVE_SIGNATURES) or (
-        len(raw)>=265 and raw[257:262]==b"ustar"
-    )
+    # zipfile validates central-directory structure and also recognizes a ZIP
+    # appended to another binary, avoiding false positives from random bytes.
+    try:
+        return zipfile.is_zipfile(io.BytesIO(raw))
+    except Exception:
+        return False
 
 def recognized_container(head):
     return (
