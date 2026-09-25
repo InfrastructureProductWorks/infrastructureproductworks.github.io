@@ -45,14 +45,14 @@ SECRET_PATTERNS=[
     ("inline source map",re.compile(rb"sourceMappingURL\s*=\s*data:application/json(?:;charset=[^;,\s]+)?(?:;base64)?,",re.I)),
 ]
 
-ARCHIVE_SIGNATURES=[
-    ("ZIP",(b"PK\x03\x04",b"PK\x05\x06",b"PK\x07\x08")),
-    ("GZIP",(b"\x1f\x8b",)),
-    ("BZIP2",(b"BZh",)),
-    ("XZ",(b"\xfd7zXZ\x00",)),
-    ("7Z",(b"7z\xbc\xaf\x27\x1c",)),
-    ("RAR",(b"Rar!\x1a\x07\x00",b"Rar!\x1a\x07\x01\x00")),
-    ("ZSTD",(b"\x28\xb5\x2f\xfd",)),
+ARCHIVE_MAGIC=[
+    ("ZIP",lambda b:b.startswith(b"PK\x03\x04") or b.startswith(b"PK\x05\x06") or b.startswith(b"PK\x07\x08")),
+    ("GZIP",lambda b:b.startswith(b"\x1f\x8b")),
+    ("BZIP2",lambda b:b.startswith(b"BZh")),
+    ("XZ",lambda b:b.startswith(b"\xfd7zXZ\x00")),
+    ("7Z",lambda b:b.startswith(b"7z\xbc\xaf\x27\x1c")),
+    ("RAR",lambda b:b.startswith(b"Rar!\x1a\x07\x00") or b.startswith(b"Rar!\x1a\x07\x01\x00")),
+    ("ZSTD",lambda b:b.startswith(b"\x28\xb5\x2f\xfd")),
 ]
 
 OPENAPI_PATTERNS=[
@@ -101,10 +101,12 @@ for p in ROOT.rglob("*"):
             if not chunk:
                 break
             scan=overlap+chunk
-            for label,signatures in ARCHIVE_SIGNATURES:
-                if any(sig in scan for sig in signatures):
-                    errors.append(f"{rel}: recognized {label} archive/container signature is not publishable")
             if first_chunk:
+                # Default-deny handles renamed containers; start-of-file magic catches
+                # recognized archives directly without false positives inside media payloads.
+                for label,detector in ARCHIVE_MAGIC:
+                    if detector(chunk):
+                        errors.append(f"{rel}: recognized {label} archive/container is not publishable")
                 if suffix in ALLOWED_BINARY_SUFFIXES:
                     detector=BINARY_MAGIC.get(suffix)
                     if detector is None or not detector(chunk):
