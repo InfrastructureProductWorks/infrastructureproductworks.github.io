@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """Fail closed on new reconstruction-enabling public artifacts without stripping content."""
 from pathlib import Path
-from collections import Counter
-import hashlib, os, re, subprocess, sys
+from html.parser import HTMLParser
+import os, re, subprocess, sys
 
 ROOT=Path(__file__).resolve().parents[1]
 SKIP={".git","node_modules"}
-BROWSER_EXT={".html",".js",".json",".svg"}
+PUBLISHED_TEXT_EXT={".html",".htm",".js",".mjs",".cjs",".json",".svg",".css",".xml",".txt",".md",".webmanifest"}
 FORBIDDEN_NAMES={"openapi.json","openapi.yaml","openapi.yml","swagger.json","swagger.yaml","swagger.yml",
  ".env",".env.local",".env.production","terraform.tfstate","terraform.tfstate.backup"}
 FORBIDDEN_SUFFIXES=(".map",".tfstate")
 KEY_NAMES={"id_rsa","id_dsa","id_ecdsa","id_ed25519"}
 KEY_SUFFIXES={".pem",".key",".p12",".pfx"}
 SECRET_PATTERNS=[
- ("private key",re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
+ ("private key",re.compile(rb"-----BEGIN (?:(?:RSA|EC|OPENSSH|DSA) |ENCRYPTED )?PRIVATE KEY-----")),
  ("GitHub token",re.compile(rb"\bgh[pousr]_[A-Za-z0-9_]{30,}\b")),
  ("GitHub fine-grained token",re.compile(rb"\bgithub_pat_[A-Za-z0-9_]{30,}\b")),
  ("AWS access key",re.compile(rb"\bAKIA[0-9A-Z]{16}\b")),
@@ -69,18 +69,32 @@ for p in ROOT.rglob("*"):
                     errors.append(f"{rel}: possible {label}")
             overlap=scan[-512:]
 
-    if p.suffix.lower() in BROWSER_EXT:
+    if p.suffix.lower() in PUBLISHED_TEXT_EXT:
         text=p.read_text("utf-8",errors="ignore")
-        current=Counter(m.group(0).lower() for m in PRIVATE_REF.finditer(text))
+        # Preserve exact baseline contexts, not just identifier counts. Moving an existing
+        # name into a new URL/path is therefore a new exposure.
+        def contexts(body):
+            out=[]
+            for m in PRIVATE_REF.finditer(body):
+                left=max(0,m.start()-120); right=min(len(body),m.end()+120)
+                ctx=re.sub(r"\\s+"," ",body[left:right]).strip().lower()
+                out.append((m.group(0).lower(),ctx))
+            return out
+        current=contexts(text)
         if current:
-            prior=Counter()
+            prior=[]
             if base_ref and rel in base_files:
                 try:
                     old=subprocess.check_output(["git","show",f"{base_ref}:{rel}"],cwd=ROOT,text=True,errors="ignore")
-                    prior=Counter(m.group(0).lower() for m in PRIVATE_REF.finditer(old))
+                    prior=contexts(old)
                 except Exception: pass
-            for leak,count in sorted((current-prior).items()):
-                errors.append(f"{rel}: {count} new private implementation repository identifier occurrence(s) exposed: {leak}")
+            remaining=list(prior)
+            for leak,ctx in current:
+                item=(leak,ctx)
+                if item in remaining:
+                    remaining.remove(item)
+                else:
+                    errors.append(f"{rel}: private implementation repository reference appears in new context: {leak}")
 
 required={"index.html","about/index.html","portfolio/index.html","security/index.html",
  "storefront/index.html","guard/index.html","console/index.html","forge/index.html",
