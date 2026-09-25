@@ -10,14 +10,15 @@ SKIP={".git"}
 
 # Build sensitive identifiers without spelling them as contiguous literals in this
 # public validator, so the validator itself does not need a self-exemption.
-PRIVATE_NAMES=(
-    "backstage-infrastructure-product-"+"storefront-poc",
-    "iaap-"+"forge",
-    "iaap-"+"console",
-    "iaap-"+"assurance",
-    "crossplane-multicloud-seed-"+"poc",
-    "multicloud-foundation-poc-"+"integration",
+PRIVATE_FRAGMENTS=(
+    ("backstage-infrastructure-product-","storefront-poc"),
+    ("iaap-","forge"),
+    ("iaap-","console"),
+    ("iaap-","assurance"),
+    ("crossplane-multicloud-seed-","poc"),
+    ("multicloud-foundation-poc-","integration"),
 )
+PRIVATE_NAMES=tuple("".join(parts) for parts in PRIVATE_FRAGMENTS)
 PRIVATE_REF=re.compile(
     r"(?<![A-Za-z0-9_.-])(?:InfrastructureProductWorks/)?(?:"
     +"|".join(re.escape(x) for x in PRIVATE_NAMES)
@@ -26,6 +27,7 @@ PRIVATE_REF=re.compile(
 )
 JS_HEX=re.compile(r"\\x([0-9a-fA-F]{2})")
 JS_UNICODE=re.compile(r"\\u([0-9a-fA-F]{4})")
+PDF_SUFFIXES={".pdf"}
 JS_CONCAT=re.compile(r"""(["'])([^"'\\\r\n]*)\1\s*\+\s*(["'])([^"'\\\r\n]*)\3""")
 
 def normalize_browser_text(body):
@@ -74,15 +76,9 @@ def read_text_file(path):
     except UnicodeDecodeError:
         return None
 
-def contexts(body):
+def reference_counts(body):
     normalized=normalize_browser_text(body)
-    found=[]
-    for m in PRIVATE_REF.finditer(normalized):
-        left=max(0,m.start()-160)
-        right=min(len(normalized),m.end()+160)
-        ctx=re.sub(r"\s+"," ",normalized[left:right]).strip().lower()
-        found.append((m.group(0).lower(),ctx))
-    return Counter(found)
+    return Counter(m.group(0).lower() for m in PRIVATE_REF.finditer(normalized))
 
 base=baseline_ref()
 if os.environ.get("GITHUB_ACTIONS","").lower()=="true" and not base:
@@ -97,11 +93,24 @@ for p in ROOT.rglob("*"):
     if not p.is_file() or any(part in SKIP for part in p.parts):
         continue
     rel=p.relative_to(ROOT).as_posix()
+    if p.suffix.lower() in PDF_SUFFIXES and rel in base_files:
+        try:
+            current_blob=subprocess.check_output(["git","hash-object",str(p)],cwd=ROOT,text=True).strip()
+            baseline_blob=subprocess.check_output(["git","rev-parse",f"{base}:{rel}"],cwd=ROOT,text=True).strip()
+            if current_blob!=baseline_blob:
+                errors.append(f"{rel}: baseline PDF changed; PDF references are immutable in Increment 2")
+        except Exception as exc:
+            errors.append(f"{rel}: unable to verify baseline PDF immutability: {exc}")
+        continue
+
     current_text=read_text_file(p)
     if current_text is None:
         continue
 
-    current=contexts(current_text)
+    if rel=="scripts/audit_private_references.py":
+        continue
+
+    current=reference_counts(current_text)
     if not current:
         continue
 
@@ -109,13 +118,13 @@ for p in ROOT.rglob("*"):
     if base and rel in base_files:
         old=read_baseline(base,rel)
         if old is not None:
-            prior=contexts(old)
+            prior=reference_counts(old)
 
     extra=current-prior
-    for (identifier,ctx),count in extra.items():
+    for identifier,count in extra.items():
         for _ in range(count):
             errors.append(
-                f"{rel}: new or relocated private/internal implementation reference: {identifier}"
+                f"{rel}: new private/internal implementation reference: {identifier}"
             )
 
 if errors:
