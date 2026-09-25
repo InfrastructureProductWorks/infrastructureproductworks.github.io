@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Fail closed when browser-facing public surfaces exceed the reviewed manifest."""
 from pathlib import Path
-from urllib.parse import urlparse
-import json, os, re, subprocess, sys
+import json, re, subprocess, sys
 
 ROOT=Path(__file__).resolve().parents[1]
 MANIFEST=ROOT/"config/public-surface-manifest.json"
@@ -10,8 +9,8 @@ ORG="InfrastructureProductWorks"
 HTML_SUFFIXES={".html",".htm"}
 DATA_SUFFIXES={".json"}
 DOWNLOAD_SUFFIXES={".pdf"}
-ORG_REPO=re.compile(r"https://github\.com/InfrastructureProductWorks/([A-Za-z0-9_.-]+)(?:[/#?\s"']|$)",re.I)
-RAW_FEED=re.compile(r"https://raw\.githubusercontent\.com/InfrastructureProductWorks/[^\s"']+",re.I)
+ORG_REPO=re.compile(r'https://github\.com/InfrastructureProductWorks/([A-Za-z0-9_.-]+)(?:[/#?\s"\']|$)',re.I)
+RAW_FEED=re.compile(r'https://raw\.githubusercontent\.com/InfrastructureProductWorks/[^\s"\']+',re.I)
 
 def git_blob(path):
     try:
