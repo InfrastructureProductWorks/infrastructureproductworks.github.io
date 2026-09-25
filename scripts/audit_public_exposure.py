@@ -11,17 +11,18 @@ FORBIDDEN_NAMES={
     "swagger.json","swagger.yaml","swagger.yml",
     ".env","terraform.tfstate","terraform.tfstate.backup",
 }
-FORBIDDEN_SUFFIXES=(".map",".tfstate",".tfstate.backup")
+FORBIDDEN_SUFFIXES=(".map",".tfstate",".tfstate.backup",".zip",".tar",".tgz",".tar.gz",".gz",".7z",".rar")
 KEY_NAMES={"id_rsa","id_dsa","id_ecdsa","id_ed25519"}
 KEY_SUFFIXES={".pem",".key",".p12",".pfx",".ppk"}
 
 SECRET_PATTERNS=[
     ("private key",re.compile(rb"-----BEGIN (?:(?:RSA|EC|OPENSSH|DSA) |ENCRYPTED )?PRIVATE KEY-----")),
+    ("OpenPGP private key",re.compile(rb"-----BEGIN PGP PRIVATE KEY BLOCK-----")),
     ("GitHub token",re.compile(rb"\bgh[pousr]_[A-Za-z0-9_]{30,}\b")),
     ("GitHub fine-grained token",re.compile(rb"\bgithub_pat_[A-Za-z0-9_]{30,}\b")),
     ("AWS access key",re.compile(rb"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b")),
     ("PuTTY private key",re.compile(rb"(?im)^PuTTY-User-Key-File-[0-9]+:")), 
-    ("inline source map",re.compile(rb"sourceMappingURL\s*=\s*data:application/json(?:;charset=[^;,\s]+)?;base64,",re.I)),
+    ("inline source map",re.compile(rb"sourceMappingURL\s*=\s*data:application/json(?:;charset=[^;,\s]+)?(?:;base64)?,",re.I)),
 ]
 
 errors=[]
