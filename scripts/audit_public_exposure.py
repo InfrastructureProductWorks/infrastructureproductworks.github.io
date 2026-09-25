@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fail closed on credentials and non-site artifacts in the public repository."""
 from pathlib import Path
-import os, re, subprocess, sys
+import json, os, re, subprocess, sys
 
 ROOT=Path(__file__).resolve().parents[1]
 SKIP={".git"}
@@ -14,6 +14,7 @@ ALLOWED_NEW_SUFFIXES={
     ".txt",".md",".xml",".yml",".yaml",".py",
 }
 ALLOWED_NEW_NAMES={"CNAME","LICENSE","LICENSE.md","README","README.md"}
+TEXT_SUFFIXES={".html",".htm",".css",".js",".mjs",".cjs",".json",".svg",".webmanifest",".txt",".md",".xml",".yml",".yaml",".py"}
 
 FORBIDDEN_NAMES={
     "openapi.json","openapi.yaml","openapi.yml",
@@ -64,6 +65,18 @@ def valid_allowed_binary(suffix, head):
     if suffix==".ico": return head.startswith(b"\x00\x00\x01\x00")
     return True
 
+def looks_like_source_map_json(raw):
+    try:
+        obj=json.loads(raw.decode("utf-8"))
+    except Exception:
+        return False
+    return (
+        isinstance(obj,dict)
+        and isinstance(obj.get("version"),int)
+        and isinstance(obj.get("sources"),list)
+        and ("mappings" in obj or "sourcesContent" in obj)
+    )
+
 def recognized_container(head):
     return (
         head.startswith((b"PK\x03\x04",b"PK\x05\x06",b"PK\x07\x08")) or
@@ -108,6 +121,14 @@ for p in ROOT.rglob("*"):
             errors.append(f"{rel}: archive/container content is not publishable regardless of filename")
         if suffix in {".png",".jpg",".jpeg",".gif",".webp",".ico"} and not valid_allowed_binary(suffix,first_chunk[:32]):
             errors.append(f"{rel}: invalid or empty binary content for allowed site asset type")
+        if suffix in TEXT_SUFFIXES:
+            if b"\x00" in first_chunk:
+                errors.append(f"{rel}: binary content masquerading as an allowed text/source type")
+            else:
+                try:
+                    first_chunk.decode("utf-8")
+                except UnicodeDecodeError:
+                    errors.append(f"{rel}: non-UTF-8 content masquerading as an allowed text/source type")
         chunk=first_chunk
         while chunk:
             scan=overlap+chunk
