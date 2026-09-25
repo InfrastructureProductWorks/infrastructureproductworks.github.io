@@ -15,6 +15,17 @@ def git_blob(path):
     except Exception:
         return None
 
+def resolve_local(rel,url):
+    value=url.split("#",1)[0].split("?",1)[0]
+    if not value or value.startswith("//") or "://" in value:
+        return None
+    if value.startswith("/"):
+        return value.lstrip("/")
+    try:
+        return ((ROOT/rel).parent/Path(value)).resolve().relative_to(ROOT.resolve()).as_posix()
+    except Exception:
+        return None
+
 def load_manifest():
     try:
         data=json.loads(MANIFEST.read_text("utf-8"))
@@ -69,11 +80,9 @@ for p in ROOT.rglob("*"):
         continue
     rel=p.relative_to(ROOT).as_posix()
     for match in JSON_FETCH_RE.finditer(body):
-        url=match.group(1).split("?",1)[0]
-        if url.startswith("/"):
-            path=url.lstrip("/")
-            if path.endswith(".json") and path not in declared_json:
-                errors.append(f"{rel}: browser-consumed JSON is not declared: {path}")
+        path=resolve_local(rel,match.group(1))
+        if path and path.endswith(".json") and path not in declared_json:
+            errors.append(f"{rel}: browser-consumed JSON is not declared: {path}")
     for repo in URL_RE.findall(body):
         fq=f"InfrastructureProductWorks/{repo}"
         if fq not in declared_repos:
@@ -87,11 +96,9 @@ PDF_LINK_RE=re.compile(r"""(?is)href\s*=\s*["']([^"']+\.pdf(?:\?[^"']*)?)["']"""
 for rel in current_pages:
     body=(ROOT/rel).read_text("utf-8",errors="ignore")
     for match in PDF_LINK_RE.finditer(body):
-        url=match.group(1).split("?",1)[0]
-        if url.startswith("/"):
-            path=url.lstrip("/")
-            if path not in declared_downloads:
-                errors.append(f"{rel}: linked public PDF is not declared: {path}")
+        path=resolve_local(rel,match.group(1))
+        if path and path not in declared_downloads:
+            errors.append(f"{rel}: linked public PDF is not declared: {path}")
 
 if errors:
     print("Public Surface Manifest Gate: FAIL")
