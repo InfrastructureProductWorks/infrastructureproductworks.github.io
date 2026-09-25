@@ -1,0 +1,23 @@
+name: Private implementation reference gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  private-reference-exposure:
+    name: private-reference-exposure
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Audit private implementation references
+        env:
+          PRIVATE_REF_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python3 scripts/audit_private_references.py
