@@ -10,7 +10,7 @@ SKIP={".git","node_modules"}
 PUBLISHED_TEXT_EXT={".html",".htm",".js",".mjs",".cjs",".json",".svg",".css",".xml",".txt",".md",".webmanifest",".yaml",".yml"}
 FORBIDDEN_NAMES={"openapi.json","openapi.yaml","openapi.yml","swagger.json","swagger.yaml","swagger.yml",
  ".env",".env.local",".env.production","terraform.tfstate","terraform.tfstate.backup"}
-FORBIDDEN_SUFFIXES=(".map",".tfstate")
+FORBIDDEN_SUFFIXES=(".map",".tfstate",".tfstate.backup")
 KEY_NAMES={"id_rsa","id_dsa","id_ecdsa","id_ed25519"}
 KEY_SUFFIXES={".pem",".key",".p12",".pfx"}
 SECRET_PATTERNS=[
@@ -29,13 +29,33 @@ PRIVATE_REF=re.compile(r"(?<![A-Za-z0-9_.-])(?:InfrastructureProductWorks/)?(?:"
 JS_HEX=re.compile(r"\\x([0-9a-fA-F]{2})")
 JS_UNICODE=re.compile(r"\\u([0-9a-fA-F]{4})")
 def normalize_published_text(body, suffix):
-    # Normalize browser-resolved encodings before looking for private implementation refs.
-    if suffix in {".html",".htm",".svg",".xml"}:
-        body=html.unescape(body)
-    body=unquote(body)
-    body=JS_HEX.sub(lambda m: chr(int(m.group(1),16)),body)
-    body=JS_UNICODE.sub(lambda m: chr(int(m.group(1),16)),body)
-    return body
+    # Normalize browser-resolved encodings to a fixed point so composed escaping
+    # (e.g. JS escape -> percent escape -> repository name) cannot bypass matching.
+    current=body
+    for _ in range(6):
+        prior=current
+        if suffix in {".html",".htm",".svg",".xml"}:
+            current=html.unescape(current)
+        current=unquote(current)
+        current=JS_HEX.sub(lambda m: chr(int(m.group(1),16)),current)
+        current=JS_UNICODE.sub(lambda m: chr(int(m.group(1),16)),current)
+        if current==prior:
+            break
+    return current
+
+OPENAPI_MARKERS=[
+    re.compile(r'(?im)^\s*openapi\s*[:=]\s*["\']?3(?:\.\d+){1,2}'),
+    re.compile(r'(?im)^\s*swagger\s*[:=]\s*["\']?2\.0'),
+]
+def looks_textual(raw):
+    if not raw: return True
+    sample=raw[:65536]
+    if b"\x00" in sample: return False
+    try:
+        sample.decode("utf-8")
+        return True
+    except UnicodeDecodeError:
+        return False
 
 def files_at(ref):
     try:
@@ -64,27 +84,31 @@ if os.environ.get("GITHUB_ACTIONS","").lower()=="true" and not base_ref:
 for p in ROOT.rglob("*"):
     if not p.is_file() or any(part in SKIP for part in p.parts): continue
     rel=p.relative_to(ROOT).as_posix(); low=p.name.lower()
-    if low in FORBIDDEN_NAMES or low==".env" or low.startswith(".env.") or low in KEY_NAMES or any(low.endswith(s) for s in FORBIDDEN_SUFFIXES):
+    if low in FORBIDDEN_NAMES or low in {".env",".envrc"} or low.startswith(".env.") or low in KEY_NAMES or any(low.endswith(sfx) for sfx in FORBIDDEN_SUFFIXES):
         errors.append(f"{rel}: forbidden implementation/credential artifact")
     if p.suffix.lower() in KEY_SUFFIXES:
         errors.append(f"{rel}: credential-bearing file type is not publishable")
-    if p.suffix.lower()==".html": pages.append(rel)
+    if p.suffix.lower() in {".html",".htm"}: pages.append(rel)
 
     # Secret signatures are byte-scanned regardless of extension or file size.
-    # Stream in overlapping chunks so large publishable assets cannot bypass the gate.
     overlap=b""
+    first_sample=b""
     with p.open("rb") as fh:
         while True:
             chunk=fh.read(1024*1024)
             if not chunk: break
+            if not first_sample: first_sample=chunk[:65536]
             scan=overlap+chunk
             for label,rx in SECRET_PATTERNS:
                 if rx.search(scan):
                     errors.append(f"{rel}: possible {label}")
             overlap=scan[-512:]
 
-    if p.suffix.lower() in PUBLISHED_TEXT_EXT:
+    textual=(p.suffix.lower() in PUBLISHED_TEXT_EXT) or looks_textual(first_sample)
+    if textual:
         text=normalize_published_text(p.read_text("utf-8",errors="ignore"),p.suffix.lower())
+        if any(rx.search(text) for rx in OPENAPI_MARKERS):
+            errors.append(f"{rel}: machine-readable OpenAPI/Swagger specification exposed")
         # Preserve exact baseline contexts, not just identifier counts. Moving an existing
         # name into a new URL/path is therefore a new exposure.
         def contexts(body):
