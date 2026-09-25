@@ -4,7 +4,7 @@ from pathlib import Path
 import os, re, subprocess, sys
 
 ROOT=Path(__file__).resolve().parents[1]
-SKIP={".git","node_modules"}
+SKIP={".git"}
 
 # New files are default-denied unless they are ordinary public-site/source-governance
 # formats. Existing baseline paths remain permitted so this gate never strips the site.
@@ -56,6 +56,14 @@ if os.environ.get("GITHUB_ACTIONS","").lower()=="true" and not BASELINE:
     print(" - immutable baseline could not be resolved")
     sys.exit(1)
 
+def valid_allowed_binary(suffix, head):
+    if suffix==".png": return head.startswith(b"\x89PNG\r\n\x1a\n")
+    if suffix in {".jpg",".jpeg"}: return head.startswith(b"\xff\xd8\xff")
+    if suffix==".gif": return head.startswith((b"GIF87a",b"GIF89a"))
+    if suffix==".webp": return len(head)>=12 and head[:4]==b"RIFF" and head[8:12]==b"WEBP"
+    if suffix==".ico": return head.startswith(b"\x00\x00\x01\x00")
+    return True
+
 def recognized_container(head):
     return (
         head.startswith((b"PK\x03\x04",b"PK\x05\x06",b"PK\x07\x08")) or
@@ -93,21 +101,21 @@ for p in ROOT.rglob("*"):
         errors.append(f"{rel}: forbidden credential/implementation artifact")
 
     overlap=b""
-    first=True
+    first_chunk=b""
     with p.open("rb") as fh:
-        while True:
-            chunk=fh.read(1024*1024)
-            if not chunk:
-                break
-            if first:
-                if recognized_container(chunk[:1024]):
-                    errors.append(f"{rel}: archive/container content is not publishable regardless of filename")
-                first=False
+        first_chunk=fh.read(1024*1024)
+        if recognized_container(first_chunk[:1024]):
+            errors.append(f"{rel}: archive/container content is not publishable regardless of filename")
+        if suffix in {".png",".jpg",".jpeg",".gif",".webp",".ico"} and not valid_allowed_binary(suffix,first_chunk[:32]):
+            errors.append(f"{rel}: invalid or empty binary content for allowed site asset type")
+        chunk=first_chunk
+        while chunk:
             scan=overlap+chunk
             for label,rx in SECRET_PATTERNS:
                 if rx.search(scan):
                     errors.append(f"{rel}: possible {label}")
             overlap=scan[-512:]
+            chunk=fh.read(1024*1024)
 
 if errors:
     print("Public Credential & Artifact Gate: FAIL")
