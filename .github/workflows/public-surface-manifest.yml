@@ -1,0 +1,19 @@
+name: Public surface manifest gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  public-surface-manifest:
+    name: public-surface-manifest
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify intentional public surfaces
+        run: python3 scripts/audit_public_surface_manifest.py
