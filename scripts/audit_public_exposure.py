@@ -2,11 +2,11 @@
 """Fail closed on new reconstruction-enabling public artifacts without stripping content."""
 from pathlib import Path
 from html.parser import HTMLParser
-import os, re, subprocess, sys
+import html, os, re, subprocess, sys
 
 ROOT=Path(__file__).resolve().parents[1]
 SKIP={".git","node_modules"}
-PUBLISHED_TEXT_EXT={".html",".htm",".js",".mjs",".cjs",".json",".svg",".css",".xml",".txt",".md",".webmanifest"}
+PUBLISHED_TEXT_EXT={".html",".htm",".js",".mjs",".cjs",".json",".svg",".css",".xml",".txt",".md",".webmanifest",".yaml",".yml"}
 FORBIDDEN_NAMES={"openapi.json","openapi.yaml","openapi.yml","swagger.json","swagger.yaml","swagger.yml",
  ".env",".env.local",".env.production","terraform.tfstate","terraform.tfstate.backup"}
 FORBIDDEN_SUFFIXES=(".map",".tfstate")
@@ -50,7 +50,7 @@ errors=[]; pages=[]
 for p in ROOT.rglob("*"):
     if not p.is_file() or any(part in SKIP for part in p.parts): continue
     rel=p.relative_to(ROOT).as_posix(); low=p.name.lower()
-    if low in FORBIDDEN_NAMES or low in KEY_NAMES or any(low.endswith(s) for s in FORBIDDEN_SUFFIXES):
+    if low in FORBIDDEN_NAMES or low==".env" or low.startswith(".env.") or low in KEY_NAMES or any(low.endswith(s) for s in FORBIDDEN_SUFFIXES):
         errors.append(f"{rel}: forbidden implementation/credential artifact")
     if p.suffix.lower() in KEY_SUFFIXES:
         errors.append(f"{rel}: credential-bearing file type is not publishable")
@@ -71,6 +71,8 @@ for p in ROOT.rglob("*"):
 
     if p.suffix.lower() in PUBLISHED_TEXT_EXT:
         text=p.read_text("utf-8",errors="ignore")
+        if p.suffix.lower() in {".html",".htm"}:
+            text=html.unescape(text)
         # Preserve exact baseline contexts, not just identifier counts. Moving an existing
         # name into a new URL/path is therefore a new exposure.
         def contexts(body):
@@ -96,23 +98,39 @@ for p in ROOT.rglob("*"):
                 else:
                     errors.append(f"{rel}: private implementation repository reference appears in new context: {leak}")
 
-required={"index.html","about/index.html","portfolio/index.html","security/index.html",
- "storefront/index.html","guard/index.html","console/index.html","forge/index.html",
- "assurance/index.html","terms/index.html","privacy/index.html"}
-for rel in sorted(required-set(pages)): errors.append(f"{rel}: required public surface removed")
+# Preserve every HTML surface that existed at the immutable baseline, not a hand-written subset.
+baseline_html={rel for rel in base_files if rel.lower().endswith((".html",".htm"))} if base_ref else set()
+current_html=set(pages)
+for rel in sorted(baseline_html-current_html):
+    errors.append(f"{rel}: established public HTML surface removed")
 
-# Content-preservation contract: required pages may grow, but hardening may not silently
-# replace them with materially smaller shells. Compare normalized visible-text volume to base.
-TAG=re.compile(r"<[^>]+>")
 SPACE=re.compile(r"\s+")
+class VisibleTextParser(HTMLParser):
+    NON_RENDERED={"script","style","template","head","noscript"}
+    def __init__(self):
+        super().__init__(convert_charrefs=True); self.hidden_stack=[]; self.parts=[]
+    def handle_starttag(self,tag,attrs):
+        attrs=dict(attrs); style=attrs.get("style","").replace(" ","").lower()
+        hidden=(tag.lower() in self.NON_RENDERED or "hidden" in attrs or
+                attrs.get("aria-hidden","").lower()=="true" or "display:none" in style or
+                "visibility:hidden" in style or (self.hidden_stack and self.hidden_stack[-1]))
+        self.hidden_stack.append(bool(hidden))
+    def handle_startendtag(self,tag,attrs): pass
+    def handle_endtag(self,tag):
+        if self.hidden_stack: self.hidden_stack.pop()
+    def handle_data(self,data):
+        if not self.hidden_stack or not self.hidden_stack[-1]: self.parts.append(data)
 def visible_len(text):
-    return len(SPACE.sub(" ",TAG.sub(" ",text)).strip())
+    parser=VisibleTextParser()
+    try: parser.feed(text)
+    except Exception: return 0
+    return len(SPACE.sub(" "," ".join(parser.parts)).strip())
+
 if base_ref:
-    for rel in sorted(required & set(pages) & base_files):
+    for rel in sorted(baseline_html & current_html):
         try:
             old=subprocess.check_output(["git","show",f"{base_ref}:{rel}"],cwd=ROOT,text=True,errors="ignore")
             old_len=visible_len(old); new_len=visible_len((ROOT/rel).read_text("utf-8",errors="ignore"))
-            # A 20% tolerance permits normal editing while rejecting stripped/empty shells.
             if old_len>=200 and new_len < int(old_len*0.80):
                 errors.append(f"{rel}: visible content reduced below preservation floor ({new_len}/{old_len})")
         except Exception as exc:
