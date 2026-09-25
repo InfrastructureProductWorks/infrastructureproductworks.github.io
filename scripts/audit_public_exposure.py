@@ -15,6 +15,8 @@ FORBIDDEN_SUFFIXES=(".map",".tfstate",".tfstate.backup",".zip",".tar",".tgz",".t
 KEY_NAMES={"id_rsa","id_dsa","id_ecdsa","id_ed25519"}
 KEY_SUFFIXES={".pem",".key",".p12",".pfx",".ppk"}
 
+SELF_SIGNATURE_ALLOWLIST={"scripts/audit_public_exposure.py"}
+
 SECRET_PATTERNS=[
     ("private key",re.compile(rb"-----BEGIN (?:(?:RSA|EC|OPENSSH|DSA) |ENCRYPTED )?PRIVATE KEY-----")),
     ("OpenPGP private key",re.compile(rb"-----BEGIN PGP PRIVATE KEY BLOCK-----")),
@@ -49,9 +51,10 @@ for p in ROOT.rglob("*"):
             if not chunk:
                 break
             scan=overlap+chunk
-            for label,rx in SECRET_PATTERNS:
-                if rx.search(scan):
-                    errors.append(f"{rel}: possible {label}")
+            if rel not in SELF_SIGNATURE_ALLOWLIST:
+                for label,rx in SECRET_PATTERNS:
+                    if rx.search(scan):
+                        errors.append(f"{rel}: possible {label}")
             overlap=scan[-512:]
 
 if errors:
