@@ -1,0 +1,24 @@
+name: Public projection contract gate
+
+on:
+  pull_request:
+    paths:
+      - 'assets/assurance-records.json'
+      - 'data/roadmap-relationships.json'
+      - 'scripts/audit_public_projections.py'
+      - '.github/workflows/public-projection-contract.yml'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  public-projection-contract:
+    name: public-projection-contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enforce bounded public JSON projections
+        run: python3 scripts/audit_public_projections.py
