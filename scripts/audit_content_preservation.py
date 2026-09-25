@@ -9,13 +9,28 @@ from urllib.parse import urlparse
 ROOT=Path(__file__).resolve().parents[1]
 SPACE=re.compile(r"\s+")
 WORD=re.compile(r"[A-Za-z0-9][A-Za-z0-9'’-]*")
-MEDIA_ATTR=re.compile(r"""(?is)\b(?:src|poster)\s*=\s*["']([^"']+)["']""")
 STYLE_BLOCK=re.compile(r"(?is)<style\b[^>]*>(.*?)</style>")
-LINK_CSS=re.compile(r"""(?is)<link\b[^>]*\brel\s*=\s*["'][^"']*stylesheet[^"']*["'][^>]*\bhref\s*=\s*["']([^"']+)["']""")
 GLOBAL_HIDE=re.compile(
     r"(?is)(?:^|[},\s])(?:html|body|main|body\s*>\s*main|#content|\.site|\.page)\s*\{[^}]*?"
     r"(?:display\s*:\s*none\b|visibility\s*:\s*hidden\b|opacity\s*:\s*0(?:\D|$))"
 )
+
+class AssetParser(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.media=set()
+        self.stylesheets=[]
+    def handle_starttag(self,tag,attrs):
+        attrs=dict(attrs)
+        t=tag.lower()
+        if t in {"img","source","video","audio"}:
+            value=attrs.get("src") or attrs.get("poster")
+            if value: self.media.add(value)
+        if t=="link":
+            rel=(attrs.get("rel") or "").lower().split()
+            href=attrs.get("href")
+            if "stylesheet" in rel and href:
+                self.stylesheets.append(href)
 
 class VisibleParser(HTMLParser):
     NON_RENDERED={"script","style","template","head","noscript"}
@@ -79,9 +94,12 @@ def word_counts(text):
     return Counter(w.lower() for w in WORD.findall(text))
 
 def media_refs(body):
+    parser=AssetParser()
+    try: parser.feed(body)
+    except Exception: return set()
     refs=set()
-    for m in MEDIA_ATTR.finditer(body):
-        value=html.unescape(m.group(1)).strip()
+    for value in parser.media:
+        value=html.unescape(value).strip()
         parsed=urlparse(value)
         if parsed.scheme or value.startswith("//") or value.startswith("data:"):
             continue
@@ -91,8 +109,11 @@ def media_refs(body):
 
 def css_bodies_for_html(rel,body,ref=None):
     css=list(STYLE_BLOCK.findall(body))
+    parser=AssetParser()
+    try: parser.feed(body)
+    except Exception: return css
     base=(ROOT/rel).parent
-    for href in LINK_CSS.findall(body):
+    for href in parser.stylesheets:
         parsed=urlparse(href)
         if parsed.scheme or href.startswith("//"): continue
         clean=href.split("#",1)[0].split("?",1)[0]
@@ -150,19 +171,25 @@ for rel in sorted(base_html & current_html):
         errors.append(f"{rel}: new global stylesheet rule hides the public page")
 
 DEMO_MARKERS={
-    "console/demo/index.html":("synthetic","awaiting_human_review"),
-    "assurance/demo/index.html":("synthetic",),
-    "assurance/portal/index.html":("sanitized","synthetic"),
+    ("console/demo/index.html","assets/console-demo.js"):("synthetic","awaiting_human_review"),
+    ("assurance/demo/index.html","assets/assurance-demo.js"):("synthetic",),
+    ("assurance/portal/index.html","assets/assurance-portal.js"):("sanitized","synthetic"),
 }
-for rel,markers in DEMO_MARKERS.items():
-    p=ROOT/rel
-    if not p.exists():
-        errors.append(f"{rel}: required public demo surface missing")
-        continue
-    body=p.read_text("utf-8",errors="ignore").lower()
+for rels,markers in DEMO_MARKERS.items():
+    bodies=[]
+    missing=False
+    for rel in rels:
+        p=ROOT/rel
+        if not p.exists():
+            errors.append(f"{rel}: required public demo surface component missing")
+            missing=True
+            continue
+        bodies.append(p.read_text("utf-8",errors="ignore").lower())
+    if missing: continue
+    body="\n".join(bodies)
     for marker in markers:
         if marker not in body:
-            errors.append(f"{rel}: required demo-boundary marker missing: {marker}")
+            errors.append(f"{' + '.join(rels)}: required demo-boundary marker missing: {marker}")
 
 if errors:
     print("Public Content Preservation Gate: FAIL")
