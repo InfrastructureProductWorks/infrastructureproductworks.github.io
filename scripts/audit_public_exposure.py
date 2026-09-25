@@ -58,6 +58,7 @@ if os.environ.get("GITHUB_ACTIONS","").lower()=="true" and not BASELINE:
     sys.exit(1)
 
 def valid_allowed_binary(suffix, head):
+    if suffix==".pdf": return head.startswith(b"%PDF-")
     if suffix==".png": return head.startswith(b"\x89PNG\r\n\x1a\n")
     if suffix in {".jpg",".jpeg"}: return head.startswith(b"\xff\xd8\xff")
     if suffix==".gif": return head.startswith((b"GIF87a",b"GIF89a"))
@@ -73,7 +74,11 @@ def looks_like_source_map_object(obj):
     sections=obj.get("sections")
     if isinstance(sections,list):
         for section in sections:
-            if isinstance(section,dict) and looks_like_source_map_object(section.get("map")):
+            if not isinstance(section,dict):
+                continue
+            if "url" in section:
+                return True
+            if looks_like_source_map_object(section.get("map")):
                 return True
     return False
 
@@ -126,7 +131,7 @@ for p in ROOT.rglob("*"):
         first_chunk=fh.read(1024*1024)
         if recognized_container(first_chunk[:1024]):
             errors.append(f"{rel}: archive/container content is not publishable regardless of filename")
-        if suffix in {".png",".jpg",".jpeg",".gif",".webp",".ico"} and not valid_allowed_binary(suffix,first_chunk[:32]):
+        if suffix in {".pdf",".png",".jpg",".jpeg",".gif",".webp",".ico"} and not valid_allowed_binary(suffix,first_chunk[:32]):
             errors.append(f"{rel}: invalid or empty binary content for allowed site asset type")
         if suffix in TEXT_SUFFIXES:
             if b"\x00" in first_chunk:
@@ -136,13 +141,13 @@ for p in ROOT.rglob("*"):
                     first_chunk.decode("utf-8")
                 except UnicodeDecodeError:
                     errors.append(f"{rel}: non-UTF-8 content masquerading as an allowed text/source type")
-        if suffix==".json":
+        if suffix in TEXT_SUFFIXES:
             try:
                 raw=p.read_bytes()
                 if looks_like_source_map_json(raw):
-                    errors.append(f"{rel}: standalone source-map JSON is not publishable")
+                    errors.append(f"{rel}: standalone source-map document is not publishable")
             except Exception as exc:
-                errors.append(f"{rel}: unable to validate JSON content: {exc}")
+                errors.append(f"{rel}: unable to validate structured text content: {exc}")
         chunk=first_chunk
         while chunk:
             scan=overlap+chunk
