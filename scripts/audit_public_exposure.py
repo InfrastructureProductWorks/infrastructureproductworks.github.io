@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Fail closed on new reconstruction-enabling public artifacts without stripping content."""
 from pathlib import Path
-import re, subprocess, sys
+from collections import Counter
+import hashlib, os, re, subprocess, sys
 
 ROOT=Path(__file__).resolve().parents[1]
 SKIP={".git","node_modules"}
@@ -14,6 +15,7 @@ KEY_SUFFIXES={".pem",".key",".p12",".pfx"}
 SECRET_PATTERNS=[
  ("private key",re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
  ("GitHub token",re.compile(rb"\bgh[pousr]_[A-Za-z0-9_]{30,}\b")),
+ ("GitHub fine-grained token",re.compile(rb"\bgithub_pat_[A-Za-z0-9_]{30,}\b")),
  ("AWS access key",re.compile(rb"\bAKIA[0-9A-Z]{16}\b")),
 ]
 PRIVATE_NAMES=(
@@ -35,7 +37,6 @@ def files_at(ref):
 base_ref=None
 # CI provides the immutable comparison base explicitly. This avoids treating GitHub's
 # synthetic PR merge commit as the baseline. Local runs fall back to origin/main/HEAD^.
-import os
 candidate=os.environ.get("EXTRACTION_BASE_SHA","").strip()
 if candidate and subprocess.run(["git","cat-file","-e",candidate+"^{commit}"],cwd=ROOT,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0:
     base_ref=candidate
@@ -55,29 +56,53 @@ for p in ROOT.rglob("*"):
         errors.append(f"{rel}: credential-bearing file type is not publishable")
     if p.suffix.lower()==".html": pages.append(rel)
 
-    # Secret signatures are byte-scanned regardless of extension; cap only very large files.
-    if p.stat().st_size<=5_000_000:
-        raw=p.read_bytes()
-        for label,rx in SECRET_PATTERNS:
-            if rx.search(raw): errors.append(f"{rel}: possible {label}")
+    # Secret signatures are byte-scanned regardless of extension or file size.
+    # Stream in overlapping chunks so large publishable assets cannot bypass the gate.
+    overlap=b""
+    with p.open("rb") as fh:
+        while True:
+            chunk=fh.read(1024*1024)
+            if not chunk: break
+            scan=overlap+chunk
+            for label,rx in SECRET_PATTERNS:
+                if rx.search(scan):
+                    errors.append(f"{rel}: possible {label}")
+            overlap=scan[-512:]
 
     if p.suffix.lower() in BROWSER_EXT:
         text=p.read_text("utf-8",errors="ignore")
-        current=set(m.group(0).lower() for m in PRIVATE_REF.finditer(text))
+        current=Counter(m.group(0).lower() for m in PRIVATE_REF.finditer(text))
         if current:
-            prior=set()
+            prior=Counter()
             if base_ref and rel in base_files:
                 try:
                     old=subprocess.check_output(["git","show",f"{base_ref}:{rel}"],cwd=ROOT,text=True,errors="ignore")
-                    prior=set(m.group(0).lower() for m in PRIVATE_REF.finditer(old))
+                    prior=Counter(m.group(0).lower() for m in PRIVATE_REF.finditer(old))
                 except Exception: pass
-            for leak in sorted(current-prior):
-                errors.append(f"{rel}: new private implementation repository identifier exposed: {leak}")
+            for leak,count in sorted((current-prior).items()):
+                errors.append(f"{rel}: {count} new private implementation repository identifier occurrence(s) exposed: {leak}")
 
 required={"index.html","about/index.html","portfolio/index.html","security/index.html",
  "storefront/index.html","guard/index.html","console/index.html","forge/index.html",
  "assurance/index.html","terms/index.html","privacy/index.html"}
 for rel in sorted(required-set(pages)): errors.append(f"{rel}: required public surface removed")
+
+# Content-preservation contract: required pages may grow, but hardening may not silently
+# replace them with materially smaller shells. Compare normalized visible-text volume to base.
+TAG=re.compile(r"<[^>]+>")
+SPACE=re.compile(r"\s+")
+def visible_len(text):
+    return len(SPACE.sub(" ",TAG.sub(" ",text)).strip())
+if base_ref:
+    for rel in sorted(required & set(pages) & base_files):
+        try:
+            old=subprocess.check_output(["git","show",f"{base_ref}:{rel}"],cwd=ROOT,text=True,errors="ignore")
+            old_len=visible_len(old); new_len=visible_len((ROOT/rel).read_text("utf-8",errors="ignore"))
+            # A 20% tolerance permits normal editing while rejecting stripped/empty shells.
+            if old_len>=200 and new_len < int(old_len*0.80):
+                errors.append(f"{rel}: visible content reduced below preservation floor ({new_len}/{old_len})")
+        except Exception as exc:
+            errors.append(f"{rel}: unable to verify content-preservation baseline: {exc}")
 
 for rel in ("console/demo/index.html","assurance/demo/index.html","assurance/portal/index.html"):
     p=ROOT/rel
