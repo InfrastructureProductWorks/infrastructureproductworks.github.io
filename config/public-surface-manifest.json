@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "ipw-public-surface/v1",
+  "purpose": "Deliberate inventory of browser-facing public pages, machine-readable feeds, downloads, and organization-owned external references.",
+  "pages": [
+    "about/index.html",
+    "agentic-interoperability/index.html",
+    "assurance/demo/index.html",
+    "assurance/index.html",
+    "assurance/portal/index.html",
+    "composite-ai/index.html",
+    "console/demo/index.html",
+    "console/index.html",
+    "crossplane/index.html",
+    "docs/guard/index.html",
+    "forge/index.html",
+    "guard/index.html",
+    "guides/assurance/index.html",
+    "guides/console/index.html",
+    "guides/forge/index.html",
+    "guides/guard/index.html",
+    "guides/index.html",
+    "guides/storefront/index.html",
+    "index.html",
+    "insights/ai-amplified-technical-executive/index.html",
+    "insights/ai-amplified-technical-leader/index.html",
+    "insights/building-ipw/index.html",
+    "insights/index.html",
+    "insights/platform-director/index.html",
+    "operating-model/index.html",
+    "portfolio/index.html",
+    "privacy/index.html",
+    "security/index.html",
+    "storefront/index.html",
+    "support/index.html",
+    "terms/index.html",
+    "work/index.html"
+  ],
+  "publicData": [
+    {
+      "path": "assets/assurance-records.json",
+      "gitBlobSha": "713ef3d470bc1d8ff3edfb399967899ee1812a2f",
+      "classification": "sanitized synthetic assurance projection"
+    },
+    {
+      "path": "data/roadmap-relationships.json",
+      "gitBlobSha": "6e63e8936b912be5fa9d717304f9afcb27655b4d",
+      "classification": "public roadmap projection"
+    }
+  ],
+  "downloads": [
+    {
+      "path": "assets/whitepapers/the-ai-amplified-technical-executive.pdf",
+      "gitBlobSha": "1e75e078c2a223248d23c0f4a567e61bbf3406fa",
+      "classification": "public whitepaper"
+    },
+    {
+      "path": "assets/whitepapers/the-ai-amplified-technical-leader.pdf",
+      "gitBlobSha": "1e75e078c2a223248d23c0f4a567e61bbf3406fa",
+      "classification": "public whitepaper"
+    }
+  ],
+  "publicRepositories": [
+    "InfrastructureProductWorks/infrastructureproductworks.github.io",
+    "InfrastructureProductWorks/iaap-guard",
+    "InfrastructureProductWorks/ai-powered-infrastructure-as-a-product"
+  ],
+  "externalDataFeeds": [
+    "https://raw.githubusercontent.com/InfrastructureProductWorks/infrastructureproductworks.github.io/telemetry/portfolio-live/data/portfolio-dashboard-live.json"
+  ]
+}
