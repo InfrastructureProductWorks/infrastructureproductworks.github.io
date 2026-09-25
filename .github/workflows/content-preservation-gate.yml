@@ -1,0 +1,23 @@
+name: Public content preservation gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  content-preservation:
+    name: content-preservation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Preserve public pages, diagrams, and demo boundaries
+        env:
+          PRESERVATION_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python3 scripts/audit_content_preservation.py
