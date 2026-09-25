@@ -6,6 +6,19 @@ import re, sys
 ROOT=Path(__file__).resolve().parents[1]
 SKIP={".git","node_modules"}
 
+ALLOWED_TEXT_SUFFIXES={".html",".js",".cjs",".css",".json",".md",".py",".yml",".webmanifest",".svg"}
+ALLOWED_BINARY_SUFFIXES={".png",".jpg",".jpeg",".webp",".pdf",".ico"}
+ALLOWED_EXTENSIONLESS={"CNAME"}
+
+BINARY_MAGIC={
+    ".png":lambda b:b.startswith(b"\x89PNG\r\n\x1a\n"),
+    ".jpg":lambda b:b.startswith(b"\xff\xd8\xff"),
+    ".jpeg":lambda b:b.startswith(b"\xff\xd8\xff"),
+    ".webp":lambda b:len(b)>=12 and b.startswith(b"RIFF") and b[8:12]==b"WEBP",
+    ".pdf":lambda b:b.startswith(b"%PDF-"),
+    ".ico":lambda b:b.startswith(b"\x00\x00\x01\x00"),
+}
+
 FORBIDDEN_NAMES={
     "openapi.json","openapi.yaml","openapi.yml",
     "swagger.json","swagger.yaml","swagger.yml",
@@ -48,6 +61,11 @@ for p in ROOT.rglob("*"):
         continue
     rel=p.relative_to(ROOT).as_posix()
     low=p.name.lower()
+    suffix=p.suffix.lower()
+
+    allowed=(suffix in ALLOWED_TEXT_SUFFIXES or suffix in ALLOWED_BINARY_SUFFIXES or rel in ALLOWED_EXTENSIONLESS)
+    if not allowed:
+        errors.append(f"{rel}: file class is not approved for publication")
 
     if (
         low in FORBIDDEN_NAMES
@@ -70,6 +88,17 @@ for p in ROOT.rglob("*"):
                 for label,detector in ARCHIVE_MAGIC:
                     if detector(chunk):
                         errors.append(f"{rel}: recognized {label} archive/container is not publishable")
+                if suffix in ALLOWED_TEXT_SUFFIXES or rel in ALLOWED_EXTENSIONLESS:
+                    if b"\x00" in chunk:
+                        errors.append(f"{rel}: approved text file contains binary NUL bytes")
+                    try:
+                        chunk.decode("utf-8")
+                    except UnicodeDecodeError:
+                        errors.append(f"{rel}: approved text file is not valid UTF-8")
+                if suffix in ALLOWED_BINARY_SUFFIXES:
+                    detector=BINARY_MAGIC.get(suffix)
+                    if detector is None or not detector(chunk):
+                        errors.append(f"{rel}: binary content does not match approved {suffix} file type")
                 first_chunk=False
             scan=overlap+chunk
             for label,rx in SECRET_PATTERNS:
