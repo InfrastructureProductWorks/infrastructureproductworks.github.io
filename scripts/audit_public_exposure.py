@@ -129,6 +129,13 @@ for p in ROOT.rglob("*"):
                     first_chunk.decode("utf-8")
                 except UnicodeDecodeError:
                     errors.append(f"{rel}: non-UTF-8 content masquerading as an allowed text/source type")
+        if suffix==".json":
+            try:
+                raw=p.read_bytes()
+                if looks_like_source_map_json(raw):
+                    errors.append(f"{rel}: standalone source-map JSON is not publishable")
+            except Exception as exc:
+                errors.append(f"{rel}: unable to validate JSON content: {exc}")
         chunk=first_chunk
         while chunk:
             scan=overlap+chunk
