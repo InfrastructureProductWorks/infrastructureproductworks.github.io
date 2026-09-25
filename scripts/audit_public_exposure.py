@@ -2,6 +2,7 @@
 """Fail closed on new reconstruction-enabling public artifacts without stripping content."""
 from pathlib import Path
 from html.parser import HTMLParser
+from urllib.parse import unquote
 import html, os, re, subprocess, sys
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -25,6 +26,17 @@ PRIVATE_NAMES=(
 PRIVATE_REF=re.compile(r"(?<![A-Za-z0-9_.-])(?:InfrastructureProductWorks/)?(?:"+
  "|".join(re.escape(x) for x in PRIVATE_NAMES)+r")(?![A-Za-z0-9_.-])",re.I)
 
+JS_HEX=re.compile(r"\\x([0-9a-fA-F]{2})")
+JS_UNICODE=re.compile(r"\\u([0-9a-fA-F]{4})")
+def normalize_published_text(body, suffix):
+    # Normalize browser-resolved encodings before looking for private implementation refs.
+    if suffix in {".html",".htm",".svg",".xml"}:
+        body=html.unescape(body)
+    body=unquote(body)
+    body=JS_HEX.sub(lambda m: chr(int(m.group(1),16)),body)
+    body=JS_UNICODE.sub(lambda m: chr(int(m.group(1),16)),body)
+    return body
+
 def files_at(ref):
     try:
         out=subprocess.check_output(["git","ls-tree","-r","--name-only",ref],cwd=ROOT,text=True)
@@ -47,6 +59,8 @@ elif subprocess.run(["git","rev-parse","--verify","HEAD^"],cwd=ROOT,stdout=subpr
 base_files=files_at(base_ref) if base_ref else set()
 
 errors=[]; pages=[]
+if os.environ.get("GITHUB_ACTIONS","").lower()=="true" and not base_ref:
+    errors.append("unable to resolve immutable comparison baseline in CI")
 for p in ROOT.rglob("*"):
     if not p.is_file() or any(part in SKIP for part in p.parts): continue
     rel=p.relative_to(ROOT).as_posix(); low=p.name.lower()
@@ -70,16 +84,14 @@ for p in ROOT.rglob("*"):
             overlap=scan[-512:]
 
     if p.suffix.lower() in PUBLISHED_TEXT_EXT:
-        text=p.read_text("utf-8",errors="ignore")
-        if p.suffix.lower() in {".html",".htm"}:
-            text=html.unescape(text)
+        text=normalize_published_text(p.read_text("utf-8",errors="ignore"),p.suffix.lower())
         # Preserve exact baseline contexts, not just identifier counts. Moving an existing
         # name into a new URL/path is therefore a new exposure.
         def contexts(body):
             out=[]
             for m in PRIVATE_REF.finditer(body):
                 left=max(0,m.start()-120); right=min(len(body),m.end()+120)
-                ctx=re.sub(r"\\s+"," ",body[left:right]).strip().lower()
+                ctx=re.sub(r"\s+"," ",body[left:right]).strip().lower()
                 out.append((m.group(0).lower(),ctx))
             return out
         current=contexts(text)
@@ -88,7 +100,7 @@ for p in ROOT.rglob("*"):
             if base_ref and rel in base_files:
                 try:
                     old=subprocess.check_output(["git","show",f"{base_ref}:{rel}"],cwd=ROOT,text=True,errors="ignore")
-                    prior=contexts(old)
+                    prior=contexts(normalize_published_text(old,p.suffix.lower()))
                 except Exception: pass
             remaining=list(prior)
             for leak,ctx in current:
@@ -107,19 +119,32 @@ for rel in sorted(baseline_html-current_html):
 SPACE=re.compile(r"\s+")
 class VisibleTextParser(HTMLParser):
     NON_RENDERED={"script","style","template","head","noscript"}
+    VOID={"area","base","br","col","embed","hr","img","input","link","meta","param","source","track","wbr"}
     def __init__(self):
-        super().__init__(convert_charrefs=True); self.hidden_stack=[]; self.parts=[]
-    def handle_starttag(self,tag,attrs):
-        attrs=dict(attrs); style=attrs.get("style","").replace(" ","").lower()
-        hidden=(tag.lower() in self.NON_RENDERED or "hidden" in attrs or
+        super().__init__(convert_charrefs=True)
+        self.hidden_depth=0
+        self.stack=[]
+        self.parts=[]
+    def _hidden_here(self,tag,attrs):
+        attrs=dict(attrs)
+        style=re.sub(r"\s+","",attrs.get("style","")).lower()
+        return (self.hidden_depth>0 or tag.lower() in self.NON_RENDERED or "hidden" in attrs or
                 attrs.get("aria-hidden","").lower()=="true" or "display:none" in style or
-                "visibility:hidden" in style or (self.hidden_stack and self.hidden_stack[-1]))
-        self.hidden_stack.append(bool(hidden))
-    def handle_startendtag(self,tag,attrs): pass
+                "visibility:hidden" in style)
+    def handle_starttag(self,tag,attrs):
+        hidden=self._hidden_here(tag,attrs)
+        if tag.lower() not in self.VOID:
+            self.stack.append(hidden)
+            if hidden: self.hidden_depth+=1
+    def handle_startendtag(self,tag,attrs):
+        pass
     def handle_endtag(self,tag):
-        if self.hidden_stack: self.hidden_stack.pop()
+        if self.stack:
+            hidden=self.stack.pop()
+            if hidden: self.hidden_depth=max(0,self.hidden_depth-1)
     def handle_data(self,data):
-        if not self.hidden_stack or not self.hidden_stack[-1]: self.parts.append(data)
+        if self.hidden_depth==0:
+            self.parts.append(data)
 def visible_len(text):
     parser=VisibleTextParser()
     try: parser.feed(text)
