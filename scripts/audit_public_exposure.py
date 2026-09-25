@@ -65,17 +65,24 @@ def valid_allowed_binary(suffix, head):
     if suffix==".ico": return head.startswith(b"\x00\x00\x01\x00")
     return True
 
+def looks_like_source_map_object(obj):
+    if not isinstance(obj,dict) or not isinstance(obj.get("version"),int):
+        return False
+    if isinstance(obj.get("sources"),list) and ("mappings" in obj or "sourcesContent" in obj):
+        return True
+    sections=obj.get("sections")
+    if isinstance(sections,list):
+        for section in sections:
+            if isinstance(section,dict) and looks_like_source_map_object(section.get("map")):
+                return True
+    return False
+
 def looks_like_source_map_json(raw):
     try:
         obj=json.loads(raw.decode("utf-8"))
     except Exception:
         return False
-    return (
-        isinstance(obj,dict)
-        and isinstance(obj.get("version"),int)
-        and isinstance(obj.get("sources"),list)
-        and ("mappings" in obj or "sourcesContent" in obj)
-    )
+    return looks_like_source_map_object(obj)
 
 def recognized_container(head):
     return (
