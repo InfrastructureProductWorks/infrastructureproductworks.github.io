@@ -15,5 +15,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Verify intentional public surfaces
-        run: python3 scripts/audit_public_surface_manifest.py
+        with:
+          fetch-depth: 0
+      - name: Verify intentional public surface inventory
+        run: python3 scripts/audit_public_surface.py
