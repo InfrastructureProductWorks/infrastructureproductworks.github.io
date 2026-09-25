@@ -45,14 +45,19 @@ SECRET_PATTERNS=[
     ("inline source map",re.compile(rb"sourceMappingURL\s*=\s*data:application/json(?:;charset=[^;,\s]+)?(?:;base64)?,",re.I)),
 ]
 
-ARCHIVE_MAGIC=[
-    ("ZIP",lambda b:b.startswith(b"PK\x03\x04") or b.startswith(b"PK\x05\x06") or b.startswith(b"PK\x07\x08")),
-    ("GZIP",lambda b:b.startswith(b"\x1f\x8b")),
-    ("BZIP2",lambda b:b.startswith(b"BZh")),
-    ("XZ",lambda b:b.startswith(b"\xfd7zXZ\x00")),
-    ("7Z",lambda b:b.startswith(b"7z\xbc\xaf\x27\x1c")),
-    ("RAR",lambda b:b.startswith(b"Rar!\x1a\x07\x00") or b.startswith(b"Rar!\x1a\x07\x01\x00")),
-    ("ZSTD",lambda b:b.startswith(b"\x28\xb5\x2f\xfd")),
+ARCHIVE_SIGNATURES=[
+    ("ZIP",(b"PK\x03\x04",b"PK\x05\x06",b"PK\x07\x08")),
+    ("GZIP",(b"\x1f\x8b",)),
+    ("BZIP2",(b"BZh",)),
+    ("XZ",(b"\xfd7zXZ\x00",)),
+    ("7Z",(b"7z\xbc\xaf\x27\x1c",)),
+    ("RAR",(b"Rar!\x1a\x07\x00",b"Rar!\x1a\x07\x01\x00")),
+    ("ZSTD",(b"\x28\xb5\x2f\xfd",)),
+]
+
+OPENAPI_PATTERNS=[
+    re.compile(r'(?im)^\s*["\']?openapi["\']?\s*[:=]\s*["\']?3(?:\.\d+){1,2}'),
+    re.compile(r'(?im)^\s*["\']?swagger["\']?\s*[:=]\s*["\']?2\.0'),
 ]
 
 errors=[]
@@ -77,6 +82,17 @@ for p in ROOT.rglob("*"):
     ):
         errors.append(f"{rel}: forbidden credential/implementation artifact")
 
+    if suffix in ALLOWED_TEXT_SUFFIXES or rel in ALLOWED_EXTENSIONLESS:
+        raw_text=p.read_bytes()
+        if b"\x00" in raw_text:
+            errors.append(f"{rel}: approved text file contains binary NUL bytes")
+        try:
+            decoded=raw_text.decode("utf-8")
+            if any(rx.search(decoded) for rx in OPENAPI_PATTERNS):
+                errors.append(f"{rel}: machine-readable OpenAPI/Swagger specification exposed")
+        except UnicodeDecodeError:
+            errors.append(f"{rel}: approved text file is not valid UTF-8")
+
     overlap=b""
     first_chunk=True
     with p.open("rb") as fh:
@@ -84,23 +100,16 @@ for p in ROOT.rglob("*"):
             chunk=fh.read(1024*1024)
             if not chunk:
                 break
+            scan=overlap+chunk
+            for label,signatures in ARCHIVE_SIGNATURES:
+                if any(sig in scan for sig in signatures):
+                    errors.append(f"{rel}: recognized {label} archive/container signature is not publishable")
             if first_chunk:
-                for label,detector in ARCHIVE_MAGIC:
-                    if detector(chunk):
-                        errors.append(f"{rel}: recognized {label} archive/container is not publishable")
-                if suffix in ALLOWED_TEXT_SUFFIXES or rel in ALLOWED_EXTENSIONLESS:
-                    if b"\x00" in chunk:
-                        errors.append(f"{rel}: approved text file contains binary NUL bytes")
-                    try:
-                        chunk.decode("utf-8")
-                    except UnicodeDecodeError:
-                        errors.append(f"{rel}: approved text file is not valid UTF-8")
                 if suffix in ALLOWED_BINARY_SUFFIXES:
                     detector=BINARY_MAGIC.get(suffix)
                     if detector is None or not detector(chunk):
                         errors.append(f"{rel}: binary content does not match approved {suffix} file type")
                 first_chunk=False
-            scan=overlap+chunk
             for label,rx in SECRET_PATTERNS:
                 if rx.search(scan):
                     errors.append(f"{rel}: possible {label}")
