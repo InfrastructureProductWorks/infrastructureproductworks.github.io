@@ -11,13 +11,20 @@ FORBIDDEN_NAMES={
     "swagger.json","swagger.yaml","swagger.yml",
     ".env","terraform.tfstate","terraform.tfstate.backup",
 }
-FORBIDDEN_SUFFIXES=(".map",".tfstate",".tfstate.backup",".zip",".tar",".tgz",".tar.gz",".gz",".7z",".rar")
+FORBIDDEN_SUFFIXES=(
+    ".map",".tfstate",".tfstate.backup",
+    ".zip",".tar",".tgz",".tar.gz",".gz",
+    ".bz2",".tar.bz2",".tbz",".tbz2",
+    ".xz",".tar.xz",".txz",
+    ".zst",".tar.zst",
+    ".7z",".rar"
+)
 KEY_NAMES={"id_rsa","id_dsa","id_ecdsa","id_ed25519"}
 KEY_SUFFIXES={".pem",".key",".p12",".pfx",".ppk"}
 
 SECRET_PATTERNS=[
     ("private key",re.compile(rb"-----BEGIN (?:(?:RSA|EC|OPENSSH|DSA) |ENCRYPTED )?PRIVATE KEY-----")),
-    ("OpenPGP private key",re.compile(rb"-----BEGIN PGP PRIVATE KEY BLOCK-----")),
+    ("OpenPGP private key",re.compile(rb"-----BEGIN PGP " + rb"PRIVATE KEY BLOCK-----")),
     ("GitHub token",re.compile(rb"\bgh[pousr]_[A-Za-z0-9_]{30,}\b")),
     ("GitHub fine-grained token",re.compile(rb"\bgithub_pat_[A-Za-z0-9_]{30,}\b")),
     ("AWS access key",re.compile(rb"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b")),
@@ -49,13 +56,6 @@ for p in ROOT.rglob("*"):
             if not chunk:
                 break
             scan=overlap+chunk
-            if rel=="scripts/audit_public_exposure.py":
-                # Ignore only the detector-definition lines that necessarily contain
-                # their own signatures; continue scanning the rest of this file normally.
-                scan=b"\n".join(
-                    line for line in scan.splitlines()
-                    if b"re.compile(rb" not in line
-                )
             for label,rx in SECRET_PATTERNS:
                 if rx.search(scan):
                     errors.append(f"{rel}: possible {label}")
