@@ -8,6 +8,7 @@ import html, os, re, subprocess, sys
 ROOT=Path(__file__).resolve().parents[1]
 SKIP={".git","node_modules"}
 PUBLISHED_TEXT_EXT={".html",".htm",".js",".mjs",".cjs",".json",".svg",".css",".xml",".txt",".md",".webmanifest",".yaml",".yml"}
+GOVERNANCE_REFERENCE_ALLOWLIST={"scripts/audit_public_exposure.py"}
 FORBIDDEN_NAMES={"openapi.json","openapi.yaml","openapi.yml","swagger.json","swagger.yaml","swagger.yml",
  ".env",".env.local",".env.production","terraform.tfstate","terraform.tfstate.backup"}
 FORBIDDEN_SUFFIXES=(".map",".tfstate",".tfstate.backup")
@@ -118,7 +119,7 @@ for p in ROOT.rglob("*"):
                 ctx=re.sub(r"\s+"," ",body[left:right]).strip().lower()
                 out.append((m.group(0).lower(),ctx))
             return out
-        current=contexts(text)
+        current=[] if rel in GOVERNANCE_REFERENCE_ALLOWLIST else contexts(text)
         if current:
             prior=[]
             if base_ref and rel in base_files:
