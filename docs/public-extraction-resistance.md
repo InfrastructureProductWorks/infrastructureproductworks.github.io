@@ -2,25 +2,22 @@
 
 Infrastructure Product Works is intentionally demonstrable without publishing the implementation recipe.
 
-## Release rule
+## Increment 1: credential and artifact leakage
 
-Public hardening is **content preserving**. Existing portfolio pages, product explanations, diagrams, demo instructions, and substantive visible copy must not be removed merely to reduce automated extraction. Security fixes should address the exposure mechanism first.
+This first gate is intentionally narrow and additive. It does **not** remove, rewrite, score, or hide existing website content.
 
-The public site may explain capabilities, outcomes, architecture concepts, synthetic scenarios, and bounded demonstrations. It must not publish secrets, source maps, state files, private implementation-repository references, or machine-readable operational API specifications that materially collapse the work required to reconstruct private product internals.
+It fails closed on:
+- conventional dotenv files and variants;
+- private-key files and private-key signatures;
+- GitHub and AWS credential signatures;
+- source maps;
+- Terraform state and state backups;
+- conventional machine-readable OpenAPI/Swagger specification filenames.
 
-Interactive demonstrations remain synthetic or sanitized projections. They are not operational product clients and do not establish production authority.
+Later increments will separately address:
+1. private implementation-repository/reference exposure; and
+2. content, diagram, and demo-surface preservation.
 
-## Automated gate
+Those concerns are intentionally split so each protection can be reviewed, merged, and verified independently without blocking the others.
 
-`scripts/audit_public_exposure.py` runs in pull requests and on protected-main verification. It:
-
-- rejects common secret material and reconstruction-enabling implementation artifacts;
-- rejects browser-facing references to private IPW implementation repositories;
-- verifies the established public product/story pages remain present;
-- verifies bounded demo surfaces continue to identify themselves as synthetic or sanitized.
-
-The gate is deliberately additive: new public pages are allowed. It does not score, rewrite, hide, or delete visible portfolio content.
-
-## Defense in depth
-
-This repository is public by design. Anything committed here must be treated as disclosed. Rate limiting, bot management, server-side projection APIs, and private-core enforcement belong at hosting/application boundaries where available; they are not simulated by this static-site repository.
+Anything committed to this public repository must still be treated as disclosed.
