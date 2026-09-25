@@ -90,6 +90,18 @@ def looks_like_source_map_json(raw):
         return False
     return looks_like_source_map_object(obj)
 
+ARCHIVE_SIGNATURES=(
+    b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08",
+    b"\x1f\x8b", b"BZh", b"\xfd7zXZ\x00",
+    b"7z\xbc\xaf\x27\x1c", b"Rar!\x1a\x07\x00",
+    b"Rar!\x1a\x07\x01\x00", b"\x28\xb5\x2f\xfd",
+)
+
+def embedded_container(raw):
+    return any(sig in raw for sig in ARCHIVE_SIGNATURES) or (
+        len(raw)>=265 and raw[257:262]==b"ustar"
+    )
+
 def recognized_container(head):
     return (
         head.startswith((b"PK\x03\x04",b"PK\x05\x06",b"PK\x07\x08")) or
@@ -132,8 +144,12 @@ for p in ROOT.rglob("*"):
         first_chunk=fh.read(1024*1024)
         if recognized_container(first_chunk[:1024]):
             errors.append(f"{rel}: archive/container content is not publishable regardless of filename")
-        if suffix in {".pdf",".png",".jpg",".jpeg",".gif",".webp",".ico"} and not valid_allowed_binary(suffix,first_chunk[:32]):
-            errors.append(f"{rel}: invalid or empty binary content for allowed site asset type")
+        if suffix in {".pdf",".png",".jpg",".jpeg",".gif",".webp",".ico"}:
+            raw_binary=p.read_bytes()
+            if not valid_allowed_binary(suffix,raw_binary[:32]):
+                errors.append(f"{rel}: invalid or empty binary content for allowed site asset type")
+            if embedded_container(raw_binary):
+                errors.append(f"{rel}: embedded archive/container content is not publishable in a binary site asset")
         is_text_source=(suffix in TEXT_SUFFIXES or p.name in TEXT_NAMES)
         if is_text_source:
             try:
