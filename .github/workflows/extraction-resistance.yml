@@ -1,0 +1,20 @@
+name: Extraction resistance gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  extraction-resistance:
+    name: extraction-resistance
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit public exposure without removing portfolio content
+        run: python3 scripts/audit_public_exposure.py
