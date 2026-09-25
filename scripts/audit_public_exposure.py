@@ -33,7 +33,13 @@ def files_at(ref):
 # Existing public references are preserved, not silently deleted. The gate blocks NEW
 # browser-facing occurrences relative to the PR base. On main pushes, HEAD^ is the baseline.
 base_ref=None
-if subprocess.run(["git","rev-parse","--verify","origin/main"],cwd=ROOT,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0:
+# CI provides the immutable comparison base explicitly. This avoids treating GitHub's
+# synthetic PR merge commit as the baseline. Local runs fall back to origin/main/HEAD^.
+import os
+candidate=os.environ.get("EXTRACTION_BASE_SHA","").strip()
+if candidate and subprocess.run(["git","cat-file","-e",candidate+"^{commit}"],cwd=ROOT,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0:
+    base_ref=candidate
+elif subprocess.run(["git","rev-parse","--verify","origin/main"],cwd=ROOT,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0:
     base_ref="origin/main"
 elif subprocess.run(["git","rev-parse","--verify","HEAD^"],cwd=ROOT,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0:
     base_ref="HEAD^"
