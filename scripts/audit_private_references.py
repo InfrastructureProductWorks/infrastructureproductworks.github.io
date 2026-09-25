@@ -6,7 +6,7 @@ from urllib.parse import unquote
 import html, os, re, subprocess, sys
 
 ROOT=Path(__file__).resolve().parents[1]
-SKIP={".git","node_modules"}
+SKIP={".git"}
 
 # Build sensitive identifiers without spelling them as contiguous literals in this
 # public validator, so the validator itself does not need a self-exemption.
@@ -26,6 +26,7 @@ PRIVATE_REF=re.compile(
 )
 JS_HEX=re.compile(r"\\x([0-9a-fA-F]{2})")
 JS_UNICODE=re.compile(r"\\u([0-9a-fA-F]{4})")
+JS_CONCAT=re.compile(r"""(["'])([^"'\\\r\n]*)\1\s*\+\s*(["'])([^"'\\\r\n]*)\3""")
 
 def normalize_browser_text(body):
     current=body
@@ -35,6 +36,7 @@ def normalize_browser_text(body):
         current=unquote(current)
         current=JS_HEX.sub(lambda m: chr(int(m.group(1),16)),current)
         current=JS_UNICODE.sub(lambda m: chr(int(m.group(1),16)),current)
+        current=JS_CONCAT.sub(lambda m: m.group(1)+m.group(2)+m.group(4)+m.group(1),current)
         if current==prior:
             break
     return current
