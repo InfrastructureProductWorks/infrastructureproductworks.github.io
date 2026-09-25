@@ -68,7 +68,7 @@ def valid_allowed_binary(suffix, head):
     return True
 
 def looks_like_source_map_object(obj):
-    if not isinstance(obj,dict) or not isinstance(obj.get("version"),int):
+    if not isinstance(obj,dict) or obj.get("version")!=3:
         return False
     if isinstance(obj.get("sources"),list) and ("mappings" in obj or "sourcesContent" in obj):
         return True
@@ -77,11 +77,31 @@ def looks_like_source_map_object(obj):
         for section in sections:
             if not isinstance(section,dict):
                 continue
-            if "url" in section:
+            offset=section.get("offset")
+            if not (isinstance(offset,dict) and isinstance(offset.get("line"),int) and isinstance(offset.get("column"),int)):
+                continue
+            if isinstance(section.get("url"),str) and section.get("url"):
                 return True
             if looks_like_source_map_object(section.get("map")):
                 return True
     return False
+
+def looks_like_terraform_state_object(obj):
+    if not isinstance(obj,dict):
+        return False
+    return (
+        isinstance(obj.get("terraform_version"),str)
+        and isinstance(obj.get("lineage"),str)
+        and isinstance(obj.get("resources"),list)
+        and ("serial" in obj or "outputs" in obj)
+    )
+
+def looks_like_terraform_state_json(raw):
+    try:
+        obj=json.loads(raw.decode("utf-8"))
+    except Exception:
+        return False
+    return looks_like_terraform_state_object(obj)
 
 def looks_like_source_map_json(raw):
     try:
@@ -91,11 +111,14 @@ def looks_like_source_map_json(raw):
     return looks_like_source_map_object(obj)
 
 def embedded_container(raw):
-    # zipfile validates central-directory structure and also recognizes a ZIP
-    # appended to another binary, avoiding false positives from random bytes.
+    # Treat as an embedded ZIP only if the central directory can actually be
+    # opened and enumerated. This catches appended ZIP polyglots without
+    # false-positive classification on EOCD-like byte sequences.
     try:
-        return zipfile.is_zipfile(io.BytesIO(raw))
-    except Exception:
+        with zipfile.ZipFile(io.BytesIO(raw)) as zf:
+            zf.infolist()
+        return True
+    except (zipfile.BadZipFile, OSError, ValueError):
         return False
 
 def recognized_container(head):
@@ -156,6 +179,8 @@ for p in ROOT.rglob("*"):
                     raw.decode("utf-8")
                 if looks_like_source_map_json(raw):
                     errors.append(f"{rel}: standalone source-map document is not publishable")
+                if looks_like_terraform_state_json(raw):
+                    errors.append(f"{rel}: Terraform state content is not publishable")
             except UnicodeDecodeError:
                 errors.append(f"{rel}: non-UTF-8 content masquerading as an allowed text/source type")
             except Exception as exc:
