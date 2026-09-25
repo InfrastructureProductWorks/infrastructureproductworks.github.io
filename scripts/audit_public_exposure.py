@@ -20,7 +20,7 @@ FORBIDDEN_SUFFIXES=(
     ".7z",".rar"
 )
 KEY_NAMES={"id_rsa","id_dsa","id_ecdsa","id_ed25519"}
-KEY_SUFFIXES={".pem",".key",".p12",".pfx",".ppk"}
+KEY_SUFFIXES={".pem",".key",".p12",".pfx",".ppk",".jks",".keystore"}
 
 SECRET_PATTERNS=[
     ("private key",re.compile(rb"-----BEGIN (?:(?:RSA|EC|OPENSSH|DSA) |ENCRYPTED )?PRIVATE KEY-----")),
@@ -30,6 +30,16 @@ SECRET_PATTERNS=[
     ("AWS access key",re.compile(rb"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b")),
     ("PuTTY private key",re.compile(rb"(?im)^PuTTY-User-Key-File-[0-9]+:")), 
     ("inline source map",re.compile(rb"sourceMappingURL\s*=\s*data:application/json(?:;charset=[^;,\s]+)?(?:;base64)?,",re.I)),
+]
+
+ARCHIVE_MAGIC=[
+    ("ZIP",lambda b:b.startswith(b"PK\x03\x04") or b.startswith(b"PK\x05\x06") or b.startswith(b"PK\x07\x08")),
+    ("GZIP",lambda b:b.startswith(b"\x1f\x8b")),
+    ("BZIP2",lambda b:b.startswith(b"BZh")),
+    ("XZ",lambda b:b.startswith(b"\xfd7zXZ\x00")),
+    ("7Z",lambda b:b.startswith(b"7z\xbc\xaf\x27\x1c")),
+    ("RAR",lambda b:b.startswith(b"Rar!\x1a\x07\x00") or b.startswith(b"Rar!\x1a\x07\x01\x00")),
+    ("ZSTD",lambda b:b.startswith(b"\x28\xb5\x2f\xfd")),
 ]
 
 errors=[]
@@ -50,11 +60,17 @@ for p in ROOT.rglob("*"):
         errors.append(f"{rel}: forbidden credential/implementation artifact")
 
     overlap=b""
+    first_chunk=True
     with p.open("rb") as fh:
         while True:
             chunk=fh.read(1024*1024)
             if not chunk:
                 break
+            if first_chunk:
+                for label,detector in ARCHIVE_MAGIC:
+                    if detector(chunk):
+                        errors.append(f"{rel}: recognized {label} archive/container is not publishable")
+                first_chunk=False
             scan=overlap+chunk
             for label,rx in SECRET_PATTERNS:
                 if rx.search(scan):
