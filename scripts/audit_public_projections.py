@@ -30,14 +30,28 @@ ROADMAP_TOP={
     "epics","relationshipModel","headlineKeyResults","progressHistory","forecastModel",
     "progressModel","roadmapBlobSha","contributionSource","contributionBlobSha"
 }
+ROADMAP_PLANNING={"baseline","evidenceQuarter","horizon","timingNote"}
+ROADMAP_OBJECTIVE={"definition","group","headlineKeyResults","id","keyResults","progress","status","time"}
+ROADMAP_KR={"definition","epics","group","id","objective","sharedRange","source","status","time"}
+ROADMAP_EPIC={"completionPercent","featureCount","features","group","id","progress","progressBasis","status","time","title"}
+ROADMAP_RELATIONSHIP={"epicContributionSemantics","headlineKeyResultToEpics","objectiveToEpics","objectiveToHeadlineKeyResults","registeredMeasures"}
+ROADMAP_HEADLINE={"epicContributions","id","measures","objective","title"}
+ROADMAP_CONTRIBUTION={"description","epic"}
+ROADMAP_HISTORY={"date","epics"}
+ROADMAP_FORECAST={"blockedBehavior","method","minimumSnapshots","minimumSpanDays","planningWindows"}
+ROADMAP_PROGRESS={"method","note","objective","scale","strategicKeyResult"}
 
 errors=[]
+
+def normalized_key(key):
+    key=re.sub(r"([a-z0-9])([A-Z])",r"\1_\2",str(key))
+    return re.sub(r"[^A-Za-z0-9]+","_",key).lower()
 
 def reject_sensitive(obj,path="$"):
     if isinstance(obj,dict):
         for key,value in obj.items():
             child=f"{path}.{key}"
-            if SENSITIVE_KEY.search(key):
+            if SENSITIVE_KEY.search(normalized_key(key)):
                 errors.append(f"{child}: sensitive field name is not allowed in public projection")
             reject_sensitive(value,child)
     elif isinstance(obj,list):
@@ -110,6 +124,64 @@ if not isinstance(planning,dict) or "timingNote" not in planning:
 progress=roadmap.get("progressModel")
 if not isinstance(progress,dict) or "not production readiness" not in str(progress.get("note","")).lower():
     errors.append("roadmap.progressModel.note: public readiness disclaimer missing")
+
+# Bound nested roadmap structures too; otherwise arbitrary implementation detail
+# could be added under an approved top-level field without changing the contract.
+exact_keys(planning,ROADMAP_PLANNING,"roadmap.planning")
+objectives=roadmap.get("objectives")
+if not isinstance(objectives,list):
+    errors.append("roadmap.objectives: expected array")
+else:
+    for i,obj in enumerate(objectives):
+        exact_keys(obj,ROADMAP_OBJECTIVE,f"roadmap.objectives[{i}]")
+
+key_results=roadmap.get("keyResults")
+if not isinstance(key_results,list):
+    errors.append("roadmap.keyResults: expected array")
+else:
+    for i,obj in enumerate(key_results):
+        exact_keys(obj,ROADMAP_KR,f"roadmap.keyResults[{i}]")
+
+epics=roadmap.get("epics")
+if not isinstance(epics,dict):
+    errors.append("roadmap.epics: expected object")
+else:
+    for epic_id,obj in epics.items():
+        if not re.fullmatch(r"EP-\d+",str(epic_id)):
+            errors.append(f"roadmap.epics.{epic_id}: unexpected epic identifier")
+        exact_keys(obj,ROADMAP_EPIC,f"roadmap.epics.{epic_id}")
+
+exact_keys(roadmap.get("relationshipModel"),ROADMAP_RELATIONSHIP,"roadmap.relationshipModel")
+
+headline=roadmap.get("headlineKeyResults")
+if not isinstance(headline,list):
+    errors.append("roadmap.headlineKeyResults: expected array")
+else:
+    for i,obj in enumerate(headline):
+        exact_keys(obj,ROADMAP_HEADLINE,f"roadmap.headlineKeyResults[{i}]")
+        contributions=obj.get("epicContributions") if isinstance(obj,dict) else None
+        if not isinstance(contributions,list):
+            errors.append(f"roadmap.headlineKeyResults[{i}].epicContributions: expected array")
+        else:
+            for j,edge in enumerate(contributions):
+                exact_keys(edge,ROADMAP_CONTRIBUTION,f"roadmap.headlineKeyResults[{i}].epicContributions[{j}]")
+
+history=roadmap.get("progressHistory")
+if not isinstance(history,list):
+    errors.append("roadmap.progressHistory: expected array")
+else:
+    for i,obj in enumerate(history):
+        exact_keys(obj,ROADMAP_HISTORY,f"roadmap.progressHistory[{i}]")
+        values=obj.get("epics") if isinstance(obj,dict) else None
+        if not isinstance(values,dict):
+            errors.append(f"roadmap.progressHistory[{i}].epics: expected object")
+        else:
+            for epic_id in values:
+                if not re.fullmatch(r"EP-\d+",str(epic_id)):
+                    errors.append(f"roadmap.progressHistory[{i}].epics.{epic_id}: unexpected epic identifier")
+
+exact_keys(roadmap.get("forecastModel"),ROADMAP_FORECAST,"roadmap.forecastModel")
+exact_keys(roadmap.get("progressModel"),ROADMAP_PROGRESS,"roadmap.progressModel")
 
 reject_sensitive(assurance,"assurance")
 reject_sensitive(roadmap,"roadmap")
