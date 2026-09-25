@@ -11,7 +11,7 @@ SKIP={".git"}
 ALLOWED_NEW_SUFFIXES={
     ".html",".htm",".css",".js",".mjs",".cjs",".json",".svg",
     ".png",".jpg",".jpeg",".webp",".gif",".ico",".webmanifest",
-    ".txt",".md",".xml",".yml",".yaml",
+    ".txt",".md",".xml",".yml",".yaml",".py",
 }
 ALLOWED_NEW_NAMES={"CNAME","LICENSE","LICENSE.md","README","README.md"}
 
