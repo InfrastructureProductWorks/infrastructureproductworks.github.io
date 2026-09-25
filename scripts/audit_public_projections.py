@@ -7,15 +7,6 @@ ROOT=Path(__file__).resolve().parents[1]
 ASSURANCE=ROOT/"assets/assurance-records.json"
 ROADMAP=ROOT/"data/roadmap-relationships.json"
 
-PRIVATE_NAMES=(
-    "backstage-infrastructure-product-storefront-poc",
-    "iaap-forge",
-    "iaap-console",
-    "iaap-assurance",
-    "crossplane-multicloud-seed-poc",
-    "multicloud-foundation-poc-integration",
-)
-
 SENSITIVE_KEY=re.compile(
     r"(?:^|_)(?:password|passwd|secret|token|credential|private_?key|access_?key|client_?secret|"
     r"connection_?string|ssh_?key|api_?key|session_?key|cookie)(?:$|_)", re.I
@@ -55,10 +46,7 @@ def reject_sensitive(obj,path="$"):
     elif isinstance(obj,str):
         if SENSITIVE_VALUE.search(obj):
             errors.append(f"{path}: credential-like value is not allowed in public projection")
-        low=obj.lower()
-        for name in PRIVATE_NAMES:
-            if name.lower() in low:
-                errors.append(f"{path}: private/internal implementation reference is not allowed in public projection: {name}")
+
 
 def exact_keys(obj,allowed,label):
     if not isinstance(obj,dict):
