@@ -15,6 +15,7 @@ ALLOWED_NEW_SUFFIXES={
 }
 ALLOWED_NEW_NAMES={"CNAME","LICENSE","LICENSE.md","README","README.md"}
 TEXT_SUFFIXES={".html",".htm",".css",".js",".mjs",".cjs",".json",".svg",".webmanifest",".txt",".md",".xml",".yml",".yaml",".py"}
+TEXT_NAMES={"CNAME","LICENSE","LICENSE.md","README","README.md"}
 
 FORBIDDEN_NAMES={
     "openapi.json","openapi.yaml","openapi.yml",
@@ -133,19 +134,18 @@ for p in ROOT.rglob("*"):
             errors.append(f"{rel}: archive/container content is not publishable regardless of filename")
         if suffix in {".pdf",".png",".jpg",".jpeg",".gif",".webp",".ico"} and not valid_allowed_binary(suffix,first_chunk[:32]):
             errors.append(f"{rel}: invalid or empty binary content for allowed site asset type")
-        if suffix in TEXT_SUFFIXES:
-            if b"\x00" in first_chunk:
-                errors.append(f"{rel}: binary content masquerading as an allowed text/source type")
-            else:
-                try:
-                    first_chunk.decode("utf-8")
-                except UnicodeDecodeError:
-                    errors.append(f"{rel}: non-UTF-8 content masquerading as an allowed text/source type")
-        if suffix in TEXT_SUFFIXES:
+        is_text_source=(suffix in TEXT_SUFFIXES or p.name in TEXT_NAMES)
+        if is_text_source:
             try:
                 raw=p.read_bytes()
+                if b"\x00" in raw:
+                    errors.append(f"{rel}: binary content masquerading as an allowed text/source type")
+                else:
+                    raw.decode("utf-8")
                 if looks_like_source_map_json(raw):
                     errors.append(f"{rel}: standalone source-map document is not publishable")
+            except UnicodeDecodeError:
+                errors.append(f"{rel}: non-UTF-8 content masquerading as an allowed text/source type")
             except Exception as exc:
                 errors.append(f"{rel}: unable to validate structured text content: {exc}")
         chunk=first_chunk
