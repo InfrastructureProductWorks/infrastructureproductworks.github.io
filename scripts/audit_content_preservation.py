@@ -10,13 +10,27 @@ ROOT=Path(__file__).resolve().parents[1]
 SKIP={".git","node_modules"}
 SPACE=re.compile(r"\s+")
 WORD=re.compile(r"[A-Za-z0-9][A-Za-z0-9'’-]*")
-MEDIA_ATTR=re.compile(r"""(?is)\b(?:src|poster)\s*=\s*["']([^"']+)["']""")
 STYLE_BLOCK=re.compile(r"(?is)<style\b[^>]*>(.*?)</style>")
-LINK_CSS=re.compile(r"""(?is)<link\b[^>]*\brel\s*=\s*["'][^"']*stylesheet[^"']*["'][^>]*\bhref\s*=\s*["']([^"']+)["']""")
 GLOBAL_HIDE=re.compile(
     r"(?is)(?:^|[},\s])(?:html|body|main|body\s*>\s*main|#content|\.site|\.page)\s*\{[^}]*?"
     r"(?:display\s*:\s*none\b|visibility\s*:\s*hidden\b|opacity\s*:\s*0(?:\D|$))"
 )
+
+class ReferenceParser(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.media=set()
+        self.stylesheets=set()
+    def handle_starttag(self,tag,attrs):
+        attrs=dict(attrs)
+        if tag.lower() in {"img","source","video","audio","iframe","object"}:
+            value=attrs.get("src") or attrs.get("poster") or attrs.get("data")
+            if value: self.media.add(value)
+        if tag.lower()=="link":
+            rel=attrs.get("rel","").lower().split()
+            href=attrs.get("href")
+            if "stylesheet" in rel and href:
+                self.stylesheets.add(href)
 
 class VisibleParser(HTMLParser):
     NON_RENDERED={"script","style","template","head","noscript"}
@@ -81,23 +95,30 @@ def visible_text(body):
 def word_counts(text):
     return Counter(w.lower() for w in WORD.findall(text))
 
+def parsed_refs(body):
+    parser=ReferenceParser()
+    try: parser.feed(body)
+    except Exception: return set(),set()
+    def clean(values):
+        refs=set()
+        for value in values:
+            value=html.unescape(value).strip()
+            parsed=urlparse(value)
+            if parsed.scheme or value.startswith("//") or value.startswith("data:"):
+                continue
+            value=value.split("#",1)[0].split("?",1)[0]
+            if value: refs.add(value)
+        return refs
+    return clean(parser.media),clean(parser.stylesheets)
+
 def media_refs(body):
-    refs=set()
-    for m in MEDIA_ATTR.finditer(body):
-        value=html.unescape(m.group(1)).strip()
-        parsed=urlparse(value)
-        if parsed.scheme or value.startswith("//") or value.startswith("data:"):
-            continue
-        clean=value.split("#",1)[0].split("?",1)[0]
-        if clean:
-            refs.add(clean)
-    return refs
+    return parsed_refs(body)[0]
 
 def css_bodies_for_html(rel,body,ref=None):
     css=[]
     css.extend(STYLE_BLOCK.findall(body))
     base=(ROOT/rel).parent
-    for href in LINK_CSS.findall(body):
+    for href in parsed_refs(body)[1]:
         parsed=urlparse(href)
         if parsed.scheme or href.startswith("//"):
             continue
@@ -157,14 +178,15 @@ for rel in sorted(base_html & current_html):
 
 # Demo identity/boundary markers are deliberately explicit and small.
 DEMO_MARKERS={
-    "console/demo/index.html":("synthetic","awaiting_human_review"),
+    "console/demo/index.html":("synthetic",),
+    "assets/console-demo.js":("awaiting_human_review",),
     "assurance/demo/index.html":("synthetic",),
     "assurance/portal/index.html":("sanitized","synthetic"),
 }
 for rel,markers in DEMO_MARKERS.items():
     p=ROOT/rel
     if not p.exists():
-        errors.append(f"{rel}: required public demo surface missing")
+        errors.append(f"{rel}: required public demo boundary surface missing")
         continue
     body=p.read_text("utf-8",errors="ignore").lower()
     for marker in markers:
