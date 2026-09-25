@@ -61,6 +61,11 @@ jobs:
           grep -Fq "THE MISSING MIDDLE LAYER" index.html
           grep -Fq "Standard work is automated. Exceptional work is engineered. All work stays governed." index.html
 
+          if git grep -nFi "Vanguard" -- '*.html'; then
+            echo "::error::Legacy Vanguard branding found in public HTML. Use IaaP Assurance / Assurance naming for current public product surfaces."
+            exit 1
+          fi
+
           echo "Narrow ethics boundary and original homepage narrative validated."
 
   validate-portfolio-outlook:
