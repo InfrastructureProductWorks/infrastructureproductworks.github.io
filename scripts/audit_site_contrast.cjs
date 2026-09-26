@@ -134,7 +134,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         }
         for(const scenario of ['decision','delivered','measured']){
           await page.locator(`[data-scenario="${scenario}"]`).click();
-          for(const view of ['leadership','management','decision','authorization','evidence','handoff','outcome']){
+          for(const view of ['okr','leadership','management','decision','authorization','evidence','handoff','outcome']){
             await page.locator(`[data-view="${view}"]`).click();await audit(route,'scenario '+scenario+' / view '+view);
           }
         }
