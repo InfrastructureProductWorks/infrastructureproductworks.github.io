@@ -267,6 +267,72 @@
   .northstar-journey-track article{border-right:0}
   .northstar-home-hero + .hero{padding-top:62px;padding-bottom:62px}
 }
+
+/* NORTHSTAR HERO REFINEMENT — one hero, existing story retained below */
+.northstar-home-hero{
+  background:
+    linear-gradient(90deg,#f9fcff 0%,#edf6fb 46%,#dceaf3 100%);
+}
+.northstar-roles{
+  background:
+    radial-gradient(circle at 50% 26%,#ffffff 0 10%,transparent 42%),
+    linear-gradient(180deg,#eef7fc 0%,#dbeaf3 52%,#bcd3e1 100%);
+}
+.northstar-roles:after{
+  content:"";
+  position:absolute;
+  inset:19% 0 38%;
+  opacity:.22;
+  background:
+    linear-gradient(90deg,transparent 0 6%,#4d7591 6% 8%,transparent 8% 13%,#587f99 13% 15%,transparent 15% 22%,#385f79 22% 25%,transparent 25% 34%,#6f92a7 34% 37%,transparent 37% 45%,#3f6882 45% 48%,transparent 48% 58%,#63879d 58% 61%,transparent 61% 71%,#4b728b 71% 74%,transparent 74% 83%,#6c8fa4 83% 86%,transparent 86% 100%);
+  clip-path:polygon(0 72%,5% 72%,5% 46%,9% 46%,9% 65%,14% 65%,14% 30%,18% 30%,18% 58%,24% 58%,24% 39%,28% 39%,28% 68%,36% 68%,36% 25%,41% 25%,41% 55%,48% 55%,48% 34%,53% 34%,53% 61%,61% 61%,61% 21%,66% 21%,66% 52%,73% 52%,73% 36%,78% 36%,78% 65%,86% 65%,86% 28%,91% 28%,91% 53%,96% 53%,96% 72%,100% 72%,100% 100%,0 100%);
+}
+.northstar-role{z-index:4}
+.northstar-role-label{
+  padding:10px 11px;
+  border-left:3px solid #1783ca;
+  background:#ffffffa8;
+  backdrop-filter:blur(5px);
+  border-radius:0 10px 10px 0
+}
+.northstar-silhouette{
+  filter:drop-shadow(0 18px 22px #07111f32);
+}
+.northstar-silhouette .person{fill:#0b233a}
+.northstar-silhouette .person-soft{fill:#193b57}
+.northstar-signal-node{
+  bottom:18px;
+  background:linear-gradient(135deg,#0a3557f2,#0b4a74f2);
+  border-color:#67c3f2
+}
+.legacy-home-intro{
+  max-width:1180px;
+  margin:0 auto;
+  padding:78px max(6vw,24px) 84px;
+  background:transparent
+}
+.legacy-home-intro .eyebrow{margin:0 0 10px}
+.legacy-home-intro h1{
+  margin:0 0 18px;
+  max-width:960px;
+  font-size:clamp(38px,4.5vw,66px);
+  line-height:1;
+  letter-spacing:-.05em
+}
+.legacy-home-intro h1 em{font-style:normal;color:#15803d}
+.legacy-home-intro .thesis-line{
+  max-width:900px;
+  font-size:clamp(20px,2vw,28px)
+}
+.legacy-home-intro .lede{
+  max-width:980px;
+  font-size:18px
+}
+.legacy-home-intro .actions{margin-top:24px}
+@media(max-width:700px){
+  .legacy-home-intro{padding:56px 18px 62px}
+  .legacy-home-intro h1{font-size:42px}
+}
 </style></head><body><header><a class="brand" href="/">Infrastructure <span>Product Works</span></a><nav><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><details class="nav-products"><summary>Products</summary><div class="nav-menu"><a href="/storefront/"><small>EXPERIENCE</small>Storefront</a><a href="/guard/"><small>VALIDATE</small>IaaP Guard</a><a href="/forge/"><small>CONSTRUCT</small>IaaP Forge</a><a href="/console/"><small>REVIEW</small>IaaP Console</a><a href="/assurance/"><small>ASSURE</small>IaaP Assurance</a><a href="/crossplane/"><small>ARCHITECTURE</small>Crossplane Control Plane</a></div></details><a href="/operating-model/">How It Works</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/guides/">Guides</a></nav><details class="mobile-nav"><summary>Menu</summary><div class="nav-menu"><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><a href="/operating-model/">How It Works</a><a href="/storefront/">Storefront</a><a href="/guard/">IaaP Guard</a><a href="/forge/">IaaP Forge</a><a href="/console/">IaaP Console</a><a href="/assurance/">IaaP Assurance</a><a href="/crossplane/">Crossplane</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/guides/">User guides</a><a href="/support/">Support</a></div></details></header><main>
 <section class="northstar-home-hero" aria-labelledby="northstar-home-title">
   <div class="northstar-hero-shell">
@@ -330,7 +396,7 @@
     </div>
   </div>
 </section>
-<section class="hero" id="why"><p class="eyebrow">INFRASTRUCTURE-AS-A-PRODUCT</p><h1>Cloud resources are ingredients.<br><em>Developers need products.</em></h1><p class="thesis-line">IaaS is what we buy; infrastructure-as-a-product is what we build.</p><p class="lede">Nobody pulls into a drive-thru hungry for hot, golden-brown french fries and orders a potato. The potato matters. So do preparation, cooking, seasoning, packaging and quality controls. Those are implementation details behind the product the customer actually wants. Cloud infrastructure should work the same way.</p><div class="actions"><a class="button" href="#order">See the product experience</a><a class="button ghost" href="/operating-model/">See how teams use it</a><a class="button ghost" href="/work/">See the engineering proof</a></div></section><section class="visual-section" id="productization"><div class="middle-layer"><p class="eyebrow">PROVISIONING VS PRODUCTIZATION</p><h2>Provisioning creates infrastructure. Productization creates a governed way to deliver it.</h2><p class="section-lede">Infrastructure Product Works is a system intended to productize infrastructure provisioning, govern it, make it consumable, and reduce the amount of specialized knowledge required at the point of delivery.</p><div class="adopt-grid"><article><small>TRADITIONAL INFRASTRUCTURE PROVISIONING</small><h3>The engineer carries the complexity.</h3><p>A developer requests infrastructure. An engineer interprets the need, writes or modifies infrastructure code, applies networking and security requirements, works through cloud-specific details, troubleshoots the deployment and delivers the result. The quality and speed of the outcome depend heavily on the individual engineer knowing the right implementation details.</p></article><article><small>INFRASTRUCTURE PRODUCT WORKS</small><h3>The platform carries more of the complexity.</h3><p>A developer requests a governed outcome. The platform constrains the choices, validates requirements and policy, applies approved product patterns, preserves evidence and traceability, and hands the result into the organization&#39;s authorized fulfillment path. Engineers still matter, but routine delivery depends less on every engineer knowing every underlying implementation detail.</p></article></div><div class="middle-proof"><strong>Infrastructure provisioning creates resources. Infrastructure Product Works creates a governed system for delivering them.</strong><p>Terraform, Crossplane, cloud APIs, policy engines and other implementation machinery can sit behind the product experience instead of becoming knowledge every developer or delivery engineer must master at the point of consumption.</p></div></div></section><section class="visual-section" id="director-lens"><div class="middle-layer"><p class="eyebrow">DIRECTOR LENS</p><h2>A platform director should understand the system, not just the toolchain.</h2><p class="section-lede">The leadership job is not to personally operate every implementation layer. It is to understand the product contract, decision rights, authority boundaries, maturity model and evidence well enough to know whether the organization is actually running a platform product.</p><div class="cards"><article><small>PRODUCT</small><h3>Know what the platform promises.</h3><p>Cloud resources, modules and portals are implementation pieces. The product is the governed outcome, supported options, lifecycle and consumer contract around them.</p></article><article><small>AUTHORITY</small><h3>Know what automation may decide.</h3><p>Proposal, validation, construction and reconciliation are different from approval. A healthy platform keeps human authority explicit where policy and risk require it.</p></article><article><small>EVIDENCE</small><h3>Know how claims are proven.</h3><p>A Director should be able to trace maturity and safety claims to exact-source validation, retained evidence and acceptance criteria rather than relying on presentation alone.</p></article></div><div class="actions"><a class="button" href="/insights/platform-director/">What a Platform Director Should Understand</a><a class="button ghost" href="/operating-model/">Explore the operating model</a></div></div></section><section id="exceptions">
+<section class="legacy-home-intro" id="why"><p class="eyebrow">INFRASTRUCTURE-AS-A-PRODUCT</p><h1>Cloud resources are ingredients.<br><em>Developers need products.</em></h1><p class="thesis-line">IaaS is what we buy; infrastructure-as-a-product is what we build.</p><p class="lede">Nobody pulls into a drive-thru hungry for hot, golden-brown french fries and orders a potato. The potato matters. So do preparation, cooking, seasoning, packaging and quality controls. Those are implementation details behind the product the customer actually wants. Cloud infrastructure should work the same way.</p><div class="actions"><a class="button" href="#order">See the product experience</a><a class="button ghost" href="/operating-model/">See how teams use it</a><a class="button ghost" href="/work/">See the engineering proof</a></div></section><section class="visual-section" id="productization"><div class="middle-layer"><p class="eyebrow">PROVISIONING VS PRODUCTIZATION</p><h2>Provisioning creates infrastructure. Productization creates a governed way to deliver it.</h2><p class="section-lede">Infrastructure Product Works is a system intended to productize infrastructure provisioning, govern it, make it consumable, and reduce the amount of specialized knowledge required at the point of delivery.</p><div class="adopt-grid"><article><small>TRADITIONAL INFRASTRUCTURE PROVISIONING</small><h3>The engineer carries the complexity.</h3><p>A developer requests infrastructure. An engineer interprets the need, writes or modifies infrastructure code, applies networking and security requirements, works through cloud-specific details, troubleshoots the deployment and delivers the result. The quality and speed of the outcome depend heavily on the individual engineer knowing the right implementation details.</p></article><article><small>INFRASTRUCTURE PRODUCT WORKS</small><h3>The platform carries more of the complexity.</h3><p>A developer requests a governed outcome. The platform constrains the choices, validates requirements and policy, applies approved product patterns, preserves evidence and traceability, and hands the result into the organization&#39;s authorized fulfillment path. Engineers still matter, but routine delivery depends less on every engineer knowing every underlying implementation detail.</p></article></div><div class="middle-proof"><strong>Infrastructure provisioning creates resources. Infrastructure Product Works creates a governed system for delivering them.</strong><p>Terraform, Crossplane, cloud APIs, policy engines and other implementation machinery can sit behind the product experience instead of becoming knowledge every developer or delivery engineer must master at the point of consumption.</p></div></div></section><section class="visual-section" id="director-lens"><div class="middle-layer"><p class="eyebrow">DIRECTOR LENS</p><h2>A platform director should understand the system, not just the toolchain.</h2><p class="section-lede">The leadership job is not to personally operate every implementation layer. It is to understand the product contract, decision rights, authority boundaries, maturity model and evidence well enough to know whether the organization is actually running a platform product.</p><div class="cards"><article><small>PRODUCT</small><h3>Know what the platform promises.</h3><p>Cloud resources, modules and portals are implementation pieces. The product is the governed outcome, supported options, lifecycle and consumer contract around them.</p></article><article><small>AUTHORITY</small><h3>Know what automation may decide.</h3><p>Proposal, validation, construction and reconciliation are different from approval. A healthy platform keeps human authority explicit where policy and risk require it.</p></article><article><small>EVIDENCE</small><h3>Know how claims are proven.</h3><p>A Director should be able to trace maturity and safety claims to exact-source validation, retained evidence and acceptance criteria rather than relying on presentation alone.</p></article></div><div class="actions"><a class="button" href="/insights/platform-director/">What a Platform Director Should Understand</a><a class="button ghost" href="/operating-model/">Explore the operating model</a></div></div></section><section id="exceptions">
 <p class="eyebrow">STANDARD + EXCEPTION PATHS</p>
 <h2>Standard work is automated. Exceptional work is engineered. All work stays governed.</h2>
 <p class="lede">A product operating model should not collapse when a request falls outside the catalog. The IPW model keeps the request, decision context, validation and evidence inside the governed lifecycle while specialized engineers handle the portion that cannot yet be fulfilled through a standard product.</p>
