@@ -139,10 +139,16 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           }
           await page.locator('[data-view="okr"]').click();
           const trail=page.locator('[data-open-trail="KR9.4"]');
-          if(await trail.count()&&await trail.isVisible()){
-            await trail.click();await audit(route,'scenario '+scenario+' / trace drawer');
-            await page.locator('[data-close-trail]').click();
-          }
+          if(await trail.count()!==1)throw new Error('Northstar KR9.4 trace trigger must exist exactly once for scenario '+scenario);
+          if(!await trail.isVisible())throw new Error('Northstar KR9.4 trace trigger must be visible for scenario '+scenario);
+          await trail.click();
+          const dialog=page.locator('#ns-trail-dialog[open]');
+          if(await dialog.count()!==1)throw new Error('Northstar trace drawer must open for scenario '+scenario);
+          const close=page.locator('[data-close-trail]');
+          if(await close.count()!==1||!await close.isVisible())throw new Error('Northstar trace drawer close control must be visible for scenario '+scenario);
+          await audit(route,'scenario '+scenario+' / trace drawer');
+          await close.click();
+          if(await page.locator('#ns-trail-dialog[open]').count())throw new Error('Northstar trace drawer must close for scenario '+scenario);
         }
       }
       if(route==='/assurance/demo/'){
