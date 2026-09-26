@@ -1,5 +1,4 @@
-const DASHBOARD_URL='https://raw.githubusercontent.com/InfrastructureProductWorks/infrastructureproductworks.github.io/telemetry/portfolio-live/data/portfolio-dashboard-live.json';
-const ROADMAP_RELATIONSHIP_URL='/data/roadmap-relationships.json';
+const PORTFOLIO_BUNDLE_URL='https://raw.githubusercontent.com/InfrastructureProductWorks/infrastructureproductworks.github.io/telemetry/portfolio-live/data/portfolio-bundle.json';
 let dashboardState=null;
 const STAGE_NAMES=['Define','Build','Validate','Integrate','Operationalize'];
 const PRODUCT_CONTRACT=[
@@ -11,9 +10,9 @@ const PRODUCT_CONTRACT=[
   {id:'crossplane',name:'Crossplane Control Plane',role:'Reconcile',repository:'InfrastructureProductWorks/crossplane-multicloud-seed-poc'}
 ];
 const FOCUS_CONTRACT={closedEpic:'EP-07',activeEpic:'EP-08',activeLabel:'GitHub Enterprise Server and restricted-network portability'};
-const DELIVERY_FOCUS={epic:'EP-16',title:'Connected Application Experience',increment:'EDA-06 — Immutable Evidence & Artifact Adapter',copy:'Separate immutable evidence and artifacts from the event store while preserving exact digest, provenance, tenant scope and zero-authority boundaries.'};
+let DELIVERY_FOCUS={epic:'EP-16',title:'Connected Application Experience',increment:'EDA-06 — Immutable Evidence & Artifact Adapter',copy:'Separate immutable evidence and artifacts from the event store while preserving exact digest, provenance, tenant scope and zero-authority boundaries.'};
 const BASELINE={objectives:8,keyResults:66,epics:22,features:173};
-const DELIVERY_OUTLOOK_MILESTONES=[
+let DELIVERY_OUTLOOK_MILESTONES=[
   {
     id:'core-v1',
     label:'IPW Core v1',
@@ -494,7 +493,6 @@ function roadmapMatchesDashboard(data,dashboard){
     return derivedEpics.size===dashboardEpics.size&&[...derivedEpics].every(id=>dashboardEpics.has(id));
   });
 }
-async function loadRoadmapRelationships(){try{const data=await fetchJson(ROADMAP_RELATIONSHIP_URL,{timeoutMs:5000});if(!validRoadmapRelationships(data))throw new Error('unsupported roadmap relationship contract');if(!roadmapMatchesDashboard(data,dashboardState||FALLBACK))throw new Error('roadmap relationship data does not match current dashboard baseline');renderRoadmapRelationships(data);}catch(err){document.getElementById('roadmap-map-error')?.classList.add('show');renderRoadmapFallback(dashboardState||FALLBACK);renderDeliveryOutlook(null);console.warn('Roadmap relationship data unavailable, invalid, out of sync, or timed out; using bounded fallback.',err)}}
 function renderProducts(data){const host=document.getElementById('product-grid');if(!host)return;host.replaceChildren();(data.products||[]).forEach(p=>{const link=node('a','product-card');link.href=safePath(p.href);const top=node('div','product-top');const titleWrap=node('div');titleWrap.append(node('div','product-role',String(p.role||'').toUpperCase()),node('h3','',p.name));const status=String(p.status||'');top.append(titleWrap,node('span',`status-pill ${status.toLowerCase()}`,status));link.append(top,node('div','product-state',p.state),node('p','product-evidence',p.evidence));const proof=node('div','proof-pattern');[['BUILD',p.state],['VALIDATE',p.status],['EVIDENCE',p.evidence]].forEach(([label,value])=>{const step=node('div','proof-step');step.append(node('small','',label),node('strong','',value));proof.append(step);});link.append(proof);const labels=node('div','stage-labels');STAGE_NAMES.forEach(s=>labels.append(node('span','',s)));link.append(labels);const track=node('div','stage-track');const stageIndex=Number.isInteger(p.stageIndex)?Math.max(0,Math.min(STAGE_NAMES.length,p.stageIndex)):0;STAGE_NAMES.forEach((_,i)=>track.append(node('span',`stage-segment${i<stageIndex?' done':''}`)));link.append(track);const current=node('div','stage-current');current.append(node('span','','Current engineering maturity'),node('strong','',STAGE_NAMES[Math.max(0,stageIndex-1)]||'Define'));link.append(current);const source=p.source||{};const sourceLine=node('div','product-source');const mode=source.mode==='bounded-snapshot'?'bounded snapshot':'product-owned main';sourceLine.append(node('span','',mode),node('span','',shortSha(source.revision)));link.append(sourceLine);const next=node('div','next-block');next.append(node('small','','NEXT MILESTONE'),node('p','',p.nextMilestone));link.append(next,node('span','product-link','Open product →'));host.append(link);});}
 function renderNext(data){const host=document.getElementById('next-list');if(!host)return;host.replaceChildren();(data.portfolioFocus.next||[]).forEach((item,i)=>{if(i)host.append(node('i','','→'));host.append(node('span','',item));});}
 async function fetchJson(url,{timeoutMs=0}={}){
@@ -508,5 +506,42 @@ async function fetchJson(url,{timeoutMs=0}={}){
     if(timer!==null)clearTimeout(timer);
   }
 }
-async function loadDashboard(){let data=FALLBACK;try{const live=await fetchJson(DASHBOARD_URL,{timeoutMs:5000});if(!validDashboard(live))throw new Error('unsupported portfolio dashboard contract');data=live;}catch(err){document.getElementById('sync-error')?.classList.add('show');console.warn('Portfolio dashboard feed unavailable, invalid, or timed out; using bounded fallback.',err)}dashboardState=data;renderBaseline(data);renderProducts(data);renderNext(data);}
-document.addEventListener('DOMContentLoaded',async()=>{await loadDashboard();await loadRoadmapRelationships();});
+function validPresentation(p,roadmap){
+  if(!exactKeys(p,['schemaVersion','deliveryFocus','milestones'])||p.schemaVersion!=='portfolio-presentation/v1')return false;
+  const focus=p.deliveryFocus;
+  if(!exactKeys(focus,['epic','title','increment','copy'])||!roadmap.epics[focus.epic]||!Object.values(focus).every(boundedText))return false;
+  if(!Array.isArray(p.milestones)||!p.milestones.length||new Set(p.milestones.map(m=>m?.id)).size!==p.milestones.length)return false;
+  return p.milestones.every(m=>exactKeys(m,['id','label','planningWindow','summary','epics','critical'])
+    &&['id','label','planningWindow','summary'].every(k=>boundedText(m[k]))
+    &&['epics','critical'].every(k=>Array.isArray(m[k])&&m[k].length>0&&new Set(m[k]).size===m[k].length&&m[k].every(id=>Object.hasOwn(roadmap.epics,id)))
+    &&m.critical.every(id=>m.epics.includes(id)));
+}
+function validPortfolioBundle(bundle){
+  if(!exactKeys(bundle,['schemaVersion','dashboard','roadmap','presentation'])||bundle.schemaVersion!=='portfolio-bundle/v1')return false;
+  const {dashboard,roadmap,presentation}=bundle;
+  return validDashboard(dashboard)&&validRoadmapRelationships(roadmap)
+    &&dashboard.source.revision===roadmap.sourceRevision
+    &&dashboard.source.roadmapBlobSha===roadmap.roadmapBlobSha
+    &&roadmap.generatedAt<=dashboard.generatedAt.slice(0,10)
+    &&roadmapMatchesDashboard(roadmap,dashboard)&&validPresentation(presentation,roadmap);
+}
+async function loadPortfolio(){
+  try{
+    const bundle=await fetchJson(PORTFOLIO_BUNDLE_URL,{timeoutMs:5000});
+    if(!validPortfolioBundle(bundle))throw new Error('inconsistent portfolio bundle');
+    dashboardState=bundle.dashboard;
+    DELIVERY_FOCUS=bundle.presentation.deliveryFocus;
+    DELIVERY_OUTLOOK_MILESTONES=bundle.presentation.milestones;
+    renderBaseline(dashboardState);renderProducts(dashboardState);renderNext(dashboardState);
+    renderRoadmapRelationships(bundle.roadmap);
+  }catch(err){
+    // Never mix an older committed roadmap with a newer live product feed.
+    dashboardState=FALLBACK;
+    document.getElementById('sync-error')?.classList.add('show');
+    document.getElementById('roadmap-map-error')?.classList.add('show');
+    renderBaseline(FALLBACK);renderProducts(FALLBACK);renderNext(FALLBACK);
+    renderRoadmapFallback(FALLBACK);renderDeliveryOutlook(null);
+    console.warn('Portfolio bundle unavailable, invalid, or timed out; using bounded fallback.',err);
+  }
+}
+document.addEventListener('DOMContentLoaded',loadPortfolio);
