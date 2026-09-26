@@ -141,8 +141,59 @@ main>.hero .button.ghost{background:#ffffff12;color:#fff;border-color:#ffffff55}
   .ns-objective-health{grid-column:1/-1}
 }
 
+
+/* NORTHSTAR INTERACTION POLISH */
+.ns-dashboard-status small,
+.ns-exec-metrics small,
+.ns-section-title small,
+.ns-objective-title small,
+.ns-objective-health>span,
+.ns-kr-copy>span,
+.ns-kr-signals span,
+.ns-kr-source span,
+.ns-attention-card p,
+.ns-rail-insight p{color:#53677d}
+.ns-objective-title small{font-size:9px}
+.ns-objective-health>span,.ns-kr-copy>span{font-size:10px}
+.ns-kr-signals span,.ns-kr-source span{font-size:10px}
+.ns-exec-metrics span{color:#53677d;font-size:11px}
+.ns-dashboard-status small,.ns-exec-metrics small,.ns-section-title small{font-size:10px}
+.ns-scope-bar{display:flex;justify-content:space-between;gap:18px;align-items:center;margin:0 0 16px;padding:13px 15px;border:1px solid #cfe0eb;border-radius:13px;background:#fff}
+.ns-scope-bar>div{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:7px 10px;align-items:center}
+.ns-scope-bar small{grid-column:1/-1;color:#53677d;font-size:9px;font-weight:900;letter-spacing:.08em}
+.ns-scope-bar strong{font-size:12px;color:#0b3a59}
+.ns-scope-bar>div>span{font-size:11px;color:#53677d}
+.ns-scope-bar button{appearance:none;border:1px solid #9fb4c8;border-radius:8px;padding:8px 10px;background:#fff;color:#0b5c81;font:800 10px/1.2 inherit;cursor:pointer;white-space:nowrap}
+.ns-trail-dialog{width:min(560px,92vw);max-height:88vh;margin:auto;border:1px solid #bfd0dd;border-radius:18px;padding:0;background:#f6f9fb;color:#17253b;box-shadow:0 28px 90px #07192b55}
+.ns-trail-dialog::backdrop{background:#07192b99;backdrop-filter:blur(2px)}
+.ns-trail-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:18px 20px;background:#0b3a59;color:#fff}
+.ns-trail-head small{display:block;color:#9edcff;font-size:9px;font-weight:900;letter-spacing:.09em}
+.ns-trail-head h2{font-size:21px;margin:4px 0 0;color:#fff}
+.ns-trail-head button{appearance:none;width:34px;height:34px;border:1px solid #ffffff55;border-radius:9px;background:#ffffff12;color:#fff;font-size:19px;cursor:pointer}
+.ns-trail-body{padding:18px 20px;overflow:auto}
+.ns-trail-lineage{display:grid;gap:7px}
+.ns-trail-step{padding:12px;border:1px solid #d7e2ea;border-radius:11px;background:#fff}
+.ns-trail-step.emphasis{border-color:#75b8d8;background:#f2fbff}
+.ns-trail-step small{display:block;color:#53677d;font-size:9px;font-weight:900;letter-spacing:.08em}
+.ns-trail-step strong{display:block;margin-top:3px;font-size:13px;color:#17314d}
+.ns-trail-step span{display:block;margin-top:3px;color:#53677d;font-size:11px;line-height:1.45}
+.ns-trail-arrow{text-align:center;color:#0b719b;font-weight:900}
+.ns-trail-evidence{margin-top:14px;padding:14px;border:1px solid #d7e2ea;border-radius:11px;background:#fff}
+.ns-trail-evidence small{color:#0b719b;font-size:9px;font-weight:900;letter-spacing:.08em}
+.ns-trail-evidence h3{font-size:15px;margin:5px 0}
+.ns-trail-evidence p{font-size:11px;color:#53677d;line-height:1.5;margin:6px 0 0}
+.ns-trail-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.ns-trail-actions button{appearance:none;border:1px solid #8dbbd3;border-radius:9px;padding:9px 11px;background:#fff;color:#0b5c81;font:800 10px/1.2 inherit;cursor:pointer}
+.ns-trail-actions button:first-child{background:#0b3a59;border-color:#0b719b;color:#fff}
+@media(max-width:700px){
+  .ns-scope-bar{align-items:flex-start;flex-direction:column}
+  .ns-scope-bar>div{grid-template-columns:1fr}
+  .ns-scope-bar small{grid-column:auto}
+  .ns-scope-bar button{width:100%}
+}
+
 </style>
-<script src="../../assets/northstar-signal-demo.js?v=da8470c9a18ce2e210329e7ef070aa429291b5f6" defer></script>
+<script src="../../assets/northstar-signal-demo.js?v=d70ea5851d54d77c704f3b730d87d161a04a2442" defer></script>
 </head>
 <body>
 <header><a class="brand" href="/">Infrastructure <span>Product Works</span></a><nav><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><details class="nav-products"><summary>Products</summary><div class="nav-menu"><a href="/northstar-signal/"><small>DECIDE</small>Northstar Signal</a><a href="/storefront/"><small>EXPERIENCE</small>Storefront</a><a href="/guard/"><small>VALIDATE</small>IaaP Guard</a><a href="/forge/"><small>CONSTRUCT</small>IaaP Forge</a><a href="/console/"><small>REVIEW</small>IaaP Console</a><a href="/assurance/"><small>ASSURE</small>IaaP Assurance</a><a href="/crossplane/"><small>ARCHITECTURE</small>Crossplane Control Plane</a></div></details><a href="/operating-model/">How It Works</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a></nav><details class="mobile-nav"><summary>Menu</summary><div class="nav-menu"><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><a href="/northstar-signal/">Northstar Signal</a><a href="/storefront/">Storefront</a><a href="/guard/">IaaP Guard</a><a href="/forge/">IaaP Forge</a><a href="/console/">IaaP Console</a><a href="/assurance/">IaaP Assurance</a><a href="/crossplane/">Crossplane</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a></div></details></header>
@@ -160,6 +211,10 @@ main>.hero .button.ghost{background:#ffffff12;color:#fff;border-color:#ffffff55}
 </div></div>
 <div class="demo-explain"><article><small>LEADERSHIP</small><h3>Decide in outcome language.</h3><p>Compare reuse, build and defer paths, see evidence confidence and understand what is actually being authorized.</p></article><article><small>MANAGEMENT</small><h3>Translate intent into work.</h3><p>Carry the outcome, constraints, evidence and accountability into the assigned delivery team.</p></article><article><small>DELIVERY</small><h3>Keep the lineage.</h3><p>Execute in the team's existing system without letting backlog state rewrite the upstream decision or Key Result.</p></article></div>
 </div></section>
+<dialog id="ns-trail-dialog" class="ns-trail-dialog" aria-labelledby="ns-trail-title">
+<div class="ns-trail-head"><div><small>OUTCOME TRAIL</small><h2 id="ns-trail-title">KR9.4 traceability and evidence</h2></div><button id="ns-trail-close" data-close-trail type="button" aria-label="Close outcome trail">×</button></div>
+<div class="ns-trail-body" id="ns-trail-content"></div>
+</dialog>
 </main>
 <footer><strong>Infrastructure Product Works™</strong><div><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><a href="/work/">The Work</a><a href="/about/">About</a><a href="/security/">Security</a></div><p>Independent evidence portfolio · synthetic demos · no procurement offer</p></footer>
 </body></html>
