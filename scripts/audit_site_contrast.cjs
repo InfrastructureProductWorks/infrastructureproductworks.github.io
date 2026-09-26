@@ -137,6 +137,12 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           for(const view of ['okr','leadership','management','decision','authorization','evidence','handoff','outcome']){
             await page.locator(`[data-view="${view}"]`).click();await audit(route,'scenario '+scenario+' / view '+view);
           }
+          await page.locator('[data-view="okr"]').click();
+          const trail=page.locator('[data-open-trail="KR9.4"]');
+          if(await trail.count()&&await trail.isVisible()){
+            await trail.click();await audit(route,'scenario '+scenario+' / trace drawer');
+            await page.locator('[data-close-trail]').click();
+          }
         }
       }
       if(route==='/assurance/demo/'){
