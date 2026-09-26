@@ -144,7 +144,8 @@
     }
   ];
 
-  const state = { view: 'okr', role: 'leader', scenario: 'decision' };
+  const state = { view: 'okr', role: 'leader', scenario: 'decision', selectedKr: model.krId, selectedObjective: model.objectiveId };
+  let trailOpener = null;
   const $ = (id) => document.getElementById(id);
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
@@ -166,6 +167,51 @@
   }
   function current() { return scenarioData[state.scenario]; }
 
+  function scopeBanner() {
+    if (!state.selectedKr) return '';
+    return '<div class="ns-scope-bar" aria-label="Selected outcome context">'+
+      '<div><small>SELECTED OUTCOME</small><strong>'+esc(state.selectedObjective)+' <span aria-hidden="true">→</span> '+esc(state.selectedKr)+'</strong><span>'+esc(model.keyResult)+'</span></div>'+
+      '<button type="button" data-back-okr>Back to My Division OKRs</button>'+
+    '</div>';
+  }
+
+  function trailMarkup() {
+    const s=current();
+    return '<div class="ns-trail-lineage" aria-label="Northstar traceability chain">'+
+      '<div class="ns-trail-step"><small>OBJECTIVE</small><strong>'+esc(model.objectiveId)+'</strong><span>'+esc(model.objective)+'</span></div>'+
+      '<div class="ns-trail-arrow" aria-hidden="true">↓</div>'+
+      '<div class="ns-trail-step emphasis"><small>KEY RESULT</small><strong>'+esc(model.krId)+'</strong><span>'+esc(model.keyResult)+'</span></div>'+
+      '<div class="ns-trail-arrow" aria-hidden="true">↓</div>'+
+      '<div class="ns-trail-step"><small>DECISION</small><strong>'+esc(model.decisionId)+'</strong><span>'+esc(s.decision.replaceAll('_',' '))+'</span></div>'+
+      '<div class="ns-trail-arrow" aria-hidden="true">↓</div>'+
+      '<div class="ns-trail-step"><small>CAPABILITY AUTHORIZATION</small><strong>'+esc(model.carId)+'</strong><span>Current bounded product intent</span></div>'+
+      '<div class="ns-trail-arrow" aria-hidden="true">↓</div>'+
+      '<div class="ns-trail-step"><small>EPIC</small><strong>'+esc(model.epic)+'</strong><span>'+esc(model.epicTitle)+'</span></div>'+
+    '</div>'+
+    '<div class="ns-trail-evidence"><small>EVIDENCE NOW</small><h3>'+esc(s.outcomeSource)+'</h3><p>Delivery: <strong>'+esc(s.delivery.replaceAll('_',' '))+'</strong> · Outcome: <strong>'+esc(s.outcome.replaceAll('_',' '))+'</strong></p><p>Northstar keeps the delivery signal and outcome claim separate until the designated evidence source supports the Key Result.</p></div>'+
+    '<div class="ns-trail-actions"><button type="button" data-trail-decision>Open decision</button><button type="button" data-trail-evidence>Open evidence</button></div>';
+  }
+
+  function openTrail(opener) {
+    trailOpener=opener||null;
+    state.selectedKr=model.krId;
+    state.selectedObjective=model.objectiveId;
+    const dialog=$('ns-trail-dialog');
+    $('ns-trail-content').innerHTML=trailMarkup();
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open','');
+    const close=$('ns-trail-close');
+    if(close) close.focus();
+  }
+
+  function closeTrail() {
+    const dialog=$('ns-trail-dialog');
+    if(dialog.open && typeof dialog.close === 'function') dialog.close();
+    else dialog.removeAttribute('open');
+    if(trailOpener && typeof trailOpener.focus === 'function') trailOpener.focus();
+    trailOpener=null;
+  }
+
   function okrOverview() {
     const s=current();
     const unproven = s.outcome === 'UNKNOWN' ? 1 : 0;
@@ -180,7 +226,7 @@
         const outcomeTone = outcome === 'UNKNOWN' || outcome === 'AT RISK' ? 'amber' : 'green';
         const source = isPrimary ? kr94Source : kr.source;
         const action = kr.interactive
-          ? '<button class="ns-okr-open" data-open-kr="'+esc(kr.id)+'" type="button">Open trail <span>→</span></button>'
+          ? '<button class="ns-okr-open" data-open-trail="'+esc(kr.id)+'" type="button">Open trail <span aria-hidden="true">→</span></button>'
           : '<span class="ns-okr-source-note">Measured</span>';
         return '<div class="ns-kr-row'+(isPrimary?' primary':'')+'">'+
           '<div class="ns-kr-copy"><small>'+esc(kr.id)+'</small><strong>'+esc(kr.text)+'</strong><span>'+esc(kr.owner)+'</span></div>'+
@@ -213,7 +259,7 @@
       '</div>'+
       '<aside class="ns-attention-rail">'+
         '<div class="ns-rail-head"><small>LEADERSHIP ATTENTION</small><h3>What needs you now</h3></div>'+
-        '<article class="ns-attention-card"><div class="ns-attention-top"><span class="priority">DECISION</span>'+badge(s.decision,'blue')+'</div><h4>'+esc(model.proposedOutcome)+'</h4><p>'+esc(s.attention[0])+'</p><div class="ns-attention-meta"><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span></div><button class="ns-okr-open primary" data-open-kr="'+esc(model.krId)+'" type="button">Review decision <span>→</span></button></article>'+
+        '<article class="ns-attention-card"><div class="ns-attention-top"><span class="priority">DECISION</span>'+badge(s.decision,'blue')+'</div><h4>'+esc(model.proposedOutcome)+'</h4><p>'+esc(s.attention[0])+'</p><div class="ns-attention-meta"><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span></div><button class="ns-okr-open primary" data-review-decision="'+esc(model.krId)+'" type="button">Review decision <span aria-hidden="true">→</span></button></article>'+
         '<article class="ns-rail-insight"><small>WHY THIS MATTERS</small><strong>Closing '+esc(model.epic)+' will not close '+esc(model.krId)+'.</strong><p>Northstar waits for the designated outcome evidence before changing the KR assessment.</p></article>'+
         '<article class="ns-rail-proof"><small>TRACEABILITY</small><div><b>Objective</b><span>→</span><b>KR</b><span>→</span><b>Decision</b><span>→</span><b>CAR</b><span>→</span><b>Epic</b></div></article>'+
       '</aside>'+
@@ -355,16 +401,47 @@
     setPressed('[data-view]', b=>b.dataset.view===state.view);
     setPressed('[data-role]', b=>b.dataset.role===state.role);
     setPressed('[data-scenario]', b=>b.dataset.scenario===state.scenario);
-    $('northstar-view').innerHTML=renderers[state.view]();
+    const scoped = state.view === 'okr' ? '' : scopeBanner();
+    $('northstar-view').innerHTML=scoped+renderers[state.view]();
     $('scenario-state').textContent=current().label.toUpperCase();
     $('role-state').textContent=state.role==='leader'?'LEADERSHIP':state.role==='manager'?'MANAGEMENT':'DELIVERY';
   }
 
   document.addEventListener('click', e => {
-    const kr=e.target.closest('[data-open-kr]');
-    if(kr){
+    const trail=e.target.closest('[data-open-trail]');
+    if(trail){
+      state.selectedKr=trail.dataset.openTrail;
+      state.selectedObjective=model.objectiveId;
+      openTrail(trail);
+      return;
+    }
+    const review=e.target.closest('[data-review-decision]');
+    if(review){
+      state.selectedKr=review.dataset.reviewDecision;
+      state.selectedObjective=model.objectiveId;
       state.role='leader';
       state.view='decision';
+      render();
+      return;
+    }
+    if(e.target.closest('[data-back-okr]')){
+      state.role='leader';
+      state.view='okr';
+      render();
+      return;
+    }
+    if(e.target.closest('[data-close-trail]')){ closeTrail(); return; }
+    if(e.target.closest('[data-trail-decision]')){
+      closeTrail();
+      state.role='leader';
+      state.view='decision';
+      render();
+      return;
+    }
+    if(e.target.closest('[data-trail-evidence]')){
+      closeTrail();
+      state.role='leader';
+      state.view='evidence';
       render();
       return;
     }
@@ -379,6 +456,12 @@
     const scenario=e.target.closest('[data-scenario]');
     if(scenario){ state.scenario=scenario.dataset.scenario; render(); }
   });
+
+  const trailDialog=$('ns-trail-dialog');
+  if(trailDialog){
+    trailDialog.addEventListener('click', e=>{ if(e.target===trailDialog) closeTrail(); });
+    trailDialog.addEventListener('close', ()=>{ if(trailOpener && typeof trailOpener.focus==='function') trailOpener.focus(); trailOpener=null; });
+  }
 
   render();
 })();
