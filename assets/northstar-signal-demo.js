@@ -217,7 +217,7 @@
     const s=current();
     const unproven = s.outcome === 'UNKNOWN' ? 1 : 0;
     const decisionPending = s.decision !== 'APPROVED';
-    const kr94Outcome = s.outcome;
+    const kr94Outcome = s.authorization === 'CURRENT' ? 'ON TRACK' : 'UNKNOWN';
 
     const objectiveCards = okrPortfolio.map((objective, objectiveIndex) => {
       const krRows = objective.krs.map(kr => {
