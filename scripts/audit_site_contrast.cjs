@@ -128,6 +128,17 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         for(const id of orders){await page.locator(`[data-order-id="${id}"]:visible`).first().click();await audit(route,'order '+id);}
         await page.locator('#tamper-demo').click();await audit(route,'tampered evidence');
       }
+      if(route==='/northstar-signal/demo/'){
+        for(const role of ['leader','manager','delivery']){
+          await page.locator(`[data-role="${role}"]`).click();await audit(route,'role '+role);
+        }
+        for(const scenario of ['decision','delivered','measured']){
+          await page.locator(`[data-scenario="${scenario}"]`).click();await audit(route,'scenario '+scenario);
+        }
+        for(const view of ['leadership','management','decision','authorization','evidence','handoff','outcome']){
+          await page.locator(`[data-view="${view}"]`).click();await audit(route,'view '+view);
+        }
+      }
       if(route==='/assurance/demo/'){
         for(const selector of ['[data-assurance-tab="shield"]',...['baseline','expired','broadened','approver','digest','rollback'].map(v=>`[data-scenario="${v}"]`),'[data-assurance-tab="sentry"]',...['violation','corrected'].map(v=>`[data-sentry-scenario="${v}"]`),'[data-assurance-tab="custody"]',...['access','transfer','broadened','audit'].map(v=>`[data-custody-scenario="${v}"]`)]){
           const button=page.locator(selector);if(await button.count()&&await button.isVisible()){await button.click();await page.waitForTimeout(100);await audit(route,selector);}
