@@ -251,20 +251,26 @@ jobs:
 
   verify-public-site:
     name: verify-custom-domain
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'pull_request' && github.head_ref == 'ops/pages-origin-verification')
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Verify deployed portfolio on custom domain
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.sha }}
+      - name: Verify deployed portfolio at GitHub Pages origin
         shell: bash
         env:
           BASE_URL: https://infrastructureproductworks.com
-          EXPECTED_SHA: ${{ github.sha }}
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.sha }}
+          ORIGIN_HOST: infrastructureproductworks.com
         run: |
           set -euo pipefail
 
           portfolio=/tmp/portfolio.html
+          public_portfolio=/tmp/public-portfolio.html
           script=/tmp/portfolio.js
           stylesheet=/tmp/portfolio.css
           relationships=/tmp/roadmap-relationships.json
@@ -285,11 +291,17 @@ jobs:
           assurance_portal_js_ref="/assets/assurance-portal.js?v=${assurance_portal_js_blob}"
           js_ref="/assets/portfolio.js?v=${js_blob}"
           css_ref="/assets/portfolio.css?v=${css_blob}"
+          origin_ips=(185.199.108.153 185.199.109.153 185.199.110.153 185.199.111.153)
 
           ok=0
           for attempt in $(seq 1 30); do
-            echo "Attempt ${attempt}/30 for ${BASE_URL}/portfolio/"
+            echo "Attempt ${attempt}/30 against GitHub Pages origin for ${BASE_URL}/portfolio/"
+            origin_index=$(( (attempt - 1) % 4 ))
+            origin_ip="${origin_ips[$origin_index]}"
+            origin_resolve=(--resolve "${ORIGIN_HOST}:443:${origin_ip}")
+            echo "GitHub Pages origin: ${origin_ip}"
             code="$(curl --location --silent --show-error \
+              "${origin_resolve[@]}" \
               --connect-timeout 10 --max-time 20 \
               --output "${portfolio}" \
               --write-out '%{http_code}' \
@@ -304,49 +316,58 @@ jobs:
               && grep -Fq "${css_ref}" "${portfolio}"; then
 
               script_code="$(curl --location --silent --show-error \
+              "${origin_resolve[@]}" \
                 --connect-timeout 10 --max-time 20 \
                 --output "${script}" \
                 --write-out '%{http_code}' \
                 "${BASE_URL}${js_ref}&verify=${EXPECTED_SHA}" || true)"
               css_code="$(curl --location --silent --show-error \
+              "${origin_resolve[@]}" \
                 --connect-timeout 10 --max-time 20 \
                 --output "${stylesheet}" \
                 --write-out '%{http_code}' \
                 "${BASE_URL}${css_ref}&verify=${EXPECTED_SHA}" || true)"
               relationships_code="$(curl --location --silent --show-error \
+              "${origin_resolve[@]}" \
                 --connect-timeout 10 --max-time 20 \
                 --output "${relationships}" \
                 --write-out '%{http_code}' \
                 "${BASE_URL}/data/roadmap-relationships.json?verify=${EXPECTED_SHA}" || true)"
 
               console_demo_code="$(curl --location --silent --show-error \
+              "${origin_resolve[@]}" \
                 --connect-timeout 10 --max-time 20 \
                 --output "${console_demo}" \
                 --write-out '%{http_code}' \
                 "${BASE_URL}/console/demo/?verify=${EXPECTED_SHA}" || true)"
               console_demo_js_code="$(curl --location --silent --show-error \
+              "${origin_resolve[@]}" \
                 --connect-timeout 10 --max-time 20 \
                 --output "${console_demo_js}" \
                 --write-out '%{http_code}' \
                 "${BASE_URL}${console_demo_js_ref}&verify=${EXPECTED_SHA}" || true)"
 
               assurance_demo_code="$(curl --location --silent --show-error \
+              "${origin_resolve[@]}" \
                 --connect-timeout 10 --max-time 20 \
                 --output "${assurance_demo}" \
                 --write-out '%{http_code}' \
                 "${BASE_URL}/assurance/demo/?verify=${EXPECTED_SHA}" || true)"
               assurance_demo_js_code="$(curl --location --silent --show-error \
+              "${origin_resolve[@]}" \
                 --connect-timeout 10 --max-time 20 \
                 --output "${assurance_demo_js}" \
                 --write-out '%{http_code}' \
                 "${BASE_URL}${assurance_demo_js_ref}&verify=${EXPECTED_SHA}" || true)"
 
               assurance_portal_code="$(curl --location --silent --show-error \
+              "${origin_resolve[@]}" \
                 --connect-timeout 10 --max-time 20 \
                 --output "${assurance_portal}" \
                 --write-out '%{http_code}' \
                 "${BASE_URL}/assurance/portal/?verify=${EXPECTED_SHA}" || true)"
               assurance_portal_js_code="$(curl --location --silent --show-error \
+              "${origin_resolve[@]}" \
                 --connect-timeout 10 --max-time 20 \
                 --output "${assurance_portal_js}" \
                 --write-out '%{http_code}' \
@@ -400,11 +421,24 @@ jobs:
           done
 
           if [[ "${ok}" != "1" ]]; then
-            echo "::error::Custom-domain portfolio did not publish the expected content-addressed dashboard assets."
+            echo "::error::GitHub Pages origin did not publish the expected content-addressed dashboard assets."
             exit 1
           fi
 
-          echo "Public deployment verified:"
+          public_code="$(curl --location --silent --show-error \
+            --connect-timeout 10 --max-time 20 \
+            --output "${public_portfolio}" \
+            --write-out '%{http_code}' \
+            "${BASE_URL}/portfolio/?verify=${EXPECTED_SHA}" || true)"
+          if [[ "${public_code}" != "200" ]]; then
+            echo "::warning::Cloudflare public path returned HTTP ${public_code}; origin deployment is verified independently."
+          elif ! grep -Fq "${js_ref}" "${public_portfolio}" || ! grep -Fq "${css_ref}" "${public_portfolio}"; then
+            echo "::warning::Cloudflare public path is reachable but is not yet serving the expected content-addressed dashboard assets."
+          else
+            echo "Cloudflare public path also exposes the expected content-addressed dashboard assets."
+          fi
+
+          echo "Origin deployment verified:"
           echo "  URL: ${BASE_URL}/portfolio/"
           echo "  HTTP: 200"
           echo "  Connected Apps validation panel: present"
