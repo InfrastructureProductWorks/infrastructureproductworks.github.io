@@ -205,12 +205,12 @@ main>.hero .button.ghost{background:#ffffff12;color:#fff;border-color:#ffffff55}
 .ns-composer-head small{display:block;color:#9edcff;font-size:9px;font-weight:900;letter-spacing:.1em}
 .ns-composer-head h2{margin:5px 0 3px;color:#fff;font-size:24px}
 .ns-composer-head p{margin:0;color:#d9ebf5;font-size:11px}
-.ns-composer-head button{appearance:none;width:36px;height:36px;border:1px solid #ffffff55;border-radius:9px;background:#ffffff12;color:#fff;font-size:20px;cursor:pointer}
+.ns-composer-head>div{min-width:0}.ns-composer-head button{appearance:none;flex:0 0 36px;width:36px;height:36px;border:1px solid #ffffff55;border-radius:9px;background:#ffffff12;color:#fff;font-size:20px;cursor:pointer}
 .ns-composer-body{padding:18px 20px;overflow:auto}
 .ns-composer-flow{display:grid;gap:12px}
 .ns-composer-step{padding:16px;border:1px solid #d6e2eb;border-radius:14px;background:#fff}
 .ns-composer-step>small,.ns-composer-warnings>small{display:block;color:#0b719b;font-size:9px;font-weight:900;letter-spacing:.09em}
-.ns-composer-step h3{margin:5px 0 10px;font-size:18px}
+.ns-composer-step h3{margin:6px 0 16px;font-size:18px;line-height:1.35}
 .ns-composer-step label{display:block;margin-bottom:6px;color:#53677d;font-size:10px;font-weight:900}
 .ns-composer-step textarea{width:100%;box-sizing:border-box;resize:vertical;border:1px solid #aebfce;border-radius:10px;padding:11px 12px;background:#fff;color:#17314d;font:500 12px/1.5 inherit}
 .ns-composer-warnings{margin-top:12px;padding:12px;border:1px solid #e6c67d;border-radius:10px;background:#fffaf0}
@@ -232,6 +232,10 @@ main>.hero .button.ghost{background:#ffffff12;color:#fff;border-color:#ffffff55}
 .ns-composer-actions button{appearance:none;border:1px solid #9fb4c8;border-radius:9px;padding:9px 12px;background:#fff;color:#0b5c81;font:800 10px/1.2 inherit;cursor:pointer}
 .ns-composer-actions button.primary{background:#0b3a59;border-color:#0b719b;color:#fff}
 @media(max-width:700px){
+  .ns-composer-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start}
+  .ns-composer-head h2{font-size:21px;line-height:1.2;padding-right:6px}
+  .ns-composer-head p{max-width:250px;line-height:1.45;padding-right:6px}
+  .ns-composer-step{padding:18px}
   .ns-composer-krs,.ns-composer-checks{grid-template-columns:1fr}
   .ns-composer-accepted{grid-template-columns:1fr}
   .ns-composer-accepted button{width:100%}
