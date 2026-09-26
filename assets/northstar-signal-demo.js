@@ -171,13 +171,13 @@
   function scopeBanner() {
     if (!state.selectedKr) return '';
     if (state.view === 'outcome') {
-      return '<div class="ns-scope-bar downstream" aria-label="Downstream outcome feedback context">'+
+      return '<div class="ns-scope-bar downstream" aria-label="Downstream benefit feedback context">'+
         '<div><small>DOWNSTREAM BENEFIT FEEDBACK</small><strong>Separate from '+esc(state.selectedKr)+' authorization status</strong><span>Benefit evidence informs learning after authorization. It does not re-score the authorization Key Result.</span></div>'+
         '<button type="button" data-back-okr>Back to My Division OKRs</button>'+
       '</div>';
     }
     return '<div class="ns-scope-bar" aria-label="Selected outcome context">'+
-      '<div><small>SELECTED OUTCOME</small><strong>'+esc(state.selectedObjective)+' <span aria-hidden="true">→</span> '+esc(state.selectedKr)+'</strong><span>'+esc(model.keyResult)+'</span></div>'+
+      '<div><small>SELECTED KEY RESULT</small><strong>'+esc(state.selectedObjective)+' <span aria-hidden="true">→</span> '+esc(state.selectedKr)+'</strong><span>'+esc(model.keyResult)+'</span></div>'+
       '<button type="button" data-back-okr>Back to My Division OKRs</button>'+
     '</div>';
   }
@@ -236,9 +236,10 @@
         const action = kr.interactive
           ? '<button class="ns-okr-open" data-open-trail="'+esc(kr.id)+'" type="button">Open trail <span aria-hidden="true">→</span></button>'
           : '<span class="ns-okr-source-note">Measured</span>';
+        const statusLabel = isPrimary ? 'KR STATUS' : 'OUTCOME';
         return '<div class="ns-kr-row'+(isPrimary?' primary':'')+'">'+
           '<div class="ns-kr-copy"><small>'+esc(kr.id)+'</small><strong>'+esc(kr.text)+'</strong><span>'+esc(kr.owner)+'</span></div>'+
-          '<div class="ns-kr-signals"><div><span>DELIVERY</span>'+badge(delivery,'blue')+'</div><div><span>OUTCOME</span>'+badge(outcome,outcomeTone)+'</div></div>'+
+          '<div class="ns-kr-signals"><div><span>DELIVERY</span>'+badge(delivery,'blue')+'</div><div><span>'+statusLabel+'</span>'+badge(outcome,outcomeTone)+'</div></div>'+
           '<div class="ns-kr-source"><span>EVIDENCE SOURCE</span><strong>'+esc(source)+'</strong>'+action+'</div>'+
         '</div>';
       }).join('');
