@@ -100,6 +100,8 @@ jobs:
           node --check assets/northstar-signal-demo.js
           grep -Fq "No outcome claim yet." assets/northstar-signal-demo.js
           grep -Fq "External backlog writeback is not enabled." assets/northstar-signal-demo.js
+          grep -Fq "button.setAttribute('aria-pressed', active ? 'true' : 'false')" assets/northstar-signal-demo.js
+          grep -Fq "scenario '+scenario+' / view '+view" scripts/audit_site_contrast.cjs
           grep -Fq "IAAP CONSOLE · INTERACTIVE SYNTHETIC WORKBENCH" console/demo/index.html
           grep -Fq "VERIFICATION PENDING" console/demo/index.html
           grep -Fq "AWAITING_HUMAN_REVIEW" assets/console-demo.js
