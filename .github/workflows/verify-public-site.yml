@@ -103,13 +103,17 @@ jobs:
           grep -Fq "button.setAttribute('aria-pressed', active ? 'true' : 'false')" assets/northstar-signal-demo.js
           grep -Fq "KR9.4 AUTHORIZATION STATUS" assets/northstar-signal-demo.js
           grep -Fq "DOWNSTREAM BENEFIT FEEDBACK" assets/northstar-signal-demo.js
-          grep -Fq "Northstar decision and authorization evidence" assets/northstar-signal-demo.js
-          grep -Fq "Benefit evidence received." assets/northstar-signal-demo.js
-          grep -Fq "KR STATUS" assets/northstar-signal-demo.js
-          grep -Fq "DOWNSTREAM BENEFIT FEEDBACK" assets/northstar-signal-demo.js
-          grep -Fq "Benefit Measured" northstar-signal/demo/index.html
-          if grep -Fq "KR outcome remains unknown" assets/northstar-signal-demo.js || grep -Fq "The Key Result can now be assessed from outcome evidence" assets/northstar-signal-demo.js; then
-            echo "::error::Northstar must not conflate KR9.4 authorization status with downstream benefit feedback."
+          grep -Fq "Northstar decision/CAR binding" assets/northstar-signal-demo.js
+          grep -Fq "const kr94Status = s.authorization === 'CURRENT' ? 'ON TRACK' : 'UNKNOWN';" assets/northstar-signal-demo.js
+          grep -Fq "const benefitUnproven = s.benefitOutcome === 'UNKNOWN' ? 1 : 0;" assets/northstar-signal-demo.js
+          grep -Fq "scenario '+scenario+' / trace drawer" scripts/audit_site_contrast.cjs
+          if grep -Fq "KR outcome remains unknown" assets/northstar-signal-demo.js \
+            || grep -Fq "The Key Result can now be assessed from outcome evidence" assets/northstar-signal-demo.js \
+            || grep -Fq "KR MEASUREMENT" assets/northstar-signal-demo.js \
+            || grep -Fq "OUTCOME PROGRESS" assets/northstar-signal-demo.js \
+            || grep -Fq "const kr94Outcome" assets/northstar-signal-demo.js \
+            || grep -Fq "const unproven =" assets/northstar-signal-demo.js; then
+            echo "::error::Northstar must keep KR9.4 authorization status separate from downstream benefit feedback."
             exit 1
           fi
           grep -Fq "scenario '+scenario+' / view '+view" scripts/audit_site_contrast.cjs
