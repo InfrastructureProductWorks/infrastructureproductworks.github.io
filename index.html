@@ -716,6 +716,11 @@
     border-bottom:1px solid #5ca7d044
   }
 }
+
+/* Silhouette realism refinement */
+.northstar-role.management .northstar-silhouette{transform:scaleX(1.04)}
+.northstar-role.leadership .northstar-silhouette{transform:scaleX(1.07)}
+.northstar-role.delivery .northstar-silhouette{transform:scaleX(1.04)}
 </style></head><body><header><a class="brand" href="/">Infrastructure <span>Product Works</span></a><nav><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><details class="nav-products"><summary>Products</summary><div class="nav-menu"><a href="/storefront/"><small>EXPERIENCE</small>Storefront</a><a href="/guard/"><small>VALIDATE</small>IaaP Guard</a><a href="/forge/"><small>CONSTRUCT</small>IaaP Forge</a><a href="/console/"><small>REVIEW</small>IaaP Console</a><a href="/assurance/"><small>ASSURE</small>IaaP Assurance</a><a href="/crossplane/"><small>ARCHITECTURE</small>Crossplane Control Plane</a></div></details><a href="/operating-model/">How It Works</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/guides/">Guides</a></nav><details class="mobile-nav"><summary>Menu</summary><div class="nav-menu"><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><a href="/operating-model/">How It Works</a><a href="/storefront/">Storefront</a><a href="/guard/">IaaP Guard</a><a href="/forge/">IaaP Forge</a><a href="/console/">IaaP Console</a><a href="/assurance/">IaaP Assurance</a><a href="/crossplane/">Crossplane</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/guides/">User guides</a><a href="/support/">Support</a></div></details></header><main>
 
 <section class="northstar-home-hero" aria-labelledby="northstar-home-title">
@@ -753,30 +758,31 @@
       <div class="northstar-role management">
         <div class="northstar-role-label"><strong>MANAGEMENT</strong><span>Plans and enables.<br>Turns intent into plans.<br>Removes blockers.</span></div>
         <svg class="northstar-silhouette" viewBox="0 0 220 360" aria-hidden="true">
-          <circle class="person-soft" cx="110" cy="69" r="30"/>
-          <path class="person-soft" d="M75 113c9-14 23-22 35-22 13 0 28 8 37 22l21 77-23 10-11-42v162H86V158l-11 42-23-10z"/>
-          <path class="person" d="M91 104h39l13 49H78z" opacity=".75"/>
+          <circle class="person-soft" cx="110" cy="63" r="27"/>
+          <path class="person-soft" d="M78 100c8-11 19-17 32-17 12 0 24 6 32 17l9 21c5 12 7 24 7 37v23l15 92h-27l-12-61v146h-39V212l-12 61H47l15-92v-23c0-13 2-25 7-37z"/>
+          <path class="person" d="M83 108h54l17 59h-22l-9-27v43h-25v-43l-8 27H66z" opacity=".82"/>
         </svg>
       </div>
 
       <div class="northstar-role leadership">
         <div class="northstar-role-label"><strong>LEADERSHIP</strong><span>Sets direction.<br>Defines priorities.<br>Sees progress.</span></div>
         <svg class="northstar-silhouette" viewBox="0 0 250 410" aria-hidden="true">
-          <circle class="person" cx="125" cy="72" r="34"/>
-          <path class="person" d="M82 122c10-17 28-27 43-27 16 0 34 10 44 27l25 89-28 12-13-49v188H97V174l-13 49-28-12z"/>
-          <path class="person-soft" d="M101 112h48l17 56H84z" opacity=".65"/>
+          <circle class="person" cx="125" cy="62" r="28"/>
+          <path class="person" d="M92 100c8-10 20-16 33-16s25 6 33 16l8 24c4 11 6 22 6 34v26l16 96h-29l-13-70v154h-43V210l-13 70H61l16-96v-26c0-12 2-23 6-34z"/>
+          <path class="person-soft" d="M98 110h54l16 58h-23l-8-26v45h-24v-45l-8 26H82z" opacity=".78"/>
         </svg>
       </div>
 
       <div class="northstar-role delivery">
         <div class="northstar-role-label"><strong>DELIVERY TEAMS</strong><span>Execute with confidence.<br>Use reusable products.<br>Generate evidence.</span></div>
         <svg class="northstar-silhouette" viewBox="0 0 330 360" aria-hidden="true">
-          <circle class="person-soft" cx="55" cy="92" r="24"/>
-          <path class="person-soft" d="M28 128c7-11 18-18 27-18s21 7 28 18l14 55-18 8-8-30v142H41V161l-8 30-18-8z"/>
-          <circle class="person" cx="155" cy="76" r="29"/>
-          <path class="person" d="M120 116c9-14 23-22 35-22 13 0 28 8 37 22l20 74-23 10-10-40v158h-48V160l-10 40-23-10z"/>
-          <circle class="person-soft" cx="267" cy="93" r="23"/>
-          <path class="person-soft" d="M241 128c7-11 17-17 26-17s20 6 27 17l14 54-18 8-8-29v142h-30V161l-8 29-18-8z"/>
+          <circle class="person-soft" cx="55" cy="82" r="22"/>
+          <path class="person-soft" d="M30 115c7-10 15-15 25-15 10 0 19 5 26 15l8 18c3 9 5 18 5 28v18l12 75H84l-9-50v118H47V204l-9 50H16l12-75v-18c0-10 2-19 5-28z"/>
+          <circle class="person" cx="165" cy="66" r="28"/>
+          <path class="person" d="M132 104c8-10 20-16 33-16s25 6 33 16l8 23c4 11 6 22 6 34v22l16 97h-28l-13-65v143h-43V215l-13 65h-28l16-97v-22c0-12 2-23 6-34z"/>
+          <path class="person-soft" d="M139 113h52l16 56h-22l-8-25v42h-24v-42l-8 25h-22z" opacity=".72"/>
+          <circle class="person-soft" cx="275" cy="84" r="21"/>
+          <path class="person-soft" d="M251 116c7-10 15-15 24-15 10 0 18 5 25 15l8 18c4 9 5 18 5 28v17l12 75h-22l-9-49v117h-28V205l-9 49h-22l12-75v-17c0-10 1-19 4-28z"/>
         </svg>
       </div>
 
