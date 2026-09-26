@@ -7,9 +7,9 @@
       decision: 'APPROVE CONDITIONALLY',
       authorization: 'CURRENT',
       delivery: 'READY',
-      measurement: 'UNKNOWN',
-      outcome: 'UNKNOWN',
-      outcomeSource: 'No authoritative measurement',
+      benefitMeasurement: 'UNKNOWN',
+      benefitOutcome: 'UNKNOWN',
+      benefitSource: 'No authoritative benefit measurement',
       attention: [
         'Reuse candidate found, but equivalence is not yet proven.',
         'Internal capability evidence exists; availability remains unknown.',
@@ -21,27 +21,27 @@
       decision: 'APPROVED',
       authorization: 'CURRENT',
       delivery: 'COMPLETE',
-      measurement: 'UNKNOWN',
-      outcome: 'UNKNOWN',
-      outcomeSource: 'No authoritative measurement',
+      benefitMeasurement: 'UNKNOWN',
+      benefitOutcome: 'UNKNOWN',
+      benefitSource: 'No authoritative benefit measurement',
       attention: [
         'Delivery evidence is complete.',
         'The reusable product is available to the synthetic consumer group.',
-        'KR outcome remains unknown because no benefit measurement has arrived.'
+        'Downstream benefit remains unmeasured even though authorization and delivery are complete.'
       ]
     },
     measured: {
-      label: 'Outcome measured',
+      label: 'Benefit measured',
       decision: 'APPROVED',
       authorization: 'CURRENT',
       delivery: 'COMPLETE',
-      measurement: 'AUTHORITATIVE',
-      outcome: 'ON TRACK',
-      outcomeSource: 'Synthetic benefit measurement',
+      benefitMeasurement: 'AUTHORITATIVE',
+      benefitOutcome: 'ON TRACK',
+      benefitSource: 'Synthetic benefit measurement',
       attention: [
         'Delivery evidence is complete.',
         'Adoption and cycle-time evidence has been observed.',
-        'The Key Result can now be assessed from outcome evidence rather than ticket closure.'
+        'Benefit feedback can now inform investment learning; it does not alter KR9.4 authorization evidence.'
       ]
     }
   };
@@ -72,6 +72,7 @@
       ['Defer', 'Do not productize the capability now.', 'Leaves the capability gap unresolved.']
     ],
     evidence: [
+      ['Authorization', 'Northstar decision/CAR binding', 'DEMONSTRATED', 'HIGH', 'CURRENT', 'CPD-0001 and CAR-0001 preserve the bounded authorization evidence required by KR9.4.'],
       ['Product', 'Reviewed repository evidence', 'DEMONSTRATED', 'HIGH', 'CURRENT', 'A reusable managed-network contract candidate exists.'],
       ['Person', 'Profile skills', 'SELF-DECLARED', 'MEDIUM', 'CURRENT', 'Platform networking and cloud architecture are self-declared capabilities. Availability is unknown.'],
       ['Person', 'Structured assessment', 'ASSESSED', 'HIGH', 'CURRENT', 'Platform networking capability was assessed. This does not assign staff.'],
@@ -83,7 +84,69 @@
     ]
   };
 
-  const state = { view: 'leadership', role: 'leader', scenario: 'decision' };
+  const okrPortfolio = [
+    {
+      objectiveId: 'O9',
+      objective: 'Align cloud-product investment and execution to evidence-backed division outcomes.',
+      krs: [
+        {
+          id: 'KR9.4',
+          text: 'Every authorized reusable cloud-product outcome emits an exact Capability Authorization Record before delivery begins.',
+          decision: 'CPD-0001',
+          owner: 'Division Leader',
+          source: 'Northstar decision and authorization evidence',
+          interactive: true
+        },
+        {
+          id: 'KR9.5',
+          text: 'Reduce decision-to-authorized-backlog handoff time for standard reusable product decisions.',
+          delivery: 'ACTIVE',
+          outcome: 'ON TRACK',
+          source: 'Synthetic cycle-time measurement',
+          owner: 'Portfolio Manager'
+        }
+      ]
+    },
+    {
+      objectiveId: 'O10',
+      objective: 'Increase reuse of governed infrastructure products before new productization begins.',
+      krs: [
+        {
+          id: 'KR10.1',
+          text: 'Reusable capability requests check accepted products before a new build path is authorized.',
+          delivery: 'ACTIVE',
+          outcome: 'ON TRACK',
+          source: 'Synthetic reuse decision evidence',
+          owner: 'Product Leader'
+        },
+        {
+          id: 'KR10.2',
+          text: 'Every approved exception records why existing governed products were not sufficient.',
+          delivery: 'ACTIVE',
+          outcome: 'AT RISK',
+          source: 'Synthetic exception evidence',
+          owner: 'Portfolio Manager'
+        }
+      ]
+    },
+    {
+      objectiveId: 'O11',
+      objective: 'Improve evidence-backed platform decision quality and traceability.',
+      krs: [
+        {
+          id: 'KR11.1',
+          text: 'Product authorization decisions retain evidence, accountable owner, bounded scope and review date.',
+          delivery: 'COMPLETE',
+          outcome: 'ON TRACK',
+          source: 'Synthetic decision-record measurement',
+          owner: 'Division Leader'
+        }
+      ]
+    }
+  ];
+
+  const state = { view: 'okr', role: 'leader', scenario: 'decision', selectedKr: model.krId, selectedObjective: model.objectiveId };
+  let trailOpener = null;
   const $ = (id) => document.getElementById(id);
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
@@ -105,8 +168,117 @@
   }
   function current() { return scenarioData[state.scenario]; }
 
+  function scopeBanner() {
+    if (!state.selectedKr) return '';
+    if (state.view === 'outcome') {
+      return '<div class="ns-scope-bar downstream" aria-label="Downstream benefit feedback context">'+
+        '<div><small>DOWNSTREAM BENEFIT FEEDBACK</small><strong>Separate from '+esc(state.selectedKr)+' authorization status</strong><span>Benefit evidence informs learning after authorization. It does not re-score the authorization Key Result.</span></div>'+
+        '<button type="button" data-back-okr>Back to My Division OKRs</button>'+
+      '</div>';
+    }
+    return '<div class="ns-scope-bar" aria-label="Selected outcome context">'+
+      '<div><small>SELECTED KEY RESULT</small><strong>'+esc(state.selectedObjective)+' <span aria-hidden="true">→</span> '+esc(state.selectedKr)+'</strong><span>'+esc(model.keyResult)+'</span></div>'+
+      '<button type="button" data-back-okr>Back to My Division OKRs</button>'+
+    '</div>';
+  }
+
+  function trailMarkup() {
+    const s=current();
+    return '<div class="ns-trail-lineage" aria-label="Northstar traceability chain">'+
+      '<div class="ns-trail-step"><small>OBJECTIVE</small><strong>'+esc(model.objectiveId)+'</strong><span>'+esc(model.objective)+'</span></div>'+
+      '<div class="ns-trail-arrow" aria-hidden="true">↓</div>'+
+      '<div class="ns-trail-step emphasis"><small>KEY RESULT</small><strong>'+esc(model.krId)+'</strong><span>'+esc(model.keyResult)+'</span></div>'+
+      '<div class="ns-trail-arrow" aria-hidden="true">↓</div>'+
+      '<div class="ns-trail-step"><small>DECISION</small><strong>'+esc(model.decisionId)+'</strong><span>'+esc(s.decision.replaceAll('_',' '))+'</span></div>'+
+      '<div class="ns-trail-arrow" aria-hidden="true">↓</div>'+
+      '<div class="ns-trail-step"><small>CAPABILITY AUTHORIZATION</small><strong>'+esc(model.carId)+'</strong><span>Current bounded product intent</span></div>'+
+      '<div class="ns-trail-arrow" aria-hidden="true">↓</div>'+
+      '<div class="ns-trail-step"><small>EPIC</small><strong>'+esc(model.epic)+'</strong><span>'+esc(model.epicTitle)+'</span></div>'+
+    '</div>'+
+    '<div class="ns-trail-evidence"><small>KR9.4 AUTHORIZATION EVIDENCE</small><h3>Northstar decision and authorization evidence</h3><p>Decision: <strong>'+esc(s.decision.replaceAll('_',' '))+'</strong> · Authorization: <strong>'+esc(s.authorization.replaceAll('_',' '))+'</strong></p><p>This evidence establishes the bounded decision-to-CAR requirement for KR9.4.</p></div>'+
+    '<div class="ns-trail-evidence secondary"><small>DOWNSTREAM BENEFIT FEEDBACK</small><h3>'+esc(s.benefitSource)+'</h3><p>Delivery: <strong>'+esc(s.delivery.replaceAll('_',' '))+'</strong> · Benefit signal: <strong>'+esc(s.benefitOutcome.replaceAll('_',' '))+'</strong></p><p>Benefit evidence informs investment learning. It does not substitute for the authorization evidence that proves KR9.4.</p></div>'+
+    '<div class="ns-trail-actions"><button type="button" data-trail-decision>Open decision</button><button type="button" data-trail-evidence>Open evidence</button></div>';
+  }
+
+  function openTrail(opener) {
+    trailOpener=opener||null;
+    state.selectedKr=model.krId;
+    state.selectedObjective=model.objectiveId;
+    const dialog=$('ns-trail-dialog');
+    $('ns-trail-content').innerHTML=trailMarkup();
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open','');
+    const close=$('ns-trail-close');
+    if(close) close.focus();
+  }
+
+  function closeTrail() {
+    const dialog=$('ns-trail-dialog');
+    if(dialog.open && typeof dialog.close === 'function') dialog.close();
+    else dialog.removeAttribute('open');
+    if(trailOpener && typeof trailOpener.focus === 'function') trailOpener.focus();
+    trailOpener=null;
+  }
+
+  function okrOverview() {
+    const s=current();
+    const benefitUnproven = s.benefitOutcome === 'UNKNOWN' ? 1 : 0;
+    const decisionPending = s.decision !== 'APPROVED';
+    const kr94Status = s.authorization === 'CURRENT' ? 'ON TRACK' : 'UNKNOWN';
+
+    const objectiveCards = okrPortfolio.map((objective, objectiveIndex) => {
+      const krRows = objective.krs.map(kr => {
+        const isPrimary = kr.id === model.krId;
+        const delivery = isPrimary ? s.delivery : kr.delivery;
+        const outcome = isPrimary ? kr94Status : kr.outcome;
+        const outcomeTone = outcome === 'UNKNOWN' || outcome === 'AT RISK' ? 'amber' : 'green';
+        const source = kr.source;
+        const action = kr.interactive
+          ? '<button class="ns-okr-open" data-open-trail="'+esc(kr.id)+'" type="button">Open trail <span aria-hidden="true">→</span></button>'
+          : '<span class="ns-okr-source-note">Measured</span>';
+        const statusLabel = isPrimary ? 'KR STATUS' : 'OUTCOME';
+        return '<div class="ns-kr-row'+(isPrimary?' primary':'')+'">'+
+          '<div class="ns-kr-copy"><small>'+esc(kr.id)+'</small><strong>'+esc(kr.text)+'</strong><span>'+esc(kr.owner)+'</span></div>'+
+          '<div class="ns-kr-signals"><div><span>DELIVERY</span>'+badge(delivery,'blue')+'</div><div><span>'+statusLabel+'</span>'+badge(outcome,outcomeTone)+'</div></div>'+
+          '<div class="ns-kr-source"><span>EVIDENCE SOURCE</span><strong>'+esc(source)+'</strong>'+action+'</div>'+
+        '</div>';
+      }).join('');
+      const health = objectiveIndex === 1 ? 'WATCH' : 'ON TRACK';
+      const tone = objectiveIndex === 1 ? 'amber' : 'green';
+      return '<article class="ns-objective-card">'+
+        '<div class="ns-objective-head"><div class="ns-objective-id">'+esc(objective.objectiveId)+'</div><div class="ns-objective-title"><small>DIVISION OBJECTIVE</small><h3>'+esc(objective.objective)+'</h3></div><div class="ns-objective-health">'+badge(health,tone)+'<span>'+objective.krs.length+' Key Result'+(objective.krs.length===1?'':'s')+'</span></div></div>'+
+        '<div class="ns-objective-krs">'+krRows+'</div>'+
+      '</article>';
+    }).join('');
+
+    return '<div class="ns-dashboard-head">'+
+      '<div><p class="eyebrow">'+esc(model.division)+' · '+esc(model.period)+'</p><h2>My Division OKRs</h2><p>Leadership starts with outcomes, not tickets. Delivery status is visible, but it never substitutes for the named evidence source that proves a Key Result.</p></div>'+
+      '<div class="ns-dashboard-status"><span class="pulse"></span><div><small>PORTFOLIO SIGNAL</small><strong>'+(benefitUnproven?'1 downstream benefit still unproven':'All highlighted benefit signals measured')+'</strong></div></div>'+
+    '</div>'+
+    '<div class="ns-exec-metrics">'+
+      '<article><div class="metric-icon">◎</div><div><small>OBJECTIVES</small><strong>3</strong><span>Division priorities</span></div></article>'+
+      '<article><div class="metric-icon">▥</div><div><small>KEY RESULTS</small><strong>5</strong><span>Owned, measurable outcomes</span></div></article>'+
+      '<article class="'+(decisionPending?'attention':'good')+'"><div class="metric-icon">!</div><div><small>NEEDS DECISION</small><strong>'+(decisionPending?'1':'0')+'</strong><span>'+(decisionPending?esc(model.decisionId)+' requires review':'No decision pending')+'</span></div></article>'+
+      '<article class="'+(benefitUnproven?'attention':'good')+'"><div class="metric-icon">◌</div><div><small>BENEFIT UNPROVEN</small><strong>'+benefitUnproven+'</strong><span>'+(benefitUnproven?'Benefit evidence pending':'Benefit evidence received')+'</span></div></article>'+
+    '</div>'+
+    '<div class="ns-leadership-grid">'+
+      '<div class="ns-leadership-main">'+
+        '<div class="ns-section-title"><div><small>OUTCOME PORTFOLIO</small><h3>Division objectives and Key Results</h3></div><span>Delivery ≠ outcome</span></div>'+
+        '<div class="ns-okr-board">'+objectiveCards+'</div>'+
+      '</div>'+
+      '<aside class="ns-attention-rail">'+
+        '<div class="ns-rail-head"><small>LEADERSHIP ATTENTION</small><h3>What needs you now</h3></div>'+
+        '<article class="ns-attention-card '+(decisionPending?'':'resolved')+'"><div class="ns-attention-top"><span class="priority">'+(decisionPending?'DECISION':'DECISION RESOLVED')+'</span>'+badge(s.decision,decisionPending?'blue':'green')+'</div><h4>'+esc(model.proposedOutcome)+'</h4><p>'+(decisionPending?esc(s.attention[0]):'The decision is approved. Northstar keeps it visible for traceability while attention shifts to delivery and measured benefit.')+'</p><div class="ns-attention-meta"><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span></div><button class="ns-okr-open primary" data-review-decision="'+esc(model.krId)+'" type="button">'+(decisionPending?'Review decision':'View decision record')+' <span aria-hidden="true">→</span></button></article>'+
+        '<article class="ns-rail-insight"><small>WHY THIS MATTERS</small><strong>Closing '+esc(model.epic)+' will not close '+esc(model.krId)+'.</strong><p>KR9.4 is assessed from decision/CAR evidence; downstream benefit is measured separately.</p></article>'+
+        '<article class="ns-rail-proof"><small>TRACEABILITY</small><div><b>Objective</b><span>→</span><b>KR</b><span>→</span><b>Decision</b><span>→</span><b>CAR</b><span>→</span><b>Epic</b></div></article>'+
+      '</aside>'+
+    '</div>'+
+    '<div class="ns-boundary-box"><strong>Leadership rule:</strong> a completed Epic can change the delivery signal. It cannot change KR9.4 authorization status, which comes from decision/CAR evidence. Downstream benefit is measured separately.</div>';
+  }
+
   function leadership() {
     const s=current();
+    const kr94Status = s.authorization === 'CURRENT' ? 'ON TRACK' : 'UNKNOWN';
     return headline(
       model.objective,
       model.keyResult,
@@ -116,11 +288,11 @@
       '<article><small>DECISION</small>'+badge(s.decision,'blue')+'<p>'+esc(model.decisionId)+' · review '+esc(model.decisionReview)+'</p></article>'+
       '<article><small>AUTHORIZATION</small>'+badge(s.authorization,'green')+'<p>'+esc(model.carId)+' · review '+esc(model.carReview)+'</p></article>'+
       '<article><small>DELIVERY</small>'+badge(s.delivery,'blue')+'<p>'+esc(model.epic)+' · '+esc(model.team)+'</p></article>'+
-      '<article><small>OUTCOME</small>'+badge(s.outcome,s.outcome==='UNKNOWN'?'amber':'green')+'<p>'+esc(s.outcomeSource)+'</p></article>'+
+      '<article><small>BENEFIT FEEDBACK</small>'+badge(s.benefitOutcome,s.benefitOutcome==='UNKNOWN'?'amber':'green')+'<p>'+esc(s.benefitSource)+'</p></article>'+
     '</div>'+
     '<div class="ns-truth">'+
-      '<article><small>DELIVERY PROGRESS</small><h3>'+esc(s.delivery.replaceAll('_',' '))+'</h3><p>Backlog and product-realization evidence describe what was delivered.</p></article>'+
-      '<article><small>OUTCOME PROGRESS</small><h3>'+esc(s.outcome.replaceAll('_',' '))+'</h3><p>'+esc(s.measurement==='UNKNOWN'?'Northstar will not infer KR attainment from delivery activity.':'Outcome evidence now supports a real KR assessment.')+'</p></article>'+
+      '<article><small>KR9.4 AUTHORIZATION STATUS</small><h3>'+esc(kr94Status.replaceAll('_',' '))+'</h3><p>Decision/CAR evidence establishes the authorization requirement independently of backlog completion.</p></article>'+
+      '<article><small>DOWNSTREAM BENEFIT FEEDBACK</small><h3>'+esc(s.benefitOutcome.replaceAll('_',' '))+'</h3><p>'+esc(s.benefitMeasurement==='UNKNOWN'?'No authoritative benefit measurement yet.':'Observed benefit evidence can inform investment learning without re-scoring KR9.4.')+'</p></article>'+
     '</div>'+
     '<div class="ns-attention"><h3>What needs leadership attention</h3>'+list(s.attention)+'</div>';
   }
@@ -205,27 +377,27 @@
 
   function outcome() {
     const s=current();
-    return headline('Did the product actually move the Key Result?',
-      'Northstar keeps the evidence of delivery separate from evidence of benefit so ticket closure cannot masquerade as an outcome.',
-      'OUTCOME')+
+    return headline('Did the product deliver the expected benefit?',
+      'This view is downstream feedback. It keeps delivery activity separate from observed benefit and does not re-score KR9.4 authorization status.',
+      'DOWNSTREAM BENEFIT FEEDBACK')+
       '<div class="ns-truth large">'+
         '<article><small>DELIVERY SIGNAL</small><h3>'+esc(s.delivery.replaceAll('_',' '))+'</h3><p>'+esc(model.epic)+' delivery evidence.</p></article>'+
-        '<article><small>KR MEASUREMENT</small><h3>'+esc(s.measurement.replaceAll('_',' '))+'</h3><p>'+esc(s.outcomeSource)+'</p></article>'+
+        '<article><small>BENEFIT MEASUREMENT</small><h3>'+esc(s.benefitMeasurement.replaceAll('_',' '))+'</h3><p>'+esc(s.benefitSource)+'</p></article>'+
       '</div>'+
       kv([
-        ['Baseline', 'Manual, nonstandard product decision and handoff path'],
-        ['Target', 'Exact authorized outcome lineage before product realization'],
-        ['Current outcome', badge(s.outcome,s.outcome==='UNKNOWN'?'amber':'green')],
-        ['Accountable outcome role', esc(model.leader)]
+        ['Benefit baseline', 'No authoritative post-delivery benefit observation yet'],
+        ['Benefit target', 'Observe adoption and cycle-time feedback after product availability'],
+        ['Current benefit', badge(s.benefitOutcome,s.benefitOutcome==='UNKNOWN'?'amber':'green')],
+        ['Accountable benefit role', esc(model.leader)]
       ])+
       '<div class="ns-boundary-box">'+
-        (s.measurement==='UNKNOWN'
-          ? '<strong>No outcome claim yet.</strong> Delivery may be complete, but the KR remains unknown until the designated measurement arrives.'
-          : '<strong>Outcome evidence received.</strong> The demo can now assess the KR from an observed synthetic measure instead of delivery activity.')+
+        (s.benefitMeasurement==='UNKNOWN'
+          ? '<strong>No benefit claim yet.</strong> Delivery may be complete, but downstream benefit remains unknown until the designated measurement arrives.'
+          : '<strong>Benefit evidence received.</strong> The synthetic observation can inform investment learning without changing KR9.4 authorization evidence.')+
       '</div>';
   }
 
-  const renderers={leadership,management,decision,authorization,evidence,handoff,outcome};
+  const renderers={okr:okrOverview,leadership,management,decision,authorization,evidence,handoff,outcome};
 
   function setPressed(selector, selected) {
     document.querySelectorAll(selector).forEach(button => {
@@ -239,23 +411,67 @@
     setPressed('[data-view]', b=>b.dataset.view===state.view);
     setPressed('[data-role]', b=>b.dataset.role===state.role);
     setPressed('[data-scenario]', b=>b.dataset.scenario===state.scenario);
-    $('northstar-view').innerHTML=renderers[state.view]();
+    const scoped = state.view === 'okr' ? '' : scopeBanner();
+    $('northstar-view').innerHTML=scoped+renderers[state.view]();
     $('scenario-state').textContent=current().label.toUpperCase();
     $('role-state').textContent=state.role==='leader'?'LEADERSHIP':state.role==='manager'?'MANAGEMENT':'DELIVERY';
   }
 
   document.addEventListener('click', e => {
+    const trail=e.target.closest('[data-open-trail]');
+    if(trail){
+      state.selectedKr=trail.dataset.openTrail;
+      state.selectedObjective=model.objectiveId;
+      openTrail(trail);
+      return;
+    }
+    const review=e.target.closest('[data-review-decision]');
+    if(review){
+      state.selectedKr=review.dataset.reviewDecision;
+      state.selectedObjective=model.objectiveId;
+      state.role='leader';
+      state.view='decision';
+      render();
+      return;
+    }
+    if(e.target.closest('[data-back-okr]')){
+      state.role='leader';
+      state.view='okr';
+      render();
+      return;
+    }
+    if(e.target.closest('[data-close-trail]')){ closeTrail(); return; }
+    if(e.target.closest('[data-trail-decision]')){
+      closeTrail();
+      state.role='leader';
+      state.view='decision';
+      render();
+      return;
+    }
+    if(e.target.closest('[data-trail-evidence]')){
+      closeTrail();
+      state.role='leader';
+      state.view='evidence';
+      render();
+      return;
+    }
     const view=e.target.closest('[data-view]');
     if(view){ state.view=view.dataset.view; render(); return; }
     const role=e.target.closest('[data-role]');
     if(role){
       state.role=role.dataset.role;
-      state.view=state.role==='leader'?'leadership':state.role==='manager'?'management':'handoff';
+      state.view=state.role==='leader'?'okr':state.role==='manager'?'management':'handoff';
       render(); return;
     }
     const scenario=e.target.closest('[data-scenario]');
     if(scenario){ state.scenario=scenario.dataset.scenario; render(); }
   });
+
+  const trailDialog=$('ns-trail-dialog');
+  if(trailDialog){
+    trailDialog.addEventListener('click', e=>{ if(e.target===trailDialog) closeTrail(); });
+    trailDialog.addEventListener('close', ()=>{ if(trailOpener && typeof trailOpener.focus==='function') trailOpener.focus(); trailOpener=null; });
+  }
 
   render();
 })();
