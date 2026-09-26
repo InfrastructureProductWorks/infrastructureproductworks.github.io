@@ -7,9 +7,9 @@
       decision: 'APPROVE CONDITIONALLY',
       authorization: 'CURRENT',
       delivery: 'READY',
-      measurement: 'UNKNOWN',
-      outcome: 'UNKNOWN',
-      outcomeSource: 'No authoritative measurement',
+      benefitMeasurement: 'UNKNOWN',
+      benefitOutcome: 'UNKNOWN',
+      benefitSource: 'No authoritative benefit measurement',
       attention: [
         'Reuse candidate found, but equivalence is not yet proven.',
         'Internal capability evidence exists; availability remains unknown.',
@@ -21,27 +21,27 @@
       decision: 'APPROVED',
       authorization: 'CURRENT',
       delivery: 'COMPLETE',
-      measurement: 'UNKNOWN',
-      outcome: 'UNKNOWN',
-      outcomeSource: 'No authoritative measurement',
+      benefitMeasurement: 'UNKNOWN',
+      benefitOutcome: 'UNKNOWN',
+      benefitSource: 'No authoritative benefit measurement',
       attention: [
         'Delivery evidence is complete.',
         'The reusable product is available to the synthetic consumer group.',
-        'KR outcome remains unknown because no benefit measurement has arrived.'
+        'Downstream benefit remains unmeasured even though authorization and delivery are complete.'
       ]
     },
     measured: {
-      label: 'Outcome measured',
+      label: 'Benefit measured',
       decision: 'APPROVED',
       authorization: 'CURRENT',
       delivery: 'COMPLETE',
-      measurement: 'AUTHORITATIVE',
-      outcome: 'ON TRACK',
-      outcomeSource: 'Synthetic benefit measurement',
+      benefitMeasurement: 'AUTHORITATIVE',
+      benefitOutcome: 'ON TRACK',
+      benefitSource: 'Synthetic benefit measurement',
       attention: [
         'Delivery evidence is complete.',
         'Adoption and cycle-time evidence has been observed.',
-        'The Key Result can now be assessed from outcome evidence rather than ticket closure.'
+        'Benefit feedback can now inform investment learning; it does not alter KR9.4 authorization evidence.'
       ]
     }
   };
@@ -72,6 +72,7 @@
       ['Defer', 'Do not productize the capability now.', 'Leaves the capability gap unresolved.']
     ],
     evidence: [
+      ['Authorization', 'Northstar decision/CAR binding', 'DEMONSTRATED', 'HIGH', 'CURRENT', 'CPD-0001 and CAR-0001 preserve the bounded authorization evidence required by KR9.4.'],
       ['Product', 'Reviewed repository evidence', 'DEMONSTRATED', 'HIGH', 'CURRENT', 'A reusable managed-network contract candidate exists.'],
       ['Person', 'Profile skills', 'SELF-DECLARED', 'MEDIUM', 'CURRENT', 'Platform networking and cloud architecture are self-declared capabilities. Availability is unknown.'],
       ['Person', 'Structured assessment', 'ASSESSED', 'HIGH', 'CURRENT', 'Platform networking capability was assessed. This does not assign staff.'],
@@ -171,7 +172,7 @@
     if (!state.selectedKr) return '';
     if (state.view === 'outcome') {
       return '<div class="ns-scope-bar downstream" aria-label="Downstream outcome feedback context">'+
-        '<div><small>DOWNSTREAM OUTCOME FEEDBACK</small><strong>Separate from '+esc(state.selectedKr)+' authorization status</strong><span>Benefit evidence informs learning after authorization. It does not re-score the authorization Key Result.</span></div>'+
+        '<div><small>DOWNSTREAM BENEFIT FEEDBACK</small><strong>Separate from '+esc(state.selectedKr)+' authorization status</strong><span>Benefit evidence informs learning after authorization. It does not re-score the authorization Key Result.</span></div>'+
         '<button type="button" data-back-okr>Back to My Division OKRs</button>'+
       '</div>';
     }
@@ -195,7 +196,7 @@
       '<div class="ns-trail-step"><small>EPIC</small><strong>'+esc(model.epic)+'</strong><span>'+esc(model.epicTitle)+'</span></div>'+
     '</div>'+
     '<div class="ns-trail-evidence"><small>KR9.4 AUTHORIZATION EVIDENCE</small><h3>Northstar decision and authorization evidence</h3><p>Decision: <strong>'+esc(s.decision.replaceAll('_',' '))+'</strong> · Authorization: <strong>'+esc(s.authorization.replaceAll('_',' '))+'</strong></p><p>This evidence establishes the bounded decision-to-CAR requirement for KR9.4.</p></div>'+
-    '<div class="ns-trail-evidence secondary"><small>DOWNSTREAM OUTCOME FEEDBACK</small><h3>'+esc(s.outcomeSource)+'</h3><p>Delivery: <strong>'+esc(s.delivery.replaceAll('_',' '))+'</strong> · Benefit outcome: <strong>'+esc(s.outcome.replaceAll('_',' '))+'</strong></p><p>Benefit evidence informs outcome learning. It does not substitute for the authorization evidence that proves KR9.4.</p></div>'+
+    '<div class="ns-trail-evidence secondary"><small>DOWNSTREAM BENEFIT FEEDBACK</small><h3>'+esc(s.benefitSource)+'</h3><p>Delivery: <strong>'+esc(s.delivery.replaceAll('_',' '))+'</strong> · Benefit signal: <strong>'+esc(s.benefitOutcome.replaceAll('_',' '))+'</strong></p><p>Benefit evidence informs investment learning. It does not substitute for the authorization evidence that proves KR9.4.</p></div>'+
     '<div class="ns-trail-actions"><button type="button" data-trail-decision>Open decision</button><button type="button" data-trail-evidence>Open evidence</button></div>';
   }
 
@@ -221,15 +222,15 @@
 
   function okrOverview() {
     const s=current();
-    const unproven = s.outcome === 'UNKNOWN' ? 1 : 0;
+    const benefitUnproven = s.benefitOutcome === 'UNKNOWN' ? 1 : 0;
     const decisionPending = s.decision !== 'APPROVED';
-    const kr94Outcome = s.authorization === 'CURRENT' ? 'ON TRACK' : 'UNKNOWN';
+    const kr94Status = s.authorization === 'CURRENT' ? 'ON TRACK' : 'UNKNOWN';
 
     const objectiveCards = okrPortfolio.map((objective, objectiveIndex) => {
       const krRows = objective.krs.map(kr => {
         const isPrimary = kr.id === model.krId;
         const delivery = isPrimary ? s.delivery : kr.delivery;
-        const outcome = isPrimary ? kr94Outcome : kr.outcome;
+        const outcome = isPrimary ? kr94Status : kr.outcome;
         const outcomeTone = outcome === 'UNKNOWN' || outcome === 'AT RISK' ? 'amber' : 'green';
         const source = kr.source;
         const action = kr.interactive
@@ -251,13 +252,13 @@
 
     return '<div class="ns-dashboard-head">'+
       '<div><p class="eyebrow">'+esc(model.division)+' · '+esc(model.period)+'</p><h2>My Division OKRs</h2><p>Leadership starts with outcomes, not tickets. Delivery status is visible, but it never substitutes for the named evidence source that proves a Key Result.</p></div>'+
-      '<div class="ns-dashboard-status"><span class="pulse"></span><div><small>PORTFOLIO SIGNAL</small><strong>'+(unproven?'1 outcome still unproven':'All highlighted outcomes measured')+'</strong></div></div>'+
+      '<div class="ns-dashboard-status"><span class="pulse"></span><div><small>PORTFOLIO SIGNAL</small><strong>'+(benefitUnproven?'1 downstream benefit still unproven':'All highlighted benefit signals measured')+'</strong></div></div>'+
     '</div>'+
     '<div class="ns-exec-metrics">'+
       '<article><div class="metric-icon">◎</div><div><small>OBJECTIVES</small><strong>3</strong><span>Division priorities</span></div></article>'+
       '<article><div class="metric-icon">▥</div><div><small>KEY RESULTS</small><strong>5</strong><span>Owned, measurable outcomes</span></div></article>'+
       '<article class="'+(decisionPending?'attention':'good')+'"><div class="metric-icon">!</div><div><small>NEEDS DECISION</small><strong>'+(decisionPending?'1':'0')+'</strong><span>'+(decisionPending?esc(model.decisionId)+' requires review':'No decision pending')+'</span></div></article>'+
-      '<article class="'+(unproven?'attention':'good')+'"><div class="metric-icon">◌</div><div><small>OUTCOME UNPROVEN</small><strong>'+unproven+'</strong><span>'+(unproven?'Benefit evidence pending':'Outcome evidence received')+'</span></div></article>'+
+      '<article class="'+(benefitUnproven?'attention':'good')+'"><div class="metric-icon">◌</div><div><small>BENEFIT UNPROVEN</small><strong>'+benefitUnproven+'</strong><span>'+(benefitUnproven?'Benefit evidence pending':'Benefit evidence received')+'</span></div></article>'+
     '</div>'+
     '<div class="ns-leadership-grid">'+
       '<div class="ns-leadership-main">'+
@@ -267,15 +268,16 @@
       '<aside class="ns-attention-rail">'+
         '<div class="ns-rail-head"><small>LEADERSHIP ATTENTION</small><h3>What needs you now</h3></div>'+
         '<article class="ns-attention-card '+(decisionPending?'':'resolved')+'"><div class="ns-attention-top"><span class="priority">'+(decisionPending?'DECISION':'DECISION RESOLVED')+'</span>'+badge(s.decision,decisionPending?'blue':'green')+'</div><h4>'+esc(model.proposedOutcome)+'</h4><p>'+(decisionPending?esc(s.attention[0]):'The decision is approved. Northstar keeps it visible for traceability while attention shifts to delivery and measured benefit.')+'</p><div class="ns-attention-meta"><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span></div><button class="ns-okr-open primary" data-review-decision="'+esc(model.krId)+'" type="button">'+(decisionPending?'Review decision':'View decision record')+' <span aria-hidden="true">→</span></button></article>'+
-        '<article class="ns-rail-insight"><small>WHY THIS MATTERS</small><strong>Closing '+esc(model.epic)+' will not close '+esc(model.krId)+'.</strong><p>Northstar waits for the designated outcome evidence before changing the KR assessment.</p></article>'+
+        '<article class="ns-rail-insight"><small>WHY THIS MATTERS</small><strong>Closing '+esc(model.epic)+' will not close '+esc(model.krId)+'.</strong><p>KR9.4 is assessed from decision/CAR evidence; downstream benefit is measured separately.</p></article>'+
         '<article class="ns-rail-proof"><small>TRACEABILITY</small><div><b>Objective</b><span>→</span><b>KR</b><span>→</span><b>Decision</b><span>→</span><b>CAR</b><span>→</span><b>Epic</b></div></article>'+
       '</aside>'+
     '</div>'+
-    '<div class="ns-boundary-box"><strong>Leadership rule:</strong> a completed Epic can change the delivery signal. It cannot change a Key Result outcome unless the designated outcome evidence source supports that claim.</div>';
+    '<div class="ns-boundary-box"><strong>Leadership rule:</strong> a completed Epic can change the delivery signal. It cannot change KR9.4 authorization status, which comes from decision/CAR evidence. Downstream benefit is measured separately.</div>';
   }
 
   function leadership() {
     const s=current();
+    const kr94Status = s.authorization === 'CURRENT' ? 'ON TRACK' : 'UNKNOWN';
     return headline(
       model.objective,
       model.keyResult,
@@ -285,11 +287,11 @@
       '<article><small>DECISION</small>'+badge(s.decision,'blue')+'<p>'+esc(model.decisionId)+' · review '+esc(model.decisionReview)+'</p></article>'+
       '<article><small>AUTHORIZATION</small>'+badge(s.authorization,'green')+'<p>'+esc(model.carId)+' · review '+esc(model.carReview)+'</p></article>'+
       '<article><small>DELIVERY</small>'+badge(s.delivery,'blue')+'<p>'+esc(model.epic)+' · '+esc(model.team)+'</p></article>'+
-      '<article><small>OUTCOME</small>'+badge(s.outcome,s.outcome==='UNKNOWN'?'amber':'green')+'<p>'+esc(s.outcomeSource)+'</p></article>'+
+      '<article><small>BENEFIT FEEDBACK</small>'+badge(s.benefitOutcome,s.benefitOutcome==='UNKNOWN'?'amber':'green')+'<p>'+esc(s.benefitSource)+'</p></article>'+
     '</div>'+
     '<div class="ns-truth">'+
-      '<article><small>DELIVERY PROGRESS</small><h3>'+esc(s.delivery.replaceAll('_',' '))+'</h3><p>Backlog and product-realization evidence describe what was delivered.</p></article>'+
-      '<article><small>OUTCOME PROGRESS</small><h3>'+esc(s.outcome.replaceAll('_',' '))+'</h3><p>'+esc(s.measurement==='UNKNOWN'?'Northstar will not infer KR attainment from delivery activity.':'Outcome evidence now supports a real KR assessment.')+'</p></article>'+
+      '<article><small>KR9.4 AUTHORIZATION STATUS</small><h3>'+esc(kr94Status.replaceAll('_',' '))+'</h3><p>Decision/CAR evidence establishes the authorization requirement independently of backlog completion.</p></article>'+
+      '<article><small>DOWNSTREAM BENEFIT FEEDBACK</small><h3>'+esc(s.benefitOutcome.replaceAll('_',' '))+'</h3><p>'+esc(s.benefitMeasurement==='UNKNOWN'?'No authoritative benefit measurement yet.':'Observed benefit evidence can inform investment learning without re-scoring KR9.4.')+'</p></article>'+
     '</div>'+
     '<div class="ns-attention"><h3>What needs leadership attention</h3>'+list(s.attention)+'</div>';
   }
@@ -374,23 +376,23 @@
 
   function outcome() {
     const s=current();
-    return headline('Did the product actually move the Key Result?',
-      'Northstar keeps the evidence of delivery separate from evidence of benefit so ticket closure cannot masquerade as an outcome.',
-      'OUTCOME')+
+    return headline('Did the product deliver the expected benefit?',
+      'This view is downstream feedback. It keeps delivery activity separate from observed benefit and does not re-score KR9.4 authorization status.',
+      'DOWNSTREAM BENEFIT FEEDBACK')+
       '<div class="ns-truth large">'+
         '<article><small>DELIVERY SIGNAL</small><h3>'+esc(s.delivery.replaceAll('_',' '))+'</h3><p>'+esc(model.epic)+' delivery evidence.</p></article>'+
-        '<article><small>KR MEASUREMENT</small><h3>'+esc(s.measurement.replaceAll('_',' '))+'</h3><p>'+esc(s.outcomeSource)+'</p></article>'+
+        '<article><small>BENEFIT MEASUREMENT</small><h3>'+esc(s.benefitMeasurement.replaceAll('_',' '))+'</h3><p>'+esc(s.benefitSource)+'</p></article>'+
       '</div>'+
       kv([
-        ['Baseline', 'Manual, nonstandard product decision and handoff path'],
-        ['Target', 'Exact authorized outcome lineage before product realization'],
-        ['Current outcome', badge(s.outcome,s.outcome==='UNKNOWN'?'amber':'green')],
-        ['Accountable outcome role', esc(model.leader)]
+        ['Benefit baseline', 'No authoritative post-delivery benefit observation yet'],
+        ['Benefit target', 'Observe adoption and cycle-time feedback after product availability'],
+        ['Current benefit', badge(s.benefitOutcome,s.benefitOutcome==='UNKNOWN'?'amber':'green')],
+        ['Accountable benefit role', esc(model.leader)]
       ])+
       '<div class="ns-boundary-box">'+
-        (s.measurement==='UNKNOWN'
+        (s.benefitMeasurement==='UNKNOWN'
           ? '<strong>No benefit claim yet.</strong> Delivery may be complete, but downstream benefit remains unknown until the designated measurement arrives.'
-          : '<strong>Outcome evidence received.</strong> The demo can now assess the KR from an observed synthetic measure instead of delivery activity.')+
+          : '<strong>Benefit evidence received.</strong> The synthetic observation can inform investment learning without changing KR9.4 authorization evidence.')+
       '</div>';
   }
 
