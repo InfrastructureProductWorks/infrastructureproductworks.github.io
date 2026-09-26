@@ -91,6 +91,17 @@ jobs:
           grep -Fq "PORTFOLIO USE NOTICE" terms/index.html
           grep -Fq "Organization-hosted concept. Synthetic validation. Non-authoritative." console/index.html
           grep -Fq "Open Synthetic Console Demo" console/index.html
+          grep -Fq "NORTHSTAR SIGNAL · CLOUD PRODUCT STRATEGY & DECISION INTELLIGENCE" northstar-signal/index.html
+          grep -Fq "Open Synthetic Demo" northstar-signal/index.html
+          grep -Fq "NORTHSTAR SIGNAL · INTERACTIVE SYNTHETIC DEMO" northstar-signal/demo/index.html
+          grep -Fq "Closing tickets is not the same thing as achieving the outcome." northstar-signal/index.html
+          northstar_demo_js_blob="$(git hash-object assets/northstar-signal-demo.js)"
+          grep -Fq "/assets/northstar-signal-demo.js?v=${northstar_demo_js_blob}" northstar-signal/demo/index.html
+          node --check assets/northstar-signal-demo.js
+          grep -Fq "No outcome claim yet." assets/northstar-signal-demo.js
+          grep -Fq "External backlog writeback is not enabled." assets/northstar-signal-demo.js
+          grep -Fq "button.setAttribute('aria-pressed', active ? 'true' : 'false')" assets/northstar-signal-demo.js
+          grep -Fq "scenario '+scenario+' / view '+view" scripts/audit_site_contrast.cjs
           grep -Fq "IAAP CONSOLE · INTERACTIVE SYNTHETIC WORKBENCH" console/demo/index.html
           grep -Fq "VERIFICATION PENDING" console/demo/index.html
           grep -Fq "AWAITING_HUMAN_REVIEW" assets/console-demo.js
