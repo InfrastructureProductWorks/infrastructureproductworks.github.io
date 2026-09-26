@@ -65,6 +65,7 @@
     "InfrastructureProductWorks/ai-powered-infrastructure-as-a-product"
   ],
   "externalDataFeeds": [
-    "https://raw.githubusercontent.com/InfrastructureProductWorks/infrastructureproductworks.github.io/telemetry/portfolio-live/data/portfolio-dashboard-live.json"
+    "https://raw.githubusercontent.com/InfrastructureProductWorks/infrastructureproductworks.github.io/telemetry/portfolio-live/data/portfolio-dashboard-live.json",
+    "https://raw.githubusercontent.com/InfrastructureProductWorks/infrastructureproductworks.github.io/telemetry/portfolio-live/data/portfolio-bundle.json"
   ]
 }
