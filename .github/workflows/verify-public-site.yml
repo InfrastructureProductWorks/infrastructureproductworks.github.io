@@ -105,6 +105,9 @@ jobs:
           grep -Fq "DOWNSTREAM BENEFIT FEEDBACK" assets/northstar-signal-demo.js
           grep -Fq "Northstar decision and authorization evidence" assets/northstar-signal-demo.js
           grep -Fq "Benefit evidence received." assets/northstar-signal-demo.js
+          grep -Fq "KR STATUS" assets/northstar-signal-demo.js
+          grep -Fq "DOWNSTREAM BENEFIT FEEDBACK" assets/northstar-signal-demo.js
+          grep -Fq "Benefit Measured" northstar-signal/demo/index.html
           if grep -Fq "KR outcome remains unknown" assets/northstar-signal-demo.js || grep -Fq "The Key Result can now be assessed from outcome evidence" assets/northstar-signal-demo.js; then
             echo "::error::Northstar must not conflate KR9.4 authorization status with downstream benefit feedback."
             exit 1
