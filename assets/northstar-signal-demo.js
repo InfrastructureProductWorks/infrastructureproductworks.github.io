@@ -83,7 +83,68 @@
     ]
   };
 
-  const state = { view: 'leadership', role: 'leader', scenario: 'decision' };
+  const okrPortfolio = [
+    {
+      objectiveId: 'O9',
+      objective: 'Align cloud-product investment and execution to evidence-backed division outcomes.',
+      krs: [
+        {
+          id: 'KR9.4',
+          text: 'Every authorized reusable cloud-product outcome emits an exact Capability Authorization Record before delivery begins.',
+          decision: 'CPD-0001',
+          owner: 'Division Leader',
+          source: 'Northstar decision and authorization evidence',
+          interactive: true
+        },
+        {
+          id: 'KR9.5',
+          text: 'Reduce decision-to-authorized-backlog handoff time for standard reusable product decisions.',
+          delivery: 'ACTIVE',
+          outcome: 'ON TRACK',
+          source: 'Synthetic cycle-time measurement',
+          owner: 'Portfolio Manager'
+        }
+      ]
+    },
+    {
+      objectiveId: 'O10',
+      objective: 'Increase reuse of governed infrastructure products before new productization begins.',
+      krs: [
+        {
+          id: 'KR10.1',
+          text: 'Reusable capability requests check accepted products before a new build path is authorized.',
+          delivery: 'ACTIVE',
+          outcome: 'ON TRACK',
+          source: 'Synthetic reuse decision evidence',
+          owner: 'Product Leader'
+        },
+        {
+          id: 'KR10.2',
+          text: 'Every approved exception records why existing governed products were not sufficient.',
+          delivery: 'ACTIVE',
+          outcome: 'AT RISK',
+          source: 'Synthetic exception evidence',
+          owner: 'Portfolio Manager'
+        }
+      ]
+    },
+    {
+      objectiveId: 'O11',
+      objective: 'Improve evidence-backed platform decision quality and traceability.',
+      krs: [
+        {
+          id: 'KR11.1',
+          text: 'Product authorization decisions retain evidence, accountable owner, bounded scope and review date.',
+          delivery: 'COMPLETE',
+          outcome: 'ON TRACK',
+          source: 'Synthetic decision-record measurement',
+          owner: 'Division Leader'
+        }
+      ]
+    }
+  ];
+
+  const state = { view: 'okr', role: 'leader', scenario: 'decision' };
   const $ = (id) => document.getElementById(id);
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
@@ -104,6 +165,48 @@
     return '<div class="ns-view-head"><p class="eyebrow">'+esc(eyebrow)+'</p><h2>'+esc(title)+'</h2><p>'+esc(copy)+'</p></div>';
   }
   function current() { return scenarioData[state.scenario]; }
+
+  function okrOverview() {
+    const s=current();
+    const unproven = s.outcome === 'UNKNOWN' ? 1 : 0;
+    const kr94Outcome = s.outcome;
+    const kr94Tone = kr94Outcome === 'UNKNOWN' ? 'amber' : 'green';
+    const kr94Source = s.outcomeSource;
+    const objectiveCards = okrPortfolio.map(objective => {
+      const krRows = objective.krs.map(kr => {
+        const isPrimary = kr.id === model.krId;
+        const delivery = isPrimary ? s.delivery : kr.delivery;
+        const outcome = isPrimary ? kr94Outcome : kr.outcome;
+        const outcomeTone = outcome === 'UNKNOWN' || outcome === 'AT RISK' ? 'amber' : 'green';
+        const source = isPrimary ? kr94Source : kr.source;
+        const action = kr.interactive
+          ? '<button class="ns-okr-open" data-open-kr="'+esc(kr.id)+'" type="button">Open decision trail</button>'
+          : '';
+        return '<div class="ns-kr-row'+(isPrimary?' primary':'')+'">'+
+          '<div class="ns-kr-copy"><small>'+esc(kr.id)+'</small><strong>'+esc(kr.text)+'</strong><span>Owner · '+esc(kr.owner)+'</span></div>'+
+          '<div class="ns-kr-signals"><div><span>DELIVERY</span>'+badge(delivery,'blue')+'</div><div><span>OUTCOME</span>'+badge(outcome,outcomeTone)+'</div></div>'+
+          '<div class="ns-kr-source"><span>MEASUREMENT</span><strong>'+esc(source)+'</strong>'+action+'</div>'+
+        '</div>';
+      }).join('');
+      return '<article class="ns-objective-card"><div class="ns-objective-head"><div><small>'+esc(objective.objectiveId)+'</small><h3>'+esc(objective.objective)+'</h3></div><span>'+objective.krs.length+' KR'+(objective.krs.length===1?'':'s')+'</span></div>'+krRows+'</article>';
+    }).join('');
+
+    return headline(
+      'My Division OKRs',
+      'Start with the outcomes leadership owns. Delivery evidence is visible beside each Key Result, but Northstar keeps delivery status separate from authoritative outcome measurement.',
+      model.division+' · '+model.period
+    )+
+    '<div class="ns-okr-summary">'+
+      '<article><small>OBJECTIVES</small><strong>3</strong><p>Division priorities in this synthetic view.</p></article>'+
+      '<article><small>KEY RESULTS</small><strong>5</strong><p>Measures tied to accountable owners and evidence sources.</p></article>'+
+      '<article><small>NEEDS DECISION</small><strong>1</strong><p>'+esc(model.krId)+' has an active product decision trail.</p></article>'+
+      '<article><small>OUTCOME UNPROVEN</small><strong>'+unproven+'</strong><p>'+(unproven?'Delivery activity exists, but authoritative benefit evidence has not arrived.':'The highlighted KR now has authoritative synthetic outcome evidence.')+'</p></article>'+
+    '</div>'+
+    '<div class="ns-okr-attention"><div><small>LEADERSHIP ATTENTION</small><h3>'+esc(model.krId)+' · '+esc(model.proposedOutcome)+'</h3><p>'+esc(s.attention[0])+'</p></div>'+
+      '<button class="ns-okr-open primary" data-open-kr="'+esc(model.krId)+'" type="button">Review '+esc(model.decisionId)+'</button></div>'+
+    '<div class="ns-okr-board">'+objectiveCards+'</div>'+
+    '<div class="ns-boundary-box"><strong>Leadership rule:</strong> a completed Epic can change the delivery signal. It cannot change a Key Result outcome unless the designated outcome evidence source supports that claim.</div>';
+  }
 
   function leadership() {
     const s=current();
@@ -225,7 +328,7 @@
       '</div>';
   }
 
-  const renderers={leadership,management,decision,authorization,evidence,handoff,outcome};
+  const renderers={okr:okrOverview,leadership,management,decision,authorization,evidence,handoff,outcome};
 
   function setPressed(selector, selected) {
     document.querySelectorAll(selector).forEach(button => {
@@ -245,12 +348,19 @@
   }
 
   document.addEventListener('click', e => {
+    const kr=e.target.closest('[data-open-kr]');
+    if(kr){
+      state.role='leader';
+      state.view='decision';
+      render();
+      return;
+    }
     const view=e.target.closest('[data-view]');
     if(view){ state.view=view.dataset.view; render(); return; }
     const role=e.target.closest('[data-role]');
     if(role){
       state.role=role.dataset.role;
-      state.view=state.role==='leader'?'leadership':state.role==='manager'?'management':'handoff';
+      state.view=state.role==='leader'?'okr':state.role==='manager'?'management':'handoff';
       render(); return;
     }
     const scenario=e.target.closest('[data-scenario]');
