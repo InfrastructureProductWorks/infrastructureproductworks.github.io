@@ -215,6 +215,7 @@
   function okrOverview() {
     const s=current();
     const unproven = s.outcome === 'UNKNOWN' ? 1 : 0;
+    const decisionPending = s.decision !== 'APPROVED';
     const kr94Outcome = s.outcome;
     const kr94Source = s.outcomeSource;
 
@@ -249,7 +250,7 @@
     '<div class="ns-exec-metrics">'+
       '<article><div class="metric-icon">◎</div><div><small>OBJECTIVES</small><strong>3</strong><span>Division priorities</span></div></article>'+
       '<article><div class="metric-icon">▥</div><div><small>KEY RESULTS</small><strong>5</strong><span>Owned, measurable outcomes</span></div></article>'+
-      '<article class="attention"><div class="metric-icon">!</div><div><small>NEEDS DECISION</small><strong>1</strong><span>'+esc(model.decisionId)+' requires review</span></div></article>'+
+      '<article class="'+(decisionPending?'attention':'good')+'"><div class="metric-icon">!</div><div><small>NEEDS DECISION</small><strong>'+(decisionPending?'1':'0')+'</strong><span>'+(decisionPending?esc(model.decisionId)+' requires review':'No decision pending')+'</span></div></article>'+
       '<article class="'+(unproven?'attention':'good')+'"><div class="metric-icon">◌</div><div><small>OUTCOME UNPROVEN</small><strong>'+unproven+'</strong><span>'+(unproven?'Benefit evidence pending':'Outcome evidence received')+'</span></div></article>'+
     '</div>'+
     '<div class="ns-leadership-grid">'+
@@ -259,7 +260,7 @@
       '</div>'+
       '<aside class="ns-attention-rail">'+
         '<div class="ns-rail-head"><small>LEADERSHIP ATTENTION</small><h3>What needs you now</h3></div>'+
-        '<article class="ns-attention-card"><div class="ns-attention-top"><span class="priority">DECISION</span>'+badge(s.decision,'blue')+'</div><h4>'+esc(model.proposedOutcome)+'</h4><p>'+esc(s.attention[0])+'</p><div class="ns-attention-meta"><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span></div><button class="ns-okr-open primary" data-review-decision="'+esc(model.krId)+'" type="button">Review decision <span aria-hidden="true">→</span></button></article>'+
+        '<article class="ns-attention-card '+(decisionPending?'':'resolved')+'"><div class="ns-attention-top"><span class="priority">'+(decisionPending?'DECISION':'DECISION RESOLVED')+'</span>'+badge(s.decision,decisionPending?'blue':'green')+'</div><h4>'+esc(model.proposedOutcome)+'</h4><p>'+(decisionPending?esc(s.attention[0]):'The decision is approved. Northstar keeps it visible for traceability while attention shifts to delivery and measured benefit.')+'</p><div class="ns-attention-meta"><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span></div><button class="ns-okr-open primary" data-review-decision="'+esc(model.krId)+'" type="button">'+(decisionPending?'Review decision':'View decision record')+' <span aria-hidden="true">→</span></button></article>'+
         '<article class="ns-rail-insight"><small>WHY THIS MATTERS</small><strong>Closing '+esc(model.epic)+' will not close '+esc(model.krId)+'.</strong><p>Northstar waits for the designated outcome evidence before changing the KR assessment.</p></article>'+
         '<article class="ns-rail-proof"><small>TRACEABILITY</small><div><b>Objective</b><span>→</span><b>KR</b><span>→</span><b>Decision</b><span>→</span><b>CAR</b><span>→</span><b>Epic</b></div></article>'+
       '</aside>'+
