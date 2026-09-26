@@ -133,10 +133,10 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           await page.locator(`[data-role="${role}"]`).click();await audit(route,'role '+role);
         }
         for(const scenario of ['decision','delivered','measured']){
-          await page.locator(`[data-scenario="${scenario}"]`).click();await audit(route,'scenario '+scenario);
-        }
-        for(const view of ['leadership','management','decision','authorization','evidence','handoff','outcome']){
-          await page.locator(`[data-view="${view}"]`).click();await audit(route,'view '+view);
+          await page.locator(`[data-scenario="${scenario}"]`).click();
+          for(const view of ['leadership','management','decision','authorization','evidence','handoff','outcome']){
+            await page.locator(`[data-view="${view}"]`).click();await audit(route,'scenario '+scenario+' / view '+view);
+          }
         }
       }
       if(route==='/assurance/demo/'){
