@@ -227,10 +227,18 @@
 
   const renderers={leadership,management,decision,authorization,evidence,handoff,outcome};
 
+  function setPressed(selector, selected) {
+    document.querySelectorAll(selector).forEach(button => {
+      const active = selected(button);
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
   function render() {
-    document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view));
-    document.querySelectorAll('[data-role]').forEach(b=>b.classList.toggle('active',b.dataset.role===state.role));
-    document.querySelectorAll('[data-scenario]').forEach(b=>b.classList.toggle('active',b.dataset.scenario===state.scenario));
+    setPressed('[data-view]', b=>b.dataset.view===state.view);
+    setPressed('[data-role]', b=>b.dataset.role===state.role);
+    setPressed('[data-scenario]', b=>b.dataset.scenario===state.scenario);
     $('northstar-view').innerHTML=renderers[state.view]();
     $('scenario-state').textContent=current().label.toUpperCase();
     $('role-state').textContent=state.role==='leader'?'LEADERSHIP':state.role==='manager'?'MANAGEMENT':'DELIVERY';
