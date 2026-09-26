@@ -346,6 +346,9 @@
 .northstar-cinematic{
   position:relative;
   max-width:1540px;
+  background:
+    radial-gradient(circle at 67% 40%,#ffd39a 0 3%,#ffb76f99 4%,#d99b6b35 12%,transparent 27%),
+    linear-gradient(90deg,#041326ee 0%,#07213cda 33%,#1339549a 54%,transparent 76%);
   min-height:660px;
   margin:auto;
   display:grid;
@@ -354,15 +357,7 @@
   align-items:stretch;
   padding:54px max(4vw,54px) 28px
 }
-.northstar-cinematic:before{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  background:
-    radial-gradient(circle at 67% 40%,#ffd39a 0 3%,#ffb76f99 4%,#d99b6b35 12%,transparent 27%),
-    linear-gradient(90deg,#041326ee 0%,#07213cda 33%,#1339549a 54%,transparent 76%);
-}
+.northstar-cinematic:before{content:none}
 .northstar-hero-copy{
   position:relative;
   z-index:5;
@@ -445,8 +440,8 @@
 }
 .northstar-home-hero .button{
   color:#fff!important;
-  border-color:#1188ef!important;
-  background:linear-gradient(135deg,#0873e8,#1598ff)!important;
+  border-color:#0b69c7!important;
+  background:linear-gradient(135deg,#075bb2,#0868c6)!important;
   box-shadow:0 12px 28px #00172f66
 }
 .northstar-home-hero .button.ghost{
@@ -461,25 +456,8 @@
   overflow:hidden;
   align-self:end
 }
-.northstar-stage:before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(circle at 43% 38%,#ffd59d 0 4%,#ffbc765e 5%,transparent 22%),
-    linear-gradient(180deg,#86a5b9a6 0%,#57768b8a 37%,#15364e99 70%,#071b2f 100%);
-}
-.northstar-stage:after{
-  content:"";
-  position:absolute;
-  left:-6%;
-  right:-6%;
-  bottom:0;
-  height:35%;
-  background:linear-gradient(180deg,#0a203400,#071725 60%,#04111d 100%);
-  clip-path:polygon(0 79%,9% 70%,19% 77%,31% 56%,42% 69%,54% 49%,66% 65%,78% 52%,89% 66%,100% 54%,100% 100%,0 100%);
-  z-index:2
-}
+.northstar-stage:before{content:none}
+.northstar-stage:after{content:none}
 .northstar-city{
   position:absolute;
   inset:10% 0 25%;
@@ -725,21 +703,15 @@
 /* Real-photo Northstar hero people */
 .northstar-stage{
   background-image:
+    linear-gradient(180deg,rgba(7,24,41,.04) 0%,rgba(7,24,41,.08) 55%,rgba(4,17,29,.66) 100%),
+    linear-gradient(180deg,rgba(4,17,29,0) 0%,rgba(4,17,29,0) 72%,rgba(4,17,29,.74) 91%,#04111d 100%),
     linear-gradient(90deg,rgba(5,20,37,.18) 0%,rgba(7,29,49,.05) 46%,rgba(4,17,29,.12) 100%),
     url("https://images.pexels.com/photos/4427814/pexels-photo-4427814.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=900&w=1500");
   background-size:cover;
   background-position:center 38%;
   background-repeat:no-repeat;
 }
-.northstar-stage:before{
-  background:
-    linear-gradient(180deg,rgba(7,24,41,.04) 0%,rgba(7,24,41,.08) 55%,rgba(4,17,29,.66) 100%);
-}
-.northstar-stage:after{
-  height:27%;
-  background:linear-gradient(180deg,rgba(4,17,29,0),rgba(4,17,29,.74) 72%,#04111d 100%);
-  clip-path:none;
-}
+.northstar-stage:before,.northstar-stage:after{content:none}
 .northstar-city{display:none!important}
 .northstar-role{
   bottom:92px;
