@@ -169,6 +169,12 @@
 
   function scopeBanner() {
     if (!state.selectedKr) return '';
+    if (state.view === 'outcome') {
+      return '<div class="ns-scope-bar downstream" aria-label="Downstream outcome feedback context">'+
+        '<div><small>DOWNSTREAM OUTCOME FEEDBACK</small><strong>Separate from '+esc(state.selectedKr)+' authorization status</strong><span>Benefit evidence informs learning after authorization. It does not re-score the authorization Key Result.</span></div>'+
+        '<button type="button" data-back-okr>Back to My Division OKRs</button>'+
+      '</div>';
+    }
     return '<div class="ns-scope-bar" aria-label="Selected outcome context">'+
       '<div><small>SELECTED OUTCOME</small><strong>'+esc(state.selectedObjective)+' <span aria-hidden="true">→</span> '+esc(state.selectedKr)+'</strong><span>'+esc(model.keyResult)+'</span></div>'+
       '<button type="button" data-back-okr>Back to My Division OKRs</button>'+
@@ -383,7 +389,7 @@
       ])+
       '<div class="ns-boundary-box">'+
         (s.measurement==='UNKNOWN'
-          ? '<strong>No outcome claim yet.</strong> Delivery may be complete, but the KR remains unknown until the designated measurement arrives.'
+          ? '<strong>No benefit claim yet.</strong> Delivery may be complete, but downstream benefit remains unknown until the designated measurement arrives.'
           : '<strong>Outcome evidence received.</strong> The demo can now assess the KR from an observed synthetic measure instead of delivery activity.')+
       '</div>';
   }
