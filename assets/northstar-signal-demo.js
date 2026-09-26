@@ -170,9 +170,9 @@
     const s=current();
     const unproven = s.outcome === 'UNKNOWN' ? 1 : 0;
     const kr94Outcome = s.outcome;
-    const kr94Tone = kr94Outcome === 'UNKNOWN' ? 'amber' : 'green';
     const kr94Source = s.outcomeSource;
-    const objectiveCards = okrPortfolio.map(objective => {
+
+    const objectiveCards = okrPortfolio.map((objective, objectiveIndex) => {
       const krRows = objective.krs.map(kr => {
         const isPrimary = kr.id === model.krId;
         const delivery = isPrimary ? s.delivery : kr.delivery;
@@ -180,31 +180,44 @@
         const outcomeTone = outcome === 'UNKNOWN' || outcome === 'AT RISK' ? 'amber' : 'green';
         const source = isPrimary ? kr94Source : kr.source;
         const action = kr.interactive
-          ? '<button class="ns-okr-open" data-open-kr="'+esc(kr.id)+'" type="button">Open decision trail</button>'
-          : '';
+          ? '<button class="ns-okr-open" data-open-kr="'+esc(kr.id)+'" type="button">Open trail <span>→</span></button>'
+          : '<span class="ns-okr-source-note">Measured</span>';
         return '<div class="ns-kr-row'+(isPrimary?' primary':'')+'">'+
-          '<div class="ns-kr-copy"><small>'+esc(kr.id)+'</small><strong>'+esc(kr.text)+'</strong><span>Owner · '+esc(kr.owner)+'</span></div>'+
+          '<div class="ns-kr-copy"><small>'+esc(kr.id)+'</small><strong>'+esc(kr.text)+'</strong><span>'+esc(kr.owner)+'</span></div>'+
           '<div class="ns-kr-signals"><div><span>DELIVERY</span>'+badge(delivery,'blue')+'</div><div><span>OUTCOME</span>'+badge(outcome,outcomeTone)+'</div></div>'+
-          '<div class="ns-kr-source"><span>MEASUREMENT</span><strong>'+esc(source)+'</strong>'+action+'</div>'+
+          '<div class="ns-kr-source"><span>EVIDENCE SOURCE</span><strong>'+esc(source)+'</strong>'+action+'</div>'+
         '</div>';
       }).join('');
-      return '<article class="ns-objective-card"><div class="ns-objective-head"><div><small>'+esc(objective.objectiveId)+'</small><h3>'+esc(objective.objective)+'</h3></div><span>'+objective.krs.length+' KR'+(objective.krs.length===1?'':'s')+'</span></div>'+krRows+'</article>';
+      const health = objectiveIndex === 1 ? 'WATCH' : 'ON TRACK';
+      const tone = objectiveIndex === 1 ? 'amber' : 'green';
+      return '<article class="ns-objective-card">'+
+        '<div class="ns-objective-head"><div class="ns-objective-id">'+esc(objective.objectiveId)+'</div><div class="ns-objective-title"><small>DIVISION OBJECTIVE</small><h3>'+esc(objective.objective)+'</h3></div><div class="ns-objective-health">'+badge(health,tone)+'<span>'+objective.krs.length+' Key Result'+(objective.krs.length===1?'':'s')+'</span></div></div>'+
+        '<div class="ns-objective-krs">'+krRows+'</div>'+
+      '</article>';
     }).join('');
 
-    return headline(
-      'My Division OKRs',
-      'Start with the outcomes leadership owns. Delivery evidence is visible beside each Key Result, but Northstar keeps delivery status separate from authoritative outcome measurement.',
-      model.division+' · '+model.period
-    )+
-    '<div class="ns-okr-summary">'+
-      '<article><small>OBJECTIVES</small><strong>3</strong><p>Division priorities in this synthetic view.</p></article>'+
-      '<article><small>KEY RESULTS</small><strong>5</strong><p>Measures tied to accountable owners and evidence sources.</p></article>'+
-      '<article><small>NEEDS DECISION</small><strong>1</strong><p>'+esc(model.krId)+' has an active product decision trail.</p></article>'+
-      '<article><small>OUTCOME UNPROVEN</small><strong>'+unproven+'</strong><p>'+(unproven?'Delivery activity exists, but authoritative benefit evidence has not arrived.':'The highlighted KR now has authoritative synthetic outcome evidence.')+'</p></article>'+
+    return '<div class="ns-dashboard-head">'+
+      '<div><p class="eyebrow">'+esc(model.division)+' · '+esc(model.period)+'</p><h2>My Division OKRs</h2><p>Leadership starts with outcomes, not tickets. Delivery status is visible, but it never substitutes for the named evidence source that proves a Key Result.</p></div>'+
+      '<div class="ns-dashboard-status"><span class="pulse"></span><div><small>PORTFOLIO SIGNAL</small><strong>'+(unproven?'1 outcome still unproven':'All highlighted outcomes measured')+'</strong></div></div>'+
     '</div>'+
-    '<div class="ns-okr-attention"><div><small>LEADERSHIP ATTENTION</small><h3>'+esc(model.krId)+' · '+esc(model.proposedOutcome)+'</h3><p>'+esc(s.attention[0])+'</p></div>'+
-      '<button class="ns-okr-open primary" data-open-kr="'+esc(model.krId)+'" type="button">Review '+esc(model.decisionId)+'</button></div>'+
-    '<div class="ns-okr-board">'+objectiveCards+'</div>'+
+    '<div class="ns-exec-metrics">'+
+      '<article><div class="metric-icon">◎</div><div><small>OBJECTIVES</small><strong>3</strong><span>Division priorities</span></div></article>'+
+      '<article><div class="metric-icon">▥</div><div><small>KEY RESULTS</small><strong>5</strong><span>Owned, measurable outcomes</span></div></article>'+
+      '<article class="attention"><div class="metric-icon">!</div><div><small>NEEDS DECISION</small><strong>1</strong><span>'+esc(model.decisionId)+' requires review</span></div></article>'+
+      '<article class="'+(unproven?'attention':'good')+'"><div class="metric-icon">◌</div><div><small>OUTCOME UNPROVEN</small><strong>'+unproven+'</strong><span>'+(unproven?'Benefit evidence pending':'Outcome evidence received')+'</span></div></article>'+
+    '</div>'+
+    '<div class="ns-leadership-grid">'+
+      '<div class="ns-leadership-main">'+
+        '<div class="ns-section-title"><div><small>OUTCOME PORTFOLIO</small><h3>Division objectives and Key Results</h3></div><span>Delivery ≠ outcome</span></div>'+
+        '<div class="ns-okr-board">'+objectiveCards+'</div>'+
+      '</div>'+
+      '<aside class="ns-attention-rail">'+
+        '<div class="ns-rail-head"><small>LEADERSHIP ATTENTION</small><h3>What needs you now</h3></div>'+
+        '<article class="ns-attention-card"><div class="ns-attention-top"><span class="priority">DECISION</span>'+badge(s.decision,'blue')+'</div><h4>'+esc(model.proposedOutcome)+'</h4><p>'+esc(s.attention[0])+'</p><div class="ns-attention-meta"><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span></div><button class="ns-okr-open primary" data-open-kr="'+esc(model.krId)+'" type="button">Review decision <span>→</span></button></article>'+
+        '<article class="ns-rail-insight"><small>WHY THIS MATTERS</small><strong>Closing '+esc(model.epic)+' will not close '+esc(model.krId)+'.</strong><p>Northstar waits for the designated outcome evidence before changing the KR assessment.</p></article>'+
+        '<article class="ns-rail-proof"><small>TRACEABILITY</small><div><b>Objective</b><span>→</span><b>KR</b><span>→</span><b>Decision</b><span>→</span><b>CAR</b><span>→</span><b>Epic</b></div></article>'+
+      '</aside>'+
+    '</div>'+
     '<div class="ns-boundary-box"><strong>Leadership rule:</strong> a completed Epic can change the delivery signal. It cannot change a Key Result outcome unless the designated outcome evidence source supports that claim.</div>';
   }
 
