@@ -188,7 +188,8 @@
       '<div class="ns-trail-arrow" aria-hidden="true">↓</div>'+
       '<div class="ns-trail-step"><small>EPIC</small><strong>'+esc(model.epic)+'</strong><span>'+esc(model.epicTitle)+'</span></div>'+
     '</div>'+
-    '<div class="ns-trail-evidence"><small>EVIDENCE NOW</small><h3>'+esc(s.outcomeSource)+'</h3><p>Delivery: <strong>'+esc(s.delivery.replaceAll('_',' '))+'</strong> · Outcome: <strong>'+esc(s.outcome.replaceAll('_',' '))+'</strong></p><p>Northstar keeps the delivery signal and outcome claim separate until the designated evidence source supports the Key Result.</p></div>'+
+    '<div class="ns-trail-evidence"><small>KR9.4 AUTHORIZATION EVIDENCE</small><h3>Northstar decision and authorization evidence</h3><p>Decision: <strong>'+esc(s.decision.replaceAll('_',' '))+'</strong> · Authorization: <strong>'+esc(s.authorization.replaceAll('_',' '))+'</strong></p><p>This evidence establishes the bounded decision-to-CAR requirement for KR9.4.</p></div>'+
+    '<div class="ns-trail-evidence secondary"><small>DOWNSTREAM OUTCOME FEEDBACK</small><h3>'+esc(s.outcomeSource)+'</h3><p>Delivery: <strong>'+esc(s.delivery.replaceAll('_',' '))+'</strong> · Benefit outcome: <strong>'+esc(s.outcome.replaceAll('_',' '))+'</strong></p><p>Benefit evidence informs outcome learning. It does not substitute for the authorization evidence that proves KR9.4.</p></div>'+
     '<div class="ns-trail-actions"><button type="button" data-trail-decision>Open decision</button><button type="button" data-trail-evidence>Open evidence</button></div>';
   }
 
@@ -217,7 +218,6 @@
     const unproven = s.outcome === 'UNKNOWN' ? 1 : 0;
     const decisionPending = s.decision !== 'APPROVED';
     const kr94Outcome = s.outcome;
-    const kr94Source = s.outcomeSource;
 
     const objectiveCards = okrPortfolio.map((objective, objectiveIndex) => {
       const krRows = objective.krs.map(kr => {
@@ -225,7 +225,7 @@
         const delivery = isPrimary ? s.delivery : kr.delivery;
         const outcome = isPrimary ? kr94Outcome : kr.outcome;
         const outcomeTone = outcome === 'UNKNOWN' || outcome === 'AT RISK' ? 'amber' : 'green';
-        const source = isPrimary ? kr94Source : kr.source;
+        const source = kr.source;
         const action = kr.interactive
           ? '<button class="ns-okr-open" data-open-trail="'+esc(kr.id)+'" type="button">Open trail <span aria-hidden="true">→</span></button>'
           : '<span class="ns-okr-source-note">Measured</span>';
