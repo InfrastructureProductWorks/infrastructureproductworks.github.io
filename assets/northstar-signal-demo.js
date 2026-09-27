@@ -482,11 +482,36 @@
     ['Activity ≠ benefit','PASS','Epic completion cannot by itself declare the Key Result or business benefit achieved.']
   ];
 
+  function currentPrimaryAuthorizationBinding() {
+    const item=authorizationQueue[0];
+    const decision=authorizationDecision(item);
+    const pkg=authorizationPackage(item,decision);
+    const record=authorizationRecord(item);
+    if(!record.authorized)return null;
+    return {carId:record.carId,packageId:pkg.packageId,evidenceDigest:pkg.evidenceDigest,decision};
+  }
+
+  function managementAcceptanceCurrent() {
+    const binding=currentPrimaryAuthorizationBinding();
+    const accepted=state.acceptedEpic;
+    return Boolean(accepted&&binding&&accepted.authorizationBinding&&
+      accepted.authorizationBinding.carId===binding.carId&&
+      accepted.authorizationBinding.packageId===binding.packageId&&
+      accepted.authorizationBinding.evidenceDigest===binding.evidenceDigest&&
+      accepted.authorizationBinding.decision===binding.decision);
+  }
+
+  function invalidateManagementAcceptance() {
+    state.managementProposalState='idle';
+    state.acceptedEpic=null;
+    invalidateHandoff();
+  }
+
   function managementComposer() {
     const primary=primaryAuthorization();
     if(!primary.authorized)return '<div class="ns-boundary-box"><strong>Composite AI blocked:</strong> Management Composer requires a current CAR. Candidate planning context cannot be promoted into executable work without confirmed product-intent authorization.</div>';
     const proposed=state.managementProposalState!=='idle';
-    const accepted=state.managementProposalState==='accepted';
+    const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent();
     return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
       '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>Translate the authorized outcome into candidate Epics.</h2><p>Composite AI receives a bounded context package: Objective, KR, CPD, current CAR, constraints, evidence requirements and existing portfolio context.</p></div>'+badge(primary.carId,'green')+'</div>'+
       '<div class="ns-mc-context"><small>BOUNDED CONTEXT</small><span>'+esc(model.objectiveId)+'</span><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span><span>'+esc(primary.carId)+'</span><span>Existing product catalog</span><span>Existing Epic relationships</span></div>'+
@@ -515,7 +540,7 @@
         ['Assigned team', esc(model.team)],
         ['Delivery system', esc(model.backlog)],
         ['Delivery state', badge(s.delivery,'blue')],
-        ['Accepted Epic', state.acceptedEpic?'<code>'+esc(state.acceptedEpic.epic)+'</code> · '+esc(state.acceptedEpic.title):'None · management review required']
+        ['Accepted Epic', managementAcceptanceCurrent()?'<code>'+esc(state.acceptedEpic.epic)+'</code> · '+esc(state.acceptedEpic.title):'None · management review required']
       ])+
       '<div class="ns-grid-3"><article><small>DEPENDENCY</small><h3>'+(primary.authorized?'Accepted CAR binding':'Authorization required')+'</h3><p>'+(primary.authorized?'AI and management cannot silently widen or replace the authorized outcome.':'Management cannot promote candidate work without a current CAR.')+'</p></article><article><small>TRANSLATION</small><h3>Composite AI assisted</h3><p>Objective → KR → CAR becomes candidate outcome-oriented Epics with reuse checks.</p></article><article><small>CONSTRAINT</small><h3>No live writeback</h3><p>Accepting an Epic creates no Jira, GitHub or Azure DevOps work item.</p></article></div>'+
       managementComposer();
@@ -648,7 +673,7 @@
         confirmed:true
       };
     });
-    if(ids.includes(model.decisionId))invalidateHandoff();
+    if(ids.includes(model.decisionId))invalidateManagementAcceptance();
     closeAuthorizationCeremony();
     state.selectedAuthorizationIds=[];
     state.view='authorization';
@@ -735,7 +760,7 @@
     if(!primary.authorized)return null;
     const adapter=backlogAdapters[state.handoffTarget];
     const material=[model.objectiveId,model.krId,model.decisionId,primary.carId,model.epic,model.epicTitle,model.proposedOutcome,adapter.label,adapter.project,'Retain exact CAR binding','Evidence required before outcome claim'].join('|');
-    if(!state.acceptedEpic)return null;
+    if(!managementAcceptanceCurrent())return null;
     return {id:'BHP-0001',carId:primary.carId,objectiveId:model.objectiveId,krId:model.krId,decisionId:model.decisionId,epic:state.acceptedEpic.epic,epicTitle:state.acceptedEpic.title,target:adapter.label,project:adapter.project,workItemType:adapter.type,digest:stableDigest(material+'|'+state.acceptedEpic.id+'|'+state.acceptedEpic.epic+'|'+state.acceptedEpic.title),status:state.handoffConfirmed?'HANDOFF CONFIRMED':'AWAITING HUMAN HANDOFF'};
   }
 
@@ -811,7 +836,7 @@
     if(e.target.closest('[data-management-draft]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-regenerate]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-reject]')){state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
-    if(e.target.closest('[data-management-accept]')){state.managementProposalState='accepted';state.acceptedEpic={...managementEpicProposals[0]};invalidateHandoff();render();return;}
+    if(e.target.closest('[data-management-accept]')){const binding=currentPrimaryAuthorizationBinding();if(binding){state.managementProposalState='accepted';state.acceptedEpic={...managementEpicProposals[0],authorizationBinding:{...binding}};}invalidateHandoff();render();return;}
     const authCheck=e.target.closest('[data-auth-check]');
     if(authCheck){
       const id=authCheck.dataset.authCheck;
@@ -842,7 +867,7 @@
       const nextDecision=action==='approve'?'APPROVED':action==='conditional'?'APPROVE CONDITIONALLY':action==='reuse'?'REUSE EXISTING':'DEFERRED';
       const priorDecision=authorizationDecision(authorizationQueue.find(item=>item.decisionId===id));
       state.authorizationDecisions[id]=nextDecision;
-      if(nextDecision!==priorDecision){delete state.authorizationReceipts[id];if(id===model.decisionId)invalidateHandoff();}
+      if(nextDecision!==priorDecision){delete state.authorizationReceipts[id];if(id===model.decisionId)invalidateManagementAcceptance();}
       state.view='authorization';
       render();
       return;
