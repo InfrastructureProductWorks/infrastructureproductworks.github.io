@@ -135,7 +135,9 @@ jobs:
           echo "after primary status"
           grep -Fq "function primaryAuthorization()" assets/northstar-signal-demo.js
           echo "after primary function"
-          grep -Fq "No authorized product-intent handoff" assets/northstar-signal-demo.js
+          grep -Fq "No authorized backlog handoff exists." assets/northstar-signal-demo.js
+          grep -Fq "NO CURRENT CAR" assets/northstar-signal-demo.js
+          grep -Fq "Fail closed:" assets/northstar-signal-demo.js
           grep -Fq "const benefitUnproven = s.benefitOutcome === 'UNKNOWN' ? 1 : 0;" assets/northstar-signal-demo.js
           grep -Fq "Create OKR with Composite AI" assets/northstar-signal-demo.js
           grep -Fq "AI-PROPOSED · SYNTHETIC FIXTURE" assets/northstar-signal-demo.js
@@ -146,6 +148,15 @@ jobs:
           grep -Fq "openAuthorizationCeremony" assets/northstar-signal-demo.js
           grep -Fq "Separate CAR per item" assets/northstar-signal-demo.js
           grep -Fq "PENDING CONFIRMATION" assets/northstar-signal-demo.js
+          grep -Fq "BHP-0001" assets/northstar-signal-demo.js
+          grep -Fq "AWAITING HUMAN HANDOFF" assets/northstar-signal-demo.js
+          grep -Fq "CONFIRMED · NO EXTERNAL WRITE" assets/northstar-signal-demo.js
+          grep -Fq "Jira" assets/northstar-signal-demo.js
+          grep -Fq "Azure DevOps" assets/northstar-signal-demo.js
+          grep -Fq "GitHub Issues" assets/northstar-signal-demo.js
+          grep -Fq "Execution Handoff / bounded adapter contract" scripts/audit_site_contrast.cjs
+          grep -Fq "Execution Handoff / independent authorization lineage" scripts/audit_site_contrast.cjs
+          grep -Fq "if(ids.includes(model.decisionId))invalidateHandoff()" assets/northstar-signal-demo.js
           grep -Fq "delete state.authorizationReceipts[id]" assets/northstar-signal-demo.js
           grep -Fq "Confirm exact authorization package" northstar-signal/demo/index.html
           grep -Fq "data-view=\"composer\"" northstar-signal/demo/index.html
