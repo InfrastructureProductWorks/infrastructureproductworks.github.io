@@ -470,6 +470,18 @@
     return {objective,kr,authorization};
   }
 
+  function selectedFeedback() {
+    const ctx=selectedOkrContext();
+    if(ctx.objective.objectiveId===model.objectiveId&&ctx.kr.id===model.krId)return current();
+    return {
+      delivery:ctx.kr.delivery||'UNAVAILABLE',
+      benefitMeasurement:ctx.kr.outcome?'PORTFOLIO SIGNAL':'UNAVAILABLE',
+      benefitOutcome:ctx.kr.outcome||'UNAVAILABLE',
+      benefitSource:ctx.kr.source||'No context-specific feedback fixture',
+      attention:[]
+    };
+  }
+
   function selectedAuthorization() {
     const ctx=selectedOkrContext();
     return ctx.authorization?authorizationRecord(ctx.authorization):null;
@@ -830,7 +842,7 @@
   function invalidateHandoff(){state.handoffConfirmed=false;state.handoffReceipt=null;}
 
   function handoff() {
-    const s=current(), ctx=selectedOkrContext(), primary=selectedAuthorization()||{authorized:false,authorization:'NOT AUTHORIZED'}, pkg=handoffPackage();
+    const s=selectedFeedback(), ctx=selectedOkrContext(), primary=selectedAuthorization()||{authorized:false,authorization:'NOT AUTHORIZED'}, pkg=handoffPackage();
     if(primary.authorized&&!pkg)return headline('Management acceptance required.','A current CAR exists, but Northstar will not create BHP-0001 until management accepts a deterministically validated Epic proposal.','EXECUTION HANDOFF')+'<div class="ns-boundary-box"><strong>Fail closed:</strong> Return to Management, review the Composite AI proposal and explicitly accept an Epic before handoff.</div>';
     if(!primary.authorized)return headline('No authorized backlog handoff exists.','A candidate Epic may remain visible as planning context, but Northstar cannot create a handoff package until an exact Capability Authorization Record is current.','EXECUTION HANDOFF')+
       '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+'</h3><p>Outcome remains traceable.</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>NO CURRENT CAR</h3><p>'+esc(primary.authorization.replaceAll('_',' '))+'</p></article><b>→</b><article><small>DELIVERY</small><h3>BLOCKED</h3><p>No authorized handoff package.</p></article></div>'+
@@ -847,24 +859,26 @@
   }
 
   function outcome() {
-    const s=current();
+    const s=selectedFeedback(), ctx=selectedOkrContext();
+    const isPrimary=ctx.objective.objectiveId===model.objectiveId&&ctx.kr.id===model.krId;
+    const deliveryLabel=managementAcceptanceCurrent()&&state.acceptedEpic?state.acceptedEpic.epic:'Selected KR';
     return headline('Did the product deliver the expected benefit?',
-      'This view is downstream feedback. It keeps delivery activity separate from observed benefit and does not re-score KR9.4 authorization status.',
+      'This view is downstream feedback for '+ctx.objective.objectiveId+' → '+ctx.kr.id+'. It keeps delivery activity separate from observed benefit and does not re-score authorization status.',
       'DOWNSTREAM BENEFIT FEEDBACK')+
       '<div class="ns-truth large">'+
-        '<article><small>DELIVERY SIGNAL</small><h3>'+esc(s.delivery.replaceAll('_',' '))+'</h3><p>'+esc(model.epic)+' delivery evidence.</p></article>'+
+        '<article><small>DELIVERY SIGNAL</small><h3>'+esc(s.delivery.replaceAll('_',' '))+'</h3><p>'+esc(deliveryLabel)+' delivery evidence.</p></article>'+
         '<article><small>BENEFIT MEASUREMENT</small><h3>'+esc(s.benefitMeasurement.replaceAll('_',' '))+'</h3><p>'+esc(s.benefitSource)+'</p></article>'+
       '</div>'+
       kv([
-        ['Benefit baseline', 'No authoritative post-delivery benefit observation yet'],
-        ['Benefit target', 'Observe adoption and cycle-time feedback after product availability'],
-        ['Current benefit', badge(s.benefitOutcome,s.benefitOutcome==='UNKNOWN'?'amber':'green')],
-        ['Accountable benefit role', esc(model.leader)]
+        ['Benefit baseline', isPrimary?'No authoritative post-delivery benefit observation yet':'Selected KR portfolio baseline'],
+        ['Benefit target', isPrimary?'Observe adoption and cycle-time feedback after product availability':'Track the selected KR against its named evidence source'],
+        ['Current benefit', badge(s.benefitOutcome,(s.benefitOutcome==='UNKNOWN'||s.benefitOutcome==='UNAVAILABLE'||s.benefitOutcome==='AT RISK')?'amber':'green')],
+        ['Accountable benefit role', esc(ctx.kr.owner||model.leader)]
       ])+
       '<div class="ns-boundary-box">'+
-        (s.benefitMeasurement==='UNKNOWN'
+        ((s.benefitMeasurement==='UNKNOWN'||s.benefitMeasurement==='UNAVAILABLE')
           ? '<strong>No benefit claim yet.</strong> Delivery may be complete, but downstream benefit remains unknown until the designated measurement arrives.'
-          : '<strong>Benefit evidence received.</strong> The synthetic observation can inform investment learning without changing KR9.4 authorization evidence.')+
+          : '<strong>Feedback evidence available.</strong> The selected KR signal can inform investment learning without changing its authorization evidence.')+
       '</div>';
   }
 
