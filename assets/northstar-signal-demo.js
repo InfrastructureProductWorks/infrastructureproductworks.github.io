@@ -564,12 +564,20 @@
     const ctx=selectedOkrContext();
     const primary=selectedAuthorization();
     if(!ctx.authorization)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer"><div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+'</h2><p>'+esc(ctx.kr.text)+'</p></div>'+badge('AUTHORIZATION NOT DEFINED','amber')+'</div><div class="ns-boundary-box"><strong>No authorization decision is bound to this Key Result.</strong> Management can select it for planning context, but Northstar cannot generate an authorized Epic package or BHP until leadership establishes the required decision/CAR contract.</div></section>';
-    if(!primary.authorized)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
-      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · Compose candidate Epics.</h2><p>This workspace stays visible to management before authorization so the required sequence is explicit. Composite AI cannot propose executable work until the exact product-intent authorization is current.</p></div>'+badge('AUTHORIZATION REQUIRED','amber')+'</div>'+
-      '<div class="ns-mc-context"><small>REQUIRED BOUNDED CONTEXT</small><span>'+esc(ctx.objective.objectiveId)+'</span><span>'+esc(ctx.kr.id)+'</span><span>'+esc(ctx.authorization?ctx.authorization.decisionId:'NO AUTHORIZATION DECISION')+'</span><span>Current CAR required</span><span>Exact package digest required</span></div>'+
-      '<div class="ns-boundary-box"><strong>Fail closed · no CAR, no Epic proposal, no BHP.</strong> Complete the exact authorization package first. A CAR establishes bounded product intent; it does not create a BHP and it does not substitute for management acceptance.</div>'+
-      '<div class="ns-composer-actions"><button type="button" class="primary" data-management-authorize>Authorize outcome to continue</button></div>'+
-    '</section>';
+    if(!primary.authorized){
+      const eligibility=authorizationEligibility(ctx.authorization);
+      if(!eligibility.eligible)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
+        '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · '+esc(primary.decision.replaceAll('_',' '))+'</h2><p>'+esc(ctx.kr.text)+'</p></div>'+badge(primary.authorization,'amber')+'</div>'+
+        '<div class="ns-mc-context"><small>NON-AUTHORIZABLE DECISION CONTEXT</small><span>'+esc(ctx.authorization.decisionId)+'</span><span>'+esc(primary.decision.replaceAll('_',' '))+'</span><span>No current CAR</span><span>No Epic proposal</span><span>No BHP</span></div>'+
+        '<div class="ns-boundary-box"><strong>Fail closed.</strong> '+esc(eligibility.reason)+' Management cannot generate executable Epic proposals until leadership establishes a separate eligible authorization decision.</div>'+
+      '</section>';
+      return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
+        '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · Compose candidate Epics.</h2><p>This workspace stays visible to management before authorization so the required sequence is explicit. Composite AI cannot propose executable work until the exact product-intent authorization is current.</p></div>'+badge('AUTHORIZATION REQUIRED','amber')+'</div>'+
+        '<div class="ns-mc-context"><small>REQUIRED BOUNDED CONTEXT</small><span>'+esc(ctx.objective.objectiveId)+'</span><span>'+esc(ctx.kr.id)+'</span><span>'+esc(ctx.authorization?ctx.authorization.decisionId:'NO AUTHORIZATION DECISION')+'</span><span>Current CAR required</span><span>Exact package digest required</span></div>'+
+        '<div class="ns-boundary-box"><strong>Fail closed · no CAR, no Epic proposal, no BHP.</strong> Complete the exact authorization package first. A CAR establishes bounded product intent; it does not create a BHP and it does not substitute for management acceptance.</div>'+
+        '<div class="ns-composer-actions"><button type="button" class="primary" data-management-authorize>Authorize outcome to continue</button></div>'+
+      '</section>';
+    }
     const proposals=managementProposalsForSelectedContext();
     const proposed=state.managementProposalState!=='idle';
     const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent();
@@ -830,7 +838,15 @@
           ? ctx.authorization.decisionId+' and '+record.carId+' preserve the bounded authorization evidence for '+ctx.kr.id+'.'
           : ctx.authorization.decisionId+' has no current CAR for '+ctx.kr.id+'; no downstream authority is inferred.'
       ]);
-      rows.push(['Product',ctx.authorization.evidence,'DEMONSTRATED','HIGH','CURRENT',ctx.authorization.outcome+' · '+ctx.authorization.scope]);
+      if(record&&record.authorized){
+        rows.push(['Product',ctx.authorization.evidence,'DEMONSTRATED','HIGH','CURRENT',ctx.authorization.outcome+' · '+ctx.authorization.scope]);
+      }else if(record&&record.decision==='REUSE EXISTING'){
+        rows.push(['Product',ctx.authorization.evidence,'EVALUATED','HIGH','CURRENT','Reuse evidence supports the decision to use an existing governed product; no new product CAR or build authority is inferred.']);
+      }else if(record&&record.decision==='DEFERRED'){
+        rows.push(['Product',ctx.authorization.evidence,'NOT DEMONSTRATED','MEDIUM','INSUFFICIENT','Evidence is explicitly insufficient to authorize '+ctx.authorization.outcome+'; the decision remains deferred and no product proof is claimed.']);
+      }else{
+        rows.push(['Product',ctx.authorization.evidence,'DECISION CONTEXT','HIGH','PENDING','Evidence is assembled for accountable review but is not demonstrated as authorized product proof until the exact package is confirmed.']);
+      }
     }else{
       rows.unshift(['Authorization','No authorization decision bound','NOT DEMONSTRATED','HIGH','UNAVAILABLE','No decision/CAR evidence is defined for '+ctx.objective.objectiveId+' → '+ctx.kr.id+'.']);
     }
