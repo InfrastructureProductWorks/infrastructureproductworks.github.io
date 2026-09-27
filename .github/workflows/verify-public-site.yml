@@ -272,6 +272,7 @@ jobs:
           if(!ep08||!/externally blocked|external prerequisite|customer-dependent/i.test(`${ep08.status||''} ${ep08.progress||''} ${ep08.progressBasis||''} ${ep08.time||''}`)) throw new Error('EP-08 external block contract');
           console.log('Portfolio forecast contract validated.');
           NODE
+          echo "Forecast node assertions completed."
 
   verify-public-site:
     name: verify-custom-domain
