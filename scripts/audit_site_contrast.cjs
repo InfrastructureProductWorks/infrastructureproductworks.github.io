@@ -177,12 +177,16 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-confirm-authorization]').click();
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
         if(!/Governed Product Reuse Discovery/.test(await page.locator('.ns-handoff-package').innerText()))throw new Error('Unrelated CPD-0001 confirmation must not invalidate accepted CPD-0002 work');
+        // Legacy authorization and CAR-rebinding regressions require a pristine demo state.
+        // Reload after the multi-persona journey so those tests prove their own invariants independently.
+        await page.reload({waitUntil:'networkidle'});
+        await page.locator('[data-scenario="decision"]').click();
         await page.locator('[data-view="okr"]').click();
         await page.locator('[data-compose-kr="KR9.4"]').click();
         const selectedPrimaryComposer=await page.locator('.ns-management-composer').innerText();
-        if(!/O9 → KR9.4/.test(selectedPrimaryComposer)||!/CAR-0001/.test(selectedPrimaryComposer)||await page.locator('[data-management-draft]').count()!==1)throw new Error('Manager persona must receive the exact selected primary KR and its current authorization state after CAR confirmation');
-        await page.locator('[data-view="authorization"]').click();
-        if(!/CPD-0001/.test(await page.locator('.ns-auth-detail').innerText()))throw new Error('Leader authorization workspace must preserve the selected KR decision');
+        if(!/O9 → KR9.4/.test(selectedPrimaryComposer)||!/AUTHORIZATION REQUIRED/.test(selectedPrimaryComposer)||await page.locator('[data-management-draft]').count())throw new Error('Manager persona must receive the exact selected primary KR and pristine authorization-required state');
+        await page.locator('[data-management-authorize]').click();
+        if(!/CPD-0001/.test(await page.locator('.ns-auth-detail').innerText()))throw new Error('Leader authorization continuation must preserve the selected KR decision');
         const authItems=page.locator('[data-auth-item]');
         if(await authItems.count()!==4)throw new Error('Northstar authorization queue must expose four independent synthetic decisions');
         const reuseSeed=await page.locator('[data-auth-item="CPD-0003"]').innerText();
