@@ -191,11 +191,19 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         for(let i=0;i<await authorizedChoices.count();i++){const box=authorizedChoices.nth(i);if(!await box.isChecked())await box.check();}
         await page.locator('[data-management-draft]').click();
         const o10ProposalText=await page.locator('.ns-management-composer').innerText();
-        if(!/Reusable Data Platform Foundation/.test(o10ProposalText)||!/reusable data-platform foundation product authorized by CPD-0002/i.test(o10ProposalText)||!/CAR scope binding\s+Every proposed Epic remains bound to the exact current CAR outcome and scope/i.test(o10ProposalText)||/Managed Network Foundation/.test(o10ProposalText))throw new Error('Selected O10/KR10.1 must generate Epics that implement the exact authorized data-platform outcome rather than unrelated planning work');
+        if(!/Cross-KR Authorized Outcome Epic/.test(o10ProposalText)||!/CPD-0001/.test(o10ProposalText)||!/CPD-0002/.test(o10ProposalText)||!/CAR scope binding\s+Every proposed Epic remains bound to the exact current CAR outcome and scope/i.test(o10ProposalText))throw new Error('Selecting multiple authorized KRs must generate a cross-KR Epic bound to the exact selected CAR set');
         await page.locator('[data-management-accept]').click();
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const o10Handoff=await page.locator('.ns-handoff-package').innerText();
         if(!/CPD-0001/.test(o10Handoff)||!/CPD-0002/.test(o10Handoff)||!/CAR-0001/.test(o10Handoff)||!/CAR-0002/.test(o10Handoff)||!/Cross-KR Authorized Outcome Epic/.test(o10Handoff))throw new Error('Delivery must receive a multi-KR Epic with every selected Objective/KR/decision/CAR binding preserved');
+        await page.locator('[data-view="management"]').click();
+        const choicesAfterMulti=page.locator('[data-management-kr-check]');
+        for(let i=0;i<await choicesAfterMulti.count();i++){const box=choicesAfterMulti.nth(i);if(await box.getAttribute('data-management-kr-check')==='CPD-0002')await box.uncheck();else if(!await box.isChecked())await box.check();}
+        await page.locator('[data-management-intent]').fill('Create the managed-network Epic only from the checked authorization.');
+        await page.locator('[data-management-draft]').click();
+        const singleCheckedProposal=await page.locator('.ns-management-composer').innerText();
+        if(!/Managed Network Foundation/.test(singleCheckedProposal)||/Reusable Data Platform Foundation/.test(singleCheckedProposal)||!/CAR scope binding\s+Every proposed Epic remains bound to the exact current CAR outcome and scope/i.test(singleCheckedProposal))throw new Error('Single-KR generation must derive from the checked authorization rather than the page context');
+        await page.locator('[data-management-reject]').click();
         const o10Airlock=await page.locator('.ns-airlock').innerText();
         if(!/Standardize a reusable data-platform foundation product/.test(o10Airlock)||/Create a reusable managed-network foundation product/.test(o10Airlock))throw new Error('Delivery airlock must describe the selected authorization outcome rather than stale primary-KR context');
         const o10Feedback=await page.locator('.ns-handoff-feedback').innerText();
