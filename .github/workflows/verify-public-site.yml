@@ -109,10 +109,17 @@ jobs:
           grep -Fq "Create OKR with Composite AI" assets/northstar-signal-demo.js
           grep -Fq "AI-PROPOSED · SYNTHETIC FIXTURE" assets/northstar-signal-demo.js
           grep -Fq "Northstar validates structure independently of the model." assets/northstar-signal-demo.js
+          grep -Fq "Decision & Authorization Queue" assets/northstar-signal-demo.js
+          grep -Fq "authorizationQueue = [" assets/northstar-signal-demo.js
+          grep -Fq "HOW AUTHORIZATION ACTUALLY WORKS" assets/northstar-signal-demo.js
+          grep -Fq "data-view=\"composer\"" northstar-signal/demo/index.html
+          grep -Fq "Authorization Queue" northstar-signal/demo/index.html
           grep -Fq "Northstar OKR Composer" northstar-signal/demo/index.html
           grep -Fq "Compose structurally sound OKRs" composite-ai/index.html
           grep -Fq "DETERMINISTIC VALIDATION" composite-ai/index.html
           grep -Fq "OKR Composer / AI proposal + deterministic validation" scripts/audit_site_contrast.cjs
+          grep -Fq "Authorization Queue / independent item decisions" scripts/audit_site_contrast.cjs
+          grep -Fq "OKR Composer / first-class view" scripts/audit_site_contrast.cjs
           grep -Fq "scenario '+scenario+' / trace drawer" scripts/audit_site_contrast.cjs
           if grep -Fq "KR outcome remains unknown" assets/northstar-signal-demo.js \
             || grep -Fq "The Key Result can now be assessed from outcome evidence" assets/northstar-signal-demo.js \
