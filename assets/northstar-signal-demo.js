@@ -69,8 +69,19 @@
     alternatives: [
       ['Reuse', 'Use an accepted product if equivalence can be demonstrated.', 'Fastest path when the capability already exists.'],
       ['Build', 'Create a bounded reusable product.', 'Requires productization evidence before consumer availability.'],
-      ['Defer', 'Do not productize the capability now.', 'Leaves the capability gap unresolved.']
+      ['Phase', 'Authorize a smaller bounded increment first.', 'Reduces initial scope while preserving the intended outcome and evidence requirements.'],
+      ['Defer', 'Do not productize the capability now.', 'Leaves the capability gap unresolved until stronger evidence or priority emerges.'],
+      ['Redirect', 'Send the need to a different existing product or operating path.', 'Avoids creating duplicate platform capability when another accountable path is a better fit.']
     ],
+    decisionContext: {
+      profile: 'ORG-PROFILE-PCS-v3 · synthetic approved scope',
+      profileRule: 'Profile changes require renewed review; prior approval never silently carries forward.',
+      capability: 'Managed-network candidate found · equivalence not yet proven',
+      portfolio: 'Existing product catalog + dependency context checked before new productization',
+      investment: 'Reuse is preferred when equivalent; net-new productization adds lifecycle/TCO and duplication risk.',
+      benefit: 'Expected value is cycle-time reduction and governed reuse; delivery completion alone cannot prove the benefit.',
+      evidence: 'Current synthetic decision evidence · attributable source · confidence and freshness remain visible'
+    },
     evidence: [
       ['Authorization', 'Northstar decision/CAR binding', 'DEMONSTRATED', 'HIGH', 'CURRENT', 'CPD-0001 and CAR-0001 preserve the bounded authorization evidence required by KR9.4.'],
       ['Product', 'Reviewed repository evidence', 'DEMONSTRATED', 'HIGH', 'CURRENT', 'A reusable managed-network contract candidate exists.'],
@@ -236,7 +247,7 @@
       '</div>';
     }
     return '<div class="ns-scope-bar" aria-label="Selected outcome context">'+
-      '<div><small>SELECTED KEY RESULT</small><strong>'+esc(state.selectedObjective)+' <span aria-hidden="true">→</span> '+esc(state.selectedKr)+'</strong><span>'+esc(model.keyResult)+'</span></div>'+
+      '<div><small>SELECTED KEY RESULT</small><strong>'+esc(state.selectedObjective)+' <span aria-hidden="true">→</span> '+esc(state.selectedKr)+'</strong><span>'+esc(selectedOkrContext().kr.text)+'</span></div>'+
       '<button type="button" data-back-okr>Back to Cloud Platform OKRs</button>'+
     '</div>';
   }
@@ -262,8 +273,6 @@
 
   function openTrail(opener) {
     trailOpener=opener||null;
-    state.selectedKr=model.krId;
-    state.selectedObjective=model.objectiveId;
     const dialog=$('ns-trail-dialog');
     $('ns-trail-content').innerHTML=trailMarkup();
     if (typeof dialog.showModal === 'function') dialog.showModal();
@@ -388,9 +397,9 @@
         const outcome = isPrimary ? kr94Status : kr.outcome;
         const outcomeTone = outcome === 'UNKNOWN' || outcome === 'AT RISK' ? 'amber' : 'green';
         const source = kr.source;
-        const action = kr.interactive
-          ? '<button class="ns-okr-open" data-open-trail="'+esc(kr.id)+'" type="button">Open trail <span aria-hidden="true">→</span></button>'
-          : '<span class="ns-okr-source-note">Measured</span>';
+        const action = '<div class="ns-kr-actions">'+
+          (kr.interactive?'<button class="ns-okr-open" data-open-trail="'+esc(kr.id)+'" type="button">Open trail <span aria-hidden="true">→</span></button>':'<span class="ns-okr-source-note">Measured</span>')+
+          '<button class="ns-okr-open" data-compose-kr="'+esc(kr.id)+'" data-compose-objective="'+esc(objective.objectiveId)+'" type="button">Compose Epics <span aria-hidden="true">→</span></button></div>';
         const statusLabel = isPrimary ? 'KR STATUS' : 'OUTCOME';
         return '<div class="ns-kr-row'+(isPrimary?' primary':'')+'">'+
           '<div class="ns-kr-copy"><small>'+esc(kr.id)+'</small><strong>'+esc(kr.text)+'</strong><span>'+esc(kr.owner)+'</span></div>'+
@@ -433,25 +442,90 @@
   }
 
   function leadership() {
-    const s=current();
-    const primary=primaryAuthorization();
-    const kr94Status = primary.authorized ? 'ON TRACK' : 'UNKNOWN';
+    const ctx=selectedOkrContext();
+    const s=selectedFeedback();
+    const record=selectedAuthorization();
+    const decisionId=ctx.authorization?ctx.authorization.decisionId:'NO DECISION';
+    const decision=record?record.decision:'NO DECISION';
+    const authorization=record?record.authorization:'NOT DEFINED';
+    const authSummary=record&&record.authorized
+      ? record.carId+' · review '+model.carReview
+      : record&&record.decision==='REUSE EXISTING'
+        ? 'Reuse path · no new CAR'
+        : record&&record.decision==='DEFERRED'
+          ? 'Deferred · no CAR'
+          : 'No current CAR';
+    const deliveryDetail=managementAcceptanceCurrent()&&state.acceptedEpic
+      ? state.acceptedEpic.epic+' · '+state.acceptedEpic.title
+      : ctx.kr.id+' portfolio delivery context';
+    const attention=s.attention&&s.attention.length?s.attention:[
+      record&&record.authorized
+        ? 'Keep delivery and benefit evidence bound to the selected authorization without widening its scope.'
+        : record&&record.decision==='REUSE EXISTING'
+          ? 'Verify the accepted product remains equivalent to the selected outcome before considering new productization.'
+          : record&&record.decision==='DEFERRED'
+            ? 'Strengthen the outcome, baseline, target and accountable evidence before reconsidering authorization.'
+            : 'Establish a bounded authorization decision before downstream execution can advance.'
+    ];
+    const benefitTone=(s.benefitOutcome==='UNKNOWN'||s.benefitOutcome==='UNAVAILABLE'||s.benefitOutcome==='AT RISK')?'amber':'green';
     return headline(
-      model.objective,
-      model.keyResult,
-      model.objectiveId+' · '+model.krId
+      ctx.objective.objective,
+      ctx.kr.text,
+      ctx.objective.objectiveId+' · '+ctx.kr.id
     )+
     '<div class="ns-metrics">'+
-      '<article><small>DECISION</small>'+badge(primary.decision,primary.authorized?'green':'blue')+'<p>'+esc(model.decisionId)+' · review '+esc(model.decisionReview)+'</p></article>'+
-      '<article><small>AUTHORIZATION</small>'+badge(primary.authorization,primary.authorized?'green':'amber')+'<p>'+(primary.carId?esc(primary.carId)+' · review '+esc(model.carReview):'No CAR emitted')+'</p></article>'+
-      '<article><small>DELIVERY</small>'+badge(s.delivery,'blue')+'<p>'+esc(model.epic)+' · '+esc(primary.authorized?model.team:'candidate context only')+'</p></article>'+
-      '<article><small>BENEFIT FEEDBACK</small>'+badge(s.benefitOutcome,s.benefitOutcome==='UNKNOWN'?'amber':'green')+'<p>'+esc(s.benefitSource)+'</p></article>'+
+      '<article><small>DECISION</small>'+badge(decision,record&&record.authorized?'green':'blue')+'<p>'+esc(decisionId)+' · review '+esc(model.decisionReview)+'</p></article>'+
+      '<article><small>AUTHORIZATION</small>'+badge(authorization,record&&record.authorized?'green':'amber')+'<p>'+esc(authSummary)+'</p></article>'+
+      '<article><small>DELIVERY</small>'+badge(s.delivery,'blue')+'<p>'+esc(deliveryDetail)+'</p></article>'+
+      '<article><small>BENEFIT FEEDBACK</small>'+badge(s.benefitOutcome,benefitTone)+'<p>'+esc(s.benefitSource)+'</p></article>'+
     '</div>'+
     '<div class="ns-truth">'+
-      '<article><small>KR9.4 AUTHORIZATION STATUS</small><h3>'+esc(kr94Status.replaceAll('_',' '))+'</h3><p>'+(primary.authorized?'Decision/CAR evidence establishes the authorization requirement independently of backlog completion.':'The current decision emits no CAR, so KR9.4 authorization evidence is not established.')+'</p></article>'+
-      '<article><small>DOWNSTREAM BENEFIT FEEDBACK</small><h3>'+esc(s.benefitOutcome.replaceAll('_',' '))+'</h3><p>'+esc(s.benefitMeasurement==='UNKNOWN'?'No authoritative benefit measurement yet.':'Observed benefit evidence can inform investment learning without re-scoring KR9.4.')+'</p></article>'+
+      '<article><small>'+esc(ctx.kr.id)+' AUTHORIZATION STATUS</small><h3>'+esc(authorization.replaceAll('_',' '))+'</h3><p>'+(record&&record.authorized?'Decision/CAR evidence establishes the selected authorization independently of backlog completion.':record&&record.decision==='REUSE EXISTING'?'The selected decision uses an accepted-product path and emits no new CAR.':record&&record.decision==='DEFERRED'?'The selected decision remains deferred; insufficient evidence creates no downstream authority.':'No current CAR establishes product-intent authorization for this selected Key Result.')+'</p></article>'+
+      '<article><small>DOWNSTREAM BENEFIT FEEDBACK</small><h3>'+esc(s.benefitOutcome.replaceAll('_',' '))+'</h3><p>'+esc((s.benefitMeasurement==='UNKNOWN'||s.benefitMeasurement==='UNAVAILABLE')?'No authoritative benefit measurement yet.':'Observed benefit evidence can inform investment learning without re-scoring the selected authorization.')+'</p></article>'+
     '</div>'+
-    '<div class="ns-attention"><h3>What needs leadership attention</h3>'+list(s.attention)+'</div>';
+    '<div class="ns-attention"><h3>What needs leadership attention</h3>'+list(attention)+'</div>';
+  }
+
+  function selectOkrContext(objectiveId, krId) {
+    const changed=state.selectedObjective!==objectiveId||state.selectedKr!==krId;
+    state.selectedObjective=objectiveId;
+    state.selectedKr=krId;
+    if(changed){
+      state.managementProposalState='idle';
+      state.acceptedEpic=null;
+      invalidateHandoff();
+    }
+  }
+
+  function selectedOkrContext() {
+    const objective=okrPortfolio.find(o=>o.objectiveId===state.selectedObjective)||okrPortfolio[0];
+    const kr=objective.krs.find(k=>k.id===state.selectedKr)||objective.krs[0];
+    const authorization=authorizationQueue.find(item=>item.objectiveId===objective.objectiveId&&item.krId===kr.id)||null;
+    return {objective,kr,authorization};
+  }
+
+  function selectedFeedback() {
+    const ctx=selectedOkrContext();
+    if(ctx.objective.objectiveId===model.objectiveId&&ctx.kr.id===model.krId)return current();
+    return {
+      delivery:ctx.kr.delivery||'UNAVAILABLE',
+      benefitMeasurement:ctx.kr.outcome?'PORTFOLIO SIGNAL':'UNAVAILABLE',
+      benefitOutcome:ctx.kr.outcome||'UNAVAILABLE',
+      benefitSource:ctx.kr.source||'No context-specific feedback fixture',
+      attention:[]
+    };
+  }
+
+  function selectedAuthorization() {
+    const ctx=selectedOkrContext();
+    return ctx.authorization?authorizationRecord(ctx.authorization):null;
+  }
+
+  function selectedAuthorizationBinding() {
+    const ctx=selectedOkrContext(), record=selectedAuthorization();
+    if(!ctx.authorization||!record||!record.authorized)return null;
+    const receipt=state.authorizationReceipts[ctx.authorization.decisionId];
+    return receipt?{decisionId:ctx.authorization.decisionId,carId:record.carId,packageId:receipt.packageId,evidenceDigest:receipt.evidenceDigest,objectiveId:ctx.objective.objectiveId,krId:ctx.kr.id}:null;
   }
 
   const managementEpicProposals=[
@@ -473,9 +547,55 @@
     }
   ];
 
+  function withProposalContext(proposals,ctx) {
+    if(!ctx.authorization)return [];
+    return proposals.map(p=>({...p,proposalContext:{
+      objectiveId:ctx.objective.objectiveId,
+      krId:ctx.kr.id,
+      decisionId:ctx.authorization.decisionId,
+      authorizedOutcome:ctx.authorization.outcome,
+      authorizedScope:ctx.authorization.scope
+    }}));
+  }
+
+  function managementProposalsForSelectedContext() {
+    const ctx=selectedOkrContext();
+    if(ctx.objective.objectiveId==='O9'&&ctx.kr.id==='KR9.4')return withProposalContext(managementEpicProposals,ctx);
+    if(ctx.objective.objectiveId==='O10'&&ctx.kr.id==='KR10.1')return withProposalContext([
+      {
+        id:'MEP-O10-001',epic:'EP-CANDIDATE-O10-01',title:'Reusable Data Platform Foundation',
+        outcome:'Define and validate the reusable data-platform foundation product authorized by CPD-0002 without widening its bounded product-definition scope.',
+        acceptance:['Reusable data-platform product contract is defined','Bounded validation passes against the authorized scope','Accepted-product equivalence is checked before implementation','Delivery evidence remains separate from benefit evidence'],
+        evidence:'Reuse assessment · Guard result · accountable review · product contract',
+        reuse:'REUSE-FIRST CONSTRAINT · EXISTING GOVERNED PRODUCTS MUST BE EVALUATED BEFORE NET-NEW IMPLEMENTATION',
+        reuseTone:'green'
+      },
+      {
+        id:'MEP-O10-002',epic:'EP-CANDIDATE-O10-02',title:'Data Platform Consumer Contract',
+        outcome:'Define the bounded consumer contract and onboarding path for the authorized reusable data-platform foundation without adding new execution authority.',
+        acceptance:['Consumer contract is explicit','Existing governed product paths are reused where equivalent','No funding, deployment, provisioning or risk authority is inferred'],
+        evidence:'Product contract · consumer eligibility · reuse/equivalence evidence',
+        reuse:'CONSUMER REUSE PATH · NO DUPLICATE PRODUCT ASSUMPTION',
+        reuseTone:'amber'
+      }
+    ],ctx);
+    return [];
+  }
+
+  function proposalMatchesSelectedAuthorization(proposal) {
+    const ctx=selectedOkrContext();
+    const pc=proposal&&proposal.proposalContext;
+    return Boolean(ctx.authorization&&pc&&
+      pc.objectiveId===ctx.objective.objectiveId&&
+      pc.krId===ctx.kr.id&&
+      pc.decisionId===ctx.authorization.decisionId&&
+      pc.authorizedOutcome===ctx.authorization.outcome&&
+      pc.authorizedScope===ctx.authorization.scope);
+  }
+
   const managementChecks=[
     ['CAR scope binding','PASS','Every proposed Epic remains within the exact current CAR scope.'],
-    ['KR traceability','PASS','Each proposal states how it contributes to KR9.4 rather than merely listing tasks.'],
+    ['KR traceability','PASS','Each proposal states how it contributes to the selected Key Result rather than merely listing tasks.'],
     ['Outcome-oriented Epic','PASS','Acceptance is expressed as observable capability outcomes.'],
     ['Evidence requirements','PASS','Each proposal names evidence required to demonstrate delivery.'],
     ['Authority expansion','PASS','No proposal adds funding, deployment, provisioning, cloud or risk authority.'],
@@ -493,13 +613,15 @@
   }
 
   function managementAcceptanceCurrent() {
-    const binding=currentPrimaryAuthorizationBinding();
+    const binding=selectedAuthorizationBinding();
     const accepted=state.acceptedEpic;
     return Boolean(accepted&&binding&&accepted.authorizationBinding&&
       accepted.authorizationBinding.carId===binding.carId&&
       accepted.authorizationBinding.packageId===binding.packageId&&
       accepted.authorizationBinding.evidenceDigest===binding.evidenceDigest&&
-      accepted.authorizationBinding.decision===binding.decision);
+      accepted.authorizationBinding.decisionId===binding.decisionId&&
+      accepted.authorizationBinding.objectiveId===binding.objectiveId&&
+      accepted.authorizationBinding.krId===binding.krId);
   }
 
   function invalidateManagementAcceptance() {
@@ -508,24 +630,44 @@
     invalidateHandoff();
   }
 
+  function invalidateManagementForAuthorization(decisionId) {
+    const selectedDecisionId=selectedOkrContext().authorization?.decisionId||null;
+    const acceptedDecisionId=state.acceptedEpic?.authorizationBinding?.decisionId||null;
+    if((selectedDecisionId===decisionId&&state.managementProposalState!=='idle')||acceptedDecisionId===decisionId){
+      invalidateManagementAcceptance();
+    }
+  }
+
   function managementComposer() {
-    const primary=primaryAuthorization();
-    if(!primary.authorized)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
-      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>Translate an authorized outcome into candidate Epics.</h2><p>This workspace stays visible to management before authorization so the required sequence is explicit. Composite AI cannot propose executable work until the exact product-intent authorization is current.</p></div>'+badge('AUTHORIZATION REQUIRED','amber')+'</div>'+
-      '<div class="ns-mc-context"><small>REQUIRED BOUNDED CONTEXT</small><span>'+esc(model.objectiveId)+'</span><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span><span>Current CAR required</span><span>Exact package digest required</span></div>'+
-      '<div class="ns-boundary-box"><strong>Fail closed · no CAR, no Epic proposal, no BHP.</strong> Complete the exact authorization package first. A CAR establishes bounded product intent; it does not create a BHP and it does not substitute for management acceptance.</div>'+
-      '<div class="ns-composer-actions"><button type="button" class="primary" data-management-authorize>Authorize outcome to continue</button></div>'+
-    '</section>';
+    const ctx=selectedOkrContext();
+    const primary=selectedAuthorization();
+    if(!ctx.authorization)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer"><div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+'</h2><p>'+esc(ctx.kr.text)+'</p></div>'+badge('AUTHORIZATION NOT DEFINED','amber')+'</div><div class="ns-boundary-box"><strong>No authorization decision is bound to this Key Result.</strong> Management can select it for planning context, but Northstar cannot generate an authorized Epic package or BHP until leadership establishes the required decision/CAR contract.</div></section>';
+    if(!primary.authorized){
+      const eligibility=authorizationEligibility(ctx.authorization);
+      if(!eligibility.eligible)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
+        '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · '+esc(primary.decision.replaceAll('_',' '))+'</h2><p>'+esc(ctx.kr.text)+'</p></div>'+badge(primary.authorization,'amber')+'</div>'+
+        '<div class="ns-mc-context"><small>NON-AUTHORIZABLE DECISION CONTEXT</small><span>'+esc(ctx.authorization.decisionId)+'</span><span>'+esc(primary.decision.replaceAll('_',' '))+'</span><span>No current CAR</span><span>No Epic proposal</span><span>No BHP</span></div>'+
+        '<div class="ns-boundary-box"><strong>Fail closed.</strong> '+esc(eligibility.reason)+' Management cannot generate executable Epic proposals until leadership establishes a separate eligible authorization decision.</div>'+
+      '</section>';
+      return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
+        '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · Compose candidate Epics.</h2><p>This workspace stays visible to management before authorization so the required sequence is explicit. Composite AI cannot propose executable work until the exact product-intent authorization is current.</p></div>'+badge('AUTHORIZATION REQUIRED','amber')+'</div>'+
+        '<div class="ns-mc-context"><small>REQUIRED BOUNDED CONTEXT</small><span>'+esc(ctx.objective.objectiveId)+'</span><span>'+esc(ctx.kr.id)+'</span><span>'+esc(ctx.authorization?ctx.authorization.decisionId:'NO AUTHORIZATION DECISION')+'</span><span>Current CAR required</span><span>Exact package digest required</span></div>'+
+        '<div class="ns-boundary-box"><strong>Fail closed · no CAR, no Epic proposal, no BHP.</strong> Complete the exact authorization package first. A CAR establishes bounded product intent; it does not create a BHP and it does not substitute for management acceptance.</div>'+
+        '<div class="ns-composer-actions"><button type="button" class="primary" data-management-authorize>Authorize outcome to continue</button></div>'+
+      '</section>';
+    }
+    const proposals=managementProposalsForSelectedContext();
     const proposed=state.managementProposalState!=='idle';
-    const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent();
+    const proposalsBound=proposals.length>0&&proposals.every(proposalMatchesSelectedAuthorization);
+    const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent()&&proposalsBound;
     return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
-      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>Translate the authorized outcome into candidate Epics.</h2><p>Composite AI receives a bounded context package: Objective, KR, CPD, current CAR, constraints, evidence requirements and existing portfolio context.</p></div>'+badge(primary.carId,'green')+'</div>'+
-      '<div class="ns-mc-context"><small>BOUNDED CONTEXT</small><span>'+esc(model.objectiveId)+'</span><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span><span>'+esc(primary.carId)+'</span><span>Existing product catalog</span><span>Existing Epic relationships</span></div>'+
-      (!proposed?'<div class="ns-mc-empty"><h3>Management intent</h3><p>Decompose the authorized managed-network outcome into the smallest useful set of outcome-oriented Epics while preferring reuse over duplicate work.</p><button type="button" class="primary" data-management-draft>Propose Epics with Composite AI</button></div>':'')+
-      (proposed?'<div class="ns-mc-proposals"><small>AI-PROPOSED · SYNTHETIC FIXTURE</small>'+managementEpicProposals.map((p,i)=>'<article data-management-proposal="'+esc(p.id)+'"><div class="ns-mc-proposal-head"><div><small>'+esc(p.id)+' · '+esc(p.epic)+'</small><h3>'+esc(p.title)+'</h3></div>'+badge(i===0?'PRIMARY':'CANDIDATE',i===0?'blue':'neutral')+'</div><p>'+esc(p.outcome)+'</p><div class="ns-mc-reuse '+p.reuseTone+'"><strong>REUSE / EQUIVALENCE</strong><span>'+esc(p.reuse)+'</span></div><div class="ns-mc-acceptance"><strong>Acceptance outcomes</strong>'+list(p.acceptance)+'</div><div class="ns-mc-evidence"><strong>Evidence</strong><span>'+esc(p.evidence)+'</span></div></article>').join('')+'</div>':'')+
-      (proposed?'<div class="ns-composer-step validator"><small>DETERMINISTIC VALIDATION</small><h3>'+(accepted?'PRIMARY EPIC ACCEPTED BY MANAGEMENT':'BOUNDED PROPOSAL READY FOR MANAGEMENT REVIEW')+'</h3><div class="ns-composer-checks">'+managementChecks.map(([name,status,note])=>'<article><div><strong>'+esc(name)+'</strong><span>'+esc(note)+'</span></div>'+badge(status,status==='PASS'?'green':'amber')+'</article>').join('')+'</div><p class="ns-composer-note">Composite AI proposes decomposition. Deterministic checks validate lineage, scope and structure. Management remains accountable for accepting work.</p></div>':'')+
+      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · Compose candidate Epics.</h2><p>Composite AI receives a bounded context package: Objective, KR, CPD, current CAR, constraints, evidence requirements and existing portfolio context.</p></div>'+badge(primary.carId,'green')+'</div>'+
+      '<div class="ns-mc-context"><small>BOUNDED CONTEXT</small><span>'+esc(ctx.objective.objectiveId)+'</span><span>'+esc(ctx.kr.id)+'</span><span>'+esc(ctx.authorization?ctx.authorization.decisionId:'NO AUTHORIZATION DECISION')+'</span><span>'+esc(primary.carId)+'</span><span>Existing product catalog</span><span>Existing Epic relationships</span></div>'+
+      (!proposed?'<div class="ns-mc-empty"><h3>Management intent</h3><p>Decompose the selected authorized Key Result into the smallest useful set of outcome-oriented Epics while preferring reuse over duplicate work.</p><button type="button" class="primary" data-management-draft>Propose Epics with Composite AI</button></div>':'')+
+      (proposed?'<div class="ns-mc-proposals"><small>AI-PROPOSED · SYNTHETIC FIXTURE</small>'+proposals.map((p,i)=>'<article data-management-proposal="'+esc(p.id)+'"><div class="ns-mc-proposal-head"><div><small>'+esc(p.id)+' · '+esc(p.epic)+'</small><h3>'+esc(p.title)+'</h3></div>'+badge(i===0?'PRIMARY':'CANDIDATE',i===0?'blue':'neutral')+'</div><p>'+esc(p.outcome)+'</p><div class="ns-mc-reuse '+p.reuseTone+'"><strong>REUSE / EQUIVALENCE</strong><span>'+esc(p.reuse)+'</span></div><div class="ns-mc-acceptance"><strong>Acceptance outcomes</strong>'+list(p.acceptance)+'</div><div class="ns-mc-evidence"><strong>Evidence</strong><span>'+esc(p.evidence)+'</span></div></article>').join('')+'</div>':'')+
+      (proposed?'<div class="ns-composer-step validator"><small>DETERMINISTIC VALIDATION</small><h3>'+(accepted?'PRIMARY EPIC ACCEPTED BY MANAGEMENT':proposalsBound?'BOUNDED PROPOSAL READY FOR MANAGEMENT REVIEW':'PROPOSAL CONTEXT MISMATCH · FAIL CLOSED')+'</h3><div class="ns-composer-checks">'+managementChecks.map(([name,status,note],i)=>{const actual=i===0?(proposalsBound?'PASS':'FAIL'):status;return '<article><div><strong>'+esc(name)+'</strong><span>'+esc(i===0?(proposalsBound?'Every proposed Epic remains bound to the exact current CAR outcome and scope.':'Proposal context does not match the selected authorization outcome/scope.'):note)+'</span></div>'+badge(actual,actual==='PASS'?'green':'amber')+'</article>';}).join('')+'</div><p class="ns-composer-note">Composite AI proposes decomposition. Deterministic checks validate lineage, scope and structure. Management remains accountable for accepting work.</p></div>':'')+
       '<div class="ns-composer-actions">'+
-        (proposed&&!accepted?'<button type="button" class="primary" data-management-accept>Accept primary Epic</button><button type="button" data-management-regenerate>Regenerate</button><button type="button" data-management-reject>Reject proposals</button>':'')+
+        (proposed&&!accepted&&proposalsBound?'<button type="button" class="primary" data-management-accept>Accept primary Epic</button><button type="button" data-management-regenerate>Regenerate</button><button type="button" data-management-reject>Reject proposals</button>':proposed&&!accepted?'<button type="button" data-management-regenerate>Regenerate</button><button type="button" data-management-reject>Reject proposals</button>':'')+
         (accepted?'<button type="button" class="primary" data-view="handoff">Continue to Execution Handoff</button><button type="button" data-management-regenerate>Regenerate</button>':'')+
       '</div>'+
       (accepted&&state.acceptedEpic?'<div class="ns-mc-accepted"><strong>MANAGEMENT ACCEPTED</strong><span>'+esc(state.acceptedEpic.epic)+' · '+esc(state.acceptedEpic.title)+'</span><small>Acceptance creates a bounded candidate for BHP generation. It does not write to an external backlog.</small></div>':'')+
@@ -533,15 +675,16 @@
   }
 
   function management() {
-    const s=current();
-    const primary=primaryAuthorization();
+    const s=selectedFeedback();
+    const ctx=selectedOkrContext();
+    const primary=selectedAuthorization()||{authorized:false,decision:'NO DECISION',carId:null};
     return headline(primary.authorized?'Translate authorized intent into bounded delivery.':'No authorized product-intent handoff exists.',
       'Management carries the outcome, constraints and evidence requirements into execution. Composite AI may propose Epics, but it cannot accept work or widen the CAR.',
       'MANAGEMENT LENS')+
       kv([
         ['Decision state', badge(primary.decision,primary.authorized?'green':'blue')],
         ['Capability Authorization Record', primary.carId?'<code>'+esc(primary.carId)+'</code>':'No CAR emitted'],
-        ['Outcome', esc(model.proposedOutcome)],
+        ['Selected outcome', esc(ctx.objective.objectiveId+' → '+ctx.kr.id+' · '+ctx.kr.text)],
         ['Management owner', esc(model.manager)],
         ['Assigned team', esc(model.team)],
         ['Delivery system', esc(model.backlog)],
@@ -552,19 +695,69 @@
       managementComposer();
   }
 
+  function decisionContextFor(ctx, record) {
+    const item=ctx.authorization;
+    const deferred=record.decision==='DEFERRED';
+    const reuse=record.decision==='REUSE EXISTING';
+    const authorized=record.authorized;
+    return {
+      evidenceLabel: deferred?'MEDIUM EVIDENCE':authorized||reuse?'HIGH EVIDENCE':'HIGH EVIDENCE',
+      evidenceTone: deferred?'amber':'green',
+      profile: item.owner+' · '+item.productOwner+' · synthetic scoped decision profile',
+      profileRule: 'Scope is limited to '+item.objectiveId+' → '+item.krId+'; profile or decision-context changes require renewed accountable review.',
+      capability: deferred
+        ? 'Capability need identified · decision evidence insufficient'
+        : reuse
+          ? 'Accepted-product reuse path selected · no new product CAR'
+          : item.outcome,
+      portfolio: 'Scope: '+item.scope+' · Environments: '+item.environments+'. Existing-product and dependency context must be checked before new productization.',
+      investment: deferred
+        ? 'No new product investment should advance while outcome, baseline, target or evidence are insufficient.'
+        : reuse
+          ? 'Reuse avoids duplicate product lifecycle/TCO unless new evidence proves the accepted product is insufficient.'
+          : 'Compare reuse versus lifecycle/TCO, duplication risk and expected benefit before expanding net-new productization.',
+      benefit: 'Expected benefit must be measured against '+ctx.kr.id+' — '+ctx.kr.text+' Delivery completion alone cannot prove that outcome.',
+      evidence: item.evidence+' · '+(deferred?'insufficient for authorization':reuse?'supports reuse/equivalence decision':authorized?'current authorized decision evidence':'assembled for accountable confirmation'),
+      changeEvidence: deferred
+        ? 'A clearer outcome, baseline, target and accountable evidence source would be required before authorization can be reconsidered.'
+        : reuse
+          ? 'Evidence that the accepted product is not equivalent or cannot satisfy the outcome would justify reopening the productization decision.'
+          : 'If an existing governed product already satisfies the requested outcome, new productization should be reconsidered.'
+    };
+  }
+
   function decision() {
-    const primary=primaryAuthorization();
-    return headline(model.proposedOutcome,
-      'Leadership sees the mission consequence, evidence quality and credible choices without having to translate infrastructure implementation jargon.',
-      model.decisionId+' · DECISION BRIEF')+
-      '<div class="ns-state-row">'+badge(primary.decision,primary.authorized?'green':'blue')+badge(primary.authorization,primary.authorized?'green':'amber')+badge('HIGH EVIDENCE','green')+badge('REVIEW '+model.decisionReview,'neutral')+'</div>'+
+    const ctx=selectedOkrContext();
+    if(!ctx.authorization)return headline(ctx.kr.text,
+      'This selected Key Result has no bound authorization decision in the synthetic fixture. Leadership can inspect the outcome, but Northstar will not invent a decision record or downstream authority.',
+      ctx.objective.objectiveId+' → '+ctx.kr.id+' · NO AUTHORIZATION DECISION')+
+      '<div class="ns-boundary-box"><strong>Fail closed:</strong> establish an explicit decision/CAR contract before representing product-intent authorization.</div>';
+    const record=selectedAuthorization();
+    const dc=decisionContextFor(ctx,record);
+    return headline(ctx.authorization.outcome,
+      'Leadership sees the mission consequence, organizational scope, reuse context, investment assumptions, evidence quality and credible choices without having to translate infrastructure implementation jargon.',
+      ctx.authorization.decisionId+' · DECISION BRIEF')+
+      '<div class="ns-state-row">'+badge(record.decision,record.authorized?'green':'blue')+badge(record.authorization,record.authorized?'green':'amber')+badge(dc.evidenceLabel,dc.evidenceTone)+badge('REVIEW '+model.decisionReview,'neutral')+'</div>'+
+      '<div class="ns-section-title"><div><small>CONTEXT BEFORE DECISION</small><h3>Synthetic decision context</h3></div><span>Context informs · humans authorize</span></div>'+
+      '<div class="ns-grid-3">'+
+        '<article><small>ORGANIZATIONAL PROFILE</small><h3>'+esc(dc.profile)+'</h3><p>'+esc(dc.profileRule)+'</p></article>'+
+        '<article><small>CAPABILITY + REUSE</small><h3>'+esc(dc.capability)+'</h3><p>'+esc(dc.portfolio)+'</p></article>'+
+        '<article><small>INVESTMENT + TCO</small><h3>Illustrative decision assumption</h3><p>'+esc(dc.investment)+'</p></article>'+
+      '</div>'+
+      '<div class="ns-grid-2">'+
+        '<article><small>EVIDENCE + CONFIDENCE</small><h3>'+esc(dc.evidence)+'</h3><p>Evidence can inform the recommendation, but it cannot create funding, staffing, risk, deployment or provisioning authority.</p></article>'+
+        '<article><small>EXPECTED BENEFIT</small><h3>'+esc(dc.benefit)+'</h3><p>Observed outcome evidence returns later; backlog completion is only an execution signal.</p></article>'+
+      '</div>'+
+      '<div class="ns-boundary-box"><strong>Synthetic demo boundary:</strong> these profile, capability, investment/TCO and portfolio inputs are fixtures. The public demo does not claim live organizational profiles, live cost feeds, enterprise adapters, funding authority, procurement authority, risk acceptance or cloud execution.</div>'+
+      '<div class="ns-section-title"><div><small>ACCOUNTABLE CHOICES</small><h3>Reuse, build, phase, defer or redirect</h3></div><span>Decision ≠ execution authority</span></div>'+
       '<div class="ns-options">'+model.alternatives.map(([name,meaning,consequence]) =>
         '<article><small>'+esc(name.toUpperCase())+'</small><h3>'+esc(meaning)+'</h3><p>'+esc(consequence)+'</p></article>'
       ).join('')+'</div>'+
       '<div class="ns-grid-2">'+
-        '<article class="ns-callout amber"><small>NO ACTION</small><h3>What happens?</h3><p>Teams continue using nonstandard request paths and the reusable capability gap stays open.</p></article>'+
-        '<article class="ns-callout"><small>EVIDENCE THAT WOULD CHANGE THE ASSESSMENT</small><h3>Proof of accepted reuse</h3><p>If an existing IPW product already satisfies the requested outcome, new productization should be reconsidered.</p></article>'+
-      '</div>';
+        '<article class="ns-callout amber"><small>NO ACTION</small><h3>What happens?</h3><p>The selected outcome remains unresolved and no new product-intent authority is created.</p></article>'+
+        '<article class="ns-callout"><small>EVIDENCE THAT WOULD CHANGE THE ASSESSMENT</small><h3>Decision-changing evidence</h3><p>'+esc(dc.changeEvidence)+'</p></article>'+
+      '</div>'+
+      '<div class="ns-rail-proof"><small>PRESERVED LINEAGE</small><div><b>Org profile</b><span>→</span><b>'+esc(ctx.objective.objectiveId)+'</b><span>→</span><b>'+esc(ctx.kr.id)+'</b><span>→</span><b>'+esc(ctx.authorization.decisionId)+'</b><span>→</span><b>'+(record.carId?esc(record.carId):'No CAR')+'</b></div></div>';
   }
 
   function authorizationDecision(item) {
@@ -679,10 +872,12 @@
         confirmed:true
       };
     });
-    if(ids.includes(model.decisionId))invalidateManagementAcceptance();
+    if(state.acceptedEpic?.authorizationBinding?.decisionId&&ids.includes(state.acceptedEpic.authorizationBinding.decisionId))invalidateManagementAcceptance();
     closeAuthorizationCeremony();
     state.selectedAuthorizationIds=[];
-    const returnToManagement=ids.includes(model.decisionId)&&state.authorizationReturnView==='management'&&primaryAuthorization().authorized;
+    const selectedCtx=selectedOkrContext();
+    const selectedRecord=selectedAuthorization();
+    const returnToManagement=Boolean(selectedCtx.authorization&&ids.includes(selectedCtx.authorization.decisionId)&&state.authorizationReturnView==='management'&&selectedRecord&&selectedRecord.authorized);
     state.authorizationReturnView=null;
     state.role=returnToManagement?'manager':state.role;
     state.view=returnToManagement?'management':'authorization';
@@ -749,12 +944,51 @@
     '<div class="ns-auth-mechanics"><small>HOW AUTHORIZATION ACTUALLY WORKS</small><div><article><b>1</b><strong>Evidence ready</strong><span>Northstar assembles the exact outcome, alternatives, scope and evidence.</span></article><article><b>2</b><strong>Human decision</strong><span>An accountable organizational approver chooses approve, conditional approval, reuse or defer.</span></article><article><b>3</b><strong>Exact package confirmed</strong><span>The human sees scope, evidence digest, accountable role, review date and exclusions before confirmation.</span></article><article><b>4</b><strong>Separate CAR per item</strong><span>Each eligible decision receives its own bounded CAR; multi-select never merges authority.</span></article><article><b>5</b><strong>Separate execution authority</strong><span>Deployment, provisioning, risk acceptance and other privileged actions still require their own authorized controls.</span></article></div></div>';
   }
 
+  function selectedEvidenceRecords() {
+    const ctx=selectedOkrContext();
+    if(ctx.objective.objectiveId===model.objectiveId&&ctx.kr.id===model.krId)return model.evidence;
+    const rows=[
+      ['Key Result',ctx.kr.source||'No evidence source defined','OPERATIONAL CONTEXT','HIGH','CURRENT',ctx.objective.objectiveId+' → '+ctx.kr.id+' · '+ctx.kr.text]
+    ];
+    if(ctx.authorization){
+      const record=selectedAuthorization();
+      rows.unshift([
+        'Authorization',
+        ctx.authorization.decisionId+' decision/CAR binding',
+        record&&record.authorized?'DEMONSTRATED':'DECISION CONTEXT',
+        'HIGH',
+        record&&record.authorized?'CURRENT':(record?record.authorization:'NOT AUTHORIZED'),
+        record&&record.authorized
+          ? ctx.authorization.decisionId+' and '+record.carId+' preserve the bounded authorization evidence for '+ctx.kr.id+'.'
+          : ctx.authorization.decisionId+' has no current CAR for '+ctx.kr.id+'; no downstream authority is inferred.'
+      ]);
+      if(record&&record.authorized){
+        rows.push(['Product',ctx.authorization.evidence,'DEMONSTRATED','HIGH','CURRENT',ctx.authorization.outcome+' · '+ctx.authorization.scope]);
+      }else if(record&&record.decision==='REUSE EXISTING'){
+        rows.push(['Product',ctx.authorization.evidence,'EVALUATED','HIGH','CURRENT','Reuse evidence supports the decision to use an existing governed product; no new product CAR or build authority is inferred.']);
+      }else if(record&&record.decision==='DEFERRED'){
+        rows.push(['Product',ctx.authorization.evidence,'NOT DEMONSTRATED','MEDIUM','INSUFFICIENT','Evidence is explicitly insufficient to authorize '+ctx.authorization.outcome+'; the decision remains deferred and no product proof is claimed.']);
+      }else{
+        rows.push(['Product',ctx.authorization.evidence,'DECISION CONTEXT','HIGH','PENDING','Evidence is assembled for accountable review but is not demonstrated as authorized product proof until the exact package is confirmed.']);
+      }
+    }else{
+      rows.unshift(['Authorization','No authorization decision bound','NOT DEMONSTRATED','HIGH','UNAVAILABLE','No decision/CAR evidence is defined for '+ctx.objective.objectiveId+' → '+ctx.kr.id+'.']);
+    }
+    const feedback=selectedFeedback();
+    rows.push(['Outcome',feedback.benefitSource,'OPERATIONAL CONTEXT','HIGH',feedback.benefitOutcome==='UNAVAILABLE'?'UNAVAILABLE':'CURRENT',ctx.kr.id+' delivery '+feedback.delivery.replaceAll('_',' ')+' · outcome '+feedback.benefitOutcome.replaceAll('_',' ')]);
+    if(managementAcceptanceCurrent()&&state.acceptedEpic){
+      rows.push(['Delivery','Management acceptance binding','DEMONSTRATED','HIGH','CURRENT',state.acceptedEpic.epic+' · '+state.acceptedEpic.title+' remains bound to the selected authorization context.']);
+    }
+    return rows;
+  }
+
   function evidence() {
+    const ctx=selectedOkrContext(), records=selectedEvidenceRecords();
     return headline('Show the evidence. Keep the distinctions.',
-      'Northstar can correlate evidence without turning profile keywords, commit counts or assessments into a hidden employee score.',
+      'Northstar correlates evidence for '+ctx.objective.objectiveId+' → '+ctx.kr.id+' without turning profile keywords, commit counts or assessments into a hidden employee score.',
       'EVIDENCE EXPLORER')+
       '<div class="ns-evidence-note">SELF-DECLARED ≠ ASSESSED ≠ DEMONSTRATED · CAPABILITY ≠ AVAILABILITY</div>'+
-      '<div class="ns-evidence">'+model.evidence.map(([subject,source,cls,confidence,freshness,statement]) =>
+      '<div class="ns-evidence">'+records.map(([subject,source,cls,confidence,freshness,statement]) =>
         '<article><div class="ns-evidence-top"><small>'+esc(subject.toUpperCase())+'</small><span>'+esc(source)+'</span></div>'+
         '<h3>'+esc(statement)+'</h3><div class="ns-state-row">'+badge(cls,'blue')+badge(confidence+' CONFIDENCE',confidence==='HIGH'?'green':'amber')+badge(freshness,'neutral')+'</div></article>'
       ).join('')+'</div>';
@@ -767,25 +1001,26 @@
   };
 
   function handoffPackage() {
-    const primary=primaryAuthorization();
-    if(!primary.authorized)return null;
-    const adapter=backlogAdapters[state.handoffTarget];
-    const material=[model.objectiveId,model.krId,model.decisionId,primary.carId,model.epic,model.epicTitle,model.proposedOutcome,adapter.label,adapter.project,'Retain exact CAR binding','Evidence required before outcome claim'].join('|');
+    const ctx=selectedOkrContext();
+    const primary=selectedAuthorization();
+    if(!ctx.authorization||!primary||!primary.authorized)return null;
     if(!managementAcceptanceCurrent())return null;
-    return {id:'BHP-0001',carId:primary.carId,objectiveId:model.objectiveId,krId:model.krId,decisionId:model.decisionId,epic:state.acceptedEpic.epic,epicTitle:state.acceptedEpic.title,target:adapter.label,project:adapter.project,workItemType:adapter.type,digest:stableDigest(material+'|'+state.acceptedEpic.id+'|'+state.acceptedEpic.epic+'|'+state.acceptedEpic.title),status:state.handoffConfirmed?'HANDOFF CONFIRMED':'AWAITING HUMAN HANDOFF'};
+    const adapter=backlogAdapters[state.handoffTarget];
+    const material=[ctx.objective.objectiveId,ctx.kr.id,ctx.authorization.decisionId,primary.carId,state.acceptedEpic.epic,state.acceptedEpic.title,ctx.kr.text,adapter.label,adapter.project,'Retain exact CAR binding','Evidence required before outcome claim'].join('|');
+    return {id:'BHP-0001',carId:primary.carId,objectiveId:ctx.objective.objectiveId,krId:ctx.kr.id,decisionId:ctx.authorization.decisionId,epic:state.acceptedEpic.epic,epicTitle:state.acceptedEpic.title,target:adapter.label,project:adapter.project,workItemType:adapter.type,digest:stableDigest(material+'|'+state.acceptedEpic.id+'|'+state.acceptedEpic.epic+'|'+state.acceptedEpic.title),status:state.handoffConfirmed?'HANDOFF CONFIRMED':'AWAITING HUMAN HANDOFF'};
   }
 
   function invalidateHandoff(){state.handoffConfirmed=false;state.handoffReceipt=null;}
 
   function handoff() {
-    const s=current(), primary=primaryAuthorization(), pkg=handoffPackage();
+    const s=selectedFeedback(), ctx=selectedOkrContext(), primary=selectedAuthorization()||{authorized:false,authorization:'NOT AUTHORIZED'}, pkg=handoffPackage();
     if(primary.authorized&&!pkg)return headline('Management acceptance required.','A current CAR exists, but Northstar will not create BHP-0001 until management accepts a deterministically validated Epic proposal.','EXECUTION HANDOFF')+'<div class="ns-boundary-box"><strong>Fail closed:</strong> Return to Management, review the Composite AI proposal and explicitly accept an Epic before handoff.</div>';
     if(!primary.authorized)return headline('No authorized backlog handoff exists.','A candidate Epic may remain visible as planning context, but Northstar cannot create a handoff package until an exact Capability Authorization Record is current.','EXECUTION HANDOFF')+
-      '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(model.objectiveId)+' → '+esc(model.krId)+'</h3><p>Outcome remains traceable.</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>NO CURRENT CAR</h3><p>'+esc(primary.authorization.replaceAll('_',' '))+'</p></article><b>→</b><article><small>DELIVERY</small><h3>BLOCKED</h3><p>No authorized handoff package.</p></article></div>'+
+      '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+'</h3><p>Outcome remains traceable.</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>NO CURRENT CAR</h3><p>'+esc(primary.authorization.replaceAll('_',' '))+'</p></article><b>→</b><article><small>DELIVERY</small><h3>BLOCKED</h3><p>No authorized handoff package.</p></article></div>'+
       '<div class="ns-boundary-box"><strong>Fail closed:</strong> Northstar will not represent backlog write authority without a current CAR and a separately confirmed handoff package.</div>';
     const targets=Object.entries(backlogAdapters).map(([id,a])=>'<button type="button" data-handoff-target="'+id+'" class="'+(state.handoffTarget===id?'active':'')+'" aria-pressed="'+(state.handoffTarget===id?'true':'false')+'"><strong>'+esc(a.label)+'</strong><span>'+esc(a.project)+'</span></button>').join('');
     return headline('Turn authorized intent into an executable handoff.','Northstar proposes a bounded backlog package while keeping strategy authority separate from permission to write into an execution system.','EXECUTION HANDOFF · '+pkg.id)+
-      '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(pkg.objectiveId)+' → '+esc(pkg.krId)+'</h3><p>'+esc(model.proposedOutcome)+'</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>'+esc(pkg.carId)+'</h3><p>Current product-intent authorization.</p></article><b>→</b><article><small>HANDOFF PACKAGE</small><h3>'+esc(pkg.id)+'</h3><p>'+esc(pkg.status.replaceAll('_',' '))+'</p></article></div>'+
+      '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(pkg.objectiveId)+' → '+esc(pkg.krId)+'</h3><p>'+esc(ctx.authorization?ctx.authorization.outcome:ctx.kr.text)+'</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>'+esc(pkg.carId)+'</h3><p>Current product-intent authorization.</p></article><b>→</b><article><small>HANDOFF PACKAGE</small><h3>'+esc(pkg.id)+'</h3><p>'+esc(pkg.status.replaceAll('_',' '))+'</p></article></div>'+
       '<section class="ns-handoff-workspace"><div class="ns-handoff-targets"><small>1 · CHOOSE EXECUTION TARGET</small><h3>Adapter boundary</h3><p>These are bounded demo contracts, not live connections.</p><div>'+targets+'</div></div>'+
       '<div class="ns-handoff-package"><small>2 · REVIEW PROPOSED PACKAGE</small><h3>'+esc(pkg.epic)+' · '+esc(pkg.epicTitle)+'</h3>'+kv([['Target system',esc(pkg.target)],['Target project',esc(pkg.project)],['Work item type',esc(pkg.workItemType)],['Source authorization','<code>'+esc(pkg.carId)+'</code>'],['Strategic lineage',esc(pkg.objectiveId+' → '+pkg.krId+' → '+pkg.decisionId)],['Package digest','<code>'+esc(pkg.digest)+'</code>'],['Acceptance outcome','Reusable product contract retains the exact authorized outcome and scope.'],['Evidence requirement','Delivery evidence may update progress; benefit evidence is measured separately.']])+
       '<div class="ns-handoff-actions"><button type="button" data-confirm-handoff '+(state.handoffConfirmed?'disabled':'')+'>'+(state.handoffConfirmed?'Handoff confirmed':'Confirm human handoff')+'</button></div></div></section>'+
@@ -795,24 +1030,26 @@
   }
 
   function outcome() {
-    const s=current();
+    const s=selectedFeedback(), ctx=selectedOkrContext();
+    const isPrimary=ctx.objective.objectiveId===model.objectiveId&&ctx.kr.id===model.krId;
+    const deliveryLabel=managementAcceptanceCurrent()&&state.acceptedEpic?state.acceptedEpic.epic:'Selected KR';
     return headline('Did the product deliver the expected benefit?',
-      'This view is downstream feedback. It keeps delivery activity separate from observed benefit and does not re-score KR9.4 authorization status.',
+      'This view is downstream feedback for '+ctx.objective.objectiveId+' → '+ctx.kr.id+'. It keeps delivery activity separate from observed benefit and does not re-score authorization status.',
       'DOWNSTREAM BENEFIT FEEDBACK')+
       '<div class="ns-truth large">'+
-        '<article><small>DELIVERY SIGNAL</small><h3>'+esc(s.delivery.replaceAll('_',' '))+'</h3><p>'+esc(model.epic)+' delivery evidence.</p></article>'+
+        '<article><small>DELIVERY SIGNAL</small><h3>'+esc(s.delivery.replaceAll('_',' '))+'</h3><p>'+esc(deliveryLabel)+' delivery evidence.</p></article>'+
         '<article><small>BENEFIT MEASUREMENT</small><h3>'+esc(s.benefitMeasurement.replaceAll('_',' '))+'</h3><p>'+esc(s.benefitSource)+'</p></article>'+
       '</div>'+
       kv([
-        ['Benefit baseline', 'No authoritative post-delivery benefit observation yet'],
-        ['Benefit target', 'Observe adoption and cycle-time feedback after product availability'],
-        ['Current benefit', badge(s.benefitOutcome,s.benefitOutcome==='UNKNOWN'?'amber':'green')],
-        ['Accountable benefit role', esc(model.leader)]
+        ['Benefit baseline', isPrimary?'No authoritative post-delivery benefit observation yet':'Selected KR portfolio baseline'],
+        ['Benefit target', isPrimary?'Observe adoption and cycle-time feedback after product availability':'Track the selected KR against its named evidence source'],
+        ['Current benefit', badge(s.benefitOutcome,(s.benefitOutcome==='UNKNOWN'||s.benefitOutcome==='UNAVAILABLE'||s.benefitOutcome==='AT RISK')?'amber':'green')],
+        ['Accountable benefit role', esc(ctx.kr.owner||model.leader)]
       ])+
       '<div class="ns-boundary-box">'+
-        (s.benefitMeasurement==='UNKNOWN'
+        ((s.benefitMeasurement==='UNKNOWN'||s.benefitMeasurement==='UNAVAILABLE')
           ? '<strong>No benefit claim yet.</strong> Delivery may be complete, but downstream benefit remains unknown until the designated measurement arrives.'
-          : '<strong>Benefit evidence received.</strong> The synthetic observation can inform investment learning without changing KR9.4 authorization evidence.')+
+          : '<strong>Feedback evidence available.</strong> The selected KR signal can inform investment learning without changing its authorization evidence.')+
       '</div>';
   }
 
@@ -844,11 +1081,13 @@
     if(e.target.closest('[data-composer-reset]')){ composerStep='intent'; state.composerAccepted=false; renderComposer(); return; }
     if(e.target.closest('[data-composer-accept]')){ composerStep='accepted'; state.composerAccepted=true; renderComposer(); return; }
     if(e.target.closest('[data-composer-done]')){ closeComposer(); state.view='okr'; render(); return; }
+    const composeKr=e.target.closest('[data-compose-kr]');
+    if(composeKr){selectOkrContext(composeKr.dataset.composeObjective,composeKr.dataset.composeKr);state.role='manager';state.view='management';render();return;}
     if(e.target.closest('[data-management-draft]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-regenerate]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-reject]')){state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
-    if(e.target.closest('[data-management-accept]')){const binding=currentPrimaryAuthorizationBinding();if(binding){state.managementProposalState='accepted';state.acceptedEpic={...managementEpicProposals[0],authorizationBinding:{...binding}};}invalidateHandoff();render();return;}
-    if(e.target.closest('[data-management-authorize]')){state.authorizationReturnView='management';state.selectedAuthorizationId=model.decisionId;state.role='leader';state.view='authorization';render();return;}
+    if(e.target.closest('[data-management-accept]')){const binding=selectedAuthorizationBinding();const proposals=managementProposalsForSelectedContext();if(binding&&proposals[0]&&proposalMatchesSelectedAuthorization(proposals[0])){state.managementProposalState='accepted';state.acceptedEpic={...proposals[0],authorizationBinding:{...binding}};}invalidateHandoff();render();return;}
+    if(e.target.closest('[data-management-authorize]')){const ctx=selectedOkrContext();if(!ctx.authorization)return;state.authorizationReturnView='management';state.selectedAuthorizationId=ctx.authorization.decisionId;state.role='leader';state.view='authorization';render();return;}
     const authCheck=e.target.closest('[data-auth-check]');
     if(authCheck){
       const id=authCheck.dataset.authCheck;
@@ -880,7 +1119,7 @@
       const nextDecision=action==='approve'?'APPROVED':action==='conditional'?'APPROVE CONDITIONALLY':action==='reuse'?'REUSE EXISTING':'DEFERRED';
       const priorDecision=authorizationDecision(authorizationQueue.find(item=>item.decisionId===id));
       state.authorizationDecisions[id]=nextDecision;
-      if(nextDecision!==priorDecision){delete state.authorizationReceipts[id];if(id===model.decisionId)invalidateManagementAcceptance();}
+      if(nextDecision!==priorDecision){delete state.authorizationReceipts[id];invalidateManagementForAuthorization(id);}
       state.view='authorization';
       render();
       return;
@@ -890,15 +1129,13 @@
     if(e.target.closest('[data-confirm-handoff]')){const pkg=handoffPackage();if(pkg){state.handoffConfirmed=true;state.handoffReceipt={...pkg,status:'CONFIRMED · NO EXTERNAL WRITE'};}state.view='handoff';render();return;}
     const trail=e.target.closest('[data-open-trail]');
     if(trail){
-      state.selectedKr=trail.dataset.openTrail;
-      state.selectedObjective=model.objectiveId;
+      selectOkrContext(model.objectiveId,trail.dataset.openTrail);
       openTrail(trail);
       return;
     }
     const review=e.target.closest('[data-review-decision]');
     if(review){
-      state.selectedKr=review.dataset.reviewDecision;
-      state.selectedObjective=model.objectiveId;
+      selectOkrContext(model.objectiveId,review.dataset.reviewDecision);
       state.role='leader';
       state.view='decision';
       render();

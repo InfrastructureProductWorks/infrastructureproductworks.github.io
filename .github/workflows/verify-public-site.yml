@@ -125,8 +125,8 @@ jobs:
           echo "after backlog boundary"
           grep -Fq "button.setAttribute('aria-pressed', active ? 'true' : 'false')" assets/northstar-signal-demo.js
           echo "after pressed"
-          grep -Fq "KR9.4 AUTHORIZATION STATUS" assets/northstar-signal-demo.js
-          echo "after kr status"
+          grep -Fq "AUTHORIZATION STATUS</small>" assets/northstar-signal-demo.js
+          echo "after selected KR authorization status"
           grep -Fq "DOWNSTREAM BENEFIT FEEDBACK" assets/northstar-signal-demo.js
           echo "after benefit heading"
           grep -Fq "Northstar decision/CAR binding" assets/northstar-signal-demo.js
@@ -168,12 +168,17 @@ jobs:
           grep -Fq "GitHub Issues" assets/northstar-signal-demo.js
           grep -Fq "Management Composer / AI Epic proposals + deterministic validation" scripts/audit_site_contrast.cjs
           grep -Fq "Management Composer / CAR package rebinding" scripts/audit_site_contrast.cjs
+          grep -Fq "selectedOkrContext" assets/northstar-signal-demo.js
+          grep -Fq "selectedAuthorizationBinding" assets/northstar-signal-demo.js
+          grep -Fq "data-compose-kr" assets/northstar-signal-demo.js
+          grep -Fq "AUTHORIZATION NOT DEFINED" assets/northstar-signal-demo.js
+          grep -Fq "Leader persona must be able to choose a specific KR" scripts/audit_site_contrast.cjs
+          grep -Fq "Delivery persona must receive exact selected Objective/KR/decision lineage" scripts/audit_site_contrast.cjs
           grep -Fq "managementAcceptanceCurrent" assets/northstar-signal-demo.js
           grep -Fq "authorizationBinding" assets/northstar-signal-demo.js
           grep -Fq "invalidateManagementAcceptance" assets/northstar-signal-demo.js
           grep -Fq "Execution Handoff / bounded adapter contract" scripts/audit_site_contrast.cjs
           grep -Fq "Execution Handoff / independent authorization lineage" scripts/audit_site_contrast.cjs
-          grep -Fq "if(ids.includes(model.decisionId))invalidateManagementAcceptance()" assets/northstar-signal-demo.js
           grep -Fq "delete state.authorizationReceipts[id]" assets/northstar-signal-demo.js
           grep -Fq "Confirm exact authorization package" northstar-signal/demo/index.html
           grep -Fq "data-view=\"composer\"" northstar-signal/demo/index.html
