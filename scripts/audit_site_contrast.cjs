@@ -223,7 +223,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-management-accept]').click();
         await page.locator('.ns-view-nav [data-view="lineage"]').click();
         const multiLineage=await page.locator('#northstar-view').innerText();
-        if(!/O10 → KR10\.1/.test(multiLineage)||!/LINEAGE INTEGRITY\s+VERIFIED/.test(multiLineage)||!/PRODUCT CONTEXT NOT YET BOUND/.test(multiLineage))throw new Error('Selected O10 lineage must accept the multi-KR Epic only because its exact O10 binding is present and must not invent a product identity');
+        if(!/O10 → KR10\.1/.test(multiLineage)||!/LINEAGE INTEGRITY\s+VERIFIED/.test(multiLineage)||!/INFRASTRUCTURE PRODUCT\s+NOT BOUND/.test(multiLineage))throw new Error('Selected O10 lineage must accept the multi-KR Epic only because its exact O10 binding is present and must not invent a product identity');
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const o10Handoff=await page.locator('.ns-handoff-package').innerText();
         if(!/CPD-0001/.test(o10Handoff)||!/CPD-0002/.test(o10Handoff)||!/CAR-0001/.test(o10Handoff)||!/CAR-0002/.test(o10Handoff)||!/Cross-KR Authorized Outcome Epic/.test(o10Handoff))throw new Error('Delivery must receive a multi-KR Epic with every selected Objective/KR/decision/CAR binding preserved');
