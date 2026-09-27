@@ -180,7 +180,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-close-trail]').click();
         await page.locator('[data-view="handoff"]').click();
         const deferredHandoff=await page.locator('#northstar-view').innerText();
-        if(!/NO CAR/.test(deferredHandoff)||!/not authorized/i.test(deferredHandoff))throw new Error('Northstar backlog handoff must not claim authorization after deferred CPD-0001');
+        if(!/NO CURRENT CAR/.test(deferredHandoff)||!/BLOCKED/.test(deferredHandoff)||!/Fail closed/.test(deferredHandoff))throw new Error('Northstar execution handoff must fail closed after deferred CPD-0001');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-action="conditional"][data-auth-id="CPD-0001"]').click();
         await audit(route,'Authorization Queue / shared state across views');
