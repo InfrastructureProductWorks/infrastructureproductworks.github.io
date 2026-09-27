@@ -165,7 +165,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         if(!/O10 → KR10.1/.test(await page.locator('.ns-management-composer').innerText())||await page.locator('[data-management-draft]').count()!==1)throw new Error('CPD-0002 confirmation must return to selected O10/KR10.1 management context');
         await page.locator('[data-view="decision"]').click();
         const o10Decision=await page.locator('#northstar-view').innerText();
-        if(!/CPD-0002 · DECISION BRIEF/.test(o10Decision)||!/Prefer accepted-product reuse/.test(o10Decision)||/Create a reusable managed-network foundation product/.test(o10Decision))throw new Error('Decision view must remain bound to the selected O10/KR10.1 authorization context');
+        if(!/CPD-0002 · DECISION BRIEF/.test(o10Decision)||!/Standardize a reusable data-platform foundation product/.test(o10Decision)||/Create a reusable managed-network foundation product/.test(o10Decision))throw new Error('Decision view must remain bound to the selected O10/KR10.1 authorization context');
         await page.locator('[data-view="management"]').click();
         await page.locator('[data-management-draft]').click();
         const o10ProposalText=await page.locator('.ns-management-composer').innerText();
@@ -175,7 +175,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const o10Handoff=await page.locator('.ns-handoff-package').innerText();
         if(!/O10 → KR10.1 → CPD-0002/.test(o10Handoff)||!/Governed Product Reuse Discovery/.test(o10Handoff))throw new Error('Delivery must receive the accepted O10/KR10.1 Epic with exact selected lineage');
         const o10Airlock=await page.locator('.ns-airlock').innerText();
-        if(!/Prefer accepted-product reuse/.test(o10Airlock)||/Create a reusable managed-network foundation product/.test(o10Airlock))throw new Error('Delivery airlock must describe the selected authorization outcome rather than stale primary-KR context');
+        if(!/Standardize a reusable data-platform foundation product/.test(o10Airlock)||/Create a reusable managed-network foundation product/.test(o10Airlock))throw new Error('Delivery airlock must describe the selected authorization outcome rather than stale primary-KR context');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-select="CPD-0001"]').click();
         await page.locator('[data-auth-action="approve"][data-auth-id="CPD-0001"]').click();
