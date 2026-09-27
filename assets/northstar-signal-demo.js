@@ -192,7 +192,7 @@
     selectedObjective:model.objectiveId,
     composerAccepted:false,
     selectedAuthorizationId:'CPD-0001',
-    authorizationDecisions:Object.fromEntries(authorizationQueue.map(item=>[item.decisionId,item.initialDecision]))
+    authorizationDecisions:Object.fromEntries(authorizationQueue.map(item=>[item.decisionId,null]))
   };
   let trailOpener = null;
   let composerOpener = null;
@@ -478,10 +478,10 @@
   }
 
   function authorizationDecision(item) {
-    if(item.decisionId===model.decisionId && state.authorizationDecisions[item.decisionId]===item.initialDecision){
-      return current().decision;
-    }
-    return state.authorizationDecisions[item.decisionId];
+    const override=state.authorizationDecisions[item.decisionId];
+    if(override)return override;
+    if(item.decisionId===model.decisionId)return current().decision;
+    return item.initialDecision;
   }
 
   function authorizationRecord(item) {
