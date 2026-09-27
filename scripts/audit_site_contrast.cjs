@@ -162,7 +162,8 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-management-authorize]').click();
         await page.locator('[data-authorize-item="CPD-0002"]').click();
         await page.locator('[data-confirm-authorization]').click();
-        if(!/O10 → KR10.1/.test(await page.locator('.ns-management-composer').innerText())||await page.locator('[data-management-draft]').count()!==1)throw new Error('CPD-0002 confirmation must return to selected O10/KR10.1 management context');
+        const o10ManagementView=await page.locator('#northstar-view').innerText();
+        if(!/O10 → KR10.1/.test(await page.locator('.ns-management-composer').innerText())||await page.locator('[data-management-draft]').count()!==1||!/Delivery state\s+ACTIVE/.test(o10ManagementView)||/Delivery state\s+READY/.test(o10ManagementView))throw new Error('CPD-0002 confirmation must return to selected O10/KR10.1 management context with selected-KR delivery state');
         await page.locator('[data-view="decision"]').click();
         const o10Decision=await page.locator('#northstar-view').innerText();
         if(!/CPD-0002 · DECISION BRIEF/.test(o10Decision)||!/Standardize a reusable data-platform foundation product/.test(o10Decision)||/Create a reusable managed-network foundation product/.test(o10Decision))throw new Error('Decision view must remain bound to the selected O10/KR10.1 authorization context');
