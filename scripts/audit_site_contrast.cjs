@@ -134,9 +134,19 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         }
         for(const scenario of ['decision','delivered','measured']){
           await page.locator(`[data-scenario="${scenario}"]`).click();
-          for(const view of ['okr','composer','leadership','management','decision','authorization','evidence','handoff','outcome']){
+          for(const view of ['okr','composer','leadership','management','decision','authorization','evidence','lineage','handoff','outcome']){
             await page.locator(`[data-view="${view}"]`).click();await audit(route,'scenario '+scenario+' / view '+view);
           }
+          await page.locator('[data-view="lineage"]').click();
+          const verifiedLineage=await page.locator('#northstar-view').innerText();
+          if(!/LINEAGE INTEGRITY\s+VERIFIED/.test(verifiedLineage)||!/CE-EP-23-KR9\.4/.test(verifiedLineage)||!/Outcome measurement\s+Northstar/.test(verifiedLineage)||!/Evidence integrity\s+Assurance/.test(verifiedLineage))throw new Error('Northstar recursive lineage must render the exact verified strategy-to-evidence path');
+          for(const failure of ['wrongKr','stale','expanded']){
+            await page.locator('[data-lineage-scenario="'+failure+'"]').click();
+            const failed=await page.locator('#northstar-view').innerText();
+            if(!/LINEAGE INTEGRITY\s+REJECTED/.test(failed)||!/Fail closed\./.test(failed))throw new Error('Northstar recursive lineage scenario '+failure+' must fail closed');
+          }
+          await page.locator('[data-lineage-scenario="verified"]').click();
+          if(!/VERIFIED/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar recursive lineage must recover to verified fixture after failure scenarios');
           await page.locator('[data-view="okr"]').click();
           const trail=page.locator('[data-open-trail="KR9.4"]');
           if(await trail.count()!==1)throw new Error('Northstar KR9.4 trace trigger must exist exactly once for scenario '+scenario);
