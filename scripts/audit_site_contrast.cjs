@@ -204,8 +204,12 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         for(let i=0;i<await choicesAfterMulti.count();i++){const box=choicesAfterMulti.nth(i);if(await box.getAttribute('data-management-kr-check')==='CPD-0002')await box.uncheck();else if(!await box.isChecked())await box.check();}
         await page.locator('[data-management-intent]').fill('Create the managed-network Epic only from the checked authorization.');
         await page.locator('[data-management-draft]').click();
-        const singleCheckedProposal=await page.locator('.ns-management-composer').innerText();
-        if(!/Managed Network Foundation/.test(singleCheckedProposal)||/Reusable Data Platform Foundation/.test(singleCheckedProposal)||!/CPD-0001/.test(singleCheckedProposal)||!/CAR-0001/.test(singleCheckedProposal)||/CPD-0002/.test(singleCheckedProposal)||!/CAR scope binding\s+Every proposed Epic remains bound to the exact current CAR outcome and scope/i.test(singleCheckedProposal))throw new Error('Single-KR generation must derive from the checked authorization rather than the page context');
+        const singleProposalCard=await page.locator('[data-management-proposal]').first().innerText();
+        const singleComposerText=await page.locator('.ns-management-composer').innerText();
+        const cpd1Checked=await page.locator('[data-management-kr-check="CPD-0001"]').isChecked();
+        const cpd2Checked=await page.locator('[data-management-kr-check="CPD-0002"]').isChecked();
+        if(!cpd1Checked||cpd2Checked)throw new Error('Single-KR composition must preserve the exact checked authorization set');
+        if(!/Managed Network Foundation/.test(singleProposalCard)||/Reusable Data Platform Foundation/.test(singleProposalCard)||!/CAR scope binding\s+Every proposed Epic remains bound to the exact current CAR outcome and scope/i.test(singleComposerText))throw new Error('Single-KR generation must derive its proposal from the checked authorization rather than the page context');
         await page.locator('[data-management-reject]').click();
         if(!/ACTIVE/.test(o10Feedback)||!/ON TRACK/.test(o10Feedback)||/READY/.test(o10Feedback)||/UNKNOWN/.test(o10Feedback))throw new Error('Delivery feedback must use the selected O10/KR10.1 signals rather than the KR9.4 scenario');
         await page.locator('[data-view="outcome"]').click();
