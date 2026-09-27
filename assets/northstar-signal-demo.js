@@ -1166,14 +1166,20 @@
     const record=item?authorizationRecord(item):null;
     const receipt=item?state.authorizationReceipts[item.decisionId]:null;
     const authorized=Boolean(item&&record&&record.authorized&&receipt);
-    const epic=authorized&&managementAcceptanceCurrent()&&state.acceptedEpic?state.acceptedEpic.epic:'NO AUTHORIZED EPIC';
-    const edge=authorized&&epic!=='NO AUTHORIZED EPIC'?'CE-'+epic+'-'+ctx.kr.id:'NO CURRENT CONTRIBUTION EDGE';
+    const exactAcceptedBinding=authorized&&state.acceptedEpic&&Array.isArray(state.acceptedEpic.authorizationBindings)
+      ? state.acceptedEpic.authorizationBindings.find(binding=>
+          binding.objectiveId===ctx.objective.objectiveId&&binding.krId===ctx.kr.id&&binding.decisionId===item.decisionId&&
+          binding.carId===record.carId&&binding.packageId===receipt.packageId&&binding.evidenceDigest===receipt.evidenceDigest)
+      : null;
+    const acceptedForSelected=Boolean(exactAcceptedBinding&&managementAcceptanceCurrent());
+    const epic=acceptedForSelected?state.acceptedEpic.epic:'NO AUTHORIZED EPIC';
+    const edge=acceptedForSelected?'CE-'+epic+'-'+ctx.kr.id:'NO CURRENT CONTRIBUTION EDGE';
     const car=authorized?record.carId:'NO CURRENT CAR';
-    const product=authorized&&epic!=='NO AUTHORIZED EPIC'?'MANAGED-NETWORK-v1':'NOT BOUND';
-    const assurance=authorized&&epic!=='NO AUTHORIZED EPIC'?'AE-0001':'NOT EVALUATED';
+    const product='NOT BOUND';
+    const assurance=acceptedForSelected?'AE-0001':'NOT EVALUATED';
     const scope=item?.scope||'NO AUTHORIZED SCOPE';
     const revision=receipt?.evidenceDigest||'NO CURRENT REVISION';
-    const tuple={objectiveId:ctx.objective.objectiveId,krId:ctx.kr.id,decisionId:item?.decisionId||'NO DECISION',carId:car,carRevision:revision,epic,edge,scope,product,assurance,authorized:Boolean(authorized&&epic!=='NO AUTHORIZED EPIC')};
+    const tuple={objectiveId:ctx.objective.objectiveId,krId:ctx.kr.id,decisionId:item?.decisionId||'NO DECISION',carId:car,carRevision:revision,epic,edge,scope,product,assurance,authorized:acceptedForSelected};
     tuple.digest=stableDigest([tuple.objectiveId,tuple.krId,tuple.decisionId,tuple.carId,tuple.carRevision,tuple.epic,tuple.edge,tuple.scope,tuple.product,tuple.assurance].join('|'));
     return tuple;
   }
