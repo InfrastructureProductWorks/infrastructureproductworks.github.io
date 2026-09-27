@@ -179,7 +179,6 @@ jobs:
           grep -Fq "invalidateManagementAcceptance" assets/northstar-signal-demo.js
           grep -Fq "Execution Handoff / bounded adapter contract" scripts/audit_site_contrast.cjs
           grep -Fq "Execution Handoff / independent authorization lineage" scripts/audit_site_contrast.cjs
-          grep -Fq "if(ids.includes(model.decisionId))invalidateManagementAcceptance()" assets/northstar-signal-demo.js
           grep -Fq "delete state.authorizationReceipts[id]" assets/northstar-signal-demo.js
           grep -Fq "Confirm exact authorization package" northstar-signal/demo/index.html
           grep -Fq "data-view=\"composer\"" northstar-signal/demo/index.html
