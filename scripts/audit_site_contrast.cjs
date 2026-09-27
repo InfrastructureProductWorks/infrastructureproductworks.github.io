@@ -177,6 +177,11 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-view="evidence"]').click();
         const o10Evidence=await page.locator('#northstar-view').innerText();
         if(!/O10 → KR10.1/.test(o10Evidence)||!/CPD-0002/.test(o10Evidence)||!/CAR-0002/.test(o10Evidence)||!/Standardize a reusable data-platform foundation product/.test(o10Evidence)||/CPD-0001/.test(o10Evidence)||/CAR-0001/.test(o10Evidence)||/managed-network/.test(o10Evidence))throw new Error('Evidence view must remain bound to selected O10/KR10.1 evidence without primary-KR leakage');
+        await page.locator('[data-view="authorization"]').click();
+        await page.locator('[data-auth-select="CPD-0001"]').click();
+        await page.locator('[data-auth-action="approve"][data-auth-id="CPD-0001"]').click();
+        await page.locator('[data-authorize-item="CPD-0001"]').click();
+        await page.locator('[data-confirm-authorization]').click();
         await page.locator('[data-view="management"]').click();
         if(await page.locator('[data-management-intent]').count()!==1)throw new Error('Management Composer must expose a management-intent text box');
         if(await page.locator('[data-management-kr-check]').count()<1)throw new Error('Management Composer must expose selectable authorized KRs');
