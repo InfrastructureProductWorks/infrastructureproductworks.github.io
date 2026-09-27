@@ -81,6 +81,7 @@ jobs:
           set -euo pipefail
           node --check assets/portfolio.js
           node scripts/test_portfolio_bundle.cjs
+          echo "Portfolio bundle test exit: $?"
           grep -Fq "traceability-only-hidden-from-executive-view" assets/portfolio.js
           grep -Fq '"registeredMeasures": "traceability-only-hidden-from-executive-view"' data/roadmap-relationships.json
           grep -Fq "node('details','roadmap-objective')" assets/portfolio.js
