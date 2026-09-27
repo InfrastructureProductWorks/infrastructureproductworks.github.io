@@ -7,6 +7,10 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+GUIDE_UPDATED = {
+    'northstar-signal': 'September 27, 2026',
+}
+
 APPS = {
     'storefront': ('Storefront', 'Order a governed product', 'Find a product, submit an order, understand admission, and inspect the handoff.', 'https://infrastructureproductworks-storefront-44yf.onrender.com/', 'Open Storefront demo'),
     'guard': ('IaaP Guard', 'Assess a repository change', 'Install the GitHub App, read a pull-request assessment, resolve findings, and retain evidence.', 'https://github.com/apps/iaap-guard', 'Open GitHub App'),
@@ -107,7 +111,7 @@ def guide(app, config):
     if app == 'assurance':
         roles = '<div class="guide-role-links" aria-label="Assurance audience instructions">' + ''.join(f'<a href="#{anchor}">{label}</a>' for anchor, label in [('management-and-leadership','Management and leadership'),('security-and-operations','Security and operations'),('governance-and-evidence','Governance and evidence'),('transfer-records-from-the-demo-to-the-portal','Export and import records')]) + '</div>'
     extra = '<a class="button ghost" href="/assurance/portal/" target="_blank" rel="noopener noreferrer">Open Assurance Portal</a>' if app == 'assurance' else ''
-    content = f'''<section class="guide-hero"><p class="guide-breadcrumb"><a href="/guides/">User guides</a> / {name}</p><p class="eyebrow">{task.upper()}</p><h1>{html.escape(title)}</h1><p class="lede">{description}</p><p class="guide-meta">Updated September 24, 2026 · Read in your browser or print from the browser menu.</p><div class="actions"><a class="button" href="{demo}" target="_blank" rel="noopener noreferrer">{action} <span aria-hidden="true">↗</span><span class="guide-new-tab"> (new tab)</span></a>{extra}<a class="button ghost" href="/{app}/">Product overview</a></div>{roles}</section>
+    content = f'''<section class="guide-hero"><p class="guide-breadcrumb"><a href="/guides/">User guides</a> / {name}</p><p class="eyebrow">{task.upper()}</p><h1>{html.escape(title)}</h1><p class="lede">{description}</p><p class="guide-meta">Updated {GUIDE_UPDATED.get(app, 'September 24, 2026')} · Read in your browser or print from the browser menu.</p><div class="actions"><a class="button" href="{demo}" target="_blank" rel="noopener noreferrer">{action} <span aria-hidden="true">↗</span><span class="guide-new-tab"> (new tab)</span></a>{extra}<a class="button ghost" href="/{app}/">Product overview</a></div>{roles}</section>
 <div class="guide-layout"><nav class="guide-toc" aria-label="On this page"><strong>On this page</strong>{contents}</nav><div><details class="guide-jump"><summary>Jump to a step</summary>{contents}</details><article class="guide-article" aria-label="{html.escape(name)} instructions">{body}</article></div></div>'''
     return page(title, description, content)
 

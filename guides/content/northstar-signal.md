@@ -31,7 +31,7 @@ Use the demo controls to accept the fixed synthetic proposal or start the compos
 ## 5 Review the leadership decision
 Open **Leadership detail** and **Decision**.
 
-Compare the synthetic Reuse, Build, and Defer paths. Review evidence confidence, mission consequence, investment context, constraints, and the relationship between the proposed capability and the Key Result it is intended to support.
+Compare the synthetic Reuse, Build, Phase, Defer, and Redirect paths. Review organizational scope, capability/reuse context, evidence confidence, investment/TCO assumptions, expected benefit, constraints, and the relationship between the proposed capability and the Key Result it is intended to support.
 
 The decision record keeps the outcome attached to the proposed product direction so downstream work cannot silently redefine why the work exists.
 
@@ -56,37 +56,65 @@ Follow the synthetic lineage from Objective and Key Result through decision evid
 
 Use the evidence view to answer: what was proposed, what evidence supported it, what was actually authorized, what work inherited that authorization, and what later evidence measured the result?
 
-## 9 Review the management handoff
-Switch to **Management** or open **Backlog handoff**.
+## 9 Compose management Epics from authorized KRs
+Switch to **Management** and open **Management Composer**.
 
-Management translates the authorized outcome into executable work while preserving the upstream Objective, Key Result, CAR constraints, dependencies, evidence requirements, and accountability.
+Enter management intent in the text box. Describe the Epic outcome, sequencing, dependencies, or decomposition you want Composite AI to propose. The synthetic demo uses that exact text as part of the proposal binding; changing the intent invalidates stale proposal and acceptance state. The current public demo uses bounded synthetic proposal fixtures and does not call a live model provider.
 
-The demo shows a bounded Epic-level handoff. It does not write to Jira, Azure DevOps, ServiceNow, or another external backlog. Future adapters may carry the handoff into those systems without allowing the backlog to rewrite the upstream authorization.
+Select one or more **currently authorized KRs**. Each selected KR keeps its own Objective, Key Result, decision, CAR, package digest, evidence digest, authorized outcome, and authorized scope. Selecting multiple KRs does not merge the CARs or widen authority.
 
-## 10 Follow delivery without confusing activity with benefit
+Choose **Propose Epics with Composite AI**. For a single selected KR, the proposal must stay within that KR's authorized outcome and scope. For multiple selected KRs, the demo can propose one cross-KR Epic, but deterministic validation requires every source binding to remain independently attributable.
+
+Review the deterministic validation results before accepting an Epic. In the current synthetic demo the checks cover source lineage, scope binding, reuse/equivalence, evidence requirements, and authority expansion. Management remains accountable for accepting the proposal.
+
+If management intent, the selected KR set, or any actual source CAR/package/evidence binding changes, Northstar invalidates the stale proposal or acceptance. Changing an unrelated page-context authorization does not invalidate an Epic that is not sourced from it.
+
+## 10 Review the bounded backlog handoff
+After management accepts an Epic, open **Backlog handoff**.
+
+Review the handoff package before confirming it. For multi-KR composition, verify that every source retains its independent **Objective → KR → Decision → CAR** lineage. The handoff can carry one management Epic while preserving multiple independent authorization records; it does not create new authority beyond the selected source scopes.
+
+Choose the synthetic execution target to inspect the adapter boundary. The demo can represent Jira, Azure DevOps, or GitHub Issues as bounded targets, but it does not write to those systems.
+
+A current CAR alone does not create backlog authority. Northstar requires current source bindings, explicit management acceptance, and the separate handoff package before the execution boundary is represented as ready.
+
+The demo shows a bounded Epic-level handoff. It does not write to Jira, Azure DevOps, ServiceNow, GitHub, or another external backlog. Future adapters may carry the handoff into those systems without allowing the backlog to rewrite upstream strategy or authorization.
+
+## 11 Follow delivery without confusing activity with benefit
 Switch to **Delivery** and move the scenario to **Delivery Complete**.
 
 Delivery can complete the authorized work and produce delivery evidence. That state does not automatically mark the Key Result achieved.
 
 Northstar deliberately prevents ticket completion, deployment completion, or product release from masquerading as outcome attainment.
 
-## 11 Measure the benefit
+## 12 Measure the benefit
 Move the scenario to **Benefit Measured** and open **Benefit feedback**.
 
 Review the status-only benefit feedback shown by the current synthetic fixture. The demo does not expose numeric baseline, target, or observed-benefit values, so it does not support a quantitative before-and-after comparison yet. Its purpose here is to demonstrate that benefit feedback remains separate from backlog completion.
 
 This demonstrates the intended loop from leadership intent toward outcome evidence while preserving the distinction between decision, authorization, execution, and benefit status.
 
-## 12 Know where the demo stops
+## 13 Know where the demo stops
 The public Northstar Signal experience is documentation-first and synthetic.
 
 It does not use live enterprise data, live Composite AI providers, production credentials, personnel decisions, funding authority, procurement authority, risk acceptance, external-system writeback, cloud execution, or provisioning.
 
 The demo proves the interaction model and bounded contracts. Any future live adapter or execution path must preserve those authority boundaries rather than bypass them.
 
-## 13 Troubleshooting
+## 14 Troubleshooting
 If the demo appears to be on the wrong step, return to **Cloud Platform OKRs**, choose the Leadership role, and select **Decision Review**.
 
-If the OKR Composer is not visible, use the left navigation and choose **OKR Composer**. For management decomposition, choose **Management Composer** in the role controls or left navigation. The Management Composer remains visible before authorization, but it fails closed: without a current CAR it offers no Epic proposal, no management acceptance, and no BHP. Complete the exact authorization package, return to Management Composer, generate the bounded Composite AI Epic proposals, review deterministic CAR/reuse validation, and explicitly accept the selected Epic. If the current CAR/package digest changes, that management acceptance is invalid and must be performed again. If an authorization item cannot be confirmed, inspect whether that item is intentionally blocked; selecting it with other items does not make it eligible.
+If the OKR Composer is not visible, use the left navigation and choose **OKR Composer**.
+
+For management decomposition, choose **Management Composer**. The next step depends on the selected KR's authorization state:
+
+- If the KR has an **eligible decision that is still pending authorization**, complete that exact authorization package first, then return to Management Composer.
+- If the KR has **no authorization decision**, return to Leadership/Decision context or select a different KR that already has a valid authorization path. Northstar cannot create an executable Epic package from an undefined authorization.
+- If the decision is a locked **Reuse Existing** or **Deferred** fixture, treat it as non-authorizable in the current demo. Do not look for an authorization-continuation button; select an eligible authorized KR if management decomposition is needed.
+- If one or more source KRs already have current CARs, enter management intent, select those authorized KRs, choose **Propose Epics with Composite AI**, review deterministic validation, and explicitly accept the proposed Epic before moving to **Backlog handoff**.
+
+If the intent text or selected source set changes, Northstar removes stale proposal/acceptance state. If an actual source CAR/package/evidence binding changes, management must regenerate or reaccept the proposal. A change to an unrelated authorization does not invalidate an Epic that is not sourced from it.
+
+Selecting a blocked or non-authorizable item beside eligible items never makes it eligible and never widens another CAR.
 
 If a link or control does not behave as described, return to the [Northstar Signal product page](/northstar-signal/) and reopen the synthetic demo.
