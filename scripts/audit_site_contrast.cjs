@@ -209,7 +209,16 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-handoff-target="ado"]').click();
         if(await page.locator('.ns-handoff-receipt').count())throw new Error('Changing Northstar handoff target must invalidate the prior receipt');
         if(!/Azure DevOps/.test(await handoffView.innerText()))throw new Error('Northstar handoff target must update deterministically');
-        await audit(route,'Execution Handoff / bounded adapter contract');
+        await page.locator('[data-confirm-handoff]').click();
+        const lineageReceiptBefore=await page.locator('.ns-handoff-receipt').innerText();
+        await page.locator('[data-view="authorization"]').click();
+        await page.locator('[data-auth-select="CPD-0002"]').click();
+        await page.locator('[data-authorize-item="CPD-0002"]').click();
+        await page.locator('[data-confirm-authorization]').click();
+        await page.locator('[data-view="handoff"]').click();
+        const lineageReceiptAfter=await page.locator('.ns-handoff-receipt').innerText();
+        if(lineageReceiptBefore!==lineageReceiptAfter)throw new Error('Unrelated Northstar authorization must not invalidate or mutate CPD-0001 handoff receipt');
+        await audit(route,'Execution Handoff / independent authorization lineage');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-select="CPD-0001"]').click();
         await page.locator('[data-auth-action="defer"][data-auth-id="CPD-0001"]').click();
