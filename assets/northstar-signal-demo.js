@@ -210,6 +210,7 @@
     handoffConfirmed:false,
     handoffReceipt:null,
     managementProposalState:'idle',
+    managementProposalDigest:null,
     managementIntent:'Decompose the selected authorized outcome into the smallest useful Epic set while preferring governed reuse and preserving measurable outcomes.',
     managementSelectedDecisionIds:[],
     acceptedEpic:null,
@@ -560,6 +561,11 @@
     return stableDigest(bindings.map(b=>[b.objectiveId,b.krId,b.decisionId,b.carId,b.packageId,b.evidenceDigest,b.authorizedOutcome,b.authorizedScope].join('|')).sort().join('||'));
   }
 
+  function currentManagementDraftDigest() {
+    const bindings=managementSourceBindings();
+    return bindings.length?stableDigest(state.managementIntent+'|'+managementSelectionDigest(bindings)):null;
+  }
+
   const managementEpicProposals=[
     {
       id:'MEP-0001',epic:'EP-23',title:'Managed Network Foundation',
@@ -675,6 +681,7 @@
 
   function invalidateManagementAcceptance() {
     state.managementProposalState='idle';
+    state.managementProposalDigest=null;
     state.acceptedEpic=null;
     invalidateHandoff();
   }
@@ -709,8 +716,8 @@
     const authorizedContexts=authorizedManagementContexts();
     const sourceBindings=managementSourceBindings();
     const proposals=managementProposalsForSelectedContext();
-    const proposed=state.managementProposalState!=='idle';
-    const proposalsBound=proposals.length>0&&proposals.every(proposalMatchesSelectedAuthorization);
+    const proposed=state.managementProposalState!=='idle'&&state.managementProposalDigest===currentManagementDraftDigest();
+    const proposalsBound=proposed&&proposals.length>0&&proposals.every(proposalMatchesSelectedAuthorization);
     const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent()&&proposalsBound;
     const selector=authorizedContexts.map(({item,binding})=>'<label class="ns-mc-kr-choice"><input type="checkbox" data-management-kr-check="'+esc(item.decisionId)+'" '+(state.managementSelectedDecisionIds.includes(item.decisionId)?'checked':'')+'><span><strong>'+esc(item.objectiveId+' → '+item.krId)+'</strong><small>'+esc(binding.carId+' · '+item.outcome)+'</small></span></label>').join('');
     return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
@@ -926,7 +933,8 @@
         confirmed:true
       };
     });
-    if(state.acceptedEpic?.authorizationBinding?.decisionId&&ids.includes(state.acceptedEpic.authorizationBinding.decisionId))invalidateManagementAcceptance();
+    const acceptedDecisionIds=(state.acceptedEpic?.authorizationBindings||[]).map(binding=>binding.decisionId);
+    if(ids.some(id=>state.managementSelectedDecisionIds.includes(id)||acceptedDecisionIds.includes(id)))invalidateManagementAcceptance();
     closeAuthorizationCeremony();
     state.selectedAuthorizationIds=[];
     const selectedCtx=selectedOkrContext();
@@ -1133,6 +1141,7 @@
     if(intent.value!==state.managementIntent){
       state.managementIntent=intent.value;
       state.managementProposalState='idle';
+      state.managementProposalDigest=null;
       state.acceptedEpic=null;
       invalidateHandoff();
     }
@@ -1154,12 +1163,12 @@
     if(managementKr){
       const id=managementKr.dataset.managementKrCheck;
       state.managementSelectedDecisionIds=managementKr.checked?[...new Set([...state.managementSelectedDecisionIds,id])]:state.managementSelectedDecisionIds.filter(value=>value!==id);
-      state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;
+      state.managementProposalState='idle';state.managementProposalDigest=null;state.acceptedEpic=null;invalidateHandoff();render();return;
     }
-    if(e.target.closest('[data-management-draft]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
-    if(e.target.closest('[data-management-regenerate]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
-    if(e.target.closest('[data-management-reject]')){state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
-    if(e.target.closest('[data-management-accept]')){const bindings=managementSourceBindings();const proposals=managementProposalsForSelectedContext();if(bindings.length&&proposals[0]&&proposalMatchesSelectedAuthorization(proposals[0])){state.managementProposalState='accepted';state.acceptedEpic={...proposals[0],managementIntent:state.managementIntent,selectionDigest:managementSelectionDigest(bindings),authorizationBindings:bindings.map(binding=>({...binding}))};}invalidateHandoff();render();return;}
+    if(e.target.closest('[data-management-draft]')){const digest=currentManagementDraftDigest();if(!digest)return;state.managementProposalState='proposed';state.managementProposalDigest=digest;state.acceptedEpic=null;invalidateHandoff();render();return;}
+    if(e.target.closest('[data-management-regenerate]')){const digest=currentManagementDraftDigest();if(!digest)return;state.managementProposalState='proposed';state.managementProposalDigest=digest;state.acceptedEpic=null;invalidateHandoff();render();return;}
+    if(e.target.closest('[data-management-reject]')){state.managementProposalState='idle';state.managementProposalDigest=null;state.acceptedEpic=null;invalidateHandoff();render();return;}
+    if(e.target.closest('[data-management-accept]')){const bindings=managementSourceBindings();const proposals=managementProposalsForSelectedContext();if(state.managementProposalState==='proposed'&&state.managementProposalDigest===currentManagementDraftDigest()&&bindings.length&&proposals[0]&&proposalMatchesSelectedAuthorization(proposals[0])){state.managementProposalState='accepted';state.acceptedEpic={...proposals[0],managementIntent:state.managementIntent,selectionDigest:managementSelectionDigest(bindings),authorizationBindings:bindings.map(binding=>({...binding}))};}invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-authorize]')){const ctx=selectedOkrContext();if(!ctx.authorization)return;state.authorizationReturnView='management';state.selectedAuthorizationId=ctx.authorization.decisionId;state.role='leader';state.view='authorization';render();return;}
     const authCheck=e.target.closest('[data-auth-check]');
     if(authCheck){
