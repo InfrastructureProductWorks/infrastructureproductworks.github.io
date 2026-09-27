@@ -236,7 +236,7 @@
       '</div>';
     }
     return '<div class="ns-scope-bar" aria-label="Selected outcome context">'+
-      '<div><small>SELECTED KEY RESULT</small><strong>'+esc(state.selectedObjective)+' <span aria-hidden="true">→</span> '+esc(state.selectedKr)+'</strong><span>'+esc(model.keyResult)+'</span></div>'+
+      '<div><small>SELECTED KEY RESULT</small><strong>'+esc(state.selectedObjective)+' <span aria-hidden="true">→</span> '+esc(state.selectedKr)+'</strong><span>'+esc(selectedOkrContext().kr.text)+'</span></div>'+
       '<button type="button" data-back-okr>Back to My Division OKRs</button>'+
     '</div>';
   }
@@ -492,9 +492,19 @@
     }
   ];
 
+  function managementProposalsForSelectedContext() {
+    const ctx=selectedOkrContext();
+    if(ctx.objective.objectiveId==='O9'&&ctx.kr.id==='KR9.4')return managementEpicProposals;
+    if(ctx.objective.objectiveId==='O10'&&ctx.kr.id==='KR10.1')return [
+      {id:'MEP-O10-001',epic:'EP-CANDIDATE-O10-01',title:'Governed Product Reuse Discovery',outcome:'Make accepted-product discovery and equivalence evidence explicit before a new reusable capability build path is authorized.',acceptance:['Accepted products are checked before new productization','Equivalence evidence is retained','A new build path requires explicit insufficiency evidence'],evidence:'Accepted product catalog · equivalence assessment · accountable review',reuse:'REUSE-FIRST · EXISTING PRODUCTS MUST BE EVALUATED',reuseTone:'green'},
+      {id:'MEP-O10-002',epic:'EP-CANDIDATE-O10-02',title:'Reuse Decision Evidence Contract',outcome:'Standardize evidence showing why reuse satisfied or did not satisfy the requested capability outcome.',acceptance:['Decision evidence is attributable','Product equivalence is explicit','No build authority is inferred from assessment'],evidence:'Reuse assessment · decision record · product binding',reuse:'EVIDENCE CONTRACT · NO DUPLICATE PRODUCT ASSUMPTION',reuseTone:'amber'}
+    ];
+    return [];
+  }
+
   const managementChecks=[
     ['CAR scope binding','PASS','Every proposed Epic remains within the exact current CAR scope.'],
-    ['KR traceability','PASS','Each proposal states how it contributes to KR9.4 rather than merely listing tasks.'],
+    ['KR traceability','PASS','Each proposal states how it contributes to the selected Key Result rather than merely listing tasks.'],
     ['Outcome-oriented Epic','PASS','Acceptance is expressed as observable capability outcomes.'],
     ['Evidence requirements','PASS','Each proposal names evidence required to demonstrate delivery.'],
     ['Authority expansion','PASS','No proposal adds funding, deployment, provisioning, cloud or risk authority.'],
@@ -539,13 +549,14 @@
       '<div class="ns-boundary-box"><strong>Fail closed · no CAR, no Epic proposal, no BHP.</strong> Complete the exact authorization package first. A CAR establishes bounded product intent; it does not create a BHP and it does not substitute for management acceptance.</div>'+
       '<div class="ns-composer-actions"><button type="button" class="primary" data-management-authorize>Authorize outcome to continue</button></div>'+
     '</section>';
+    const proposals=managementProposalsForSelectedContext();
     const proposed=state.managementProposalState!=='idle';
     const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent();
     return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
       '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · Compose candidate Epics.</h2><p>Composite AI receives a bounded context package: Objective, KR, CPD, current CAR, constraints, evidence requirements and existing portfolio context.</p></div>'+badge(primary.carId,'green')+'</div>'+
       '<div class="ns-mc-context"><small>BOUNDED CONTEXT</small><span>'+esc(ctx.objective.objectiveId)+'</span><span>'+esc(ctx.kr.id)+'</span><span>'+esc(ctx.authorization?ctx.authorization.decisionId:'NO AUTHORIZATION DECISION')+'</span><span>'+esc(primary.carId)+'</span><span>Existing product catalog</span><span>Existing Epic relationships</span></div>'+
-      (!proposed?'<div class="ns-mc-empty"><h3>Management intent</h3><p>Decompose the authorized managed-network outcome into the smallest useful set of outcome-oriented Epics while preferring reuse over duplicate work.</p><button type="button" class="primary" data-management-draft>Propose Epics with Composite AI</button></div>':'')+
-      (proposed?'<div class="ns-mc-proposals"><small>AI-PROPOSED · SYNTHETIC FIXTURE</small>'+managementEpicProposals.map((p,i)=>'<article data-management-proposal="'+esc(p.id)+'"><div class="ns-mc-proposal-head"><div><small>'+esc(p.id)+' · '+esc(p.epic)+'</small><h3>'+esc(p.title)+'</h3></div>'+badge(i===0?'PRIMARY':'CANDIDATE',i===0?'blue':'neutral')+'</div><p>'+esc(p.outcome)+'</p><div class="ns-mc-reuse '+p.reuseTone+'"><strong>REUSE / EQUIVALENCE</strong><span>'+esc(p.reuse)+'</span></div><div class="ns-mc-acceptance"><strong>Acceptance outcomes</strong>'+list(p.acceptance)+'</div><div class="ns-mc-evidence"><strong>Evidence</strong><span>'+esc(p.evidence)+'</span></div></article>').join('')+'</div>':'')+
+      (!proposed?'<div class="ns-mc-empty"><h3>Management intent</h3><p>Decompose the selected authorized Key Result into the smallest useful set of outcome-oriented Epics while preferring reuse over duplicate work.</p><button type="button" class="primary" data-management-draft>Propose Epics with Composite AI</button></div>':'')+
+      (proposed?'<div class="ns-mc-proposals"><small>AI-PROPOSED · SYNTHETIC FIXTURE</small>'+proposals.map((p,i)=>'<article data-management-proposal="'+esc(p.id)+'"><div class="ns-mc-proposal-head"><div><small>'+esc(p.id)+' · '+esc(p.epic)+'</small><h3>'+esc(p.title)+'</h3></div>'+badge(i===0?'PRIMARY':'CANDIDATE',i===0?'blue':'neutral')+'</div><p>'+esc(p.outcome)+'</p><div class="ns-mc-reuse '+p.reuseTone+'"><strong>REUSE / EQUIVALENCE</strong><span>'+esc(p.reuse)+'</span></div><div class="ns-mc-acceptance"><strong>Acceptance outcomes</strong>'+list(p.acceptance)+'</div><div class="ns-mc-evidence"><strong>Evidence</strong><span>'+esc(p.evidence)+'</span></div></article>').join('')+'</div>':'')+
       (proposed?'<div class="ns-composer-step validator"><small>DETERMINISTIC VALIDATION</small><h3>'+(accepted?'PRIMARY EPIC ACCEPTED BY MANAGEMENT':'BOUNDED PROPOSAL READY FOR MANAGEMENT REVIEW')+'</h3><div class="ns-composer-checks">'+managementChecks.map(([name,status,note])=>'<article><div><strong>'+esc(name)+'</strong><span>'+esc(note)+'</span></div>'+badge(status,status==='PASS'?'green':'amber')+'</article>').join('')+'</div><p class="ns-composer-note">Composite AI proposes decomposition. Deterministic checks validate lineage, scope and structure. Management remains accountable for accepting work.</p></div>':'')+
       '<div class="ns-composer-actions">'+
         (proposed&&!accepted?'<button type="button" class="primary" data-management-accept>Accept primary Epic</button><button type="button" data-management-regenerate>Regenerate</button><button type="button" data-management-reject>Reject proposals</button>':'')+
@@ -703,7 +714,7 @@
         confirmed:true
       };
     });
-    if(ids.includes(model.decisionId)||(selectedOkrContext().authorization&&ids.includes(selectedOkrContext().authorization.decisionId)))invalidateManagementAcceptance();
+    if(state.acceptedEpic?.authorizationBinding?.decisionId&&ids.includes(state.acceptedEpic.authorizationBinding.decisionId))invalidateManagementAcceptance();
     closeAuthorizationCeremony();
     state.selectedAuthorizationIds=[];
     const selectedCtx=selectedOkrContext();
@@ -796,19 +807,19 @@
     const ctx=selectedOkrContext();
     const primary=selectedAuthorization();
     if(!ctx.authorization||!primary||!primary.authorized)return null;
+    if(!managementAcceptanceCurrent())return null;
     const adapter=backlogAdapters[state.handoffTarget];
     const material=[ctx.objective.objectiveId,ctx.kr.id,ctx.authorization.decisionId,primary.carId,state.acceptedEpic.epic,state.acceptedEpic.title,ctx.kr.text,adapter.label,adapter.project,'Retain exact CAR binding','Evidence required before outcome claim'].join('|');
-    if(!managementAcceptanceCurrent())return null;
     return {id:'BHP-0001',carId:primary.carId,objectiveId:ctx.objective.objectiveId,krId:ctx.kr.id,decisionId:ctx.authorization.decisionId,epic:state.acceptedEpic.epic,epicTitle:state.acceptedEpic.title,target:adapter.label,project:adapter.project,workItemType:adapter.type,digest:stableDigest(material+'|'+state.acceptedEpic.id+'|'+state.acceptedEpic.epic+'|'+state.acceptedEpic.title),status:state.handoffConfirmed?'HANDOFF CONFIRMED':'AWAITING HUMAN HANDOFF'};
   }
 
   function invalidateHandoff(){state.handoffConfirmed=false;state.handoffReceipt=null;}
 
   function handoff() {
-    const s=current(), primary=primaryAuthorization(), pkg=handoffPackage();
+    const s=current(), ctx=selectedOkrContext(), primary=selectedAuthorization()||{authorized:false,authorization:'NOT AUTHORIZED'}, pkg=handoffPackage();
     if(primary.authorized&&!pkg)return headline('Management acceptance required.','A current CAR exists, but Northstar will not create BHP-0001 until management accepts a deterministically validated Epic proposal.','EXECUTION HANDOFF')+'<div class="ns-boundary-box"><strong>Fail closed:</strong> Return to Management, review the Composite AI proposal and explicitly accept an Epic before handoff.</div>';
     if(!primary.authorized)return headline('No authorized backlog handoff exists.','A candidate Epic may remain visible as planning context, but Northstar cannot create a handoff package until an exact Capability Authorization Record is current.','EXECUTION HANDOFF')+
-      '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(model.objectiveId)+' → '+esc(model.krId)+'</h3><p>Outcome remains traceable.</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>NO CURRENT CAR</h3><p>'+esc(primary.authorization.replaceAll('_',' '))+'</p></article><b>→</b><article><small>DELIVERY</small><h3>BLOCKED</h3><p>No authorized handoff package.</p></article></div>'+
+      '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+'</h3><p>Outcome remains traceable.</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>NO CURRENT CAR</h3><p>'+esc(primary.authorization.replaceAll('_',' '))+'</p></article><b>→</b><article><small>DELIVERY</small><h3>BLOCKED</h3><p>No authorized handoff package.</p></article></div>'+
       '<div class="ns-boundary-box"><strong>Fail closed:</strong> Northstar will not represent backlog write authority without a current CAR and a separately confirmed handoff package.</div>';
     const targets=Object.entries(backlogAdapters).map(([id,a])=>'<button type="button" data-handoff-target="'+id+'" class="'+(state.handoffTarget===id?'active':'')+'" aria-pressed="'+(state.handoffTarget===id?'true':'false')+'"><strong>'+esc(a.label)+'</strong><span>'+esc(a.project)+'</span></button>').join('');
     return headline('Turn authorized intent into an executable handoff.','Northstar proposes a bounded backlog package while keeping strategy authority separate from permission to write into an execution system.','EXECUTION HANDOFF · '+pkg.id)+
@@ -876,7 +887,7 @@
     if(e.target.closest('[data-management-draft]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-regenerate]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-reject]')){state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
-    if(e.target.closest('[data-management-accept]')){const binding=selectedAuthorizationBinding();if(binding){state.managementProposalState='accepted';state.acceptedEpic={...managementEpicProposals[0],authorizationBinding:{...binding}};}invalidateHandoff();render();return;}
+    if(e.target.closest('[data-management-accept]')){const binding=selectedAuthorizationBinding();if(binding){state.managementProposalState='accepted';const proposals=managementProposalsForSelectedContext();if(proposals[0])state.acceptedEpic={...proposals[0],authorizationBinding:{...binding}};}invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-authorize]')){const ctx=selectedOkrContext();if(!ctx.authorization)return;state.authorizationReturnView='management';state.selectedAuthorizationId=ctx.authorization.decisionId;state.role='leader';state.view='authorization';render();return;}
     const authCheck=e.target.closest('[data-auth-check]');
     if(authCheck){
@@ -909,7 +920,7 @@
       const nextDecision=action==='approve'?'APPROVED':action==='conditional'?'APPROVE CONDITIONALLY':action==='reuse'?'REUSE EXISTING':'DEFERRED';
       const priorDecision=authorizationDecision(authorizationQueue.find(item=>item.decisionId===id));
       state.authorizationDecisions[id]=nextDecision;
-      if(nextDecision!==priorDecision){delete state.authorizationReceipts[id];const selectedCtx=selectedOkrContext();if(id===model.decisionId||(selectedCtx.authorization&&id===selectedCtx.authorization.decisionId))invalidateManagementAcceptance();}
+      if(nextDecision!==priorDecision){delete state.authorizationReceipts[id];if(state.acceptedEpic?.authorizationBinding?.decisionId===id)invalidateManagementAcceptance();}
       state.view='authorization';
       render();
       return;
