@@ -180,10 +180,9 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-view="okr"]').click();
         await page.locator('[data-compose-kr="KR9.4"]').click();
         const selectedPrimaryComposer=await page.locator('.ns-management-composer').innerText();
-        if(!/O9 → KR9.4/.test(selectedPrimaryComposer)||!/AUTHORIZATION REQUIRED/.test(selectedPrimaryComposer))throw new Error('Manager persona must receive the exact selected primary KR and its authorization state');
-        await page.locator('[data-management-authorize]').click();
-        if(!/CPD-0001/.test(await page.locator('.ns-auth-detail').innerText()))throw new Error('Leader authorization continuation must preserve the manager-selected KR decision');
-                await page.locator('[data-view="authorization"]').click();
+        if(!/O9 → KR9.4/.test(selectedPrimaryComposer)||!/CAR-0001/.test(selectedPrimaryComposer)||await page.locator('[data-management-draft]').count()!==1)throw new Error('Manager persona must receive the exact selected primary KR and its current authorization state after CAR confirmation');
+        await page.locator('[data-view="authorization"]').click();
+        if(!/CPD-0001/.test(await page.locator('.ns-auth-detail').innerText()))throw new Error('Leader authorization workspace must preserve the selected KR decision');
         const authItems=page.locator('[data-auth-item]');
         if(await authItems.count()!==4)throw new Error('Northstar authorization queue must expose four independent synthetic decisions');
         const reuseSeed=await page.locator('[data-auth-item="CPD-0003"]').innerText();
