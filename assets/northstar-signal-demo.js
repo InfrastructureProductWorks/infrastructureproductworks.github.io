@@ -442,25 +442,48 @@
   }
 
   function leadership() {
-    const s=current();
-    const primary=primaryAuthorization();
-    const kr94Status = primary.authorized ? 'ON TRACK' : 'UNKNOWN';
+    const ctx=selectedOkrContext();
+    const s=selectedFeedback();
+    const record=selectedAuthorization();
+    const decisionId=ctx.authorization?ctx.authorization.decisionId:'NO DECISION';
+    const decision=record?record.decision:'NO DECISION';
+    const authorization=record?record.authorization:'NOT DEFINED';
+    const authSummary=record&&record.authorized
+      ? record.carId+' · review '+model.carReview
+      : record&&record.decision==='REUSE EXISTING'
+        ? 'Reuse path · no new CAR'
+        : record&&record.decision==='DEFERRED'
+          ? 'Deferred · no CAR'
+          : 'No current CAR';
+    const deliveryDetail=managementAcceptanceCurrent()&&state.acceptedEpic
+      ? state.acceptedEpic.epic+' · '+state.acceptedEpic.title
+      : ctx.kr.id+' portfolio delivery context';
+    const attention=s.attention&&s.attention.length?s.attention:[
+      record&&record.authorized
+        ? 'Keep delivery and benefit evidence bound to the selected authorization without widening its scope.'
+        : record&&record.decision==='REUSE EXISTING'
+          ? 'Verify the accepted product remains equivalent to the selected outcome before considering new productization.'
+          : record&&record.decision==='DEFERRED'
+            ? 'Strengthen the outcome, baseline, target and accountable evidence before reconsidering authorization.'
+            : 'Establish a bounded authorization decision before downstream execution can advance.'
+    ];
+    const benefitTone=(s.benefitOutcome==='UNKNOWN'||s.benefitOutcome==='UNAVAILABLE'||s.benefitOutcome==='AT RISK')?'amber':'green';
     return headline(
-      model.objective,
-      model.keyResult,
-      model.objectiveId+' · '+model.krId
+      ctx.objective.objective,
+      ctx.kr.text,
+      ctx.objective.objectiveId+' · '+ctx.kr.id
     )+
     '<div class="ns-metrics">'+
-      '<article><small>DECISION</small>'+badge(primary.decision,primary.authorized?'green':'blue')+'<p>'+esc(model.decisionId)+' · review '+esc(model.decisionReview)+'</p></article>'+
-      '<article><small>AUTHORIZATION</small>'+badge(primary.authorization,primary.authorized?'green':'amber')+'<p>'+(primary.carId?esc(primary.carId)+' · review '+esc(model.carReview):'No CAR emitted')+'</p></article>'+
-      '<article><small>DELIVERY</small>'+badge(s.delivery,'blue')+'<p>'+esc(model.epic)+' · '+esc(primary.authorized?model.team:'candidate context only')+'</p></article>'+
-      '<article><small>BENEFIT FEEDBACK</small>'+badge(s.benefitOutcome,s.benefitOutcome==='UNKNOWN'?'amber':'green')+'<p>'+esc(s.benefitSource)+'</p></article>'+
+      '<article><small>DECISION</small>'+badge(decision,record&&record.authorized?'green':'blue')+'<p>'+esc(decisionId)+' · review '+esc(model.decisionReview)+'</p></article>'+
+      '<article><small>AUTHORIZATION</small>'+badge(authorization,record&&record.authorized?'green':'amber')+'<p>'+esc(authSummary)+'</p></article>'+
+      '<article><small>DELIVERY</small>'+badge(s.delivery,'blue')+'<p>'+esc(deliveryDetail)+'</p></article>'+
+      '<article><small>BENEFIT FEEDBACK</small>'+badge(s.benefitOutcome,benefitTone)+'<p>'+esc(s.benefitSource)+'</p></article>'+
     '</div>'+
     '<div class="ns-truth">'+
-      '<article><small>KR9.4 AUTHORIZATION STATUS</small><h3>'+esc(kr94Status.replaceAll('_',' '))+'</h3><p>'+(primary.authorized?'Decision/CAR evidence establishes the authorization requirement independently of backlog completion.':'The current decision emits no CAR, so KR9.4 authorization evidence is not established.')+'</p></article>'+
-      '<article><small>DOWNSTREAM BENEFIT FEEDBACK</small><h3>'+esc(s.benefitOutcome.replaceAll('_',' '))+'</h3><p>'+esc(s.benefitMeasurement==='UNKNOWN'?'No authoritative benefit measurement yet.':'Observed benefit evidence can inform investment learning without re-scoring KR9.4.')+'</p></article>'+
+      '<article><small>'+esc(ctx.kr.id)+' AUTHORIZATION STATUS</small><h3>'+esc(authorization.replaceAll('_',' '))+'</h3><p>'+(record&&record.authorized?'Decision/CAR evidence establishes the selected authorization independently of backlog completion.':record&&record.decision==='REUSE EXISTING'?'The selected decision uses an accepted-product path and emits no new CAR.':record&&record.decision==='DEFERRED'?'The selected decision remains deferred; insufficient evidence creates no downstream authority.':'No current CAR establishes product-intent authorization for this selected Key Result.')+'</p></article>'+
+      '<article><small>DOWNSTREAM BENEFIT FEEDBACK</small><h3>'+esc(s.benefitOutcome.replaceAll('_',' '))+'</h3><p>'+esc((s.benefitMeasurement==='UNKNOWN'||s.benefitMeasurement==='UNAVAILABLE')?'No authoritative benefit measurement yet.':'Observed benefit evidence can inform investment learning without re-scoring the selected authorization.')+'</p></article>'+
     '</div>'+
-    '<div class="ns-attention"><h3>What needs leadership attention</h3>'+list(s.attention)+'</div>';
+    '<div class="ns-attention"><h3>What needs leadership attention</h3>'+list(attention)+'</div>';
   }
 
   function selectOkrContext(objectiveId, krId) {
