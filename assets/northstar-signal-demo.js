@@ -215,7 +215,7 @@
     managementSelectedDecisionIds:[],
     acceptedEpic:null,
     authorizationReturnView:null,
-    lineageScenario:'verified'
+    lineageScenario:'current'
   };
   let trailOpener = null;
   let composerOpener = null;
@@ -1154,47 +1154,54 @@
 
 
   const recursiveLineageScenarios={
-    verified:{label:'Verified lineage',tone:'green',result:'VERIFIED',reason:'Every participating node and contribution edge is bound to the same synthetic strategy-to-evidence path.'},
-    wrongKr:{label:'Wrong KR replay',tone:'red',result:'REJECTED',reason:'The contribution edge targets KR9.4, but the replay attempts to present the Epic under KR10.1. No authority transfers.'},
-    stale:{label:'Stale revision',tone:'red',result:'REJECTED',reason:'The CAR revision no longer matches the bound lineage tuple. A previously valid record cannot silently carry forward.'},
-    expanded:{label:'Authority expansion',tone:'red',result:'REJECTED',reason:'The requested downstream scope exceeds the parent CAR. Recursive authority may stay equal or narrow; it cannot broaden.'}
+    current:{label:'Current lineage',tone:'green',result:'CURRENT',reason:'Evaluate the current mutable demo state against its exact authorization bindings.'},
+    wrongKr:{label:'Wrong KR replay',tone:'red',result:'REJECTED',reason:'Synthetic negative test: the contribution edge targets KR9.4, but the replay presents the Epic under KR10.1. No authority transfers.'},
+    stale:{label:'Stale revision',tone:'red',result:'REJECTED',reason:'Synthetic negative test: the CAR revision no longer matches the bound lineage tuple. Prior validity cannot silently carry forward.'},
+    expanded:{label:'Authority expansion',tone:'red',result:'REJECTED',reason:'Synthetic negative test: requested downstream scope exceeds the parent CAR. Child authority may stay equal or narrow; never broaden.'}
   };
 
   function recursiveLineageTuple(){
-    const record=primaryAuthorization();
+    const item=authorizationQueue.find(candidate=>candidate.decisionId===model.decisionId);
+    const record=item?authorizationRecord(item):null;
     const receipt=state.authorizationReceipts[model.decisionId];
-    const car=record&&record.authorized&&receipt?record.carId:'CAR-0001';
-    const edge='CE-'+model.epic+'-'+model.krId;
+    const authorized=Boolean(record&&record.authorized&&receipt);
+    const car=authorized?record.carId:'NO CURRENT CAR';
+    const edge=authorized?'CE-'+model.epic+'-'+model.krId:'NO CURRENT CONTRIBUTION EDGE';
     const nodes=[
       ['STRATEGIC OUTCOME',model.objectiveId,'Division-owned outcome'],
       ['KEY RESULT',model.krId,'Exact measurable contribution target'],
-      ['CAPABILITY AUTHORIZATION',car,'Bounded product intent'],
-      ['CONTRIBUTION EDGE',edge,model.epic+' → '+model.krId],
-      ['EPIC',model.epic,'Authorized management decomposition'],
-      ['INFRASTRUCTURE PRODUCT','MANAGED-NETWORK-v1','Synthetic product context'],
-      ['ASSURANCE EVIDENCE','AE-0001','Recursive evidence observation']
+      ['DECISION',model.decisionId,record?record.decision.replaceAll('_',' '):'No current decision'],
+      ['CAPABILITY AUTHORIZATION',car,authorized?'Current bounded product intent':'Current state has no confirmed CAR'],
+      ['CONTRIBUTION EDGE',edge,authorized?model.epic+' → '+model.krId:'No authorized Epic-to-KR contribution binding'],
+      ['EPIC',authorized?model.epic:'NOT AUTHORIZED',authorized?'Authorized management decomposition':'Planning context cannot substitute for authorization'],
+      ['INFRASTRUCTURE PRODUCT',authorized?'MANAGED-NETWORK-v1':'NOT BOUND',authorized?'Synthetic product context':'No current product lineage binding'],
+      ['ASSURANCE EVIDENCE',authorized?'AE-0001':'NOT EVALUATED',authorized?'Recursive evidence observation':'No verified downstream lineage to evaluate']
     ];
-    const material=nodes.map(n=>n.join('|')).join('||')+'|'+(receipt?.evidenceDigest||'synthetic-unconfirmed');
-    return {nodes,edge,digest:stableDigest(material)};
+    const material=nodes.map(n=>n.join('|')).join('||')+'|'+(receipt?.evidenceDigest||'no-current-authorization');
+    return {nodes,edge,car,authorized,digest:stableDigest(material)};
   }
 
   function recursiveLineage(){
-    const scenario=recursiveLineageScenarios[state.lineageScenario]||recursiveLineageScenarios.verified;
+    const selected=recursiveLineageScenarios[state.lineageScenario]||recursiveLineageScenarios.current;
     const tuple=recursiveLineageTuple();
-    const nodes=tuple.nodes.map(([type,id,note],index)=>'<article class="ns-lineage-node '+(scenario.result==='REJECTED'&&index===3?'rejected':'')+'"><small>'+esc(type)+'</small><strong>'+esc(id)+'</strong><span>'+esc(note)+'</span><em>'+esc(index<4?'AUTHORITY / CONSTRAINTS ↓':'EVIDENCE / OBSERVATIONS ↑')+'</em></article>').join('<b class="ns-lineage-arrow" aria-hidden="true">↓</b>');
+    const negative=state.lineageScenario!=='current';
+    const result=negative?'REJECTED':tuple.authorized?'VERIFIED':'PENDING AUTHORIZATION';
+    const tone=negative?'red':tuple.authorized?'green':'amber';
+    const reason=negative?selected.reason:tuple.authorized?'Every displayed node is derived from the current confirmed authorization receipt and exact strategy path.':'The current demo state has no confirmed CAR for this path. Northstar will not fabricate downstream lineage; authorize the exact package to establish it.';
+    const nodes=tuple.nodes.map(([type,id,note],index)=>'<article class="ns-lineage-node '+(negative&&index===4?'rejected':'')+'"><small>'+esc(type)+'</small><strong>'+esc(id)+'</strong><span>'+esc(note)+'</span><em>'+esc(index<=4?'AUTHORITY / CONSTRAINTS ↓':'EVIDENCE / OBSERVATIONS ↑')+'</em></article>').join('<b class="ns-lineage-arrow" aria-hidden="true">↓</b>');
     const controls=Object.entries(recursiveLineageScenarios).map(([id,item])=>'<button type="button" data-lineage-scenario="'+esc(id)+'" class="'+(state.lineageScenario===id?'active':'')+'" aria-pressed="'+(state.lineageScenario===id?'true':'false')+'">'+esc(item.label)+'</button>').join('');
     return headline('See why the work exists — and why the evidence is trusted.','Northstar visualizes the strategy-to-evidence lineage while Assurance owns recursive evaluation semantics. This synthetic view does not create authority or calculate Key Result attainment.','RECURSIVE LINEAGE · ASSURANCE')+
-      '<div class="ns-lineage-status '+esc(scenario.tone)+'"><div><small>LINEAGE INTEGRITY</small><strong>'+esc(scenario.result)+'</strong></div><p>'+esc(scenario.reason)+'</p></div>'+
+      '<div class="ns-lineage-status '+esc(tone)+'"><div><small>LINEAGE INTEGRITY</small><strong>'+esc(result)+'</strong></div><p>'+esc(reason)+'</p></div>'+
       '<div class="ns-lineage-controls" aria-label="Synthetic lineage scenarios">'+controls+'</div>'+
       '<div class="ns-lineage-layout"><section><div class="ns-lineage-flow" aria-label="Recursive strategy to assurance lineage">'+nodes+'</div></section>'+
-      '<aside class="ns-lineage-proof"><small>EXACT PATH TUPLE</small><h3>'+esc(model.objectiveId)+' → '+esc(model.krId)+' → '+esc(model.carId)+' → '+esc(tuple.edge)+' → '+esc(model.epic)+'</h3>'+kv([
+      '<aside class="ns-lineage-proof"><small>EXACT CURRENT PATH TUPLE</small><h3>'+esc(model.objectiveId)+' → '+esc(model.krId)+' → '+esc(model.decisionId)+' → '+esc(tuple.car)+' → '+esc(tuple.edge)+'</h3>'+kv([
         ['Tuple digest','<code>'+esc(tuple.digest)+'</code>'],
         ['Outcome measurement','Northstar · separate measurement contract'],
         ['Evidence integrity','Assurance · recursive geometry'],
         ['Authority rule','Child scope may remain equal or narrow; never broaden'],
         ['Replay rule','Cross-KR, cross-CAR and stale-revision substitution fail closed']
       ])+'<div class="ns-boundary-box"><strong>Important:</strong> Assurance evidence can support why Northstar trusts an observation. It does not independently turn delivery evidence into an authoritative KR result.</div></aside></div>'+
-      (scenario.result==='REJECTED'?'<div class="ns-lineage-rejection" role="status"><strong>Fail closed.</strong> '+esc(scenario.reason)+'</div>':'<div class="ns-lineage-success" role="status"><strong>Verified path.</strong> Strategy, authorization, contribution, delivery context and evidence remain attributable to one bounded lineage.</div>');
+      (negative?'<div class="ns-lineage-rejection" role="status"><strong>Fail closed.</strong> '+esc(reason)+'</div>':tuple.authorized?'<div class="ns-lineage-success" role="status"><strong>Verified path.</strong> Strategy, authorization, contribution, delivery context and evidence remain attributable to one bounded lineage.</div>':'<div class="ns-lineage-pending" role="status"><strong>Awaiting exact authorization.</strong> No CAR, contribution edge, product binding or Assurance evidence is claimed yet.</div>');
   }
 
   const renderers={okr:okrOverview,composer:composerView,leadership,management,decision,authorization,evidence,lineage:recursiveLineage,handoff,outcome};
