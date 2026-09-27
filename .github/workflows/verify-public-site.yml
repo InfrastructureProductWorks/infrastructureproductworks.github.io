@@ -124,8 +124,11 @@ jobs:
           grep -Fq "External backlog writeback is not enabled." assets/northstar-signal-demo.js
           echo "after backlog boundary"
           grep -Fq "button.setAttribute('aria-pressed', active ? 'true' : 'false')" assets/northstar-signal-demo.js
+          echo "after pressed"
           grep -Fq "KR9.4 AUTHORIZATION STATUS" assets/northstar-signal-demo.js
+          echo "after kr status"
           grep -Fq "DOWNSTREAM BENEFIT FEEDBACK" assets/northstar-signal-demo.js
+          echo "after benefit heading"
           grep -Fq "Northstar decision/CAR binding" assets/northstar-signal-demo.js
           grep -Fq "const kr94Status = primary.authorized ? 'ON TRACK' : 'UNKNOWN';" assets/northstar-signal-demo.js
           grep -Fq "function primaryAuthorization()" assets/northstar-signal-demo.js
