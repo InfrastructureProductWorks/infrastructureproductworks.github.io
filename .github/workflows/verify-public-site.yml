@@ -96,10 +96,13 @@ jobs:
           grep -Fq "roadmap-collapse-all" portfolio/index.html
           echo "after collapse"
           grep -Fq "PORTFOLIO INQUIRY" support/index.html
+          echo "after support inquiry"
           echo "after inquiry"
           grep -Fq "PORTFOLIO USE NOTICE" terms/index.html
+          echo "after terms notice"
           echo "after notice"
           grep -Fq "Organization-hosted concept. Synthetic validation. Non-authoritative." console/index.html
+          echo "after console status"
           echo "after console posture"
           grep -Fq "Open Synthetic Console Demo" console/index.html
           grep -Fq "NORTHSTAR SIGNAL · CLOUD PRODUCT STRATEGY & DECISION INTELLIGENCE" northstar-signal/index.html
