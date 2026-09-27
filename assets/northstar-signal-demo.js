@@ -194,7 +194,10 @@
     selectedAuthorizationId:'CPD-0001',
     authorizationDecisions:Object.fromEntries(authorizationQueue.map(item=>[item.decisionId,null])),
     selectedAuthorizationIds:[],
-    authorizationReceipts:{}
+    authorizationReceipts:{},
+    handoffTarget:'jira',
+    handoffConfirmed:false,
+    handoffReceipt:null
   };
   let trailOpener = null;
   let composerOpener = null;
@@ -598,6 +601,7 @@
         confirmed:true
       };
     });
+    invalidateHandoff();
     closeAuthorizationCeremony();
     state.selectedAuthorizationIds=[];
     state.view='authorization';
@@ -673,18 +677,36 @@
       ).join('')+'</div>';
   }
 
-  function handoff() {
-    const s=current();
+  const backlogAdapters={
+    jira:{label:'Jira',project:'CLOUD',type:'Epic'},
+    ado:{label:'Azure DevOps',project:'Cloud Platform',type:'Epic'},
+    github:{label:'GitHub Issues',project:'Infrastructure Product Works',type:'Issue'}
+  };
+
+  function handoffPackage() {
     const primary=primaryAuthorization();
-    return headline(primary.authorized?'Carry authority into delivery without handing authority to the backlog.':'No authorized backlog handoff exists.',
-      primary.authorized?'The handoff preserves the exact outcome and CAR while letting the delivery team keep using its own execution system.':'The candidate Epic can remain visible as planning context, but Northstar does not present it as an authorized handoff when the decision emits no CAR.',
-      'BACKLOG HANDOFF')+
-      '<div class="ns-airlock">'+
-        '<article><small>STRATEGY</small><h3>'+esc(model.objectiveId)+' → '+esc(model.krId)+'</h3><p>Division outcome and accountable benefit owner.</p></article><b>→</b>'+
-        '<article><small>AUTHORIZATION</small><h3>'+(primary.carId?esc(primary.carId):'NO CAR')+'</h3><p>'+esc(primary.authorized?'Exact scope, constraints and evidence requirements.':'Decision state: '+primary.decision.replaceAll('_',' ')+' · no authorized product-intent handoff.')+'</p></article><b>→</b>'+
-        '<article><small>DELIVERY</small><h3>'+esc(model.epic)+'</h3><p>'+esc(primary.authorized?model.team+' · '+s.delivery.replaceAll('_',' '):'Candidate context only · not authorized')+'</p></article>'+
-      '</div>'+
-      '<div class="ns-boundary-box"><strong>Demo boundary:</strong> External backlog writeback is not enabled. A live adapter would require a separately authorized contract.</div>';
+    if(!primary.authorized)return null;
+    const adapter=backlogAdapters[state.handoffTarget];
+    const material=[model.objectiveId,model.krId,model.decisionId,primary.carId,model.epic,model.epicTitle,model.proposedOutcome,adapter.label,adapter.project,'Retain exact CAR binding','Evidence required before outcome claim'].join('|');
+    return {id:'BHP-0001',carId:primary.carId,objectiveId:model.objectiveId,krId:model.krId,decisionId:model.decisionId,epic:model.epic,epicTitle:model.epicTitle,target:adapter.label,project:adapter.project,workItemType:adapter.type,digest:stableDigest(material),status:state.handoffConfirmed?'HANDOFF CONFIRMED':'AWAITING HUMAN HANDOFF'};
+  }
+
+  function invalidateHandoff(){state.handoffConfirmed=false;state.handoffReceipt=null;}
+
+  function handoff() {
+    const s=current(), primary=primaryAuthorization(), pkg=handoffPackage();
+    if(!primary.authorized)return headline('No authorized backlog handoff exists.','A candidate Epic may remain visible as planning context, but Northstar cannot create a handoff package until an exact Capability Authorization Record is current.','EXECUTION HANDOFF')+
+      '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(model.objectiveId)+' → '+esc(model.krId)+'</h3><p>Outcome remains traceable.</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>NO CURRENT CAR</h3><p>'+esc(primary.authorization.replaceAll('_',' '))+'</p></article><b>→</b><article><small>DELIVERY</small><h3>BLOCKED</h3><p>No authorized handoff package.</p></article></div>'+
+      '<div class="ns-boundary-box"><strong>Fail closed:</strong> Northstar will not represent backlog write authority without a current CAR and a separately confirmed handoff package.</div>';
+    const targets=Object.entries(backlogAdapters).map(([id,a])=>'<button type="button" data-handoff-target="'+id+'" class="'+(state.handoffTarget===id?'active':'')+'" aria-pressed="'+(state.handoffTarget===id?'true':'false')+'"><strong>'+esc(a.label)+'</strong><span>'+esc(a.project)+'</span></button>').join('');
+    return headline('Turn authorized intent into an executable handoff.','Northstar proposes a bounded backlog package while keeping strategy authority separate from permission to write into an execution system.','EXECUTION HANDOFF · '+pkg.id)+
+      '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(pkg.objectiveId)+' → '+esc(pkg.krId)+'</h3><p>'+esc(model.proposedOutcome)+'</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>'+esc(pkg.carId)+'</h3><p>Current product-intent authorization.</p></article><b>→</b><article><small>HANDOFF PACKAGE</small><h3>'+esc(pkg.id)+'</h3><p>'+esc(pkg.status.replaceAll('_',' '))+'</p></article></div>'+
+      '<section class="ns-handoff-workspace"><div class="ns-handoff-targets"><small>1 · CHOOSE EXECUTION TARGET</small><h3>Adapter boundary</h3><p>These are bounded demo contracts, not live connections.</p><div>'+targets+'</div></div>'+
+      '<div class="ns-handoff-package"><small>2 · REVIEW PROPOSED PACKAGE</small><h3>'+esc(pkg.epic)+' · '+esc(pkg.epicTitle)+'</h3>'+kv([['Target system',esc(pkg.target)],['Target project',esc(pkg.project)],['Work item type',esc(pkg.workItemType)],['Source authorization','<code>'+esc(pkg.carId)+'</code>'],['Strategic lineage',esc(pkg.objectiveId+' → '+pkg.krId+' → '+pkg.decisionId)],['Package digest','<code>'+esc(pkg.digest)+'</code>'],['Acceptance outcome','Reusable product contract retains the exact authorized outcome and scope.'],['Evidence requirement','Delivery evidence may update progress; benefit evidence is measured separately.']])+
+      '<div class="ns-handoff-actions"><button type="button" data-confirm-handoff '+(state.handoffConfirmed?'disabled':'')+'>'+(state.handoffConfirmed?'Handoff confirmed':'Confirm human handoff')+'</button></div></div></section>'+
+      (state.handoffReceipt?'<div class="ns-handoff-receipt"><small>3 · IMMUTABLE HANDOFF RECEIPT</small><h3>'+esc(state.handoffReceipt.id)+' · '+esc(state.handoffReceipt.status.replaceAll('_',' '))+'</h3><p>'+esc(state.handoffReceipt.target)+' / '+esc(state.handoffReceipt.project)+' · '+esc(state.handoffReceipt.digest)+'</p><strong>No external write occurred.</strong> This synthetic receipt demonstrates the authority boundary that a live adapter would have to satisfy.</div>':'')+
+      '<div class="ns-boundary-box"><strong>Demo boundary:</strong> Confirming '+esc(pkg.id)+' authorizes only this synthetic handoff record. External backlog writeback is not enabled. Jira, Azure DevOps or GitHub credentials and write permission would require a separately authorized live adapter contract.</div>'+
+      '<div class="ns-handoff-feedback"><small>FEEDBACK LOOP</small><div><article><strong>Delivery progress</strong><span>'+esc(s.delivery.replaceAll('_',' '))+'</span></article><b>≠</b><article><strong>Benefit achieved</strong><span>'+esc(s.benefitOutcome.replaceAll('_',' '))+'</span></article></div><p>Backlog completion can inform delivery progress. It cannot prove the business outcome by itself.</p></div>';
   }
 
   function outcome() {
@@ -772,6 +794,9 @@
       render();
       return;
     }
+    const handoffTarget=e.target.closest('[data-handoff-target]');
+    if(handoffTarget){const next=handoffTarget.dataset.handoffTarget;if(backlogAdapters[next]&&next!==state.handoffTarget){state.handoffTarget=next;invalidateHandoff();}state.view='handoff';render();return;}
+    if(e.target.closest('[data-confirm-handoff]')){const pkg=handoffPackage();if(pkg){state.handoffConfirmed=true;state.handoffReceipt={...pkg,status:'CONFIRMED · NO EXTERNAL WRITE'};}state.view='handoff';render();return;}
     const trail=e.target.closest('[data-open-trail]');
     if(trail){
       state.selectedKr=trail.dataset.openTrail;
