@@ -111,9 +111,12 @@ jobs:
           grep -Fq "Open Synthetic Demo" northstar-signal/index.html
           echo "after northstar demo link"
           grep -Fq "NORTHSTAR SIGNAL · INTERACTIVE SYNTHETIC DEMO" northstar-signal/demo/index.html
+          echo "after demo title"
           grep -Fq "Closing tickets is not the same thing as achieving the outcome." northstar-signal/index.html
+          echo "after closing copy"
           northstar_demo_js_blob="$(git hash-object assets/northstar-signal-demo.js)"
           grep -Fq "/assets/northstar-signal-demo.js?v=${northstar_demo_js_blob}" northstar-signal/demo/index.html
+          echo "after northstar hash"
           node --check assets/northstar-signal-demo.js
           grep -Fq "No benefit claim yet." assets/northstar-signal-demo.js
           grep -Fq "External backlog writeback is not enabled." assets/northstar-signal-demo.js
