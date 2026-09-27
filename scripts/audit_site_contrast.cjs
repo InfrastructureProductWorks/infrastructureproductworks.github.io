@@ -162,7 +162,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-auth-action="approve"][data-auth-id="CPD-0001"]').click();
         const selectedDetail=page.locator('.ns-auth-detail');
         const preConfirm=await selectedDetail.innerText();
-        if(!/APPROVED/.test(preConfirm)||!/PENDING CONFIRMATION/.test(preConfirm)||!/No CAR emitted/.test(preConfirm))throw new Error('Northstar approval decision must not emit a CAR before package confirmation');
+        if(!/APPROVED/.test(preConfirm)||!/CAR NOT CONFIRMED/.test(preConfirm)||!/Not confirmed · review exact authorization package/.test(preConfirm))throw new Error('Northstar approval decision must not emit a CAR before package confirmation');
         await page.locator('[data-authorize-item="CPD-0001"]').click();
         if(await page.locator('#ns-authorization-ceremony-dialog[open]').count()!==1)throw new Error('Approved Northstar item must require authorization ceremony');
         await page.locator('[data-confirm-authorization]').click();
