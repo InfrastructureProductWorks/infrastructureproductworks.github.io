@@ -287,8 +287,24 @@ main>.hero .button.ghost{background:#ffffff12;color:#fff;border-color:#ffffff55}
   .ns-auth-card-head,.ns-auth-detail-head{flex-direction:column}
 }
 
+
+/* NORTHSTAR LEADERSHIP DECISION WORKSPACE */
+.ns-batch-bar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin:0 0 14px;padding:13px 15px;border:1px solid #9dc9df;border-radius:13px;background:#f2faff}
+.ns-batch-bar small{display:block;color:#0b719b;font-size:9px;font-weight:900;letter-spacing:.08em}.ns-batch-bar strong{display:inline-block;margin-right:8px;font-size:14px}.ns-batch-bar span{color:#53677d;font-size:10px}
+.ns-batch-bar button,.ns-ceremony-actions button{appearance:none;border:1px solid #0b719b;border-radius:9px;padding:9px 12px;background:#0b3a59;color:#fff;font:800 10px/1.2 inherit;cursor:pointer}.ns-batch-bar button[disabled],.ns-ceremony-actions button[disabled]{opacity:.45;cursor:not-allowed}
+.ns-auth-select-row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:9px}.ns-auth-select-row label{display:flex;gap:7px;align-items:center;color:#53677d;font-size:9px;font-weight:800}.ns-auth-select-row>span{color:#0b719b;font-size:8px;font-weight:900;letter-spacing:.06em}
+.ns-auth-receipt{display:grid;gap:3px;margin:9px 0;padding:8px;border:1px solid #93d0ad;border-radius:8px;background:#f2fbf5}.ns-auth-receipt strong{color:#175c36;font-size:9px}.ns-auth-receipt span{color:#496a59;font-size:8px;overflow-wrap:anywhere}
+.ns-auth-actions button.primary{background:#0b3a59;border-color:#0b719b;color:#fff}.ns-auth-actions button[disabled]{opacity:.45;cursor:not-allowed}
+.ns-ceremony-dialog{width:min(900px,94vw);max-height:90vh;margin:auto;border:1px solid #a9c6d8;border-radius:20px;padding:0;background:#f5f9fc;color:#17253b;box-shadow:0 30px 100px #07192b66}.ns-ceremony-dialog::backdrop{background:#07192bb3;backdrop-filter:blur(3px)}
+.ns-ceremony-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;padding:20px 22px;background:#0b3a59;color:#fff}.ns-ceremony-head small{color:#9edcff;font-size:9px;font-weight:900;letter-spacing:.09em}.ns-ceremony-head h2{margin:5px 0;color:#fff;font-size:23px}.ns-ceremony-head p{margin:0;color:#d9ebf5;font-size:11px}.ns-ceremony-head button{width:34px;height:34px;border:1px solid #ffffff55;border-radius:9px;background:#ffffff12;color:#fff;font-size:19px;cursor:pointer}
+.ns-ceremony-body{padding:18px 20px;overflow:auto}.ns-ceremony-summary{display:grid;gap:4px;margin-bottom:12px;padding:12px;border:1px solid #9dc9df;border-radius:11px;background:#f2faff}.ns-ceremony-summary strong{font-size:13px}.ns-ceremony-summary span{color:#53677d;font-size:10px}
+.ns-ceremony-item{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.75fr);gap:14px;margin-top:9px;padding:14px;border:1px solid #d6e2eb;border-radius:12px;background:#fff}.ns-ceremony-item.eligible{border-left:4px solid #26935a}.ns-ceremony-item.blocked{border-left:4px solid #d49a2f;background:#fffaf0}.ns-ceremony-item small{color:#0b719b;font-size:9px;font-weight:900}.ns-ceremony-item h3{margin:5px 0;font-size:14px}.ns-ceremony-item p{color:#53677d;font-size:10px;line-height:1.45}
+.ns-ceremony-proof{display:grid;gap:6px}.ns-ceremony-proof>span{display:grid;grid-template-columns:90px minmax(0,1fr);gap:7px;color:#53677d;font-size:9px}.ns-ceremony-proof b{color:#17314d}.ns-ceremony-proof code{overflow-wrap:anywhere;font-size:8px}
+.ns-ceremony-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.ns-ceremony-actions button:first-child{background:#fff;color:#0b5c81;border-color:#9fb4c8}.ns-ceremony-actions button.primary{background:#0b3a59;color:#fff}
+@media(max-width:700px){.ns-batch-bar{align-items:flex-start;flex-direction:column}.ns-batch-bar button{width:100%}.ns-ceremony-item{grid-template-columns:1fr}.ns-ceremony-proof>span{grid-template-columns:1fr}.ns-ceremony-actions{flex-direction:column}.ns-ceremony-actions button{width:100%}}
+
 </style>
-<script src="../../assets/northstar-signal-demo.js?v=9686ab746ad617c3a614d511d5065ae3bce29a33" defer></script>
+<script src="../../assets/northstar-signal-demo.js?v=8a32e87adcea5eef7f34b0e933faeee7a6402a5f" defer></script>
 </head>
 <body>
 <header><a class="brand" href="/">Infrastructure <span>Product Works</span></a><nav><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><details class="nav-products"><summary>Products</summary><div class="nav-menu"><a href="/northstar-signal/"><small>DECIDE</small>Northstar Signal</a><a href="/storefront/"><small>EXPERIENCE</small>Storefront</a><a href="/guard/"><small>VALIDATE</small>IaaP Guard</a><a href="/forge/"><small>CONSTRUCT</small>IaaP Forge</a><a href="/console/"><small>REVIEW</small>IaaP Console</a><a href="/assurance/"><small>ASSURE</small>IaaP Assurance</a><a href="/crossplane/"><small>ARCHITECTURE</small>Crossplane Control Plane</a></div></details><a href="/operating-model/">How It Works</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a></nav><details class="mobile-nav"><summary>Menu</summary><div class="nav-menu"><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><a href="/northstar-signal/">Northstar Signal</a><a href="/storefront/">Storefront</a><a href="/guard/">IaaP Guard</a><a href="/forge/">IaaP Forge</a><a href="/console/">IaaP Console</a><a href="/assurance/">IaaP Assurance</a><a href="/crossplane/">Crossplane</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a></div></details></header>
@@ -310,6 +326,10 @@ main>.hero .button.ghost{background:#ffffff12;color:#fff;border-color:#ffffff55}
 <div class="ns-composer-close-row"><button data-close-composer type="button" aria-label="Close OKR Composer">×</button></div>
 <div class="ns-composer-head"><div><small>COMPOSITE AI · BOUNDED AUTHORING</small><h2 id="ns-composer-title">Northstar OKR Composer</h2></div></div>
 <div class="ns-composer-body" id="ns-composer-content"></div>
+</dialog>
+<dialog id="ns-authorization-ceremony-dialog" class="ns-ceremony-dialog" aria-labelledby="ns-authorization-ceremony-title">
+<div class="ns-ceremony-head"><div><small>ACCOUNTABLE HUMAN CONFIRMATION · SYNTHETIC DEMO</small><h2 id="ns-authorization-ceremony-title">Confirm exact authorization package</h2><p>Review what is being authorized before any Capability Authorization Record is emitted.</p></div><button data-close-authorization-ceremony type="button" aria-label="Close authorization package">×</button></div>
+<div class="ns-ceremony-body" id="ns-authorization-ceremony-content"></div>
 </dialog>
 <dialog id="ns-trail-dialog" class="ns-trail-dialog" aria-labelledby="ns-trail-title">
 <div class="ns-trail-head"><div><small>AUTHORIZATION TRAIL</small><h2 id="ns-trail-title">KR9.4 traceability and evidence</h2></div><button id="ns-trail-close" data-close-trail type="button" aria-label="Close authorization trail">×</button></div>
