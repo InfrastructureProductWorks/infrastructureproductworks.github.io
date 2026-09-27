@@ -596,6 +596,13 @@
     }}));
   }
 
+  function managementContextForBinding(binding) {
+    const objective=okrPortfolio.find(o=>o.objectiveId===binding.objectiveId);
+    const kr=objective?.krs.find(k=>k.id===binding.krId);
+    const authorization=authorizationQueue.find(item=>item.decisionId===binding.decisionId);
+    return objective&&kr&&authorization?{objective,kr,authorization}:null;
+  }
+
   function managementProposalsForSelectedContext() {
     ensureManagementSelection();
     const ctx=selectedOkrContext();
@@ -613,8 +620,9 @@
         proposalContext:{bindings:bindings.map(b=>({...b})),selectionDigest:managementSelectionDigest(bindings),managementIntent:state.managementIntent,authorizedOutcomes:outcomes,authorizedScopes:scopes}
       }];
     }
-    if(ctx.objective.objectiveId==='O9'&&ctx.kr.id==='KR9.4')return withProposalContext(managementEpicProposals,ctx);
-    if(ctx.objective.objectiveId==='O10'&&ctx.kr.id==='KR10.1')return withProposalContext([
+    const singleCtx=bindings.length===1?managementContextForBinding(bindings[0]):ctx;
+    if(singleCtx?.objective.objectiveId==='O9'&&singleCtx.kr.id==='KR9.4')return withProposalContext(managementEpicProposals,singleCtx);
+    if(singleCtx?.objective.objectiveId==='O10'&&singleCtx.kr.id==='KR10.1')return withProposalContext([
       {
         id:'MEP-O10-001',epic:'EP-CANDIDATE-O10-01',title:'Reusable Data Platform Foundation',
         outcome:'Define and validate the reusable data-platform foundation product authorized by CPD-0002 without widening its bounded product-definition scope.',
@@ -631,7 +639,7 @@
         reuse:'CONSUMER REUSE PATH · NO DUPLICATE PRODUCT ASSUMPTION',
         reuseTone:'amber'
       }
-    ],ctx);
+    ],singleCtx);
     return [];
   }
 
@@ -643,9 +651,10 @@
       return pc.managementIntent===state.managementIntent&&pc.selectionDigest===managementSelectionDigest(bindings)&&pc.bindings.length===bindings.length&&
         bindings.every(binding=>pc.bindings.some(saved=>saved.decisionId===binding.decisionId&&saved.carId===binding.carId&&saved.packageId===binding.packageId&&saved.evidenceDigest===binding.evidenceDigest&&saved.authorizedOutcome===binding.authorizedOutcome&&saved.authorizedScope===binding.authorizedScope));
     }
-    const ctx=selectedOkrContext();
-    return Boolean(ctx.authorization&&bindings.length===1&&pc.objectiveId===ctx.objective.objectiveId&&pc.krId===ctx.kr.id&&
-      pc.decisionId===ctx.authorization.decisionId&&pc.authorizedOutcome===ctx.authorization.outcome&&pc.authorizedScope===ctx.authorization.scope);
+    const binding=bindings[0];
+    return Boolean(bindings.length===1&&
+      pc.objectiveId===binding.objectiveId&&pc.krId===binding.krId&&pc.decisionId===binding.decisionId&&
+      pc.authorizedOutcome===binding.authorizedOutcome&&pc.authorizedScope===binding.authorizedScope);
   }
 
   const managementChecks=[
