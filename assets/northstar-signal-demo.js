@@ -145,8 +145,10 @@
     }
   ];
 
-  const state = { view: 'okr', role: 'leader', scenario: 'decision', selectedKr: model.krId, selectedObjective: model.objectiveId };
+  const state = { view: 'okr', role: 'leader', scenario: 'decision', selectedKr: model.krId, selectedObjective: model.objectiveId, composerAccepted: false };
   let trailOpener = null;
+  let composerOpener = null;
+  let composerStep = 'intent';
   const $ = (id) => document.getElementById(id);
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
@@ -220,6 +222,84 @@
     trailOpener=null;
   }
 
+  const composerFixture = {
+    intent: 'We need to make infrastructure delivery faster and get teams reusing standard products instead of building their own.',
+    weakSignals: [
+      '“Make delivery faster” has no baseline, target, or time boundary.',
+      '“Drive reuse” has no measurable definition or evidence source.',
+      'No accountable owner or organizational scope is explicit.'
+    ],
+    objective: 'Make governed infrastructure products the default path for division delivery.',
+    keyResults: [
+      {
+        id: 'DRAFT-KR1',
+        text: 'Reduce median decision-to-authorized-backlog handoff time from 12 business days to 5 business days by the end of FY27 Q3.',
+        owner: 'Portfolio Manager',
+        evidence: 'Northstar decision and backlog-handoff timestamps'
+      },
+      {
+        id: 'DRAFT-KR2',
+        text: 'Increase standard infrastructure requests fulfilled through governed reusable products from 42% to 75% by the end of FY27 Q4.',
+        owner: 'Division Leader',
+        evidence: 'Accepted Storefront/product-order and reuse-decision evidence'
+      }
+    ]
+  };
+
+  const composerChecks = [
+    ['Objective quality', 'PASS', 'Directional and outcome-oriented; not a task list.'],
+    ['KR measurability', 'PASS', 'Each Key Result has a measurable change.'],
+    ['Baseline + target', 'PASS', 'Both candidate Key Results preserve explicit starting and target values.'],
+    ['Time boundary', 'PASS', 'Each Key Result has a bounded FY27 quarter.'],
+    ['Ownership + scope', 'PASS', 'Accountable roles and division context are explicit.'],
+    ['Evidence source', 'PASS', 'Each Key Result names the evidence used to assess it.'],
+    ['Activity ≠ outcome', 'PASS', 'Backlog completion cannot by itself declare either Key Result achieved.'],
+    ['Authority boundary', 'PASS', 'The draft creates no funding, personnel, procurement, cloud, or risk authority.']
+  ];
+
+  function composerMarkup() {
+    const proposed = composerStep !== 'intent';
+    const accepted = composerStep === 'accepted';
+    return '<div class="ns-composer-flow" aria-label="Composite AI OKR Composer">'+
+      '<div class="ns-composer-step active"><small>1 · LEADER INTENT</small><label for="ns-composer-intent">Plain-language intent</label><textarea id="ns-composer-intent" rows="4">'+esc(composerFixture.intent)+'</textarea>'+
+      '<div class="ns-composer-warnings">'+list(composerFixture.weakSignals)+'</div></div>'+
+      (proposed ? '<div class="ns-composer-step"><small>2 · COMPOSITE AI PROPOSAL</small><div class="ns-ai-proposed">AI-PROPOSED · SYNTHETIC FIXTURE</div><h3>'+esc(composerFixture.objective)+'</h3>'+
+        '<div class="ns-composer-krs">'+composerFixture.keyResults.map(kr=>'<article><small>'+esc(kr.id)+'</small><strong>'+esc(kr.text)+'</strong><span>Owner: '+esc(kr.owner)+'</span><span>Evidence: '+esc(kr.evidence)+'</span></article>').join('')+'</div></div>' : '')+
+      (proposed ? '<div class="ns-composer-step validator"><small>3 · DETERMINISTIC STRUCTURAL VALIDATION</small><h3>'+ (accepted ? 'STRUCTURALLY SOUND · HUMAN ACCEPTED' : 'STRUCTURALLY SOUND') +'</h3><div class="ns-composer-checks">'+composerChecks.map(([name,status,note])=>'<article><div><strong>'+esc(name)+'</strong><span>'+esc(note)+'</span></div>'+badge(status,'green')+'</article>').join('')+'</div><p class="ns-composer-note">Northstar validates structure independently of the model. “Structurally sound” does not mean funded, approved, achievable, or strategically correct.</p></div>' : '')+
+      '<div class="ns-composer-actions">'+
+        (!proposed ? '<button type="button" class="primary" data-composer-draft>Draft with Composite AI</button>' : '')+
+        (proposed && !accepted ? '<button type="button" class="primary" data-composer-accept>Accept synthetic draft</button><button type="button" data-composer-reset>Start over</button>' : '')+
+        (accepted ? '<button type="button" class="primary" data-composer-done>Return to My Division OKRs</button>' : '')+
+      '</div>'+
+    '</div>';
+  }
+
+  function openComposer(opener) {
+    composerOpener=opener||null;
+    composerStep=state.composerAccepted?'accepted':'intent';
+    $('ns-composer-content').innerHTML=composerMarkup();
+    const dialog=$('ns-composer-dialog');
+    if(typeof dialog.showModal==='function') dialog.showModal();
+    else dialog.setAttribute('open','');
+    const focus=dialog.querySelector('textarea,button');
+    if(focus) focus.focus();
+  }
+
+  function closeComposer() {
+    const dialog=$('ns-composer-dialog');
+    if(dialog.open && typeof dialog.close==='function') dialog.close();
+    else dialog.removeAttribute('open');
+    if(composerOpener && typeof composerOpener.focus==='function') composerOpener.focus();
+    composerOpener=null;
+  }
+
+  function renderComposer() {
+    $('ns-composer-content').innerHTML=composerMarkup();
+    const dialog=$('ns-composer-dialog');
+    const focus=dialog.querySelector('[data-composer-accept],[data-composer-done],[data-composer-draft]');
+    if(focus) focus.focus();
+  }
+
   function okrOverview() {
     const s=current();
     const benefitUnproven = s.benefitOutcome === 'UNKNOWN' ? 1 : 0;
@@ -252,9 +332,10 @@
     }).join('');
 
     return '<div class="ns-dashboard-head">'+
-      '<div><p class="eyebrow">'+esc(model.division)+' · '+esc(model.period)+'</p><h2>My Division OKRs</h2><p>Leadership starts with outcomes, not tickets. Delivery status is visible, but it never substitutes for the named evidence source that proves a Key Result.</p></div>'+
-      '<div class="ns-dashboard-status"><span class="pulse"></span><div><small>PORTFOLIO SIGNAL</small><strong>'+(benefitUnproven?'1 downstream benefit still unproven':'All highlighted benefit signals measured')+'</strong></div></div>'+
+      '<div><p class="eyebrow">'+esc(model.division)+' · '+esc(model.period)+'</p><h2>My Division OKRs</h2><p>Leadership starts with outcomes, not tickets. Delivery status is visible, but it never substitutes for the named evidence source that proves a Key Result.</p><div class="ns-dashboard-actions"><button type="button" class="ns-okr-open primary" data-open-composer>Create OKR with Composite AI</button><span>AI proposes · Northstar validates · you decide</span></div></div>'+
+      '<div class="ns-dashboard-status"><span class="pulse"></span><div><small>PORTFOLIO SIGNAL</small><strong>'+(state.composerAccepted?'Synthetic OKR draft accepted for review':benefitUnproven?'1 downstream benefit still unproven':'All highlighted benefit signals measured')+'</strong></div></div>'+
     '</div>'+
+    (state.composerAccepted?'<div class="ns-composer-accepted"><strong>Accepted synthetic draft</strong><span>The structurally sound draft is ready for accountable review. The demo does not create an authoritative Strategic Outcome Record or write to an external system.</span><button type="button" data-open-composer>Review draft</button></div>':'')+
     '<div class="ns-exec-metrics">'+
       '<article><div class="metric-icon">◎</div><div><small>OBJECTIVES</small><strong>3</strong><span>Division priorities</span></div></article>'+
       '<article><div class="metric-icon">▥</div><div><small>KEY RESULTS</small><strong>5</strong><span>Owned, measurable outcomes</span></div></article>'+
@@ -418,6 +499,13 @@
   }
 
   document.addEventListener('click', e => {
+    const composer=e.target.closest('[data-open-composer]');
+    if(composer){ openComposer(composer); return; }
+    if(e.target.closest('[data-close-composer]')){ closeComposer(); return; }
+    if(e.target.closest('[data-composer-draft]')){ composerStep='proposal'; renderComposer(); return; }
+    if(e.target.closest('[data-composer-reset]')){ composerStep='intent'; state.composerAccepted=false; renderComposer(); return; }
+    if(e.target.closest('[data-composer-accept]')){ composerStep='accepted'; state.composerAccepted=true; renderComposer(); return; }
+    if(e.target.closest('[data-composer-done]')){ closeComposer(); state.view='okr'; render(); return; }
     const trail=e.target.closest('[data-open-trail]');
     if(trail){
       state.selectedKr=trail.dataset.openTrail;
@@ -466,6 +554,12 @@
     const scenario=e.target.closest('[data-scenario]');
     if(scenario){ state.scenario=scenario.dataset.scenario; render(); }
   });
+
+  const composerDialog=$('ns-composer-dialog');
+  if(composerDialog){
+    composerDialog.addEventListener('click', e=>{ if(e.target===composerDialog) closeComposer(); });
+    composerDialog.addEventListener('close', ()=>{ if(composerOpener && typeof composerOpener.focus==='function') composerOpener.focus(); composerOpener=null; });
+  }
 
   const trailDialog=$('ns-trail-dialog');
   if(trailDialog){

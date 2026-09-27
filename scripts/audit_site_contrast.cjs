@@ -150,6 +150,19 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           await close.click();
           if(await page.locator('#ns-trail-dialog[open]').count())throw new Error('Northstar trace drawer must close for scenario '+scenario);
         }
+        await page.locator('[data-view="okr"]').click();
+        const composer=page.locator('[data-open-composer]').first();
+        if(await composer.count()!==1||!await composer.isVisible())throw new Error('Northstar OKR Composer trigger must be visible');
+        await composer.click();
+        if(await page.locator('#ns-composer-dialog[open]').count()!==1)throw new Error('Northstar OKR Composer must open');
+        await audit(route,'OKR Composer / leader intent');
+        await page.locator('[data-composer-draft]').click();
+        await audit(route,'OKR Composer / AI proposal + deterministic validation');
+        await page.locator('[data-composer-accept]').click();
+        await audit(route,'OKR Composer / human accepted');
+        await page.locator('[data-composer-done]').click();
+        if(await page.locator('#ns-composer-dialog[open]').count())throw new Error('Northstar OKR Composer must close');
+        if(await page.locator('.ns-composer-accepted').count()!==1)throw new Error('Accepted synthetic OKR draft status must be visible');
       }
       if(route==='/assurance/demo/'){
         for(const selector of ['[data-assurance-tab="shield"]',...['baseline','expired','broadened','approver','digest','rollback'].map(v=>`[data-scenario="${v}"]`),'[data-assurance-tab="sentry"]',...['violation','corrected'].map(v=>`[data-sentry-scenario="${v}"]`),'[data-assurance-tab="custody"]',...['access','transfer','broadened','audit'].map(v=>`[data-custody-scenario="${v}"]`)]){
