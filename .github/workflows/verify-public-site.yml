@@ -105,8 +105,11 @@ jobs:
           echo "after console status"
           echo "after console posture"
           grep -Fq "Open Synthetic Console Demo" console/index.html
+          echo "after console demo link"
           grep -Fq "NORTHSTAR SIGNAL · CLOUD PRODUCT STRATEGY & DECISION INTELLIGENCE" northstar-signal/index.html
+          echo "after northstar title"
           grep -Fq "Open Synthetic Demo" northstar-signal/index.html
+          echo "after northstar demo link"
           grep -Fq "NORTHSTAR SIGNAL · INTERACTIVE SYNTHETIC DEMO" northstar-signal/demo/index.html
           grep -Fq "Closing tickets is not the same thing as achieving the outcome." northstar-signal/index.html
           northstar_demo_js_blob="$(git hash-object assets/northstar-signal-demo.js)"
