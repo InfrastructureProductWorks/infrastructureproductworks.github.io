@@ -755,6 +755,35 @@
   .northstar-role-label strong{font-size:10px}
   .northstar-role-label span{font-size:8px}
 }
+
+/* IPW OUTCOME JOURNEY — plain-language whole-stack story */
+.ipw-outcome-journey{padding:88px max(4vw,28px);background:linear-gradient(180deg,#f7fbfe,#eef5f9);border-bottom:1px solid #d7e1ea}
+.ipw-journey-shell{max-width:1320px;margin:auto}
+.ipw-journey-shell>h2{max-width:980px;margin:8px 0 14px;font-size:clamp(38px,4.2vw,62px);line-height:1;letter-spacing:-.045em;color:#102544}
+.ipw-journey-shell>.section-lede{max-width:1000px;margin-bottom:30px}
+.ipw-loop{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.ipw-loop article{position:relative;min-height:205px;padding:18px;border:1px solid #cbdce8;border-radius:16px;background:#fff;box-shadow:0 10px 28px #0f172a0a}
+.ipw-loop article:after{content:"→";position:absolute;right:-10px;top:50%;z-index:2;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:#0b719b;color:#fff;font-size:11px;font-weight:900}
+.ipw-loop article:nth-child(4n):after,.ipw-loop article:last-child:after{display:none}
+.ipw-loop article.learn{border-color:#87c99e;background:#f2fbf5}
+.ipw-loop b{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#e8f4fa;color:#0b719b;font-size:11px}
+.ipw-loop small{display:block;margin-top:13px;color:#0b719b;font-size:9px;font-weight:900;letter-spacing:.08em}
+.ipw-loop strong{display:block;margin-top:5px;color:#17324d;font-size:17px}
+.ipw-loop span{display:block;margin-top:7px;color:#5d6d80;font-size:12px;line-height:1.5}
+.ipw-cloud-principle{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(300px,.6fr);gap:20px;align-items:center;margin-top:18px;padding:24px;border:1px solid #9fc7de;border-radius:18px;background:#0b2b45;color:#fff}
+.ipw-cloud-principle small{color:#7dd3fc;font-size:9px;font-weight:900;letter-spacing:.1em}
+.ipw-cloud-principle strong{display:block;margin:5px 0 7px;font-size:22px;color:#fff}
+.ipw-cloud-principle p{margin:0;color:#d8e8f3;font-size:13px;line-height:1.55}
+.ipw-clouds{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.ipw-clouds span{padding:8px 10px;border:1px solid #70b9df66;border-radius:999px;background:#ffffff0d;color:#e8f6ff;font-size:9px;font-weight:900}
+.ipw-payoff{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.ipw-payoff article{padding:18px;border:1px solid #d5e1e9;border-radius:14px;background:#fff}
+.ipw-payoff small{color:#0b719b;font-size:9px;font-weight:900;letter-spacing:.09em}
+.ipw-payoff strong{display:block;margin-top:6px;color:#17324d;font-size:14px;line-height:1.45}
+.ipw-closing{margin:12px 0 0;padding:20px 22px;border-left:4px solid #15803d;border-radius:0 14px 14px 0;background:#eef9f2;color:#365548;font-size:15px;line-height:1.6}
+.ipw-closing em{font-style:normal;font-weight:800;color:#17324d}
+@media(max-width:1000px){.ipw-loop{grid-template-columns:repeat(3,minmax(0,1fr))}.ipw-loop article:nth-child(4n):after{display:grid}.ipw-loop article:nth-child(3n):after{display:none}.ipw-cloud-principle{grid-template-columns:1fr}.ipw-clouds{justify-content:flex-start}}
+@media(max-width:700px){.ipw-outcome-journey{padding:62px 18px}.ipw-loop,.ipw-payoff{grid-template-columns:1fr}.ipw-loop article{min-height:0}.ipw-loop article:after,.ipw-loop article:nth-child(4n):after{display:block;content:"↓";right:auto;left:50%;top:auto;bottom:-15px;transform:translateX(-50%);text-align:center;padding-top:2px}.ipw-loop article:last-child:after{display:none}.ipw-cloud-principle{padding:20px}.ipw-journey-shell>h2{font-size:40px}}
 </style></head><body><header><a class="brand" href="/">Infrastructure <span>Product Works</span></a><nav><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><details class="nav-products"><summary>Products</summary><div class="nav-menu"><a href="/storefront/"><small>EXPERIENCE</small>Storefront</a><a href="/guard/"><small>VALIDATE</small>IaaP Guard</a><a href="/forge/"><small>CONSTRUCT</small>IaaP Forge</a><a href="/console/"><small>REVIEW</small>IaaP Console</a><a href="/assurance/"><small>ASSURE</small>IaaP Assurance</a><a href="/crossplane/"><small>ARCHITECTURE</small>Crossplane Control Plane</a></div></details><a href="/operating-model/">How It Works</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/guides/">Guides</a></nav><details class="mobile-nav"><summary>Menu</summary><div class="nav-menu"><a href="/">Home</a><a href="/portfolio/">Portfolio Status</a><a href="/operating-model/">How It Works</a><a href="/storefront/">Storefront</a><a href="/guard/">IaaP Guard</a><a href="/forge/">IaaP Forge</a><a href="/console/">IaaP Console</a><a href="/assurance/">IaaP Assurance</a><a href="/crossplane/">Crossplane</a><a href="/work/">The Work</a><a href="/insights/">Insights</a><a href="/about/">About</a><a href="/guides/">User guides</a><a href="/support/">Support</a></div></details></header><main>
 
 <section class="northstar-home-hero" aria-labelledby="northstar-home-title">
