@@ -199,7 +199,8 @@
     handoffConfirmed:false,
     handoffReceipt:null,
     managementProposalState:'idle',
-    acceptedEpic:null
+    acceptedEpic:null,
+    authorizationReturnView:null
   };
   let trailOpener = null;
   let composerOpener = null;
@@ -513,7 +514,7 @@
       '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>Translate an authorized outcome into candidate Epics.</h2><p>This workspace stays visible to management before authorization so the required sequence is explicit. Composite AI cannot propose executable work until the exact product-intent authorization is current.</p></div>'+badge('AUTHORIZATION REQUIRED','amber')+'</div>'+
       '<div class="ns-mc-context"><small>REQUIRED BOUNDED CONTEXT</small><span>'+esc(model.objectiveId)+'</span><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span><span>Current CAR required</span><span>Exact package digest required</span></div>'+
       '<div class="ns-boundary-box"><strong>Fail closed · no CAR, no Epic proposal, no BHP.</strong> Complete the exact authorization package first. A CAR establishes bounded product intent; it does not create a BHP and it does not substitute for management acceptance.</div>'+
-      '<div class="ns-composer-actions"><button type="button" class="primary" data-view="authorization">Go to Authorization Queue</button></div>'+
+      '<div class="ns-composer-actions"><button type="button" class="primary" data-management-authorize>Authorize outcome to continue</button></div>'+
     '</section>';
     const proposed=state.managementProposalState!=='idle';
     const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent();
@@ -681,7 +682,10 @@
     if(ids.includes(model.decisionId))invalidateManagementAcceptance();
     closeAuthorizationCeremony();
     state.selectedAuthorizationIds=[];
-    state.view='authorization';
+    const returnToManagement=ids.includes(model.decisionId)&&state.authorizationReturnView==='management'&&primaryAuthorization().authorized;
+    state.authorizationReturnView=null;
+    state.role=returnToManagement?'manager':state.role;
+    state.view=returnToManagement?'management':'authorization';
     render();
   }
 
@@ -699,7 +703,7 @@
       return '<article class="ns-auth-card'+selectedClass+'" data-auth-item="'+esc(item.decisionId)+'">'+
         '<div class="ns-auth-select-row"><label><input type="checkbox" data-auth-check="'+esc(item.decisionId)+'" '+(selectedSet.has(item.decisionId)?'checked':'')+'> Select for review</label><span>'+esc(eligibility.eligible?'ELIGIBLE':'INDIVIDUAL REVIEW')+'</span></div>'+
         '<div class="ns-auth-card-head"><div><small>'+esc(item.objectiveId)+' → '+esc(item.krId)+'</small><h3>'+esc(item.outcome)+'</h3></div>'+badge(record.decision,tone)+'</div>'+
-        '<div class="ns-auth-meta"><span>'+esc(item.decisionId)+'</span><span>'+(record.carId?esc(record.carId):'NO NEW CAR')+'</span><span>'+esc(item.owner)+'</span></div>'+
+        '<div class="ns-auth-meta"><span>'+esc(item.decisionId)+'</span><span>'+(record.carId?esc(record.carId):(eligibility.eligible?'CAR NOT CONFIRMED':record.decision==='REUSE EXISTING'?'REUSE · NO NEW CAR':'DEFERRED · NO CAR'))+'</span><span>'+esc(item.owner)+'</span></div>'+
         '<p>'+esc(item.scope)+'</p>'+
         (receiptCurrent?'<div class="ns-auth-receipt"><strong>CONFIRMED</strong><span>'+esc(receipt.packageId)+' · '+esc(receipt.evidenceDigest)+'</span></div>':'')+
         '<button type="button" data-auth-select="'+esc(item.decisionId)+'">Review item</button>'+
@@ -722,7 +726,7 @@
       '<div class="ns-auth-detail-head"><div><small>SELECTED ITEM · '+esc(selected.decisionId)+'</small><h3>'+esc(selected.outcome)+'</h3></div>'+badge(selectedRecord.authorization,selectedRecord.authorized?'green':'amber')+'</div>'+
       kv([
         ['Decision', badge(selectedRecord.decision,selectedRecord.authorized?'green':'blue')],
-        ['Capability Authorization Record', selectedRecord.carId?'<code>'+esc(selectedRecord.carId)+'</code>':'No CAR emitted'],
+        ['Capability Authorization Record', selectedRecord.carId?'<code>'+esc(selectedRecord.carId)+'</code>':authorizationEligibility(selected).eligible?'Not confirmed · review exact authorization package':selectedRecord.decision==='REUSE EXISTING'?'No new CAR · reuse path':'No CAR · deferred'],
         ['Strategic lineage', esc(selected.objectiveId+' → '+selected.krId)],
         ['Approved / evaluated scope', esc(selected.scope)],
         ['Allowed environments', esc(selected.environments)],
@@ -842,7 +846,7 @@
     if(e.target.closest('[data-management-regenerate]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-reject]')){state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-accept]')){const binding=currentPrimaryAuthorizationBinding();if(binding){state.managementProposalState='accepted';state.acceptedEpic={...managementEpicProposals[0],authorizationBinding:{...binding}};}invalidateHandoff();render();return;}
-    const authCheck=e.target.closest('[data-auth-check]');
+    if(e.target.closest('[data-management-authorize]')){state.authorizationReturnView='management';state.selectedAuthorizationId=model.decisionId;state.role='leader';state.view='authorization';render();return;}\n        const authCheck=e.target.closest('[data-auth-check]');
     if(authCheck){
       const id=authCheck.dataset.authCheck;
       state.selectedAuthorizationIds=authCheck.checked
@@ -869,6 +873,7 @@
       const id=authAction.dataset.authId;
       const action=authAction.dataset.authAction;
       state.selectedAuthorizationId=id;
+      if(id==='CPD-0003'||id==='CPD-0004'){state.view='authorization';render();return;}
       const nextDecision=action==='approve'?'APPROVED':action==='conditional'?'APPROVE CONDITIONALLY':action==='reuse'?'REUSE EXISTING':'DEFERRED';
       const priorDecision=authorizationDecision(authorizationQueue.find(item=>item.decisionId===id));
       state.authorizationDecisions[id]=nextDecision;
