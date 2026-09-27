@@ -588,16 +588,21 @@
   }
 
   function decision() {
-    const primary=primaryAuthorization();
-    return headline(model.proposedOutcome,
+    const ctx=selectedOkrContext();
+    if(!ctx.authorization)return headline(ctx.kr.text,
+      'This selected Key Result has no bound authorization decision in the synthetic fixture. Leadership can inspect the outcome, but Northstar will not invent a decision record or downstream authority.',
+      ctx.objective.objectiveId+' → '+ctx.kr.id+' · NO AUTHORIZATION DECISION')+
+      '<div class="ns-boundary-box"><strong>Fail closed:</strong> establish an explicit decision/CAR contract before representing product-intent authorization.</div>';
+    const record=selectedAuthorization();
+    return headline(ctx.authorization.outcome,
       'Leadership sees the mission consequence, evidence quality and credible choices without having to translate infrastructure implementation jargon.',
-      model.decisionId+' · DECISION BRIEF')+
-      '<div class="ns-state-row">'+badge(primary.decision,primary.authorized?'green':'blue')+badge(primary.authorization,primary.authorized?'green':'amber')+badge('HIGH EVIDENCE','green')+badge('REVIEW '+model.decisionReview,'neutral')+'</div>'+
+      ctx.authorization.decisionId+' · DECISION BRIEF')+
+      '<div class="ns-state-row">'+badge(record.decision,record.authorized?'green':'blue')+badge(record.authorization,record.authorized?'green':'amber')+badge('HIGH EVIDENCE','green')+badge('REVIEW '+model.decisionReview,'neutral')+'</div>'+
       '<div class="ns-options">'+model.alternatives.map(([name,meaning,consequence]) =>
         '<article><small>'+esc(name.toUpperCase())+'</small><h3>'+esc(meaning)+'</h3><p>'+esc(consequence)+'</p></article>'
       ).join('')+'</div>'+
       '<div class="ns-grid-2">'+
-        '<article class="ns-callout amber"><small>NO ACTION</small><h3>What happens?</h3><p>Teams continue using nonstandard request paths and the reusable capability gap stays open.</p></article>'+
+        '<article class="ns-callout amber"><small>NO ACTION</small><h3>What happens?</h3><p>The selected outcome remains unresolved and no new product-intent authority is created.</p></article>'+
         '<article class="ns-callout"><small>EVIDENCE THAT WOULD CHANGE THE ASSESSMENT</small><h3>Proof of accepted reuse</h3><p>If an existing IPW product already satisfies the requested outcome, new productization should be reconsidered.</p></article>'+
       '</div>';
   }
@@ -823,7 +828,7 @@
       '<div class="ns-boundary-box"><strong>Fail closed:</strong> Northstar will not represent backlog write authority without a current CAR and a separately confirmed handoff package.</div>';
     const targets=Object.entries(backlogAdapters).map(([id,a])=>'<button type="button" data-handoff-target="'+id+'" class="'+(state.handoffTarget===id?'active':'')+'" aria-pressed="'+(state.handoffTarget===id?'true':'false')+'"><strong>'+esc(a.label)+'</strong><span>'+esc(a.project)+'</span></button>').join('');
     return headline('Turn authorized intent into an executable handoff.','Northstar proposes a bounded backlog package while keeping strategy authority separate from permission to write into an execution system.','EXECUTION HANDOFF · '+pkg.id)+
-      '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(pkg.objectiveId)+' → '+esc(pkg.krId)+'</h3><p>'+esc(model.proposedOutcome)+'</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>'+esc(pkg.carId)+'</h3><p>Current product-intent authorization.</p></article><b>→</b><article><small>HANDOFF PACKAGE</small><h3>'+esc(pkg.id)+'</h3><p>'+esc(pkg.status.replaceAll('_',' '))+'</p></article></div>'+
+      '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(pkg.objectiveId)+' → '+esc(pkg.krId)+'</h3><p>'+esc(ctx.authorization?ctx.authorization.outcome:ctx.kr.text)+'</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>'+esc(pkg.carId)+'</h3><p>Current product-intent authorization.</p></article><b>→</b><article><small>HANDOFF PACKAGE</small><h3>'+esc(pkg.id)+'</h3><p>'+esc(pkg.status.replaceAll('_',' '))+'</p></article></div>'+
       '<section class="ns-handoff-workspace"><div class="ns-handoff-targets"><small>1 · CHOOSE EXECUTION TARGET</small><h3>Adapter boundary</h3><p>These are bounded demo contracts, not live connections.</p><div>'+targets+'</div></div>'+
       '<div class="ns-handoff-package"><small>2 · REVIEW PROPOSED PACKAGE</small><h3>'+esc(pkg.epic)+' · '+esc(pkg.epicTitle)+'</h3>'+kv([['Target system',esc(pkg.target)],['Target project',esc(pkg.project)],['Work item type',esc(pkg.workItemType)],['Source authorization','<code>'+esc(pkg.carId)+'</code>'],['Strategic lineage',esc(pkg.objectiveId+' → '+pkg.krId+' → '+pkg.decisionId)],['Package digest','<code>'+esc(pkg.digest)+'</code>'],['Acceptance outcome','Reusable product contract retains the exact authorized outcome and scope.'],['Evidence requirement','Delivery evidence may update progress; benefit evidence is measured separately.']])+
       '<div class="ns-handoff-actions"><button type="button" data-confirm-handoff '+(state.handoffConfirmed?'disabled':'')+'>'+(state.handoffConfirmed?'Handoff confirmed':'Confirm human handoff')+'</button></div></div></section>'+
