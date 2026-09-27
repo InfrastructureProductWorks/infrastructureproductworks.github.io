@@ -150,6 +150,14 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           const recovered=await page.locator('#northstar-view').innerText();
           if(!/LINEAGE INTEGRITY\s+(VERIFIED|PENDING AUTHORIZATION)/.test(recovered))throw new Error('Northstar recursive lineage must recover to the truthful current state after negative tests');
           await page.locator('[data-view="okr"]').click();
+          await page.locator('[data-compose-kr="KR10.1"]').click();
+          await page.locator('[data-view="lineage"]').click();
+          const selectedLineage=await page.locator('#northstar-view').innerText();
+          if(!/O10 → KR10\.1/.test(selectedLineage)||/O9 → KR9\.4 → CPD-0001/.test(selectedLineage))throw new Error('Recursive lineage must derive from the selected OKR context without leaking the primary O9 path');
+          await page.locator('[data-view="okr"]').click();
+          await page.locator('[data-open-trail="KR9.4"]').click();
+          await page.locator('[data-close-trail]').click();
+          await page.locator('[data-view="okr"]').click();
           const trail=page.locator('[data-open-trail="KR9.4"]');
           if(await trail.count()!==1)throw new Error('Northstar KR9.4 trace trigger must exist exactly once for scenario '+scenario);
           if(!await trail.isVisible())throw new Error('Northstar KR9.4 trace trigger must be visible for scenario '+scenario);
