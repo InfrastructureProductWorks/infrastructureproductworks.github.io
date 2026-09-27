@@ -293,6 +293,15 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const managementText=await page.locator('.ns-management-composer').innerText();
         if(!/REUSE \/ EQUIVALENCE/.test(managementText)||!/DETERMINISTIC VALIDATION/.test(managementText)||!/CAR scope binding/.test(managementText))throw new Error('Northstar Management Composer must expose reuse and deterministic CAR-bound validation');
         await audit(route,'Management Composer / AI Epic proposals + deterministic validation');
+        await page.locator('[data-view="authorization"]').click();
+        await page.locator('[data-auth-select="CPD-0001"]').click();
+        await page.locator('[data-auth-action="approve"][data-auth-id="CPD-0001"]').click();
+        await page.locator('[data-authorize-item="CPD-0001"]').click();
+        await page.locator('[data-confirm-authorization]').click();
+        await page.locator('[data-view="management"]').click();
+        const resetProposed=await page.locator('.ns-management-composer').innerText();
+        if(await page.locator('[data-management-proposal]').count()||await page.locator('[data-management-accept]').count()||await page.locator('[data-management-draft]').count()!==1||!/Propose Epics with Composite AI/.test(resetProposed))throw new Error('Changing source authorization must invalidate generated-but-unaccepted Epic proposals before they can bind to the new CAR');
+        await page.locator('[data-management-draft]').click();
         await page.locator('[data-management-accept]').click();
         if(!/MANAGEMENT ACCEPTED/.test(await page.locator('.ns-management-composer').innerText()))throw new Error('Northstar Management Composer must require explicit management acceptance');
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
