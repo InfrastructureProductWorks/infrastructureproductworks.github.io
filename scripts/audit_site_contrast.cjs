@@ -176,6 +176,11 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         if(!/O10 → KR10.1 → CPD-0002/.test(o10Handoff)||!/Governed Product Reuse Discovery/.test(o10Handoff))throw new Error('Delivery must receive the accepted O10/KR10.1 Epic with exact selected lineage');
         const o10Airlock=await page.locator('.ns-airlock').innerText();
         if(!/Standardize a reusable data-platform foundation product/.test(o10Airlock)||/Create a reusable managed-network foundation product/.test(o10Airlock))throw new Error('Delivery airlock must describe the selected authorization outcome rather than stale primary-KR context');
+        const o10Feedback=await page.locator('.ns-handoff-feedback').innerText();
+        if(!/ACTIVE/.test(o10Feedback)||!/ON TRACK/.test(o10Feedback)||/READY/.test(o10Feedback)||/UNKNOWN/.test(o10Feedback))throw new Error('Delivery feedback must use the selected O10/KR10.1 signals rather than the KR9.4 scenario');
+        await page.locator('[data-view="outcome"]').click();
+        const o10Outcome=await page.locator('#northstar-view').innerText();
+        if(!/O10 → KR10.1/.test(o10Outcome)||!/ACTIVE/.test(o10Outcome)||!/ON TRACK/.test(o10Outcome)||/KR9.4 authorization/.test(o10Outcome))throw new Error('Outcome feedback must remain bound to the selected O10/KR10.1 context');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-select="CPD-0001"]').click();
         await page.locator('[data-auth-action="approve"][data-auth-id="CPD-0001"]').click();
