@@ -106,12 +106,15 @@ If the demo appears to be on the wrong step, return to **Cloud Platform OKRs**, 
 
 If the OKR Composer is not visible, use the left navigation and choose **OKR Composer**.
 
-For management decomposition, choose **Management Composer**. If the current KR has no eligible authorization and no previously selected valid source binding, the composer fails closed and offers no executable Epic proposal. Complete the exact authorization package first.
+For management decomposition, choose **Management Composer**. The next step depends on the selected KR's authorization state:
 
-When authorized KRs are available, enter management intent, select one or more source KRs, choose **Propose Epics with Composite AI**, review deterministic validation, and explicitly accept the proposed Epic before moving to **Backlog handoff**.
+- If the KR has an **eligible decision that is still pending authorization**, complete that exact authorization package first, then return to Management Composer.
+- If the KR has **no authorization decision**, return to Leadership/Decision context or select a different KR that already has a valid authorization path. Northstar cannot create an executable Epic package from an undefined authorization.
+- If the decision is a locked **Reuse Existing** or **Deferred** fixture, treat it as non-authorizable in the current demo. Do not look for an authorization-continuation button; select an eligible authorized KR if management decomposition is needed.
+- If one or more source KRs already have current CARs, enter management intent, select those authorized KRs, choose **Propose Epics with Composite AI**, review deterministic validation, and explicitly accept the proposed Epic before moving to **Backlog handoff**.
 
 If the intent text or selected source set changes, Northstar removes stale proposal/acceptance state. If an actual source CAR/package/evidence binding changes, management must regenerate or reaccept the proposal. A change to an unrelated authorization does not invalidate an Epic that is not sourced from it.
 
-If a deferred or reuse-only decision is locked and non-authorizable, Northstar will not offer an impossible authorization continuation. If an authorization item cannot be confirmed, inspect whether it is intentionally blocked; selecting it beside eligible items does not make it eligible.
+Selecting a blocked or non-authorizable item beside eligible items never makes it eligible and never widens another CAR.
 
 If a link or control does not behave as described, return to the [Northstar Signal product page](/northstar-signal/) and reopen the synthetic demo.
