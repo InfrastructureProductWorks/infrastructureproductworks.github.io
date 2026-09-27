@@ -64,9 +64,14 @@
 <h2 id="troubleshooting">14 Troubleshooting</h2>
 <p>If the demo appears to be on the wrong step, return to <strong>Cloud Platform OKRs</strong>, choose the Leadership role, and select <strong>Decision Review</strong>.</p>
 <p>If the OKR Composer is not visible, use the left navigation and choose <strong>OKR Composer</strong>.</p>
-<p>For management decomposition, choose <strong>Management Composer</strong>. If the current KR has no eligible authorization and no previously selected valid source binding, the composer fails closed and offers no executable Epic proposal. Complete the exact authorization package first.</p>
-<p>When authorized KRs are available, enter management intent, select one or more source KRs, choose <strong>Propose Epics with Composite AI</strong>, review deterministic validation, and explicitly accept the proposed Epic before moving to <strong>Backlog handoff</strong>.</p>
+<p>For management decomposition, choose <strong>Management Composer</strong>. The next step depends on the selected KR&#x27;s authorization state:</p>
+<ul>
+<li>If the KR has an <strong>eligible decision that is still pending authorization</strong>, complete that exact authorization package first, then return to Management Composer.</li>
+<li>If the KR has <strong>no authorization decision</strong>, return to Leadership/Decision context or select a different KR that already has a valid authorization path. Northstar cannot create an executable Epic package from an undefined authorization.</li>
+<li>If the decision is a locked <strong>Reuse Existing</strong> or <strong>Deferred</strong> fixture, treat it as non-authorizable in the current demo. Do not look for an authorization-continuation button; select an eligible authorized KR if management decomposition is needed.</li>
+<li>If one or more source KRs already have current CARs, enter management intent, select those authorized KRs, choose <strong>Propose Epics with Composite AI</strong>, review deterministic validation, and explicitly accept the proposed Epic before moving to <strong>Backlog handoff</strong>.</li>
+</ul>
 <p>If the intent text or selected source set changes, Northstar removes stale proposal/acceptance state. If an actual source CAR/package/evidence binding changes, management must regenerate or reaccept the proposal. A change to an unrelated authorization does not invalidate an Epic that is not sourced from it.</p>
-<p>If a deferred or reuse-only decision is locked and non-authorizable, Northstar will not offer an impossible authorization continuation. If an authorization item cannot be confirmed, inspect whether it is intentionally blocked; selecting it beside eligible items does not make it eligible.</p>
+<p>Selecting a blocked or non-authorizable item beside eligible items never makes it eligible and never widens another CAR.</p>
 <p>If a link or control does not behave as described, return to the <a href="/northstar-signal/">Northstar Signal product page</a> and reopen the synthetic demo.</p></article></div></div></main>
 <footer><strong>Infrastructure Product Works</strong><div><a href="/guides/">All user guides</a><a href="/docs/guard/">Guard documentation</a><a href="/operating-model/">How It Works</a><a href="/support/">Contact</a></div><p>Step-by-step guidance for the current evaluation experiences.</p></footer></body></html>
