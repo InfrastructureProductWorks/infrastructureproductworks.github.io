@@ -209,7 +209,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const cpd1Checked=await page.locator('[data-management-kr-check="CPD-0001"]').isChecked();
         const cpd2Checked=await page.locator('[data-management-kr-check="CPD-0002"]').isChecked();
         if(!cpd1Checked||cpd2Checked)throw new Error('Single-KR composition must preserve the exact checked authorization set');
-        if(!/Managed Network Foundation/.test(singleProposalCard)||/Reusable Data Platform Foundation/.test(singleProposalCard)||!/CAR scope binding\s+Every proposed Epic remains bound to the exact current CAR outcome and scope/i.test(singleComposerText))throw new Error('Single-KR generation must derive its proposal from the checked authorization rather than the page context');
+        if(!/Managed Network Foundation/.test(singleProposalCard)||/Reusable Data Platform Foundation/.test(singleProposalCard)||!/Create the managed-network Epic only from the checked authorization/.test(singleProposalCard)||!/CAR scope binding\s+Every proposed Epic remains bound to the exact current CAR outcome and scope/i.test(singleComposerText))throw new Error('Single-KR generation must derive its proposal and management intent from the checked authorization rather than the page context');
         await page.locator('[data-management-accept]').click();
         if(!/MANAGEMENT ACCEPTED/.test(await page.locator('.ns-management-composer').innerText()))throw new Error('Single-KR proposal must be explicitly accepted before handoff');
         await page.locator('[data-management-intent]').fill('Revised managed-network intent must invalidate the visible proposal immediately.');
@@ -226,6 +226,9 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const preservedSingleHandoff=await page.locator('.ns-handoff-package').innerText();
         if(!/CAR-0001/.test(preservedSingleHandoff)||/CAR-0002/.test(preservedSingleHandoff)||!/Managed Network Foundation/.test(preservedSingleHandoff))throw new Error('Changing an unselected page-context CAR must not invalidate a single-KR Epic sourced only from CPD-0001');
+        await page.locator('[data-view="management"]').click();
+        const preservedComposer=await page.locator('.ns-management-composer').innerText();
+        if(!/MANAGEMENT ACCEPTED/.test(preservedComposer)||!/CPD-0001/.test(preservedComposer)||!/CAR-0001/.test(preservedComposer)||/AUTHORIZATION REQUIRED/.test(preservedComposer))throw new Error('Management Composer must remain available from accepted source bindings even when the page-context authorization is no longer current');
         if(!/ACTIVE/.test(o10Feedback)||!/ON TRACK/.test(o10Feedback)||/READY/.test(o10Feedback)||/UNKNOWN/.test(o10Feedback))throw new Error('Delivery feedback must use the selected O10/KR10.1 signals rather than the KR9.4 scenario');
         await page.locator('[data-view="outcome"]').click();
         const o10Outcome=await page.locator('#northstar-view').innerText();
