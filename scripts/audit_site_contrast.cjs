@@ -217,6 +217,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         if(await page.locator('.ns-handoff-receipt').count())throw new Error('Changing Northstar handoff target must invalidate the prior receipt');
         if(!/Azure DevOps/.test(await handoffView.innerText()))throw new Error('Northstar handoff target must update deterministically');
         await page.locator('[data-confirm-handoff]').click();
+        await audit(route,'Execution Handoff / bounded adapter contract');
         const lineageReceiptBefore=await page.locator('.ns-handoff-receipt').innerText();
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-select="CPD-0002"]').click();
