@@ -59,7 +59,7 @@ Use the evidence view to answer: what was proposed, what evidence supported it, 
 ## 9 Compose management Epics from authorized KRs
 Switch to **Management** and open **Management Composer**.
 
-Enter management intent in the text box. Describe the Epic outcome, sequencing, dependencies, or decomposition you want Composite AI to propose. The synthetic demo uses that exact text as part of the proposal binding; changing the intent invalidates stale proposal and acceptance state.
+Enter management intent in the text box. Describe the Epic outcome, sequencing, dependencies, or decomposition you want Composite AI to propose. The synthetic demo uses that exact text as part of the proposal binding; changing the intent invalidates stale proposal and acceptance state. The current public demo uses bounded synthetic proposal fixtures and does not call a live model provider.
 
 Select one or more **currently authorized KRs**. Each selected KR keeps its own Objective, Key Result, decision, CAR, package digest, evidence digest, authorized outcome, and authorized scope. Selecting multiple KRs does not merge the CARs or widen authority.
 
