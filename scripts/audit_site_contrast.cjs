@@ -160,6 +160,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         if(!/CAR-0001/.test(await selectedDetail.innerText()))throw new Error('Approved Northstar item must retain its exact CAR');
         const afterDecision=await page.locator('[data-auth-item="CPD-0002"]').innerText();
         if(beforeDecision!==afterDecision)throw new Error('Authorizing one Northstar queue item must not mutate another item');
+        await audit(route,'Authorization Queue / independent item decisions');
         await page.locator('[data-auth-action="defer"][data-auth-id="CPD-0001"]').click();
         await page.locator('[data-view="decision"]').click();
         const decisionState=await page.locator('.ns-state-row').first().innerText();
