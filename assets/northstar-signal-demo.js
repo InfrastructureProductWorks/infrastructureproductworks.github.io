@@ -205,7 +205,7 @@
     selectedAuthorizationId:'CPD-0001',
     authorizationDecisions:Object.fromEntries(authorizationQueue.map(item=>[item.decisionId,null])),
     selectedAuthorizationIds:[],
-    authorizationReceipts:{},
+    authorizationReceipts:initialAuthorizationReceipts(),
     handoffTarget:'jira',
     handoffConfirmed:false,
     handoffReceipt:null,
@@ -223,6 +223,23 @@
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
   }[ch]));
+
+  function initialAuthorizationReceipts() {
+    const item=authorizationQueue.find(candidate=>candidate.decisionId==='CPD-0002');
+    const decision=item.initialDecision;
+    const pkg=authorizationPackage(item,decision);
+    return {
+      [item.decisionId]:{
+        packageId:pkg.packageId,
+        evidenceDigest:pkg.evidenceDigest,
+        approver:pkg.approver,
+        reviewDate:pkg.reviewDate,
+        decision,
+        carId:item.carId,
+        confirmed:true
+      }
+    };
+  }
 
   function badge(value, tone='neutral') {
     return '<span class="ns-badge '+tone+'">'+esc(value.replaceAll('_',' '))+'</span>';
@@ -716,9 +733,9 @@
     ensureManagementSelection();
     const authorizedContexts=authorizedManagementContexts();
     const sourceBindings=managementSourceBindings();
-    const hasSourceBindings=sourceBindings.length>0;
-    if(!ctx.authorization&&!hasSourceBindings)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer"><div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+'</h2><p>'+esc(ctx.kr.text)+'</p></div>'+badge('AUTHORIZATION NOT DEFINED','amber')+'</div><div class="ns-boundary-box"><strong>No authorization decision is bound to this Key Result.</strong> Management can select it for planning context, but Northstar cannot generate an authorized Epic package or BHP until leadership establishes the required decision/CAR contract.</div></section>';
-    if(!hasSourceBindings&&(!primary||!primary.authorized)){
+    const hasAuthorizedContexts=authorizedContexts.length>0;
+    if(!ctx.authorization&&!hasAuthorizedContexts)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer"><div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+'</h2><p>'+esc(ctx.kr.text)+'</p></div>'+badge('AUTHORIZATION NOT DEFINED','amber')+'</div><div class="ns-boundary-box"><strong>No authorization decision is bound to this Key Result.</strong> Management can select it for planning context, but Northstar cannot generate an authorized Epic package or BHP until leadership establishes the required decision/CAR contract.</div></section>';
+    if(!hasAuthorizedContexts&&(!primary||!primary.authorized)){
       const eligibility=ctx.authorization?authorizationEligibility(ctx.authorization):{eligible:false,reason:'No authorization decision is bound to this Key Result.'};
       if(!eligibility.eligible)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
         '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · '+esc((primary?.decision||'NO DECISION').replaceAll('_',' '))+'</h2><p>'+esc(ctx.kr.text)+'</p></div>'+badge(primary?.authorization||'NOT AUTHORIZED','amber')+'</div>'+
@@ -738,10 +755,10 @@
     const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent()&&proposalsBound;
     const selector=authorizedContexts.map(({item,binding})=>'<label class="ns-mc-kr-choice"><input type="checkbox" data-management-kr-check="'+esc(item.decisionId)+'" '+(state.managementSelectedDecisionIds.includes(item.decisionId)?'checked':'')+'><span><strong>'+esc(item.objectiveId+' → '+item.krId)+'</strong><small>'+esc(item.decisionId+' · '+binding.carId+' · '+item.outcome)+'</small></span></label>').join('');
     return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
-      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>Compose candidate Epics from authorized outcomes.</h2><p>Management can provide intent and select one or more currently authorized KRs. Every selected KR keeps its own CAR and evidence binding.</p></div>'+badge(sourceBindings.length+' AUTHORIZED KR'+(sourceBindings.length===1?'':'S'),'green')+'</div>'+
+      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>Compose candidate Epics from authorized outcomes.</h2><p>Management can provide intent and select one or more currently authorized KRs. Every selected KR keeps its own CAR and evidence binding.</p></div>'+badge(authorizedContexts.length+' AUTHORIZED KR'+(authorizedContexts.length===1?'':'S')+' AVAILABLE','green')+'</div>'+
       '<div class="ns-mc-context"><small>BOUNDED CONTEXT</small>'+sourceBindings.map(binding=>'<span>'+esc(binding.objectiveId+' → '+binding.krId+' · '+binding.decisionId+' · '+binding.carId)+'</span>').join('')+'<span>Existing product catalog</span><span>Existing Epic relationships</span></div>'+
       '<div class="ns-mc-input"><label for="ns-management-intent">Management intent</label><textarea id="ns-management-intent" data-management-intent rows="4" placeholder="Describe the Epic outcome, sequencing, dependencies, or management intent...">'+esc(state.managementIntent)+'</textarea><div class="ns-mc-kr-selector"><small>AUTHORIZED KRS TO USE</small>'+selector+'</div><p>Select one or more authorized KRs. Northstar keeps each source CAR independent; selection does not merge or widen authority.</p></div>'+
-      (!proposed?'<div class="ns-mc-empty"><h3>Ready to compose</h3><p>Composite AI will use the management intent plus the exact selected KR/CAR set, then deterministic checks validate scope and lineage before acceptance.</p><button type="button" class="primary" data-management-draft '+(!sourceBindings.length?'disabled':'')+'>Propose Epics with Composite AI</button></div>':'')+
+      (!proposed?'<div class="ns-mc-empty"><h3>'+(sourceBindings.length?'Ready to compose':'Select one or more authorized KRs')+'</h3><p>'+(sourceBindings.length?'Composite AI will use the management intent plus the exact selected KR/CAR set, then deterministic checks validate scope and lineage before acceptance.':'Every current CAR-backed KR in management scope is listed above. Select the outcomes Composite AI should use; Northstar preserves each authorization independently.')+'</p><button type="button" class="primary" data-management-draft '+(!sourceBindings.length?'disabled':'')+'>Propose Epics with Composite AI</button></div>':'')+
       (proposed?'<div class="ns-mc-proposals"><small>AI-PROPOSED · SYNTHETIC FIXTURE</small>'+proposals.map((p,i)=>'<article data-management-proposal="'+esc(p.id)+'"><div class="ns-mc-proposal-head"><div><small>'+esc(p.id)+' · '+esc(p.epic)+'</small><h3>'+esc(p.title)+'</h3></div>'+badge(i===0?'PRIMARY':'CANDIDATE',i===0?'blue':'neutral')+'</div><p>'+esc(p.outcome)+'</p><div class="ns-mc-reuse '+p.reuseTone+'"><strong>REUSE / EQUIVALENCE</strong><span>'+esc(p.reuse)+'</span></div><div class="ns-mc-acceptance"><strong>Acceptance outcomes</strong>'+list(p.acceptance)+'</div><div class="ns-mc-evidence"><strong>Evidence</strong><span>'+esc(p.evidence)+'</span></div></article>').join('')+'</div>':'')+
       (proposed?'<div class="ns-composer-step validator"><small>DETERMINISTIC VALIDATION</small><h3>'+(accepted?'PRIMARY EPIC ACCEPTED BY MANAGEMENT':proposalsBound?'BOUNDED PROPOSAL READY FOR MANAGEMENT REVIEW':'PROPOSAL CONTEXT MISMATCH · FAIL CLOSED')+'</h3><div class="ns-composer-checks">'+managementChecks.map(([name,status,note],i)=>{const actual=i===0?(proposalsBound?'PASS':'FAIL'):status;return '<article><div><strong>'+esc(name)+'</strong><span>'+esc(i===0?(proposalsBound?'Every proposed Epic remains bound to the exact current CAR outcome and scope.':'Proposal context does not match the selected authorization outcome/scope.'):note)+'</span></div>'+badge(actual,actual==='PASS'?'green':'amber')+'</article>';}).join('')+'</div><p class="ns-composer-note">Composite AI proposes decomposition. Deterministic checks validate lineage, scope and structure. Management remains accountable for accepting work.</p></div>':'')+
       '<div class="ns-composer-actions">'+
