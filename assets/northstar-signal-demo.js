@@ -547,14 +547,50 @@
     }
   ];
 
+  function withProposalContext(proposals,ctx) {
+    if(!ctx.authorization)return [];
+    return proposals.map(p=>({...p,proposalContext:{
+      objectiveId:ctx.objective.objectiveId,
+      krId:ctx.kr.id,
+      decisionId:ctx.authorization.decisionId,
+      authorizedOutcome:ctx.authorization.outcome,
+      authorizedScope:ctx.authorization.scope
+    }}));
+  }
+
   function managementProposalsForSelectedContext() {
     const ctx=selectedOkrContext();
-    if(ctx.objective.objectiveId==='O9'&&ctx.kr.id==='KR9.4')return managementEpicProposals;
-    if(ctx.objective.objectiveId==='O10'&&ctx.kr.id==='KR10.1')return [
-      {id:'MEP-O10-001',epic:'EP-CANDIDATE-O10-01',title:'Governed Product Reuse Discovery',outcome:'Make accepted-product discovery and equivalence evidence explicit before a new reusable capability build path is authorized.',acceptance:['Accepted products are checked before new productization','Equivalence evidence is retained','A new build path requires explicit insufficiency evidence'],evidence:'Accepted product catalog · equivalence assessment · accountable review',reuse:'REUSE-FIRST · EXISTING PRODUCTS MUST BE EVALUATED',reuseTone:'green'},
-      {id:'MEP-O10-002',epic:'EP-CANDIDATE-O10-02',title:'Reuse Decision Evidence Contract',outcome:'Standardize evidence showing why reuse satisfied or did not satisfy the requested capability outcome.',acceptance:['Decision evidence is attributable','Product equivalence is explicit','No build authority is inferred from assessment'],evidence:'Reuse assessment · decision record · product binding',reuse:'EVIDENCE CONTRACT · NO DUPLICATE PRODUCT ASSUMPTION',reuseTone:'amber'}
-    ];
+    if(ctx.objective.objectiveId==='O9'&&ctx.kr.id==='KR9.4')return withProposalContext(managementEpicProposals,ctx);
+    if(ctx.objective.objectiveId==='O10'&&ctx.kr.id==='KR10.1')return withProposalContext([
+      {
+        id:'MEP-O10-001',epic:'EP-CANDIDATE-O10-01',title:'Reusable Data Platform Foundation',
+        outcome:'Define and validate the reusable data-platform foundation product authorized by CPD-0002 without widening its bounded product-definition scope.',
+        acceptance:['Reusable data-platform product contract is defined','Bounded validation passes against the authorized scope','Accepted-product equivalence is checked before implementation','Delivery evidence remains separate from benefit evidence'],
+        evidence:'Reuse assessment · Guard result · accountable review · product contract',
+        reuse:'REUSE-FIRST CONSTRAINT · EXISTING GOVERNED PRODUCTS MUST BE EVALUATED BEFORE NET-NEW IMPLEMENTATION',
+        reuseTone:'green'
+      },
+      {
+        id:'MEP-O10-002',epic:'EP-CANDIDATE-O10-02',title:'Data Platform Consumer Contract',
+        outcome:'Define the bounded consumer contract and onboarding path for the authorized reusable data-platform foundation without adding new execution authority.',
+        acceptance:['Consumer contract is explicit','Existing governed product paths are reused where equivalent','No funding, deployment, provisioning or risk authority is inferred'],
+        evidence:'Product contract · consumer eligibility · reuse/equivalence evidence',
+        reuse:'CONSUMER REUSE PATH · NO DUPLICATE PRODUCT ASSUMPTION',
+        reuseTone:'amber'
+      }
+    ],ctx);
     return [];
+  }
+
+  function proposalMatchesSelectedAuthorization(proposal) {
+    const ctx=selectedOkrContext();
+    const pc=proposal&&proposal.proposalContext;
+    return Boolean(ctx.authorization&&pc&&
+      pc.objectiveId===ctx.objective.objectiveId&&
+      pc.krId===ctx.kr.id&&
+      pc.decisionId===ctx.authorization.decisionId&&
+      pc.authorizedOutcome===ctx.authorization.outcome&&
+      pc.authorizedScope===ctx.authorization.scope);
   }
 
   const managementChecks=[
@@ -622,15 +658,16 @@
     }
     const proposals=managementProposalsForSelectedContext();
     const proposed=state.managementProposalState!=='idle';
-    const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent();
+    const proposalsBound=proposals.length>0&&proposals.every(proposalMatchesSelectedAuthorization);
+    const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent()&&proposalsBound;
     return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
       '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · Compose candidate Epics.</h2><p>Composite AI receives a bounded context package: Objective, KR, CPD, current CAR, constraints, evidence requirements and existing portfolio context.</p></div>'+badge(primary.carId,'green')+'</div>'+
       '<div class="ns-mc-context"><small>BOUNDED CONTEXT</small><span>'+esc(ctx.objective.objectiveId)+'</span><span>'+esc(ctx.kr.id)+'</span><span>'+esc(ctx.authorization?ctx.authorization.decisionId:'NO AUTHORIZATION DECISION')+'</span><span>'+esc(primary.carId)+'</span><span>Existing product catalog</span><span>Existing Epic relationships</span></div>'+
       (!proposed?'<div class="ns-mc-empty"><h3>Management intent</h3><p>Decompose the selected authorized Key Result into the smallest useful set of outcome-oriented Epics while preferring reuse over duplicate work.</p><button type="button" class="primary" data-management-draft>Propose Epics with Composite AI</button></div>':'')+
       (proposed?'<div class="ns-mc-proposals"><small>AI-PROPOSED · SYNTHETIC FIXTURE</small>'+proposals.map((p,i)=>'<article data-management-proposal="'+esc(p.id)+'"><div class="ns-mc-proposal-head"><div><small>'+esc(p.id)+' · '+esc(p.epic)+'</small><h3>'+esc(p.title)+'</h3></div>'+badge(i===0?'PRIMARY':'CANDIDATE',i===0?'blue':'neutral')+'</div><p>'+esc(p.outcome)+'</p><div class="ns-mc-reuse '+p.reuseTone+'"><strong>REUSE / EQUIVALENCE</strong><span>'+esc(p.reuse)+'</span></div><div class="ns-mc-acceptance"><strong>Acceptance outcomes</strong>'+list(p.acceptance)+'</div><div class="ns-mc-evidence"><strong>Evidence</strong><span>'+esc(p.evidence)+'</span></div></article>').join('')+'</div>':'')+
-      (proposed?'<div class="ns-composer-step validator"><small>DETERMINISTIC VALIDATION</small><h3>'+(accepted?'PRIMARY EPIC ACCEPTED BY MANAGEMENT':'BOUNDED PROPOSAL READY FOR MANAGEMENT REVIEW')+'</h3><div class="ns-composer-checks">'+managementChecks.map(([name,status,note])=>'<article><div><strong>'+esc(name)+'</strong><span>'+esc(note)+'</span></div>'+badge(status,status==='PASS'?'green':'amber')+'</article>').join('')+'</div><p class="ns-composer-note">Composite AI proposes decomposition. Deterministic checks validate lineage, scope and structure. Management remains accountable for accepting work.</p></div>':'')+
+      (proposed?'<div class="ns-composer-step validator"><small>DETERMINISTIC VALIDATION</small><h3>'+(accepted?'PRIMARY EPIC ACCEPTED BY MANAGEMENT':proposalsBound?'BOUNDED PROPOSAL READY FOR MANAGEMENT REVIEW':'PROPOSAL CONTEXT MISMATCH · FAIL CLOSED')+'</h3><div class="ns-composer-checks">'+managementChecks.map(([name,status,note],i)=>{const actual=i===0?(proposalsBound?'PASS':'FAIL'):status;return '<article><div><strong>'+esc(name)+'</strong><span>'+esc(i===0?(proposalsBound?'Every proposed Epic remains bound to the exact current CAR outcome and scope.':'Proposal context does not match the selected authorization outcome/scope.'):note)+'</span></div>'+badge(actual,actual==='PASS'?'green':'amber')+'</article>';}).join('')+'</div><p class="ns-composer-note">Composite AI proposes decomposition. Deterministic checks validate lineage, scope and structure. Management remains accountable for accepting work.</p></div>':'')+
       '<div class="ns-composer-actions">'+
-        (proposed&&!accepted?'<button type="button" class="primary" data-management-accept>Accept primary Epic</button><button type="button" data-management-regenerate>Regenerate</button><button type="button" data-management-reject>Reject proposals</button>':'')+
+        (proposed&&!accepted&&proposalsBound?'<button type="button" class="primary" data-management-accept>Accept primary Epic</button><button type="button" data-management-regenerate>Regenerate</button><button type="button" data-management-reject>Reject proposals</button>':proposed&&!accepted?'<button type="button" data-management-regenerate>Regenerate</button><button type="button" data-management-reject>Reject proposals</button>':'')+
         (accepted?'<button type="button" class="primary" data-view="handoff">Continue to Execution Handoff</button><button type="button" data-management-regenerate>Regenerate</button>':'')+
       '</div>'+
       (accepted&&state.acceptedEpic?'<div class="ns-mc-accepted"><strong>MANAGEMENT ACCEPTED</strong><span>'+esc(state.acceptedEpic.epic)+' · '+esc(state.acceptedEpic.title)+'</span><small>Acceptance creates a bounded candidate for BHP generation. It does not write to an external backlog.</small></div>':'')+
@@ -1049,7 +1086,7 @@
     if(e.target.closest('[data-management-draft]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-regenerate]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-reject]')){state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
-    if(e.target.closest('[data-management-accept]')){const binding=selectedAuthorizationBinding();if(binding){state.managementProposalState='accepted';const proposals=managementProposalsForSelectedContext();if(proposals[0])state.acceptedEpic={...proposals[0],authorizationBinding:{...binding}};}invalidateHandoff();render();return;}
+    if(e.target.closest('[data-management-accept]')){const binding=selectedAuthorizationBinding();const proposals=managementProposalsForSelectedContext();if(binding&&proposals[0]&&proposalMatchesSelectedAuthorization(proposals[0])){state.managementProposalState='accepted';state.acceptedEpic={...proposals[0],authorizationBinding:{...binding}};}invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-authorize]')){const ctx=selectedOkrContext();if(!ctx.authorization)return;state.authorizationReturnView='management';state.selectedAuthorizationId=ctx.authorization.decisionId;state.role='leader';state.view='authorization';render();return;}
     const authCheck=e.target.closest('[data-auth-check]');
     if(authCheck){
