@@ -82,9 +82,12 @@ jobs:
           node --check assets/portfolio.js
           node scripts/test_portfolio_bundle.cjs
           echo "Portfolio bundle test exit: $?"
+          echo "after bundle"
           grep -Fq "traceability-only-hidden-from-executive-view" assets/portfolio.js
           grep -Fq '"registeredMeasures": "traceability-only-hidden-from-executive-view"' data/roadmap-relationships.json
+          echo "after roadmap registeredMeasures"
           grep -Fq "node('details','roadmap-objective')" assets/portfolio.js
+          echo "after roadmap objective renderer"
           grep -Fq "node('details','roadmap-headline-kr')" assets/portfolio.js
           grep -Fq "roadmap-expand-all" portfolio/index.html
           grep -Fq "roadmap-collapse-all" portfolio/index.html
