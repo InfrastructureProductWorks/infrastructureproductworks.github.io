@@ -846,7 +846,8 @@
     if(e.target.closest('[data-management-regenerate]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-reject]')){state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-accept]')){const binding=currentPrimaryAuthorizationBinding();if(binding){state.managementProposalState='accepted';state.acceptedEpic={...managementEpicProposals[0],authorizationBinding:{...binding}};}invalidateHandoff();render();return;}
-    if(e.target.closest('[data-management-authorize]')){state.authorizationReturnView='management';state.selectedAuthorizationId=model.decisionId;state.role='leader';state.view='authorization';render();return;}\n        const authCheck=e.target.closest('[data-auth-check]');
+    if(e.target.closest('[data-management-authorize]')){state.authorizationReturnView='management';state.selectedAuthorizationId=model.decisionId;state.role='leader';state.view='authorization';render();return;}
+    const authCheck=e.target.closest('[data-auth-check]');
     if(authCheck){
       const id=authCheck.dataset.authCheck;
       state.selectedAuthorizationIds=authCheck.checked
