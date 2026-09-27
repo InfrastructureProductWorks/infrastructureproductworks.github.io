@@ -588,7 +588,7 @@
   }
 
   function management() {
-    const s=current();
+    const s=selectedFeedback();
     const ctx=selectedOkrContext();
     const primary=selectedAuthorization()||{authorized:false,decision:'NO DECISION',carId:null};
     return headline(primary.authorized?'Translate authorized intent into bounded delivery.':'No authorized product-intent handoff exists.',
