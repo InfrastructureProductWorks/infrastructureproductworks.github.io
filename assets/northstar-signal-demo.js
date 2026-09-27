@@ -227,13 +227,16 @@
   function initialAuthorizationReceipts() {
     const item=authorizationQueue.find(candidate=>candidate.decisionId==='CPD-0002');
     const decision=item.initialDecision;
-    const pkg=authorizationPackage(item,decision);
+    const material=[
+      item.decisionId,item.objectiveId,item.krId,item.outcome,item.scope,item.environments,
+      item.productOwner,item.owner,item.evidence,decision
+    ].join('|');
     return {
       [item.decisionId]:{
-        packageId:pkg.packageId,
-        evidenceDigest:pkg.evidenceDigest,
-        approver:pkg.approver,
-        reviewDate:pkg.reviewDate,
+        packageId:'AUTH-PKG-'+item.decisionId.split('-')[1],
+        evidenceDigest:stableDigest(material),
+        approver:'Division Leader · synthetic accountable role',
+        reviewDate:model.carReview,
         decision,
         carId:item.carId,
         confirmed:true
