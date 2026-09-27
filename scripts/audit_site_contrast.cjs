@@ -183,6 +183,12 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-confirm-authorization]').click();
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
         if(!/Governed Product Reuse Discovery/.test(await page.locator('.ns-handoff-package').innerText()))throw new Error('Unrelated CPD-0001 confirmation must not invalidate accepted CPD-0002 work');
+        await page.locator('[data-view="okr"]').click();
+        await page.locator('[data-open-trail="KR9.4"]').click();
+        await page.locator('[data-close-trail]').click();
+        await page.locator('[data-view="management"]').click();
+        const resetManagement=await page.locator('.ns-management-composer').innerText();
+        if(!/O9 → KR9.4/.test(resetManagement)||!/Propose Epics with Composite AI/.test(resetManagement)||/MANAGEMENT ACCEPTED/.test(resetManagement)||/Governed Product Reuse Discovery/.test(resetManagement))throw new Error('Changing selected KR through trace must invalidate prior management proposal and acceptance state');
         // Legacy authorization and CAR-rebinding regressions require a pristine demo state.
         // Reload after the multi-persona journey so those tests prove their own invariants independently.
         await page.reload({waitUntil:'networkidle'});
