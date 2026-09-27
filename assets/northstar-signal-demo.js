@@ -709,7 +709,7 @@
         '<button type="button" data-auth-select="'+esc(item.decisionId)+'">Review item</button>'+
       '</article>';
     }).join('');
-    const pending=authorizationQueue.filter(item=>!['APPROVED','REUSE EXISTING','DEFERRED'].includes(authorizationDecision(item))).length;
+    const pendingCar=authorizationQueue.filter(item=>{const r=authorizationRecord(item);return authorizationEligibility(item).eligible&&!r.authorized;}).length;
     const authorizedCount=authorizationQueue.filter(item=>authorizationRecord(item).authorized).length;
     const selectedItems=authorizationQueue.filter(item=>selectedSet.has(item.decisionId));
     const selectedEligible=selectedItems.filter(item=>authorizationEligibility(item).eligible);
@@ -719,7 +719,7 @@
       'Work the decision portfolio without turning multi-select into blanket authority. Northstar evaluates each selected item independently and emits a separate bounded record only after accountable confirmation.',
       'LEADERSHIP DECISION WORKSPACE'
     )+
-    '<div class="ns-auth-summary"><article><small>QUEUE ITEMS</small><strong>'+authorizationQueue.length+'</strong><span>Independent decisions</span></article><article><small>AUTHORIZED</small><strong>'+authorizedCount+'</strong><span>Current bounded product-intent records</span></article><article><small>NEEDS DECISION</small><strong>'+pending+'</strong><span>Human decision still required</span></article></div>'+
+    '<div class="ns-auth-summary"><article><small>QUEUE ITEMS</small><strong>'+authorizationQueue.length+'</strong><span>Independent decisions</span></article><article><small>AUTHORIZED</small><strong>'+authorizedCount+'</strong><span>Current bounded product-intent records</span></article><article><small>NEEDS CAR CONFIRMATION</small><strong>'+pendingCar+'</strong><span>Approved or conditional decisions awaiting exact package confirmation</span></article></div>'+
     '<div class="ns-batch-bar"><div><small>SELECTED FOR REVIEW</small><strong>'+selectedItems.length+' item'+(selectedItems.length===1?'':'s')+'</strong><span>'+selectedEligible.length+' eligible for authorization · '+(selectedItems.length-selectedEligible.length)+' require individual handling</span></div><button type="button" data-review-selected '+(selectedItems.length?'':'disabled')+'>Review selected</button></div>'+
     '<div class="ns-auth-layout"><div class="ns-auth-list">'+cards+'</div>'+
     '<section class="ns-auth-detail" aria-label="Selected authorization item">'+
@@ -735,11 +735,13 @@
         ['Required evidence', esc(selected.evidence)]
       ])+
       '<div class="ns-auth-actions" aria-label="Synthetic decision actions">'+
-        '<button type="button" data-auth-action="conditional" data-auth-id="'+esc(selected.decisionId)+'">Approve conditionally</button>'+
-        '<button type="button" data-auth-action="approve" data-auth-id="'+esc(selected.decisionId)+'">Approve</button>'+
-        '<button type="button" data-auth-action="reuse" data-auth-id="'+esc(selected.decisionId)+'">Reuse existing</button>'+
-        '<button type="button" data-auth-action="defer" data-auth-id="'+esc(selected.decisionId)+'">Defer</button>'+
-        '<button type="button" class="primary" data-authorize-item="'+esc(selected.decisionId)+'" '+(authorizationEligibility(selected).eligible?'':'disabled')+'>Review authorization package</button>'+
+        ((selected.decisionId==='CPD-0003'||selected.decisionId==='CPD-0004')
+          ? '<div class="ns-boundary-box"><strong>Seeded decision fixture.</strong> This example is intentionally locked to '+esc(selectedRecord.decision)+' so reuse and insufficient-evidence paths cannot masquerade as authorized CARs.</div>'
+          : '<button type="button" data-auth-action="conditional" data-auth-id="'+esc(selected.decisionId)+'">Approve conditionally</button>'+
+            '<button type="button" data-auth-action="approve" data-auth-id="'+esc(selected.decisionId)+'">Approve</button>'+
+            '<button type="button" data-auth-action="reuse" data-auth-id="'+esc(selected.decisionId)+'">Reuse existing</button>'+
+            '<button type="button" data-auth-action="defer" data-auth-id="'+esc(selected.decisionId)+'">Defer</button>'+
+            '<button type="button" class="primary" data-authorize-item="'+esc(selected.decisionId)+'" '+(authorizationEligibility(selected).eligible?'':'disabled')+'>Review authorization package</button>')+
       '</div>'+
       '<div class="ns-boundary-box"><strong>Decision is not execution authority.</strong> The authorization ceremony binds the exact product intent, evidence digest, accountable role and review date. It still does not grant spending, risk, deployment, provisioning or cloud mutation authority.</div>'+
       '<div class="ns-denied"><h3>Not granted by a Northstar CAR</h3>'+model.authorityDenied.map(x=>'<span>× '+esc(x)+'</span>').join('')+'</div>'+
