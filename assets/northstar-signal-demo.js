@@ -197,7 +197,9 @@
     authorizationReceipts:{},
     handoffTarget:'jira',
     handoffConfirmed:false,
-    handoffReceipt:null
+    handoffReceipt:null,
+    managementProposalState:'idle',
+    acceptedEpic:null
   };
   let trailOpener = null;
   let composerOpener = null;
@@ -451,11 +453,59 @@
     '<div class="ns-attention"><h3>What needs leadership attention</h3>'+list(s.attention)+'</div>';
   }
 
+  const managementEpicProposals=[
+    {
+      id:'MEP-0001',epic:'EP-23',title:'Managed Network Foundation',
+      outcome:'Deliver a reusable managed-network product contract that preserves the authorized KR9.4 outcome.',
+      acceptance:['Reusable product contract published','Bounded validation passes','Consumer path demonstrated','Delivery evidence remains separate from benefit evidence'],
+      evidence:'Guard result · Console review · Forge product contract',
+      reuse:'NO EQUIVALENT ACCEPTED PRODUCT FOUND',
+      reuseTone:'green'
+    },
+    {
+      id:'MEP-0002',epic:'EP-CANDIDATE-02',title:'Network Consumer Onboarding',
+      outcome:'Standardize consumer onboarding into the managed-network product without widening CAR-0001.',
+      acceptance:['Consumer eligibility is explicit','Existing product path reused','No new infrastructure authority introduced'],
+      evidence:'Storefront selection · accepted product binding',
+      reuse:'PARTIAL OVERLAP · REVIEW WITH EXISTING STOREFRONT FLOW',
+      reuseTone:'amber'
+    }
+  ];
+
+  const managementChecks=[
+    ['CAR scope binding','PASS','Every proposed Epic remains within the exact current CAR scope.'],
+    ['KR traceability','PASS','Each proposal states how it contributes to KR9.4 rather than merely listing tasks.'],
+    ['Outcome-oriented Epic','PASS','Acceptance is expressed as observable capability outcomes.'],
+    ['Evidence requirements','PASS','Each proposal names evidence required to demonstrate delivery.'],
+    ['Authority expansion','PASS','No proposal adds funding, deployment, provisioning, cloud or risk authority.'],
+    ['Reuse / equivalence','REVIEW','Northstar checks existing portfolio context before accepting new work.'],
+    ['Activity ≠ benefit','PASS','Epic completion cannot by itself declare the Key Result or business benefit achieved.']
+  ];
+
+  function managementComposer() {
+    const primary=primaryAuthorization();
+    if(!primary.authorized)return '<div class="ns-boundary-box"><strong>Composite AI blocked:</strong> Management Composer requires a current CAR. Candidate planning context cannot be promoted into executable work without confirmed product-intent authorization.</div>';
+    const proposed=state.managementProposalState!=='idle';
+    const accepted=state.managementProposalState==='accepted';
+    return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
+      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>Translate the authorized outcome into candidate Epics.</h2><p>Composite AI receives a bounded context package: Objective, KR, CPD, current CAR, constraints, evidence requirements and existing portfolio context.</p></div>'+badge(primary.carId,'green')+'</div>'+
+      '<div class="ns-mc-context"><small>BOUNDED CONTEXT</small><span>'+esc(model.objectiveId)+'</span><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span><span>'+esc(primary.carId)+'</span><span>Existing product catalog</span><span>Existing Epic relationships</span></div>'+
+      (!proposed?'<div class="ns-mc-empty"><h3>Management intent</h3><p>Decompose the authorized managed-network outcome into the smallest useful set of outcome-oriented Epics while preferring reuse over duplicate work.</p><button type="button" class="primary" data-management-draft>Propose Epics with Composite AI</button></div>':'')+
+      (proposed?'<div class="ns-mc-proposals"><small>AI-PROPOSED · SYNTHETIC FIXTURE</small>'+managementEpicProposals.map((p,i)=>'<article data-management-proposal="'+esc(p.id)+'"><div class="ns-mc-proposal-head"><div><small>'+esc(p.id)+' · '+esc(p.epic)+'</small><h3>'+esc(p.title)+'</h3></div>'+badge(i===0?'PRIMARY':'CANDIDATE',i===0?'blue':'neutral')+'</div><p>'+esc(p.outcome)+'</p><div class="ns-mc-reuse '+p.reuseTone+'"><strong>REUSE / EQUIVALENCE</strong><span>'+esc(p.reuse)+'</span></div><div class="ns-mc-acceptance"><strong>Acceptance outcomes</strong>'+list(p.acceptance)+'</div><div class="ns-mc-evidence"><strong>Evidence</strong><span>'+esc(p.evidence)+'</span></div></article>').join('')+'</div>':'')+
+      (proposed?'<div class="ns-composer-step validator"><small>DETERMINISTIC VALIDATION</small><h3>'+(accepted?'PRIMARY EPIC ACCEPTED BY MANAGEMENT':'BOUNDED PROPOSAL READY FOR MANAGEMENT REVIEW')+'</h3><div class="ns-composer-checks">'+managementChecks.map(([name,status,note])=>'<article><div><strong>'+esc(name)+'</strong><span>'+esc(note)+'</span></div>'+badge(status,status==='PASS'?'green':'amber')+'</article>').join('')+'</div><p class="ns-composer-note">Composite AI proposes decomposition. Deterministic checks validate lineage, scope and structure. Management remains accountable for accepting work.</p></div>':'')+
+      '<div class="ns-composer-actions">'+
+        (proposed&&!accepted?'<button type="button" class="primary" data-management-accept>Accept primary Epic</button><button type="button" data-management-regenerate>Regenerate</button><button type="button" data-management-reject>Reject proposals</button>':'')+
+        (accepted?'<button type="button" class="primary" data-view="handoff">Continue to Execution Handoff</button><button type="button" data-management-regenerate>Regenerate</button>':'')+
+      '</div>'+
+      (accepted&&state.acceptedEpic?'<div class="ns-mc-accepted"><strong>MANAGEMENT ACCEPTED</strong><span>'+esc(state.acceptedEpic.epic)+' · '+esc(state.acceptedEpic.title)+'</span><small>Acceptance creates a bounded candidate for BHP generation. It does not write to an external backlog.</small></div>':'')+
+    '</section>';
+  }
+
   function management() {
     const s=current();
     const primary=primaryAuthorization();
     return headline(primary.authorized?'Translate authorized intent into bounded delivery.':'No authorized product-intent handoff exists.',
-      'Management carries the outcome, constraints, evidence requirements and team mapping into execution without turning Northstar into another sprint tool.',
+      'Management carries the outcome, constraints and evidence requirements into execution. Composite AI may propose Epics, but it cannot accept work or widen the CAR.',
       'MANAGEMENT LENS')+
       kv([
         ['Decision state', badge(primary.decision,primary.authorized?'green':'blue')],
@@ -465,13 +515,10 @@
         ['Assigned team', esc(model.team)],
         ['Delivery system', esc(model.backlog)],
         ['Delivery state', badge(s.delivery,'blue')],
-        ['Epic', '<code>'+esc(model.epic)+'</code> · '+esc(model.epicTitle)]
+        ['Accepted Epic', state.acceptedEpic?'<code>'+esc(state.acceptedEpic.epic)+'</code> · '+esc(state.acceptedEpic.title):'None · management review required']
       ])+
-      '<div class="ns-grid-3">'+
-        '<article><small>DEPENDENCY</small><h3>'+(primary.authorized?'Accepted CAR binding':'Authorization required')+'</h3><p>'+(primary.authorized?'Delivery cannot silently widen or replace the authorized outcome.':'Management cannot treat candidate backlog context as an authorized handoff without a current CAR.')+'</p></article>'+
-        '<article><small>TARGET MEASURE</small><h3>Exact lineage retained</h3><p>Division → Objective → KR → CAR → Epic remains intact.</p></article>'+
-        '<article><small>CONSTRAINT</small><h3>No live writeback</h3><p>The public demo does not write to Jira, GitHub, Azure DevOps or cloud systems.</p></article>'+
-      '</div>';
+      '<div class="ns-grid-3"><article><small>DEPENDENCY</small><h3>'+(primary.authorized?'Accepted CAR binding':'Authorization required')+'</h3><p>'+(primary.authorized?'AI and management cannot silently widen or replace the authorized outcome.':'Management cannot promote candidate work without a current CAR.')+'</p></article><article><small>TRANSLATION</small><h3>Composite AI assisted</h3><p>Objective → KR → CAR becomes candidate outcome-oriented Epics with reuse checks.</p></article><article><small>CONSTRAINT</small><h3>No live writeback</h3><p>Accepting an Epic creates no Jira, GitHub or Azure DevOps work item.</p></article></div>'+
+      managementComposer();
   }
 
   function decision() {
@@ -688,13 +735,15 @@
     if(!primary.authorized)return null;
     const adapter=backlogAdapters[state.handoffTarget];
     const material=[model.objectiveId,model.krId,model.decisionId,primary.carId,model.epic,model.epicTitle,model.proposedOutcome,adapter.label,adapter.project,'Retain exact CAR binding','Evidence required before outcome claim'].join('|');
-    return {id:'BHP-0001',carId:primary.carId,objectiveId:model.objectiveId,krId:model.krId,decisionId:model.decisionId,epic:model.epic,epicTitle:model.epicTitle,target:adapter.label,project:adapter.project,workItemType:adapter.type,digest:stableDigest(material),status:state.handoffConfirmed?'HANDOFF CONFIRMED':'AWAITING HUMAN HANDOFF'};
+    if(!state.acceptedEpic)return null;
+    return {id:'BHP-0001',carId:primary.carId,objectiveId:model.objectiveId,krId:model.krId,decisionId:model.decisionId,epic:state.acceptedEpic.epic,epicTitle:state.acceptedEpic.title,target:adapter.label,project:adapter.project,workItemType:adapter.type,digest:stableDigest(material+'|'+state.acceptedEpic.id+'|'+state.acceptedEpic.epic+'|'+state.acceptedEpic.title),status:state.handoffConfirmed?'HANDOFF CONFIRMED':'AWAITING HUMAN HANDOFF'};
   }
 
   function invalidateHandoff(){state.handoffConfirmed=false;state.handoffReceipt=null;}
 
   function handoff() {
     const s=current(), primary=primaryAuthorization(), pkg=handoffPackage();
+    if(primary.authorized&&!pkg)return headline('Management acceptance required.','A current CAR exists, but Northstar will not create BHP-0001 until management accepts a deterministically validated Epic proposal.','EXECUTION HANDOFF')+'<div class="ns-boundary-box"><strong>Fail closed:</strong> Return to Management, review the Composite AI proposal and explicitly accept an Epic before handoff.</div>';
     if(!primary.authorized)return headline('No authorized backlog handoff exists.','A candidate Epic may remain visible as planning context, but Northstar cannot create a handoff package until an exact Capability Authorization Record is current.','EXECUTION HANDOFF')+
       '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(model.objectiveId)+' → '+esc(model.krId)+'</h3><p>Outcome remains traceable.</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>NO CURRENT CAR</h3><p>'+esc(primary.authorization.replaceAll('_',' '))+'</p></article><b>→</b><article><small>DELIVERY</small><h3>BLOCKED</h3><p>No authorized handoff package.</p></article></div>'+
       '<div class="ns-boundary-box"><strong>Fail closed:</strong> Northstar will not represent backlog write authority without a current CAR and a separately confirmed handoff package.</div>';
@@ -759,6 +808,10 @@
     if(e.target.closest('[data-composer-reset]')){ composerStep='intent'; state.composerAccepted=false; renderComposer(); return; }
     if(e.target.closest('[data-composer-accept]')){ composerStep='accepted'; state.composerAccepted=true; renderComposer(); return; }
     if(e.target.closest('[data-composer-done]')){ closeComposer(); state.view='okr'; render(); return; }
+    if(e.target.closest('[data-management-draft]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
+    if(e.target.closest('[data-management-regenerate]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
+    if(e.target.closest('[data-management-reject]')){state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
+    if(e.target.closest('[data-management-accept]')){state.managementProposalState='accepted';state.acceptedEpic={...managementEpicProposals[0]};invalidateHandoff();render();return;}
     const authCheck=e.target.closest('[data-auth-check]');
     if(authCheck){
       const id=authCheck.dataset.authCheck;
