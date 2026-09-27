@@ -156,6 +156,9 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await composeKr.click();
         const unsupportedComposer=await page.locator('.ns-management-composer').innerText();
         if(!/O10 → KR10.2/.test(unsupportedComposer)||!/AUTHORIZATION NOT DEFINED/.test(unsupportedComposer)||await page.locator('[data-management-draft]').count())throw new Error('Manager persona must preserve selected KR context and fail closed when no authorization decision exists');
+        await page.locator('[data-view="evidence"]').click();
+        const unsupportedEvidence=await page.locator('#northstar-view').innerText();
+        if(!/O10 → KR10.2/.test(unsupportedEvidence)||!/No authorization decision bound/.test(unsupportedEvidence)||/CPD-0001/.test(unsupportedEvidence)||/CAR-0001/.test(unsupportedEvidence))throw new Error('Evidence view must fail closed for a selected KR with no authorization contract');
         await page.locator('[data-view="okr"]').click();
         await page.locator('[data-compose-kr="KR10.1"]').click();
         if(!/O10 → KR10.1/.test(await page.locator('.ns-management-composer').innerText()))throw new Error('Manager persona must receive authorized non-primary KR context');
@@ -167,6 +170,9 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-view="decision"]').click();
         const o10Decision=await page.locator('#northstar-view').innerText();
         if(!/CPD-0002 · DECISION BRIEF/.test(o10Decision)||!/Standardize a reusable data-platform foundation product/.test(o10Decision)||/Create a reusable managed-network foundation product/.test(o10Decision))throw new Error('Decision view must remain bound to the selected O10/KR10.1 authorization context');
+        await page.locator('[data-view="evidence"]').click();
+        const o10Evidence=await page.locator('#northstar-view').innerText();
+        if(!/O10 → KR10.1/.test(o10Evidence)||!/CPD-0002/.test(o10Evidence)||!/CAR-0002/.test(o10Evidence)||!/Standardize a reusable data-platform foundation product/.test(o10Evidence)||/CPD-0001/.test(o10Evidence)||/CAR-0001/.test(o10Evidence)||/managed-network/.test(o10Evidence))throw new Error('Evidence view must remain bound to selected O10/KR10.1 evidence without primary-KR leakage');
         await page.locator('[data-view="management"]').click();
         await page.locator('[data-management-draft]').click();
         const o10ProposalText=await page.locator('.ns-management-composer').innerText();
