@@ -231,51 +231,48 @@ jobs:
             exit 1
           fi
           echo "Pre-forecast assertions validated."
-          node <<'NODE'
-          const fs=require('fs');
-          const data=JSON.parse(fs.readFileSync('data/roadmap-relationships.json','utf8'));
-          const allowed=new Set([0,25,50,75,100]);
-          if(data.schemaVersion!=='roadmap-relationship-view/v5') throw new Error('roadmap relationship schema');
-          if(data.contributionSource!=='config/portfolio-strategic-kr-contributions.json'||!/^[0-9a-f]{40}$/.test(data.contributionBlobSha||'')) throw new Error('contribution contract provenance');
-          if(data.relationshipModel?.epicContributionSemantics!=='relationship-specific-description-required') throw new Error('Epic contribution semantics');
-          const krById=new Map((data.keyResults||[]).map(k=>[k.id,k]));
-          const descriptionsByEpic=new Map();
-          for(const strategic of data.headlineKeyResults||[]){
-            if(strategic.objective!==String(strategic.id||'').split('-HKR',1)[0]) throw new Error(`Strategic KR Objective mismatch for ${strategic.id}`);
-            if(!Array.isArray(strategic.epicContributions)||strategic.epicContributions.length<1) throw new Error(`missing Epic contributions for ${strategic.id}`);
-            const derived=[...new Set(strategic.measures.flatMap(id=>(krById.get(id)||{epics:[]}).epics))];
-            const declared=strategic.epicContributions.map(edge=>edge.epic);
-            if(new Set(declared).size!==declared.length||derived.length!==declared.length||derived.some(id=>!declared.includes(id))) throw new Error(`Epic contribution coverage mismatch for ${strategic.id}`);
-            for(const edge of strategic.epicContributions){
-              if(typeof edge.description!=='string'||!edge.description.trim()) throw new Error(`missing contribution description for ${strategic.id}/${edge.epic}`);
-              const entries=descriptionsByEpic.get(edge.epic)||[];
-              entries.push(edge.description.trim().toLowerCase());
-              descriptionsByEpic.set(edge.epic,entries);
+          node -e '
+            const fs=require("fs");
+            const data=JSON.parse(fs.readFileSync("data/roadmap-relationships.json","utf8"));
+            const allowed=new Set([0,25,50,75,100]);
+            if(data.schemaVersion!=="roadmap-relationship-view/v5") throw new Error("roadmap relationship schema");
+            if(data.contributionSource!=="config/portfolio-strategic-kr-contributions.json"||!/^[0-9a-f]{40}$/.test(data.contributionBlobSha||"")) throw new Error("contribution contract provenance");
+            if(data.relationshipModel?.epicContributionSemantics!=="relationship-specific-description-required") throw new Error("Epic contribution semantics");
+            const krById=new Map((data.keyResults||[]).map(k=>[k.id,k]));
+            const descriptionsByEpic=new Map();
+            for(const strategic of data.headlineKeyResults||[]){
+              if(strategic.objective!==String(strategic.id||"").split("-HKR",1)[0]) throw new Error("Strategic KR Objective mismatch for "+strategic.id);
+              if(!Array.isArray(strategic.epicContributions)||strategic.epicContributions.length<1) throw new Error("missing Epic contributions for "+strategic.id);
+              const derived=[...new Set(strategic.measures.flatMap(id=>(krById.get(id)||{epics:[]}).epics))];
+              const declared=strategic.epicContributions.map(edge=>edge.epic);
+              if(new Set(declared).size!==declared.length||derived.length!==declared.length||derived.some(id=>!declared.includes(id))) throw new Error("Epic contribution coverage mismatch for "+strategic.id);
+              for(const edge of strategic.epicContributions){
+                if(typeof edge.description!=="string"||!edge.description.trim()) throw new Error("missing contribution description for "+strategic.id+"/"+edge.epic);
+                const entries=descriptionsByEpic.get(edge.epic)||[];
+                entries.push(edge.description.trim().toLowerCase());
+                descriptionsByEpic.set(edge.epic,entries);
+              }
             }
-          }
-          for(const [epic,entries] of descriptionsByEpic){
-            if(entries.length>1&&new Set(entries).size!==entries.length) throw new Error(`duplicate multi-KR contribution description for ${epic}`);
-          }
-          if(data.forecastModel?.method!=='linear-evidence-trend/v1') throw new Error('forecastModel method');
-          if(data.forecastModel.minimumSnapshots!==2||data.forecastModel.minimumSpanDays!==7) throw new Error('forecast bounds');
-          if(data.forecastModel.blockedBehavior!=='no-date-inferred'||data.forecastModel.planningWindows!=='explicit-roadmap-assumptions') throw new Error('forecast semantics');
-          if(!Array.isArray(data.progressHistory)||data.progressHistory.length<1) throw new Error('progressHistory missing');
-          let prior='';
-          for(const snapshot of data.progressHistory){
-            if(!/^\d{4}-\d{2}-\d{2}$/.test(snapshot.date)||snapshot.date<=prior) throw new Error('history dates');
-            if(snapshot.date>data.generatedAt) throw new Error('future history snapshot');
-            const ids=Object.keys(snapshot.epics||{});
-            if(ids.length<1||ids.some(id=>!/^EP-\d+$/.test(id))) throw new Error('history epic identifiers');
-            if(ids.some(id=>!allowed.has(snapshot.epics[id]))) throw new Error('history completion scale');
-            prior=snapshot.date;
-          }
-          const ep08=data.epics['EP-08'];
-          if(!ep08||!/externally blocked|external prerequisite|customer-dependent/i.test(`${ep08.status||''} ${ep08.progress||''} ${ep08.progressBasis||''} ${ep08.time||''}`)) throw new Error('EP-08 external block contract');
-          console.log('Portfolio forecast contract validated.');
-          NODE
+            for(const [epic,entries] of descriptionsByEpic) if(entries.length>1&&new Set(entries).size!==entries.length) throw new Error("duplicate multi-KR contribution description for "+epic);
+            if(data.forecastModel?.method!=="linear-evidence-trend/v1") throw new Error("forecastModel method");
+            if(data.forecastModel.minimumSnapshots!==2||data.forecastModel.minimumSpanDays!==7) throw new Error("forecast bounds");
+            if(data.forecastModel.blockedBehavior!=="no-date-inferred"||data.forecastModel.planningWindows!=="explicit-roadmap-assumptions") throw new Error("forecast semantics");
+            if(!Array.isArray(data.progressHistory)||data.progressHistory.length<1) throw new Error("progressHistory missing");
+            let prior="";
+            for(const snapshot of data.progressHistory){
+              if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(snapshot.date)||snapshot.date<=prior) throw new Error("history dates");
+              if(snapshot.date>data.generatedAt) throw new Error("future history snapshot");
+              const ids=Object.keys(snapshot.epics||{});
+              if(ids.length<1||ids.some(id=>!/^EP-\\d+$/.test(id))) throw new Error("history epic identifiers");
+              if(ids.some(id=>!allowed.has(snapshot.epics[id]))) throw new Error("history completion scale");
+              prior=snapshot.date;
+            }
+            const ep08=data.epics["EP-08"];
+            if(!ep08||!/externally blocked|external prerequisite|customer-dependent/i.test((ep08.status||"")+" "+(ep08.progress||"")+" "+(ep08.progressBasis||"")+" "+(ep08.time||""))) throw new Error("EP-08 external block contract");
+            console.log("Portfolio forecast contract validated.");
+          '
           echo "Forecast node assertions completed."
           echo "validate-portfolio-outlook complete"
-          exit 0
 
   verify-public-site:
     name: verify-custom-domain
