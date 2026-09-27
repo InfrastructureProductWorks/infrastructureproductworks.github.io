@@ -122,9 +122,9 @@ main>.hero .button.ghost{background:#ffffff12;color:#fff;border-color:#ffffff55}
 .demo-explain{margin-top:18px}
 @media(max-width:1050px){
   .ns-shell-body{grid-template-columns:1fr}
-  .ns-view-nav{display:flex;overflow:auto}
+  .ns-view-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;overflow:visible;padding:12px}
   .ns-view-nav strong{display:none}
-  .ns-view-nav button{width:auto;white-space:nowrap}
+  .ns-view-nav button{width:100%;min-width:0;white-space:normal;text-align:center;line-height:1.25}
   .ns-leadership-grid{grid-template-columns:1fr}
 }
 @media(max-width:800px){
@@ -134,6 +134,7 @@ main>.hero .button.ghost{background:#ffffff12;color:#fff;border-color:#ffffff55}
   .ns-kr-row{grid-template-columns:1fr}
 }
 @media(max-width:600px){
+  .ns-view-nav{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ns-main{padding:14px}
   .ns-exec-metrics{grid-template-columns:1fr}
   .ns-section-title{align-items:flex-start;flex-direction:column}
