@@ -59,13 +59,7 @@ Use the evidence view to answer: what was proposed, what evidence supported it, 
 ## 9 Review the management handoff
 Switch to **Management** or open **Backlog handoff**.
 
-Management translates authorized outcomes into executable work while preserving the upstream Objective, Key Result, CAR constraints, dependencies, evidence requirements, and accountability.
-
-In **Management Composer**, enter management intent in the text box to describe the Epic outcome, sequencing, dependencies, or decomposition you want Composite AI to propose. Then select one or more **currently authorized KRs**. Each selected KR keeps its own independent Decision and CAR binding; selecting multiple KRs does not merge or widen authority.
-
-Choose **Propose Epics with Composite AI**. The synthetic demo binds the proposal to the exact management-intent text and exact selected KR/CAR set, then runs deterministic scope, lineage, evidence, reuse, and authority-expansion checks before management can accept it. If the intent text, selected KR set, source CAR, package digest, or authorization changes, the stale proposal or acceptance is invalidated and must be recomposed or reaccepted.
-
-For a multi-KR Epic, inspect the visible lineage and handoff package to confirm that every Objective → KR → Decision → CAR source remains independently attributable. The handoff may combine authorized outcomes into one management Epic, but it does not create authority beyond the union of the explicitly selected source scopes.
+Management translates the authorized outcome into executable work while preserving the upstream Objective, Key Result, CAR constraints, dependencies, evidence requirements, and accountability.
 
 The demo shows a bounded Epic-level handoff. It does not write to Jira, Azure DevOps, ServiceNow, or another external backlog. Future adapters may carry the handoff into those systems without allowing the backlog to rewrite the upstream authorization.
 
@@ -93,6 +87,6 @@ The demo proves the interaction model and bounded contracts. Any future live ada
 ## 13 Troubleshooting
 If the demo appears to be on the wrong step, return to **Cloud Platform OKRs**, choose the Leadership role, and select **Decision Review**.
 
-If the OKR Composer is not visible, use the left navigation and choose **OKR Composer**. For management decomposition, choose **Management Composer** in the role controls or left navigation. The Management Composer remains visible before authorization, but it fails closed: without a current CAR it offers no Epic proposal, no management acceptance, and no BHP. Complete the exact authorization package, return to Management Composer, enter management intent, select one or more currently authorized KRs, generate the bounded Composite AI Epic proposal, review deterministic CAR/reuse/lineage validation, and explicitly accept the selected Epic. If the management intent, selected KR set, any source CAR/package digest, or source authorization changes, that proposal or management acceptance is invalid and must be regenerated or accepted again. Changing an unrelated page-context CAR does not invalidate a proposal that is not sourced from it. If an authorization item cannot be confirmed, inspect whether that item is intentionally blocked; selecting it with other items does not make it eligible.
+If the OKR Composer is not visible, use the left navigation and choose **OKR Composer**. For management decomposition, choose **Management Composer** in the role controls or left navigation. The Management Composer remains visible before authorization, but it fails closed: without a current CAR it offers no Epic proposal, no management acceptance, and no BHP. Complete the exact authorization package, return to Management Composer, generate the bounded Composite AI Epic proposals, review deterministic CAR/reuse validation, and explicitly accept the selected Epic. If the current CAR/package digest changes, that management acceptance is invalid and must be performed again. If an authorization item cannot be confirmed, inspect whether that item is intentionally blocked; selecting it with other items does not make it eligible.
 
 If a link or control does not behave as described, return to the [Northstar Signal product page](/northstar-signal/) and reopen the synthetic demo.
