@@ -33,7 +33,7 @@ nav a:hover,.nav-products summary:hover{color:#0f172a}
 .nav-products summary:after{color:#0f6fae}
 .nav-menu{
   border-color:#d5e0ea;
-  background:#fffffffa;
+  background:#fff;
   box-shadow:0 18px 45px #0f172a1f
 }
 .nav-menu a:hover{background:#f2f6fa}
