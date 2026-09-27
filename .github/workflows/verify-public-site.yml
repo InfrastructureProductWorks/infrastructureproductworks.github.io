@@ -125,8 +125,8 @@ jobs:
           echo "after backlog boundary"
           grep -Fq "button.setAttribute('aria-pressed', active ? 'true' : 'false')" assets/northstar-signal-demo.js
           echo "after pressed"
-          grep -Fq "KR9.4 AUTHORIZATION STATUS" assets/northstar-signal-demo.js
-          echo "after kr status"
+          grep -Fq "AUTHORIZATION STATUS</small>" assets/northstar-signal-demo.js
+          echo "after selected KR authorization status"
           grep -Fq "DOWNSTREAM BENEFIT FEEDBACK" assets/northstar-signal-demo.js
           echo "after benefit heading"
           grep -Fq "Northstar decision/CAR binding" assets/northstar-signal-demo.js
