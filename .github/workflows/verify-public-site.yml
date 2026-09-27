@@ -168,6 +168,12 @@ jobs:
           grep -Fq "GitHub Issues" assets/northstar-signal-demo.js
           grep -Fq "Management Composer / AI Epic proposals + deterministic validation" scripts/audit_site_contrast.cjs
           grep -Fq "Management Composer / CAR package rebinding" scripts/audit_site_contrast.cjs
+          grep -Fq "selectedOkrContext" assets/northstar-signal-demo.js
+          grep -Fq "selectedAuthorizationBinding" assets/northstar-signal-demo.js
+          grep -Fq "data-compose-kr" assets/northstar-signal-demo.js
+          grep -Fq "AUTHORIZATION NOT DEFINED" assets/northstar-signal-demo.js
+          grep -Fq "Leader persona must be able to choose a specific KR" scripts/audit_site_contrast.cjs
+          grep -Fq "Delivery persona must receive exact selected Objective/KR/decision lineage" scripts/audit_site_contrast.cjs
           grep -Fq "managementAcceptanceCurrent" assets/northstar-signal-demo.js
           grep -Fq "authorizationBinding" assets/northstar-signal-demo.js
           grep -Fq "invalidateManagementAcceptance" assets/northstar-signal-demo.js
