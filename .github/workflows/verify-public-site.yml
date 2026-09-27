@@ -153,9 +153,9 @@ jobs:
           grep -Fq "CAR NOT CONFIRMED" assets/northstar-signal-demo.js
           grep -Fq "REUSE · NO NEW CAR" assets/northstar-signal-demo.js
           grep -Fq "DEFERRED · NO CAR" assets/northstar-signal-demo.js
-          grep -Fq "Confirming guided CPD-0001 CAR must return directly to Management Composer" scripts/audit_site_contrast.cjs
+          grep -Fq "After CPD-0001 confirmation, Management Composer must expose the complete current CAR-backed KR pool" scripts/audit_site_contrast.cjs
           grep -Fq "Management Composer</button>" northstar-signal/demo/index.html
-          grep -Fq "Management Composer / visible fail-closed pre-CAR state" scripts/audit_site_contrast.cjs
+          grep -Fq "Management Composer / current CAR pool with selected pending CAR" scripts/audit_site_contrast.cjs
           grep -Fq "managementEpicProposals" assets/northstar-signal-demo.js
           grep -Fq "CAR scope binding" assets/northstar-signal-demo.js
           grep -Fq "REUSE / EQUIVALENCE" assets/northstar-signal-demo.js
