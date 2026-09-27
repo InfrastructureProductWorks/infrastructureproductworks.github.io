@@ -178,6 +178,17 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const o10Evidence=await page.locator('#northstar-view').innerText();
         if(!/O10 → KR10.1/.test(o10Evidence)||!/CPD-0002/.test(o10Evidence)||!/CAR-0002/.test(o10Evidence)||!/Standardize a reusable data-platform foundation product/.test(o10Evidence)||/CPD-0001/.test(o10Evidence)||/CAR-0001/.test(o10Evidence)||/managed-network/.test(o10Evidence))throw new Error('Evidence view must remain bound to selected O10/KR10.1 evidence without primary-KR leakage');
         await page.locator('[data-view="authorization"]').click();
+        await page.locator('[data-view="management"]').click();
+        if(await page.locator('[data-management-intent]').count()!==1)throw new Error('Management Composer must expose management intent when any current CAR-backed KR exists, even if the selected KR is not yet authorized');
+        const seededAuthorizedChoices=page.locator('[data-management-kr-check]');
+        if(await seededAuthorizedChoices.count()!==1||await seededAuthorizedChoices.first().getAttribute('data-management-kr-check')!=='CPD-0002')throw new Error('Management Composer must discover every current CAR-backed KR in management scope independently of selected page context');
+        if(!await seededAuthorizedChoices.first().isChecked())throw new Error('When exactly one authorized KR is available, Management Composer should preselect it for composition');
+        const seededComposerText=await page.locator('.ns-management-composer').innerText();
+        if(!/1 AUTHORIZED KR AVAILABLE/.test(seededComposerText)||!/O10 → KR10.1/.test(seededComposerText)||!/CAR-0002/.test(seededComposerText)||/AUTHORIZATION REQUIRED/.test(seededComposerText))throw new Error('Default Management Composer must foreground the authorized KR pool rather than the selected unauthorized KR');
+        await page.locator('[data-management-draft]').click();
+        if(!/Reusable Data Platform Foundation/.test(await page.locator('[data-management-proposal]').first().innerText()))throw new Error('Composite AI must draft from the discovered authorized KR rather than an unauthorized selected KR');
+        await page.locator('[data-management-reject]').click();
+        await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-select="CPD-0001"]').click();
         await page.locator('[data-auth-action="approve"][data-auth-id="CPD-0001"]').click();
         await page.locator('[data-authorize-item="CPD-0001"]').click();
