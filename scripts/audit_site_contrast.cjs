@@ -155,16 +155,13 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         if(await composeKr.count()!==1)throw new Error('Leader persona must be able to choose a specific KR for management decomposition');
         await composeKr.click();
         const unsupportedComposer=await page.locator('.ns-management-composer').innerText();
-        if(!/O10 → KR10.2/.test(unsupportedComposer)||!/AUTHORIZATION NOT DEFINED/.test(unsupportedComposer)||await page.locator('[data-management-draft]').count())throw new Error('Manager persona must preserve selected KR context and fail closed when no authorization decision exists');
+        if(!/1 AUTHORIZED KR AVAILABLE/.test(unsupportedComposer)||!/O10 → KR10.1/.test(unsupportedComposer)||!/CAR-0002/.test(unsupportedComposer)||await page.locator('[data-management-kr-check="CPD-0002"]').count()!==1)throw new Error('Manager persona must preserve the selected page context while exposing the independent pool of current CAR-backed KRs');
         await page.locator('[data-view="evidence"]').click();
         const unsupportedEvidence=await page.locator('#northstar-view').innerText();
         if(!/O10 → KR10.2/.test(unsupportedEvidence)||!/No authorization decision bound/.test(unsupportedEvidence)||/CPD-0001/.test(unsupportedEvidence)||/CAR-0001/.test(unsupportedEvidence))throw new Error('Evidence view must fail closed for a selected KR with no authorization contract');
         await page.locator('[data-view="okr"]').click();
         await page.locator('[data-compose-kr="KR10.1"]').click();
-        if(!/O10 → KR10.1/.test(await page.locator('.ns-management-composer').innerText()))throw new Error('Manager persona must receive authorized non-primary KR context');
-        await page.locator('[data-management-authorize]').click();
-        await page.locator('[data-authorize-item="CPD-0002"]').click();
-        await page.locator('[data-confirm-authorization]').click();
+        if(!/O10 → KR10.1/.test(await page.locator('.ns-management-composer').innerText())||await page.locator('[data-management-kr-check="CPD-0002"]').count()!==1)throw new Error('Manager persona must receive the current authorized non-primary KR context without requiring duplicate confirmation');
         const o10ManagementView=await page.locator('#northstar-view').innerText();
         if(!/O10 → KR10.1/.test(await page.locator('.ns-management-composer').innerText())||await page.locator('[data-management-draft]').count()!==1||!/Delivery state\s+ACTIVE/.test(o10ManagementView)||/Delivery state\s+READY/.test(o10ManagementView))throw new Error('CPD-0002 confirmation must return to selected O10/KR10.1 management context with selected-KR delivery state');
         await page.locator('[data-view="decision"]').click();
