@@ -274,7 +274,8 @@ jobs:
           console.log('Portfolio forecast contract validated.');
           NODE
           echo "Forecast node assertions completed."
-          true
+          echo "validate-portfolio-outlook complete"
+          exit 0
 
   verify-public-site:
     name: verify-custom-domain
