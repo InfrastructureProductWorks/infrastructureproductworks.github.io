@@ -206,6 +206,13 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-confirm-handoff]').click();
         const receipt=await page.locator('.ns-handoff-receipt').innerText();
         if(!/BHP-0001/.test(receipt)||!/NO EXTERNAL WRITE/.test(receipt))throw new Error('Northstar handoff confirmation must remain a synthetic receipt with no external write');
+        await page.locator('[data-view="authorization"]').click();
+        await page.locator('[data-auth-select="CPD-0002"]').click();
+        await page.locator('[data-authorize-item="CPD-0002"]').click();
+        await page.locator('[data-confirm-authorization]').click();
+        await page.locator('[data-view="handoff"]').click();
+        const preservedReceipt=await page.locator('.ns-handoff-receipt').innerText();
+        if(!/BHP-0001/.test(preservedReceipt)||!/Jira/.test(preservedReceipt))throw new Error('Authorizing unrelated Northstar item must preserve existing handoff receipt');
         await page.locator('[data-handoff-target="ado"]').click();
         if(await page.locator('.ns-handoff-receipt').count())throw new Error('Changing Northstar handoff target must invalidate the prior receipt');
         if(!/Azure DevOps/.test(await handoffView.innerText()))throw new Error('Northstar handoff target must update deterministically');
