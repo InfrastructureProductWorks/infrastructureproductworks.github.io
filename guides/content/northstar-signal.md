@@ -7,31 +7,31 @@ Open the [Northstar Signal synthetic demo](/northstar-signal/demo/). The default
 
 Use only fictional information. The public demo does not connect to enterprise systems, approve funding, provision cloud resources, accept risk, or create production work.
 
-Review the Objective, each Key Result, its baseline and target, the evidence source, and the current measurement state. Delivery progress and Key Result attainment are intentionally separate.
+Review the Objective, each Key Result, its evidence source, and the current status shown by the synthetic fixture. The current public demo does not expose numeric baseline, target, or observed-benefit values. Delivery progress and Key Result status are intentionally separate.
 
 ## 2 Draft an OKR from leadership intent
 Open **OKR Composer** from the left navigation or the composer action on the leadership dashboard.
 
-Enter or review plain-language leadership intent. Composite AI demonstrates bounded authoring: it can propose an Objective, candidate Key Results, measurable targets, and evidence-source candidates.
+Review or replace the plain-language leadership-intent text to explore the authoring surface. In the current public demo, the proposal itself is a fixed synthetic fixture; changing the textarea does not regenerate the Objective or Key Results. The fixture demonstrates the intended Composite AI boundary without calling a live model provider.
 
 Composite AI does **not** decide strategy, approve an OKR, authorize spending, create execution authority, or write to an external system.
 
 ## 3 Validate the proposed OKR
 Review the deterministic validation results shown outside the model boundary.
 
-Northstar checks whether the draft has an outcome-oriented Objective, measurable Key Results, baseline and target values, a time boundary, accountable ownership, an evidence source, and separation between activity and outcome.
+Northstar displays deterministic validation against the fixed synthetic proposal. The validation demonstrates checks for outcome orientation, measurable Key Results, time boundary, ownership, evidence source, ambiguity, and activity-versus-outcome separation. It does not prove live validation of newly typed intent.
 
 Resolve structural warnings before treating the draft as leadership-ready. A model-generated draft is not accepted merely because it sounds reasonable.
 
 ## 4 Accept, edit, or reject the draft
 The accountable leader remains the decision-maker.
 
-Use the demo controls to accept the structurally valid proposal, continue editing it, or leave it unaccepted. Acceptance establishes the synthetic leadership intent used by the rest of the demo; it does not create funding, procurement, risk acceptance, or provisioning authority.
+Use the demo controls to accept the fixed synthetic proposal or start the composer over. The current demo does not provide free-form editing of the generated Objective or Key Results. Acceptance records the synthetic proposal for the demonstration; it does not create funding, procurement, risk acceptance, or provisioning authority.
 
 ## 5 Review the leadership decision
 Open **Leadership detail** and **Decision**.
 
-Compare the synthetic reuse, build, phase, defer, or redirect paths. Review evidence confidence, mission consequence, investment context, constraints, and the relationship between the proposed capability and the Key Result it is intended to support.
+Compare the synthetic Reuse, Build, and Defer paths. Review evidence confidence, mission consequence, investment context, constraints, and the relationship between the proposed capability and the Key Result it is intended to support.
 
 The decision record keeps the outcome attached to the proposed product direction so downstream work cannot silently redefine why the work exists.
 
@@ -73,9 +73,9 @@ Northstar deliberately prevents ticket completion, deployment completion, or pro
 ## 11 Measure the benefit
 Move the scenario to **Benefit Measured** and open **Benefit feedback**.
 
-Compare authoritative outcome evidence with the Key Result baseline and target. The measurement source, not backlog status, determines whether the intended benefit has been observed.
+Review the status-only benefit feedback shown by the current synthetic fixture. The demo does not expose numeric baseline, target, or observed-benefit values, so it does not support a quantitative before-and-after comparison yet. Its purpose here is to demonstrate that benefit feedback remains separate from backlog completion.
 
-This closes the synthetic loop from leadership intent to measurable result while preserving the distinction between decision, authorization, execution, and outcome evidence.
+This demonstrates the intended loop from leadership intent toward outcome evidence while preserving the distinction between decision, authorization, execution, and benefit status.
 
 ## 12 Know where the demo stops
 The public Northstar Signal experience is documentation-first and synthetic.
