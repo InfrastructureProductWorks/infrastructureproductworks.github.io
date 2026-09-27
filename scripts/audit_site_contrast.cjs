@@ -178,13 +178,19 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const o10Evidence=await page.locator('#northstar-view').innerText();
         if(!/O10 → KR10.1/.test(o10Evidence)||!/CPD-0002/.test(o10Evidence)||!/CAR-0002/.test(o10Evidence)||!/Standardize a reusable data-platform foundation product/.test(o10Evidence)||/CPD-0001/.test(o10Evidence)||/CAR-0001/.test(o10Evidence)||/managed-network/.test(o10Evidence))throw new Error('Evidence view must remain bound to selected O10/KR10.1 evidence without primary-KR leakage');
         await page.locator('[data-view="management"]').click();
+        if(await page.locator('[data-management-intent]').count()!==1)throw new Error('Management Composer must expose a management-intent text box');
+        if(await page.locator('[data-management-kr-check]').count()<1)throw new Error('Management Composer must expose selectable authorized KRs');
+        await page.locator('[data-management-intent]').fill('Create one reusable platform Epic that preserves both authorized outcomes and their independent CAR evidence.');
+        const authorizedChoices=page.locator('[data-management-kr-check]');
+        if(await authorizedChoices.count()<2)throw new Error('Management Composer multi-KR demo requires at least two currently authorized KRs after CPD-0001/CPD-0002 confirmation');
+        for(let i=0;i<await authorizedChoices.count();i++){const box=authorizedChoices.nth(i);if(!await box.isChecked())await box.check();}
         await page.locator('[data-management-draft]').click();
         const o10ProposalText=await page.locator('.ns-management-composer').innerText();
         if(!/Reusable Data Platform Foundation/.test(o10ProposalText)||!/reusable data-platform foundation product authorized by CPD-0002/i.test(o10ProposalText)||!/CAR scope binding\s+Every proposed Epic remains bound to the exact current CAR outcome and scope/i.test(o10ProposalText)||/Managed Network Foundation/.test(o10ProposalText))throw new Error('Selected O10/KR10.1 must generate Epics that implement the exact authorized data-platform outcome rather than unrelated planning work');
         await page.locator('[data-management-accept]').click();
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const o10Handoff=await page.locator('.ns-handoff-package').innerText();
-        if(!/O10 → KR10.1 → CPD-0002/.test(o10Handoff)||!/Reusable Data Platform Foundation/.test(o10Handoff))throw new Error('Delivery must receive the accepted O10/KR10.1 data-platform Epic with exact selected lineage');
+        if(!/CPD-0001/.test(o10Handoff)||!/CPD-0002/.test(o10Handoff)||!/CAR-0001/.test(o10Handoff)||!/CAR-0002/.test(o10Handoff)||!/Cross-KR Authorized Outcome Epic/.test(o10Handoff))throw new Error('Delivery must receive a multi-KR Epic with every selected Objective/KR/decision/CAR binding preserved');
         const o10Airlock=await page.locator('.ns-airlock').innerText();
         if(!/Standardize a reusable data-platform foundation product/.test(o10Airlock)||/Create a reusable managed-network foundation product/.test(o10Airlock))throw new Error('Delivery airlock must describe the selected authorization outcome rather than stale primary-KR context');
         const o10Feedback=await page.locator('.ns-handoff-feedback').innerText();
