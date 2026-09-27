@@ -24,7 +24,7 @@ class Page(HTMLParser):
                 self.links.append(attrs[attr])
 
 pages = {path:Page(path) for path in sorted((ROOT/'guides').glob('**/index.html'))}
-assert len(pages) == 6, 'Expected a hub and five app guides'
+assert len(pages) == 7, 'Expected a hub and six app guides'
 for path, page in pages.items():
     assert page.h1s == 1, f'Expected one page title: {path}'
     for link in page.links:
@@ -44,6 +44,8 @@ for path, page in pages.items():
 
 entries = {
     'index.html':'/guides/',
+    'northstar-signal/index.html':'/guides/northstar-signal/',
+    'northstar-signal/demo/index.html':'/guides/northstar-signal/',
     'storefront/index.html':'/guides/storefront/',
     'guard/index.html':'/guides/guard/',
     'docs/guard/index.html':'/guides/guard/',
@@ -56,4 +58,4 @@ entries = {
 }
 for path, expected in entries.items():
     assert expected in Page(ROOT/path).links, f'Missing guide entry point: {path}'
-print('Six guides, internal routes and anchors, public repository links, and ten entry points verified.')
+print('Seven guide pages, internal routes and anchors, public repository links, and twelve entry points verified.')
