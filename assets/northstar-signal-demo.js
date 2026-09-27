@@ -495,6 +495,8 @@
     state.selectedKr=krId;
     if(changed){
       state.managementProposalState='idle';
+      state.managementProposalDigest=null;
+      state.managementSelectedDecisionIds=[];
       state.acceptedEpic=null;
       invalidateHandoff();
     }
