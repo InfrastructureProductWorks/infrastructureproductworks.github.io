@@ -635,6 +635,37 @@
       managementComposer();
   }
 
+  function decisionContextFor(ctx, record) {
+    const item=ctx.authorization;
+    const deferred=record.decision==='DEFERRED';
+    const reuse=record.decision==='REUSE EXISTING';
+    const authorized=record.authorized;
+    return {
+      evidenceLabel: deferred?'MEDIUM EVIDENCE':authorized||reuse?'HIGH EVIDENCE':'HIGH EVIDENCE',
+      evidenceTone: deferred?'amber':'green',
+      profile: item.owner+' · '+item.productOwner+' · synthetic scoped decision profile',
+      profileRule: 'Scope is limited to '+item.objectiveId+' → '+item.krId+'; profile or decision-context changes require renewed accountable review.',
+      capability: deferred
+        ? 'Capability need identified · decision evidence insufficient'
+        : reuse
+          ? 'Accepted-product reuse path selected · no new product CAR'
+          : item.outcome,
+      portfolio: 'Scope: '+item.scope+' · Environments: '+item.environments+'. Existing-product and dependency context must be checked before new productization.',
+      investment: deferred
+        ? 'No new product investment should advance while outcome, baseline, target or evidence are insufficient.'
+        : reuse
+          ? 'Reuse avoids duplicate product lifecycle/TCO unless new evidence proves the accepted product is insufficient.'
+          : 'Compare reuse versus lifecycle/TCO, duplication risk and expected benefit before expanding net-new productization.',
+      benefit: 'Expected benefit must be measured against '+ctx.kr.id+' — '+ctx.kr.text+' Delivery completion alone cannot prove that outcome.',
+      evidence: item.evidence+' · '+(deferred?'insufficient for authorization':reuse?'supports reuse/equivalence decision':authorized?'current authorized decision evidence':'assembled for accountable confirmation'),
+      changeEvidence: deferred
+        ? 'A clearer outcome, baseline, target and accountable evidence source would be required before authorization can be reconsidered.'
+        : reuse
+          ? 'Evidence that the accepted product is not equivalent or cannot satisfy the outcome would justify reopening the productization decision.'
+          : 'If an existing governed product already satisfies the requested outcome, new productization should be reconsidered.'
+    };
+  }
+
   function decision() {
     const ctx=selectedOkrContext();
     if(!ctx.authorization)return headline(ctx.kr.text,
@@ -642,19 +673,20 @@
       ctx.objective.objectiveId+' → '+ctx.kr.id+' · NO AUTHORIZATION DECISION')+
       '<div class="ns-boundary-box"><strong>Fail closed:</strong> establish an explicit decision/CAR contract before representing product-intent authorization.</div>';
     const record=selectedAuthorization();
+    const dc=decisionContextFor(ctx,record);
     return headline(ctx.authorization.outcome,
       'Leadership sees the mission consequence, organizational scope, reuse context, investment assumptions, evidence quality and credible choices without having to translate infrastructure implementation jargon.',
       ctx.authorization.decisionId+' · DECISION BRIEF')+
-      '<div class="ns-state-row">'+badge(record.decision,record.authorized?'green':'blue')+badge(record.authorization,record.authorized?'green':'amber')+badge('HIGH EVIDENCE','green')+badge('REVIEW '+model.decisionReview,'neutral')+'</div>'+
+      '<div class="ns-state-row">'+badge(record.decision,record.authorized?'green':'blue')+badge(record.authorization,record.authorized?'green':'amber')+badge(dc.evidenceLabel,dc.evidenceTone)+badge('REVIEW '+model.decisionReview,'neutral')+'</div>'+
       '<div class="ns-section-title"><div><small>CONTEXT BEFORE DECISION</small><h3>Synthetic decision context</h3></div><span>Context informs · humans authorize</span></div>'+
       '<div class="ns-grid-3">'+
-        '<article><small>ORGANIZATIONAL PROFILE</small><h3>'+esc(model.decisionContext.profile)+'</h3><p>'+esc(model.decisionContext.profileRule)+'</p></article>'+
-        '<article><small>CAPABILITY + REUSE</small><h3>'+esc(model.decisionContext.capability)+'</h3><p>'+esc(model.decisionContext.portfolio)+'</p></article>'+
-        '<article><small>INVESTMENT + TCO</small><h3>Illustrative decision assumption</h3><p>'+esc(model.decisionContext.investment)+'</p></article>'+
+        '<article><small>ORGANIZATIONAL PROFILE</small><h3>'+esc(dc.profile)+'</h3><p>'+esc(dc.profileRule)+'</p></article>'+
+        '<article><small>CAPABILITY + REUSE</small><h3>'+esc(dc.capability)+'</h3><p>'+esc(dc.portfolio)+'</p></article>'+
+        '<article><small>INVESTMENT + TCO</small><h3>Illustrative decision assumption</h3><p>'+esc(dc.investment)+'</p></article>'+
       '</div>'+
       '<div class="ns-grid-2">'+
-        '<article><small>EVIDENCE + CONFIDENCE</small><h3>'+esc(model.decisionContext.evidence)+'</h3><p>Evidence can inform the recommendation, but it cannot create funding, staffing, risk, deployment or provisioning authority.</p></article>'+
-        '<article><small>EXPECTED BENEFIT</small><h3>'+esc(model.decisionContext.benefit)+'</h3><p>Observed outcome evidence returns later; backlog completion is only an execution signal.</p></article>'+
+        '<article><small>EVIDENCE + CONFIDENCE</small><h3>'+esc(dc.evidence)+'</h3><p>Evidence can inform the recommendation, but it cannot create funding, staffing, risk, deployment or provisioning authority.</p></article>'+
+        '<article><small>EXPECTED BENEFIT</small><h3>'+esc(dc.benefit)+'</h3><p>Observed outcome evidence returns later; backlog completion is only an execution signal.</p></article>'+
       '</div>'+
       '<div class="ns-boundary-box"><strong>Synthetic demo boundary:</strong> these profile, capability, investment/TCO and portfolio inputs are fixtures. The public demo does not claim live organizational profiles, live cost feeds, enterprise adapters, funding authority, procurement authority, risk acceptance or cloud execution.</div>'+
       '<div class="ns-section-title"><div><small>ACCOUNTABLE CHOICES</small><h3>Reuse, build, phase, defer or redirect</h3></div><span>Decision ≠ execution authority</span></div>'+
@@ -663,7 +695,7 @@
       ).join('')+'</div>'+
       '<div class="ns-grid-2">'+
         '<article class="ns-callout amber"><small>NO ACTION</small><h3>What happens?</h3><p>The selected outcome remains unresolved and no new product-intent authority is created.</p></article>'+
-        '<article class="ns-callout"><small>EVIDENCE THAT WOULD CHANGE THE ASSESSMENT</small><h3>Proof of accepted reuse</h3><p>If an existing IPW product already satisfies the requested outcome, new productization should be reconsidered.</p></article>'+
+        '<article class="ns-callout"><small>EVIDENCE THAT WOULD CHANGE THE ASSESSMENT</small><h3>Decision-changing evidence</h3><p>'+esc(dc.changeEvidence)+'</p></article>'+
       '</div>'+
       '<div class="ns-rail-proof"><small>PRESERVED LINEAGE</small><div><b>Org profile</b><span>→</span><b>'+esc(ctx.objective.objectiveId)+'</b><span>→</span><b>'+esc(ctx.kr.id)+'</b><span>→</span><b>'+esc(ctx.authorization.decisionId)+'</b><span>→</span><b>'+(record.carId?esc(record.carId):'No CAR')+'</b></div></div>';
   }
