@@ -495,12 +495,21 @@
 
   function authorizationRecord(item) {
     const decision=authorizationDecision(item);
-    const authorized=decision==='APPROVED'||decision==='APPROVE CONDITIONALLY';
+    const receipt=state.authorizationReceipts[item.decisionId];
+    const pkg=authorizationPackage(item,decision);
+    const decisionEligible=decision==='APPROVED'||decision==='APPROVE CONDITIONALLY';
+    const receiptCurrent=Boolean(
+      receipt&&receipt.confirmed&&
+      receipt.decision===decision&&
+      receipt.evidenceDigest===pkg.evidenceDigest&&
+      receipt.packageId===pkg.packageId
+    );
+    const authorized=decisionEligible&&receiptCurrent;
     return {
       decision,
       authorized,
-      carId:authorized ? (item.carId||('CAR-'+item.decisionId.split('-')[1])) : null,
-      authorization:authorized?'CURRENT':decision==='REUSE EXISTING'?'NO NEW CAR':'NOT AUTHORIZED'
+      carId:authorized ? receipt.carId : null,
+      authorization:authorized?'CURRENT':decision==='REUSE EXISTING'?'NO NEW CAR':decisionEligible?'PENDING CONFIRMATION':'NOT AUTHORIZED'
     };
   }
 
@@ -579,13 +588,13 @@
       const decision=authorizationDecision(item);
       const pkg=authorizationPackage(item,decision);
       state.authorizationDecisions[id]=decision==='APPROVE CONDITIONALLY'?'APPROVE CONDITIONALLY':'APPROVED';
-      const record=authorizationRecord(item);
       state.authorizationReceipts[id]={
         packageId:pkg.packageId,
         evidenceDigest:pkg.evidenceDigest,
         approver:pkg.approver,
         reviewDate:pkg.reviewDate,
-        carId:record.carId,
+        decision:state.authorizationDecisions[id],
+        carId:item.carId||('CAR-'+item.decisionId.split('-')[1]),
         confirmed:true
       };
     });
@@ -605,12 +614,13 @@
       const selectedClass=item.decisionId===selected.decisionId?' selected':'';
       const tone=record.authorized?'green':record.decision==='DEFERRED'?'amber':'blue';
       const receipt=state.authorizationReceipts[item.decisionId];
+      const receiptCurrent=Boolean(receipt&&record.authorized);
       return '<article class="ns-auth-card'+selectedClass+'" data-auth-item="'+esc(item.decisionId)+'">'+
         '<div class="ns-auth-select-row"><label><input type="checkbox" data-auth-check="'+esc(item.decisionId)+'" '+(selectedSet.has(item.decisionId)?'checked':'')+'> Select for review</label><span>'+esc(eligibility.eligible?'ELIGIBLE':'INDIVIDUAL REVIEW')+'</span></div>'+
         '<div class="ns-auth-card-head"><div><small>'+esc(item.objectiveId)+' → '+esc(item.krId)+'</small><h3>'+esc(item.outcome)+'</h3></div>'+badge(record.decision,tone)+'</div>'+
         '<div class="ns-auth-meta"><span>'+esc(item.decisionId)+'</span><span>'+(record.carId?esc(record.carId):'NO NEW CAR')+'</span><span>'+esc(item.owner)+'</span></div>'+
         '<p>'+esc(item.scope)+'</p>'+
-        (receipt?'<div class="ns-auth-receipt"><strong>CONFIRMED</strong><span>'+esc(receipt.packageId)+' · '+esc(receipt.evidenceDigest)+'</span></div>':'')+
+        (receiptCurrent?'<div class="ns-auth-receipt"><strong>CONFIRMED</strong><span>'+esc(receipt.packageId)+' · '+esc(receipt.evidenceDigest)+'</span></div>':'')+
         '<button type="button" data-auth-select="'+esc(item.decisionId)+'">Review item</button>'+
       '</article>';
     }).join('');
@@ -754,7 +764,10 @@
       const id=authAction.dataset.authId;
       const action=authAction.dataset.authAction;
       state.selectedAuthorizationId=id;
-      state.authorizationDecisions[id]=action==='approve'?'APPROVED':action==='conditional'?'APPROVE CONDITIONALLY':action==='reuse'?'REUSE EXISTING':'DEFERRED';
+      const nextDecision=action==='approve'?'APPROVED':action==='conditional'?'APPROVE CONDITIONALLY':action==='reuse'?'REUSE EXISTING':'DEFERRED';
+      const priorDecision=authorizationDecision(authorizationQueue.find(item=>item.decisionId===id));
+      state.authorizationDecisions[id]=nextDecision;
+      if(nextDecision!==priorDecision)delete state.authorizationReceipts[id];
       state.view='authorization';
       render();
       return;
