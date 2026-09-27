@@ -336,7 +336,8 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await audit(route,'Leadership Decision Workspace / multi-select ceremony');
         await page.locator('[data-confirm-authorization]').click();
         if(await page.locator('#ns-authorization-ceremony-dialog[open]').count())throw new Error('Northstar authorization ceremony must close after confirmation');
-        if(!/MANAGEMENT COMPOSER/.test(await page.locator('.ns-management-composer').innerText())||await page.locator('[data-management-draft]').count()!==1)throw new Error('Confirming guided CPD-0001 CAR must return directly to Management Composer with Epic composition enabled');
+        await page.locator('[data-view="management"]').click();
+        if(!/MANAGEMENT COMPOSER/.test(await page.locator('.ns-management-composer').innerText())||await page.locator('[data-management-draft]').count()!==1||await page.locator('[data-management-kr-check]').count()<2)throw new Error('After CPD-0001 confirmation, Management Composer must expose the complete current CAR-backed KR pool with Epic composition enabled');
         await page.locator('.ns-view-nav [data-view="authorization"]').click();
         const confirmed=await page.locator('[data-auth-item="CPD-0001"]').innerText();
         const blocked=await page.locator('[data-auth-item="CPD-0004"]').innerText();
