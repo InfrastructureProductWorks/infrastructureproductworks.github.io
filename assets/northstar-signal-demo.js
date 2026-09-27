@@ -587,13 +587,17 @@
 
   function withProposalContext(proposals,ctx) {
     if(!ctx.authorization)return [];
-    return proposals.map(p=>({...p,proposalContext:{
-      objectiveId:ctx.objective.objectiveId,
-      krId:ctx.kr.id,
-      decisionId:ctx.authorization.decisionId,
-      authorizedOutcome:ctx.authorization.outcome,
-      authorizedScope:ctx.authorization.scope
-    }}));
+    return proposals.map(p=>({...p,
+      outcome:p.outcome+' Management intent: '+state.managementIntent,
+      proposalContext:{
+        objectiveId:ctx.objective.objectiveId,
+        krId:ctx.kr.id,
+        decisionId:ctx.authorization.decisionId,
+        authorizedOutcome:ctx.authorization.outcome,
+        authorizedScope:ctx.authorization.scope,
+        managementIntent:state.managementIntent
+      }
+    }));
   }
 
   function managementContextForBinding(binding) {
@@ -654,7 +658,8 @@
     const binding=bindings[0];
     return Boolean(bindings.length===1&&
       pc.objectiveId===binding.objectiveId&&pc.krId===binding.krId&&pc.decisionId===binding.decisionId&&
-      pc.authorizedOutcome===binding.authorizedOutcome&&pc.authorizedScope===binding.authorizedScope);
+      pc.authorizedOutcome===binding.authorizedOutcome&&pc.authorizedScope===binding.authorizedScope&&
+      pc.managementIntent===state.managementIntent);
   }
 
   const managementChecks=[
@@ -706,12 +711,16 @@
   function managementComposer() {
     const ctx=selectedOkrContext();
     const primary=selectedAuthorization();
-    if(!ctx.authorization)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer"><div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+'</h2><p>'+esc(ctx.kr.text)+'</p></div>'+badge('AUTHORIZATION NOT DEFINED','amber')+'</div><div class="ns-boundary-box"><strong>No authorization decision is bound to this Key Result.</strong> Management can select it for planning context, but Northstar cannot generate an authorized Epic package or BHP until leadership establishes the required decision/CAR contract.</div></section>';
-    if(!primary.authorized){
-      const eligibility=authorizationEligibility(ctx.authorization);
+    ensureManagementSelection();
+    const authorizedContexts=authorizedManagementContexts();
+    const sourceBindings=managementSourceBindings();
+    const hasSourceBindings=sourceBindings.length>0;
+    if(!ctx.authorization&&!hasSourceBindings)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer"><div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+'</h2><p>'+esc(ctx.kr.text)+'</p></div>'+badge('AUTHORIZATION NOT DEFINED','amber')+'</div><div class="ns-boundary-box"><strong>No authorization decision is bound to this Key Result.</strong> Management can select it for planning context, but Northstar cannot generate an authorized Epic package or BHP until leadership establishes the required decision/CAR contract.</div></section>';
+    if(!hasSourceBindings&&(!primary||!primary.authorized)){
+      const eligibility=ctx.authorization?authorizationEligibility(ctx.authorization):{eligible:false,reason:'No authorization decision is bound to this Key Result.'};
       if(!eligibility.eligible)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
-        '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · '+esc(primary.decision.replaceAll('_',' '))+'</h2><p>'+esc(ctx.kr.text)+'</p></div>'+badge(primary.authorization,'amber')+'</div>'+
-        '<div class="ns-mc-context"><small>NON-AUTHORIZABLE DECISION CONTEXT</small><span>'+esc(ctx.authorization.decisionId)+'</span><span>'+esc(primary.decision.replaceAll('_',' '))+'</span><span>No current CAR</span><span>No Epic proposal</span><span>No BHP</span></div>'+
+        '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · '+esc((primary?.decision||'NO DECISION').replaceAll('_',' '))+'</h2><p>'+esc(ctx.kr.text)+'</p></div>'+badge(primary?.authorization||'NOT AUTHORIZED','amber')+'</div>'+
+        '<div class="ns-mc-context"><small>NON-AUTHORIZABLE DECISION CONTEXT</small><span>'+esc(ctx.authorization?ctx.authorization.decisionId:'NO DECISION')+'</span><span>'+esc((primary?.decision||'NO DECISION').replaceAll('_',' '))+'</span><span>No current CAR</span><span>No Epic proposal</span><span>No BHP</span></div>'+
         '<div class="ns-boundary-box"><strong>Fail closed.</strong> '+esc(eligibility.reason)+' Management cannot generate executable Epic proposals until leadership establishes a separate eligible authorization decision.</div>'+
       '</section>';
       return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
@@ -721,9 +730,6 @@
         '<div class="ns-composer-actions"><button type="button" class="primary" data-management-authorize>Authorize outcome to continue</button></div>'+
       '</section>';
     }
-    ensureManagementSelection();
-    const authorizedContexts=authorizedManagementContexts();
-    const sourceBindings=managementSourceBindings();
     const proposals=managementProposalsForSelectedContext();
     const proposed=state.managementProposalState!=='idle'&&state.managementProposalDigest===currentManagementDraftDigest();
     const proposalsBound=proposed&&proposals.length>0&&proposals.every(proposalMatchesSelectedAuthorization);
@@ -1143,24 +1149,33 @@
     $('role-state').textContent=state.role==='leader'?'LEADERSHIP':state.role==='manager'?'MANAGEMENT':'DELIVERY';
   }
 
+  function invalidateVisibleManagementDraft(intent) {
+    const composer=intent.closest('.ns-management-composer');
+    if(!composer)return;
+    composer.querySelectorAll('.ns-mc-proposals,.ns-composer-step.validator,.ns-mc-accepted').forEach(node=>node.remove());
+    const actions=composer.querySelector('.ns-composer-actions');
+    if(actions)actions.innerHTML='';
+    if(!composer.querySelector('.ns-mc-empty')){
+      const input=composer.querySelector('.ns-mc-input');
+      if(input){
+        const fresh=document.createElement('div');
+        fresh.className='ns-mc-empty';
+        fresh.innerHTML='<h3>Ready to compose</h3><p>Composite AI will use the management intent plus the exact selected KR/CAR set, then deterministic checks validate scope and lineage before acceptance.</p><button type="button" class="primary" data-management-draft>Propose Epics with Composite AI</button>';
+        input.insertAdjacentElement('afterend',fresh);
+      }
+    }
+  }
+
   document.addEventListener('input', e => {
     const intent=e.target.closest('[data-management-intent]');
     if(!intent)return;
     if(intent.value!==state.managementIntent){
-      const nextValue=intent.value;
-      const caret=typeof intent.selectionStart==='number'?intent.selectionStart:nextValue.length;
-      state.managementIntent=nextValue;
+      state.managementIntent=intent.value;
       state.managementProposalState='idle';
       state.managementProposalDigest=null;
       state.acceptedEpic=null;
       invalidateHandoff();
-      render();
-      const refreshed=document.querySelector('[data-management-intent]');
-      if(refreshed){
-        refreshed.focus();
-        const pos=Math.min(caret,refreshed.value.length);
-        if(typeof refreshed.setSelectionRange==='function')refreshed.setSelectionRange(pos,pos);
-      }
+      invalidateVisibleManagementDraft(intent);
     }
   });
 
