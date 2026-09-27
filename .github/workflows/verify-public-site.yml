@@ -229,6 +229,7 @@ jobs:
             echo "::error::Portfolio must not claim protected-main evidence without verified protection."
             exit 1
           fi
+          echo "Pre-forecast assertions validated."
           node <<'NODE'
           const fs=require('fs');
           const data=JSON.parse(fs.readFileSync('data/roadmap-relationships.json','utf8'));
