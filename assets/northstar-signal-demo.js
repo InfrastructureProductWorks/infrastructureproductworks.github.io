@@ -69,8 +69,19 @@
     alternatives: [
       ['Reuse', 'Use an accepted product if equivalence can be demonstrated.', 'Fastest path when the capability already exists.'],
       ['Build', 'Create a bounded reusable product.', 'Requires productization evidence before consumer availability.'],
-      ['Defer', 'Do not productize the capability now.', 'Leaves the capability gap unresolved.']
+      ['Phase', 'Authorize a smaller bounded increment first.', 'Reduces initial scope while preserving the intended outcome and evidence requirements.'],
+      ['Defer', 'Do not productize the capability now.', 'Leaves the capability gap unresolved until stronger evidence or priority emerges.'],
+      ['Redirect', 'Send the need to a different existing product or operating path.', 'Avoids creating duplicate platform capability when another accountable path is a better fit.']
     ],
+    decisionContext: {
+      profile: 'ORG-PROFILE-PCS-v3 · synthetic approved scope',
+      profileRule: 'Profile changes require renewed review; prior approval never silently carries forward.',
+      capability: 'Managed-network candidate found · equivalence not yet proven',
+      portfolio: 'Existing product catalog + dependency context checked before new productization',
+      investment: 'Reuse is preferred when equivalent; net-new productization adds lifecycle/TCO and duplication risk.',
+      benefit: 'Expected value is cycle-time reduction and governed reuse; delivery completion alone cannot prove the benefit.',
+      evidence: 'Current synthetic decision evidence · attributable source · confidence and freshness remain visible'
+    },
     evidence: [
       ['Authorization', 'Northstar decision/CAR binding', 'DEMONSTRATED', 'HIGH', 'CURRENT', 'CPD-0001 and CAR-0001 preserve the bounded authorization evidence required by KR9.4.'],
       ['Product', 'Reviewed repository evidence', 'DEMONSTRATED', 'HIGH', 'CURRENT', 'A reusable managed-network contract candidate exists.'],
@@ -632,16 +643,29 @@
       '<div class="ns-boundary-box"><strong>Fail closed:</strong> establish an explicit decision/CAR contract before representing product-intent authorization.</div>';
     const record=selectedAuthorization();
     return headline(ctx.authorization.outcome,
-      'Leadership sees the mission consequence, evidence quality and credible choices without having to translate infrastructure implementation jargon.',
+      'Leadership sees the mission consequence, organizational scope, reuse context, investment assumptions, evidence quality and credible choices without having to translate infrastructure implementation jargon.',
       ctx.authorization.decisionId+' · DECISION BRIEF')+
       '<div class="ns-state-row">'+badge(record.decision,record.authorized?'green':'blue')+badge(record.authorization,record.authorized?'green':'amber')+badge('HIGH EVIDENCE','green')+badge('REVIEW '+model.decisionReview,'neutral')+'</div>'+
+      '<div class="ns-section-title"><div><small>CONTEXT BEFORE DECISION</small><h3>Synthetic decision context</h3></div><span>Context informs · humans authorize</span></div>'+
+      '<div class="ns-grid-3">'+
+        '<article><small>ORGANIZATIONAL PROFILE</small><h3>'+esc(model.decisionContext.profile)+'</h3><p>'+esc(model.decisionContext.profileRule)+'</p></article>'+
+        '<article><small>CAPABILITY + REUSE</small><h3>'+esc(model.decisionContext.capability)+'</h3><p>'+esc(model.decisionContext.portfolio)+'</p></article>'+
+        '<article><small>INVESTMENT + TCO</small><h3>Illustrative decision assumption</h3><p>'+esc(model.decisionContext.investment)+'</p></article>'+
+      '</div>'+
+      '<div class="ns-grid-2">'+
+        '<article><small>EVIDENCE + CONFIDENCE</small><h3>'+esc(model.decisionContext.evidence)+'</h3><p>Evidence can inform the recommendation, but it cannot create funding, staffing, risk, deployment or provisioning authority.</p></article>'+
+        '<article><small>EXPECTED BENEFIT</small><h3>'+esc(model.decisionContext.benefit)+'</h3><p>Observed outcome evidence returns later; backlog completion is only an execution signal.</p></article>'+
+      '</div>'+
+      '<div class="ns-boundary-box"><strong>Synthetic demo boundary:</strong> these profile, capability, investment/TCO and portfolio inputs are fixtures. The public demo does not claim live organizational profiles, live cost feeds, enterprise adapters, funding authority, procurement authority, risk acceptance or cloud execution.</div>'+
+      '<div class="ns-section-title"><div><small>ACCOUNTABLE CHOICES</small><h3>Reuse, build, phase, defer or redirect</h3></div><span>Decision ≠ execution authority</span></div>'+
       '<div class="ns-options">'+model.alternatives.map(([name,meaning,consequence]) =>
         '<article><small>'+esc(name.toUpperCase())+'</small><h3>'+esc(meaning)+'</h3><p>'+esc(consequence)+'</p></article>'
       ).join('')+'</div>'+
       '<div class="ns-grid-2">'+
         '<article class="ns-callout amber"><small>NO ACTION</small><h3>What happens?</h3><p>The selected outcome remains unresolved and no new product-intent authority is created.</p></article>'+
         '<article class="ns-callout"><small>EVIDENCE THAT WOULD CHANGE THE ASSESSMENT</small><h3>Proof of accepted reuse</h3><p>If an existing IPW product already satisfies the requested outcome, new productization should be reconsidered.</p></article>'+
-      '</div>';
+      '</div>'+
+      '<div class="ns-rail-proof"><small>PRESERVED LINEAGE</small><div><b>Org profile</b><span>→</span><b>'+esc(ctx.objective.objectiveId)+'</b><span>→</span><b>'+esc(ctx.kr.id)+'</b><span>→</span><b>'+esc(ctx.authorization.decisionId)+'</b><span>→</span><b>'+(record.carId?esc(record.carId):'No CAR')+'</b></div></div>';
   }
 
   function authorizationDecision(item) {
