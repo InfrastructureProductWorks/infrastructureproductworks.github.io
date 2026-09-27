@@ -261,7 +261,7 @@
     const proposed = composerStep !== 'intent';
     const accepted = composerStep === 'accepted';
     return '<div class="ns-composer-flow" aria-label="Composite AI OKR Composer">'+
-      '<div class="ns-composer-step active"><small>1 · LEADER INTENT</small><h3>Say what you are trying to change.</h3><label for="ns-composer-intent">Plain-language intent</label><textarea id="ns-composer-intent" rows="4">'+esc(composerFixture.intent)+'</textarea>'+
+      '<div class="ns-composer-step active"><small>1 · LEADER INTENT</small><label for="ns-composer-intent">Plain-language intent</label><textarea id="ns-composer-intent" rows="4">'+esc(composerFixture.intent)+'</textarea>'+
       '<div class="ns-composer-warnings">'+list(composerFixture.weakSignals)+'</div></div>'+
       (proposed ? '<div class="ns-composer-step"><small>2 · COMPOSITE AI PROPOSAL</small><div class="ns-ai-proposed">AI-PROPOSED · SYNTHETIC FIXTURE</div><h3>'+esc(composerFixture.objective)+'</h3>'+
         '<div class="ns-composer-krs">'+composerFixture.keyResults.map(kr=>'<article><small>'+esc(kr.id)+'</small><strong>'+esc(kr.text)+'</strong><span>Owner: '+esc(kr.owner)+'</span><span>Evidence: '+esc(kr.evidence)+'</span></article>').join('')+'</div></div>' : '')+
