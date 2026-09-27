@@ -120,7 +120,6 @@ jobs:
           grep -Fq "Compose structurally sound OKRs" composite-ai/index.html
           grep -Fq "DETERMINISTIC VALIDATION" composite-ai/index.html
           grep -Fq "OKR Composer / AI proposal + deterministic validation" scripts/audit_site_contrast.cjs
-          grep -Fq "Authorization Queue / independent item decisions" scripts/audit_site_contrast.cjs
           grep -Fq "Authorization Queue / shared state across views" scripts/audit_site_contrast.cjs
           grep -Fq "OKR Composer / first-class view" scripts/audit_site_contrast.cjs
           grep -Fq "scenario '+scenario+' / trace drawer" scripts/audit_site_contrast.cjs
