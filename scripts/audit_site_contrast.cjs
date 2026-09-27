@@ -183,6 +183,13 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         if(!/NO CURRENT CAR/.test(deferredHandoff)||!/BLOCKED/.test(deferredHandoff)||!/Fail closed/.test(deferredHandoff))throw new Error('Northstar execution handoff must fail closed after deferred CPD-0001');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-action="conditional"][data-auth-id="CPD-0001"]').click();
+        await page.locator('[data-role="manager"]').click();
+        const preCarComposer=page.locator('.ns-management-composer');
+        if(await preCarComposer.count()!==1||!/MANAGEMENT COMPOSER/.test(await preCarComposer.innerText())||!/AUTHORIZATION REQUIRED/.test(await preCarComposer.innerText()))throw new Error('Northstar Management Composer must remain clearly visible to management before CAR confirmation');
+        if(await page.locator('[data-management-draft]').count()||await page.locator('[data-management-accept]').count()||/BHP-0001/.test(await preCarComposer.innerText()))throw new Error('Northstar pre-CAR Management Composer must fail closed without proposal, acceptance or BHP eligibility');
+        if(await page.locator('[data-view="authorization"]').count()<1)throw new Error('Northstar pre-CAR Management Composer must route management to Authorization Queue');
+        await audit(route,'Management Composer / visible fail-closed pre-CAR state');
+        await page.locator('.ns-view-nav [data-view="authorization"]').click();
         await audit(route,'Authorization Queue / shared state across views');
         await page.locator('[data-auth-check="CPD-0001"]').check();
         await page.locator('[data-auth-check="CPD-0004"]').check();

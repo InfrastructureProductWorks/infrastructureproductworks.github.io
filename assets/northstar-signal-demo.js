@@ -509,7 +509,12 @@
 
   function managementComposer() {
     const primary=primaryAuthorization();
-    if(!primary.authorized)return '<div class="ns-boundary-box"><strong>Composite AI blocked:</strong> Management Composer requires a current CAR. Candidate planning context cannot be promoted into executable work without confirmed product-intent authorization.</div>';
+    if(!primary.authorized)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
+      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>Translate an authorized outcome into candidate Epics.</h2><p>This workspace stays visible to management before authorization so the required sequence is explicit. Composite AI cannot propose executable work until the exact product-intent authorization is current.</p></div>'+badge('AUTHORIZATION REQUIRED','amber')+'</div>'+
+      '<div class="ns-mc-context"><small>REQUIRED BOUNDED CONTEXT</small><span>'+esc(model.objectiveId)+'</span><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span><span>Current CAR required</span><span>Exact package digest required</span></div>'+
+      '<div class="ns-boundary-box"><strong>Fail closed · no CAR, no Epic proposal, no BHP.</strong> Complete the exact authorization package first. A CAR establishes bounded product intent; it does not create a BHP and it does not substitute for management acceptance.</div>'+
+      '<div class="ns-composer-actions"><button type="button" class="primary" data-view="authorization">Go to Authorization Queue</button></div>'+
+    '</section>';
     const proposed=state.managementProposalState!=='idle';
     const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent();
     return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
