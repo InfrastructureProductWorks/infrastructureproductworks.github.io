@@ -812,12 +812,43 @@
     '<div class="ns-auth-mechanics"><small>HOW AUTHORIZATION ACTUALLY WORKS</small><div><article><b>1</b><strong>Evidence ready</strong><span>Northstar assembles the exact outcome, alternatives, scope and evidence.</span></article><article><b>2</b><strong>Human decision</strong><span>An accountable organizational approver chooses approve, conditional approval, reuse or defer.</span></article><article><b>3</b><strong>Exact package confirmed</strong><span>The human sees scope, evidence digest, accountable role, review date and exclusions before confirmation.</span></article><article><b>4</b><strong>Separate CAR per item</strong><span>Each eligible decision receives its own bounded CAR; multi-select never merges authority.</span></article><article><b>5</b><strong>Separate execution authority</strong><span>Deployment, provisioning, risk acceptance and other privileged actions still require their own authorized controls.</span></article></div></div>';
   }
 
+  function selectedEvidenceRecords() {
+    const ctx=selectedOkrContext();
+    if(ctx.objective.objectiveId===model.objectiveId&&ctx.kr.id===model.krId)return model.evidence;
+    const rows=[
+      ['Key Result',ctx.kr.source||'No evidence source defined','OPERATIONAL CONTEXT','HIGH','CURRENT',ctx.objective.objectiveId+' → '+ctx.kr.id+' · '+ctx.kr.text]
+    ];
+    if(ctx.authorization){
+      const record=selectedAuthorization();
+      rows.unshift([
+        'Authorization',
+        ctx.authorization.decisionId+' decision/CAR binding',
+        record&&record.authorized?'DEMONSTRATED':'DECISION CONTEXT',
+        'HIGH',
+        record&&record.authorized?'CURRENT':(record?record.authorization:'NOT AUTHORIZED'),
+        record&&record.authorized
+          ? ctx.authorization.decisionId+' and '+record.carId+' preserve the bounded authorization evidence for '+ctx.kr.id+'.'
+          : ctx.authorization.decisionId+' has no current CAR for '+ctx.kr.id+'; no downstream authority is inferred.'
+      ]);
+      rows.push(['Product',ctx.authorization.evidence,'DEMONSTRATED','HIGH','CURRENT',ctx.authorization.outcome+' · '+ctx.authorization.scope]);
+    }else{
+      rows.unshift(['Authorization','No authorization decision bound','NOT DEMONSTRATED','HIGH','UNAVAILABLE','No decision/CAR evidence is defined for '+ctx.objective.objectiveId+' → '+ctx.kr.id+'.']);
+    }
+    const feedback=selectedFeedback();
+    rows.push(['Outcome',feedback.benefitSource,'OPERATIONAL CONTEXT','HIGH',feedback.benefitOutcome==='UNAVAILABLE'?'UNAVAILABLE':'CURRENT',ctx.kr.id+' delivery '+feedback.delivery.replaceAll('_',' ')+' · outcome '+feedback.benefitOutcome.replaceAll('_',' ')]);
+    if(managementAcceptanceCurrent()&&state.acceptedEpic){
+      rows.push(['Delivery','Management acceptance binding','DEMONSTRATED','HIGH','CURRENT',state.acceptedEpic.epic+' · '+state.acceptedEpic.title+' remains bound to the selected authorization context.']);
+    }
+    return rows;
+  }
+
   function evidence() {
+    const ctx=selectedOkrContext(), records=selectedEvidenceRecords();
     return headline('Show the evidence. Keep the distinctions.',
-      'Northstar can correlate evidence without turning profile keywords, commit counts or assessments into a hidden employee score.',
+      'Northstar correlates evidence for '+ctx.objective.objectiveId+' → '+ctx.kr.id+' without turning profile keywords, commit counts or assessments into a hidden employee score.',
       'EVIDENCE EXPLORER')+
       '<div class="ns-evidence-note">SELF-DECLARED ≠ ASSESSED ≠ DEMONSTRATED · CAPABILITY ≠ AVAILABILITY</div>'+
-      '<div class="ns-evidence">'+model.evidence.map(([subject,source,cls,confidence,freshness,statement]) =>
+      '<div class="ns-evidence">'+records.map(([subject,source,cls,confidence,freshness,statement]) =>
         '<article><div class="ns-evidence-top"><small>'+esc(subject.toUpperCase())+'</small><span>'+esc(source)+'</span></div>'+
         '<h3>'+esc(statement)+'</h3><div class="ns-state-row">'+badge(cls,'blue')+badge(confidence+' CONFIDENCE',confidence==='HIGH'?'green':'amber')+badge(freshness,'neutral')+'</div></article>'
       ).join('')+'</div>';
