@@ -601,7 +601,7 @@
         confirmed:true
       };
     });
-    invalidateHandoff();
+    if(ids.includes(model.decisionId))invalidateHandoff();
     closeAuthorizationCeremony();
     state.selectedAuthorizationIds=[];
     state.view='authorization';
@@ -789,7 +789,7 @@
       const nextDecision=action==='approve'?'APPROVED':action==='conditional'?'APPROVE CONDITIONALLY':action==='reuse'?'REUSE EXISTING':'DEFERRED';
       const priorDecision=authorizationDecision(authorizationQueue.find(item=>item.decisionId===id));
       state.authorizationDecisions[id]=nextDecision;
-      if(nextDecision!==priorDecision)delete state.authorizationReceipts[id];
+      if(nextDecision!==priorDecision){delete state.authorizationReceipts[id];if(id===model.decisionId)invalidateHandoff();}
       state.view='authorization';
       render();
       return;
