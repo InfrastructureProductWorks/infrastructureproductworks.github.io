@@ -192,7 +192,9 @@
     selectedObjective:model.objectiveId,
     composerAccepted:false,
     selectedAuthorizationId:'CPD-0001',
-    authorizationDecisions:Object.fromEntries(authorizationQueue.map(item=>[item.decisionId,null]))
+    authorizationDecisions:Object.fromEntries(authorizationQueue.map(item=>[item.decisionId,null])),
+    selectedAuthorizationIds:[],
+    authorizationReceipts:{}
   };
   let trailOpener = null;
   let composerOpener = null;
@@ -493,38 +495,147 @@
 
   function authorizationRecord(item) {
     const decision=authorizationDecision(item);
-    const authorized=decision==='APPROVED'||decision==='APPROVE CONDITIONALLY';
+    const receipt=state.authorizationReceipts[item.decisionId];
+    const pkg=authorizationPackage(item,decision);
+    const decisionEligible=decision==='APPROVED'||decision==='APPROVE CONDITIONALLY';
+    const receiptCurrent=Boolean(
+      receipt&&receipt.confirmed&&
+      receipt.decision===decision&&
+      receipt.evidenceDigest===pkg.evidenceDigest&&
+      receipt.packageId===pkg.packageId
+    );
+    const authorized=decisionEligible&&receiptCurrent;
     return {
       decision,
       authorized,
-      carId:authorized ? (item.carId||('CAR-'+item.decisionId.split('-')[1])) : null,
-      authorization:authorized?'CURRENT':decision==='REUSE EXISTING'?'NO NEW CAR':'NOT AUTHORIZED'
+      carId:authorized ? receipt.carId : null,
+      authorization:authorized?'CURRENT':decision==='REUSE EXISTING'?'NO NEW CAR':decisionEligible?'PENDING CONFIRMATION':'NOT AUTHORIZED'
     };
+  }
+
+  function stableDigest(value) {
+    let h=2166136261;
+    for(let i=0;i<value.length;i++){h^=value.charCodeAt(i);h=Math.imul(h,16777619);}
+    return 'sha256:demo-'+(h>>>0).toString(16).padStart(8,'0')+'-'+value.length.toString(16).padStart(4,'0');
+  }
+
+  function authorizationPackage(item,decision) {
+    const material=[
+      item.decisionId,item.objectiveId,item.krId,item.outcome,item.scope,item.environments,
+      item.productOwner,item.owner,item.evidence,decision
+    ].join('|');
+    return {
+      packageId:'AUTH-PKG-'+item.decisionId.split('-')[1],
+      evidenceDigest:stableDigest(material),
+      approver:'Division Leader · synthetic accountable role',
+      reviewDate:model.carReview,
+      decision
+    };
+  }
+
+  function authorizationEligibility(item) {
+    const decision=authorizationDecision(item);
+    if(decision==='REUSE EXISTING')return {eligible:false,reason:'Reuse decision does not authorize a new product-intent CAR.'};
+    if(decision==='DEFERRED')return {eligible:false,reason:'Deferred item requires stronger outcome/evidence definition before authorization.'};
+    return {eligible:true,reason:'Eligible for accountable product-intent confirmation.'};
+  }
+
+  function openAuthorizationCeremony(ids,opener) {
+    const unique=[...new Set(ids)].filter(id=>authorizationQueue.some(item=>item.decisionId===id));
+    if(!unique.length)return;
+    state.authorizationCeremonyIds=unique;
+    state.authorizationCeremonyOpener=opener||null;
+    const rows=unique.map(id=>{
+      const item=authorizationQueue.find(candidate=>candidate.decisionId===id);
+      const eligibility=authorizationEligibility(item);
+      const decision=authorizationDecision(item);
+      const pkg=authorizationPackage(item,decision);
+      return '<article class="ns-ceremony-item '+(eligibility.eligible?'eligible':'blocked')+'" data-ceremony-item="'+esc(id)+'">'+
+        '<div><small>'+esc(item.objectiveId)+' → '+esc(item.krId)+' · '+esc(item.decisionId)+'</small><h3>'+esc(item.outcome)+'</h3><p>'+esc(item.scope)+'</p></div>'+
+        '<div class="ns-ceremony-proof">'+badge(decision,eligibility.eligible?'green':'amber')+
+          '<span><b>Evidence digest</b><code>'+esc(pkg.evidenceDigest)+'</code></span>'+
+          '<span><b>Approver</b>'+esc(pkg.approver)+'</span>'+
+          '<span><b>Review</b>'+esc(pkg.reviewDate)+'</span>'+
+          '<span><b>Result</b>'+(eligibility.eligible?'Separate CAR after confirmation':esc(eligibility.reason))+'</span>'+
+        '</div></article>';
+    }).join('');
+    const eligible=unique.filter(id=>authorizationEligibility(authorizationQueue.find(item=>item.decisionId===id)).eligible);
+    $('ns-authorization-ceremony-content').innerHTML=
+      '<div class="ns-ceremony-summary"><strong>'+eligible.length+' of '+unique.length+' selected item'+(unique.length===1?'':'s')+' eligible</strong><span>Each eligible item is confirmed and recorded independently. Selection never creates one blanket CAR.</span></div>'+
+      rows+
+      '<div class="ns-denied"><h3>Still not granted</h3>'+model.authorityDenied.map(x=>'<span>× '+esc(x)+'</span>').join('')+'</div>'+
+      '<div class="ns-ceremony-actions"><button type="button" data-close-authorization-ceremony>Cancel</button><button type="button" class="primary" data-confirm-authorization '+(eligible.length?'':'disabled')+'>Confirm '+eligible.length+' eligible item'+(eligible.length===1?'':'s')+'</button></div>';
+    const dialog=$('ns-authorization-ceremony-dialog');
+    if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
+    const focus=dialog.querySelector('[data-confirm-authorization]:not([disabled]),[data-close-authorization-ceremony]');
+    if(focus)focus.focus();
+  }
+
+  function closeAuthorizationCeremony() {
+    const dialog=$('ns-authorization-ceremony-dialog');
+    if(dialog.open&&typeof dialog.close==='function')dialog.close();else dialog.removeAttribute('open');
+    const opener=state.authorizationCeremonyOpener;
+    state.authorizationCeremonyOpener=null;
+    state.authorizationCeremonyIds=[];
+    if(opener&&typeof opener.focus==='function')opener.focus();
+  }
+
+  function confirmAuthorizationCeremony() {
+    const ids=state.authorizationCeremonyIds||[];
+    ids.forEach(id=>{
+      const item=authorizationQueue.find(candidate=>candidate.decisionId===id);
+      if(!item||!authorizationEligibility(item).eligible)return;
+      const decision=authorizationDecision(item);
+      const pkg=authorizationPackage(item,decision);
+      state.authorizationDecisions[id]=decision==='APPROVE CONDITIONALLY'?'APPROVE CONDITIONALLY':'APPROVED';
+      state.authorizationReceipts[id]={
+        packageId:pkg.packageId,
+        evidenceDigest:pkg.evidenceDigest,
+        approver:pkg.approver,
+        reviewDate:pkg.reviewDate,
+        decision:state.authorizationDecisions[id],
+        carId:item.carId||('CAR-'+item.decisionId.split('-')[1]),
+        confirmed:true
+      };
+    });
+    closeAuthorizationCeremony();
+    state.selectedAuthorizationIds=[];
+    state.view='authorization';
+    render();
   }
 
   function authorization() {
     const selected=authorizationQueue.find(item=>item.decisionId===state.selectedAuthorizationId)||authorizationQueue[0];
     const selectedRecord=authorizationRecord(selected);
+    const selectedSet=new Set(state.selectedAuthorizationIds);
     const cards=authorizationQueue.map(item=>{
       const record=authorizationRecord(item);
+      const eligibility=authorizationEligibility(item);
       const selectedClass=item.decisionId===selected.decisionId?' selected':'';
       const tone=record.authorized?'green':record.decision==='DEFERRED'?'amber':'blue';
+      const receipt=state.authorizationReceipts[item.decisionId];
+      const receiptCurrent=Boolean(receipt&&record.authorized);
       return '<article class="ns-auth-card'+selectedClass+'" data-auth-item="'+esc(item.decisionId)+'">'+
+        '<div class="ns-auth-select-row"><label><input type="checkbox" data-auth-check="'+esc(item.decisionId)+'" '+(selectedSet.has(item.decisionId)?'checked':'')+'> Select for review</label><span>'+esc(eligibility.eligible?'ELIGIBLE':'INDIVIDUAL REVIEW')+'</span></div>'+
         '<div class="ns-auth-card-head"><div><small>'+esc(item.objectiveId)+' → '+esc(item.krId)+'</small><h3>'+esc(item.outcome)+'</h3></div>'+badge(record.decision,tone)+'</div>'+
         '<div class="ns-auth-meta"><span>'+esc(item.decisionId)+'</span><span>'+(record.carId?esc(record.carId):'NO NEW CAR')+'</span><span>'+esc(item.owner)+'</span></div>'+
         '<p>'+esc(item.scope)+'</p>'+
+        (receiptCurrent?'<div class="ns-auth-receipt"><strong>CONFIRMED</strong><span>'+esc(receipt.packageId)+' · '+esc(receipt.evidenceDigest)+'</span></div>':'')+
         '<button type="button" data-auth-select="'+esc(item.decisionId)+'">Review item</button>'+
       '</article>';
     }).join('');
     const pending=authorizationQueue.filter(item=>!['APPROVED','REUSE EXISTING','DEFERRED'].includes(authorizationDecision(item))).length;
     const authorizedCount=authorizationQueue.filter(item=>authorizationRecord(item).authorized).length;
+    const selectedItems=authorizationQueue.filter(item=>selectedSet.has(item.decisionId));
+    const selectedEligible=selectedItems.filter(item=>authorizationEligibility(item).eligible);
 
     return headline(
-      'Decision & Authorization Queue',
-      'Review several proposed outcomes without collapsing them into one blanket approval. Every item keeps its own decision, evidence, scope, accountable owner and Capability Authorization Record behavior.',
-      'DECISION & AUTHORIZATION QUEUE'
+      'Leadership Decision Workspace',
+      'Work the decision portfolio without turning multi-select into blanket authority. Northstar evaluates each selected item independently and emits a separate bounded record only after accountable confirmation.',
+      'LEADERSHIP DECISION WORKSPACE'
     )+
     '<div class="ns-auth-summary"><article><small>QUEUE ITEMS</small><strong>'+authorizationQueue.length+'</strong><span>Independent decisions</span></article><article><small>AUTHORIZED</small><strong>'+authorizedCount+'</strong><span>Current bounded product-intent records</span></article><article><small>NEEDS DECISION</small><strong>'+pending+'</strong><span>Human decision still required</span></article></div>'+
+    '<div class="ns-batch-bar"><div><small>SELECTED FOR REVIEW</small><strong>'+selectedItems.length+' item'+(selectedItems.length===1?'':'s')+'</strong><span>'+selectedEligible.length+' eligible for authorization · '+(selectedItems.length-selectedEligible.length)+' require individual handling</span></div><button type="button" data-review-selected '+(selectedItems.length?'':'disabled')+'>Review selected</button></div>'+
     '<div class="ns-auth-layout"><div class="ns-auth-list">'+cards+'</div>'+
     '<section class="ns-auth-detail" aria-label="Selected authorization item">'+
       '<div class="ns-auth-detail-head"><div><small>SELECTED ITEM · '+esc(selected.decisionId)+'</small><h3>'+esc(selected.outcome)+'</h3></div>'+badge(selectedRecord.authorization,selectedRecord.authorized?'green':'amber')+'</div>'+
@@ -543,11 +654,12 @@
         '<button type="button" data-auth-action="approve" data-auth-id="'+esc(selected.decisionId)+'">Approve</button>'+
         '<button type="button" data-auth-action="reuse" data-auth-id="'+esc(selected.decisionId)+'">Reuse existing</button>'+
         '<button type="button" data-auth-action="defer" data-auth-id="'+esc(selected.decisionId)+'">Defer</button>'+
+        '<button type="button" class="primary" data-authorize-item="'+esc(selected.decisionId)+'" '+(authorizationEligibility(selected).eligible?'':'disabled')+'>Review authorization package</button>'+
       '</div>'+
-      '<div class="ns-boundary-box"><strong>Synthetic decision only.</strong> These controls demonstrate record-state changes. They do not authenticate an approver, write an enterprise system, create spending authority, accept risk, deploy, provision or mutate cloud resources.</div>'+
+      '<div class="ns-boundary-box"><strong>Decision is not execution authority.</strong> The authorization ceremony binds the exact product intent, evidence digest, accountable role and review date. It still does not grant spending, risk, deployment, provisioning or cloud mutation authority.</div>'+
       '<div class="ns-denied"><h3>Not granted by a Northstar CAR</h3>'+model.authorityDenied.map(x=>'<span>× '+esc(x)+'</span>').join('')+'</div>'+
     '</section></div>'+
-    '<div class="ns-auth-mechanics"><small>HOW AUTHORIZATION ACTUALLY WORKS</small><div><article><b>1</b><strong>Evidence ready</strong><span>Northstar assembles the exact outcome, alternatives, scope and evidence.</span></article><article><b>2</b><strong>Human decision</strong><span>An accountable organizational approver chooses approve, conditional approval, reuse or defer.</span></article><article><b>3</b><strong>Exact CAR emitted</strong><span>Approved product intent gets a bounded CAR tied to that decision and scope.</span></article><article><b>4</b><strong>CAR carried downstream</strong><span>Backlog and productization handoffs retain the exact CAR; they cannot widen it.</span></article><article><b>5</b><strong>Separate execution authority</strong><span>Deployment, provisioning, risk acceptance and other privileged actions still require their own authorized controls.</span></article></div></div>';
+    '<div class="ns-auth-mechanics"><small>HOW AUTHORIZATION ACTUALLY WORKS</small><div><article><b>1</b><strong>Evidence ready</strong><span>Northstar assembles the exact outcome, alternatives, scope and evidence.</span></article><article><b>2</b><strong>Human decision</strong><span>An accountable organizational approver chooses approve, conditional approval, reuse or defer.</span></article><article><b>3</b><strong>Exact package confirmed</strong><span>The human sees scope, evidence digest, accountable role, review date and exclusions before confirmation.</span></article><article><b>4</b><strong>Separate CAR per item</strong><span>Each eligible decision receives its own bounded CAR; multi-select never merges authority.</span></article><article><b>5</b><strong>Separate execution authority</strong><span>Deployment, provisioning, risk acceptance and other privileged actions still require their own authorized controls.</span></article></div></div>';
   }
 
   function evidence() {
@@ -625,6 +737,21 @@
     if(e.target.closest('[data-composer-reset]')){ composerStep='intent'; state.composerAccepted=false; renderComposer(); return; }
     if(e.target.closest('[data-composer-accept]')){ composerStep='accepted'; state.composerAccepted=true; renderComposer(); return; }
     if(e.target.closest('[data-composer-done]')){ closeComposer(); state.view='okr'; render(); return; }
+    const authCheck=e.target.closest('[data-auth-check]');
+    if(authCheck){
+      const id=authCheck.dataset.authCheck;
+      state.selectedAuthorizationIds=authCheck.checked
+        ? [...new Set([...state.selectedAuthorizationIds,id])]
+        : state.selectedAuthorizationIds.filter(value=>value!==id);
+      render();
+      return;
+    }
+    const reviewSelected=e.target.closest('[data-review-selected]');
+    if(reviewSelected){openAuthorizationCeremony(state.selectedAuthorizationIds,reviewSelected);return;}
+    const authorizeItem=e.target.closest('[data-authorize-item]');
+    if(authorizeItem){openAuthorizationCeremony([authorizeItem.dataset.authorizeItem],authorizeItem);return;}
+    if(e.target.closest('[data-close-authorization-ceremony]')){closeAuthorizationCeremony();return;}
+    if(e.target.closest('[data-confirm-authorization]')){confirmAuthorizationCeremony();return;}
     const authSelect=e.target.closest('[data-auth-select]');
     if(authSelect){
       state.selectedAuthorizationId=authSelect.dataset.authSelect;
@@ -637,7 +764,10 @@
       const id=authAction.dataset.authId;
       const action=authAction.dataset.authAction;
       state.selectedAuthorizationId=id;
-      state.authorizationDecisions[id]=action==='approve'?'APPROVED':action==='conditional'?'APPROVE CONDITIONALLY':action==='reuse'?'REUSE EXISTING':'DEFERRED';
+      const nextDecision=action==='approve'?'APPROVED':action==='conditional'?'APPROVE CONDITIONALLY':action==='reuse'?'REUSE EXISTING':'DEFERRED';
+      const priorDecision=authorizationDecision(authorizationQueue.find(item=>item.decisionId===id));
+      state.authorizationDecisions[id]=nextDecision;
+      if(nextDecision!==priorDecision)delete state.authorizationReceipts[id];
       state.view='authorization';
       render();
       return;

@@ -81,46 +81,82 @@ jobs:
           set -euo pipefail
           node --check assets/portfolio.js
           node scripts/test_portfolio_bundle.cjs
+          echo "Portfolio bundle test exit: $?"
+          echo "after bundle"
           grep -Fq "traceability-only-hidden-from-executive-view" assets/portfolio.js
           grep -Fq '"registeredMeasures": "traceability-only-hidden-from-executive-view"' data/roadmap-relationships.json
+          echo "after roadmap registeredMeasures"
           grep -Fq "node('details','roadmap-objective')" assets/portfolio.js
+          echo "after roadmap objective renderer"
           grep -Fq "node('details','roadmap-headline-kr')" assets/portfolio.js
+          echo "after roadmap headline KR renderer"
+          echo "after headline renderer"
           grep -Fq "roadmap-expand-all" portfolio/index.html
+          echo "after expand"
           grep -Fq "roadmap-collapse-all" portfolio/index.html
+          echo "after collapse"
           grep -Fq "PORTFOLIO INQUIRY" support/index.html
+          echo "after support inquiry"
+          echo "after inquiry"
           grep -Fq "PORTFOLIO USE NOTICE" terms/index.html
+          echo "after terms notice"
+          echo "after notice"
           grep -Fq "Organization-hosted concept. Synthetic validation. Non-authoritative." console/index.html
+          echo "after console status"
+          echo "after console posture"
           grep -Fq "Open Synthetic Console Demo" console/index.html
+          echo "after console demo link"
           grep -Fq "NORTHSTAR SIGNAL · CLOUD PRODUCT STRATEGY & DECISION INTELLIGENCE" northstar-signal/index.html
+          echo "after northstar title"
           grep -Fq "Open Synthetic Demo" northstar-signal/index.html
+          echo "after northstar demo link"
           grep -Fq "NORTHSTAR SIGNAL · INTERACTIVE SYNTHETIC DEMO" northstar-signal/demo/index.html
+          echo "after demo title"
           grep -Fq "Closing tickets is not the same thing as achieving the outcome." northstar-signal/index.html
+          echo "after closing copy"
           northstar_demo_js_blob="$(git hash-object assets/northstar-signal-demo.js)"
           grep -Fq "/assets/northstar-signal-demo.js?v=${northstar_demo_js_blob}" northstar-signal/demo/index.html
+          echo "after northstar hash"
           node --check assets/northstar-signal-demo.js
+          echo "after northstar syntax"
           grep -Fq "No benefit claim yet." assets/northstar-signal-demo.js
+          echo "after benefit copy"
           grep -Fq "External backlog writeback is not enabled." assets/northstar-signal-demo.js
+          echo "after backlog boundary"
           grep -Fq "button.setAttribute('aria-pressed', active ? 'true' : 'false')" assets/northstar-signal-demo.js
+          echo "after pressed"
           grep -Fq "KR9.4 AUTHORIZATION STATUS" assets/northstar-signal-demo.js
+          echo "after kr status"
           grep -Fq "DOWNSTREAM BENEFIT FEEDBACK" assets/northstar-signal-demo.js
+          echo "after benefit heading"
           grep -Fq "Northstar decision/CAR binding" assets/northstar-signal-demo.js
+          echo "after car binding"
           grep -Fq "const kr94Status = primary.authorized ? 'ON TRACK' : 'UNKNOWN';" assets/northstar-signal-demo.js
+          echo "after primary status"
           grep -Fq "function primaryAuthorization()" assets/northstar-signal-demo.js
+          echo "after primary function"
           grep -Fq "No authorized product-intent handoff" assets/northstar-signal-demo.js
           grep -Fq "const benefitUnproven = s.benefitOutcome === 'UNKNOWN' ? 1 : 0;" assets/northstar-signal-demo.js
           grep -Fq "Create OKR with Composite AI" assets/northstar-signal-demo.js
           grep -Fq "AI-PROPOSED · SYNTHETIC FIXTURE" assets/northstar-signal-demo.js
           grep -Fq "Northstar validates structure independently of the model." assets/northstar-signal-demo.js
-          grep -Fq "Decision & Authorization Queue" assets/northstar-signal-demo.js
           grep -Fq "authorizationQueue = [" assets/northstar-signal-demo.js
           grep -Fq "HOW AUTHORIZATION ACTUALLY WORKS" assets/northstar-signal-demo.js
+          grep -Fq "Leadership Decision Workspace" assets/northstar-signal-demo.js
+          grep -Fq "openAuthorizationCeremony" assets/northstar-signal-demo.js
+          grep -Fq "Separate CAR per item" assets/northstar-signal-demo.js
+          grep -Fq "PENDING CONFIRMATION" assets/northstar-signal-demo.js
+          grep -Fq "delete state.authorizationReceipts[id]" assets/northstar-signal-demo.js
+          grep -Fq "Confirm exact authorization package" northstar-signal/demo/index.html
           grep -Fq "data-view=\"composer\"" northstar-signal/demo/index.html
           grep -Fq "Authorization Queue" northstar-signal/demo/index.html
           grep -Fq "Northstar OKR Composer" northstar-signal/demo/index.html
           grep -Fq "Compose structurally sound OKRs" composite-ai/index.html
           grep -Fq "DETERMINISTIC VALIDATION" composite-ai/index.html
           grep -Fq "OKR Composer / AI proposal + deterministic validation" scripts/audit_site_contrast.cjs
+          grep -Fq "Authorization Queue / independent item decisions" scripts/audit_site_contrast.cjs
           grep -Fq "Authorization Queue / shared state across views" scripts/audit_site_contrast.cjs
+          grep -Fq "Leadership Decision Workspace / multi-select ceremony" scripts/audit_site_contrast.cjs
           grep -Fq "OKR Composer / first-class view" scripts/audit_site_contrast.cjs
           grep -Fq "scenario '+scenario+' / trace drawer" scripts/audit_site_contrast.cjs
           if grep -Fq "KR outcome remains unknown" assets/northstar-signal-demo.js \
@@ -133,6 +169,7 @@ jobs:
             exit 1
           fi
           grep -Fq "scenario '+scenario+' / view '+view" scripts/audit_site_contrast.cjs
+          echo "Northstar public demo contract validated."
           grep -Fq "IAAP CONSOLE · INTERACTIVE SYNTHETIC WORKBENCH" console/demo/index.html
           grep -Fq "VERIFICATION PENDING" console/demo/index.html
           grep -Fq "AWAITING_HUMAN_REVIEW" assets/console-demo.js
@@ -222,48 +259,49 @@ jobs:
             echo "::error::Portfolio must not claim protected-main evidence without verified protection."
             exit 1
           fi
-          node <<'NODE'
-          const fs=require('fs');
-          const data=JSON.parse(fs.readFileSync('data/roadmap-relationships.json','utf8'));
-          const allowed=new Set([0,25,50,75,100]);
-          if(data.schemaVersion!=='roadmap-relationship-view/v5') throw new Error('roadmap relationship schema');
-          if(data.contributionSource!=='config/portfolio-strategic-kr-contributions.json'||!/^[0-9a-f]{40}$/.test(data.contributionBlobSha||'')) throw new Error('contribution contract provenance');
-          if(data.relationshipModel?.epicContributionSemantics!=='relationship-specific-description-required') throw new Error('Epic contribution semantics');
-          const krById=new Map((data.keyResults||[]).map(k=>[k.id,k]));
-          const descriptionsByEpic=new Map();
-          for(const strategic of data.headlineKeyResults||[]){
-            if(strategic.objective!==String(strategic.id||'').split('-HKR',1)[0]) throw new Error(`Strategic KR Objective mismatch for ${strategic.id}`);
-            if(!Array.isArray(strategic.epicContributions)||strategic.epicContributions.length<1) throw new Error(`missing Epic contributions for ${strategic.id}`);
-            const derived=[...new Set(strategic.measures.flatMap(id=>(krById.get(id)||{epics:[]}).epics))];
-            const declared=strategic.epicContributions.map(edge=>edge.epic);
-            if(new Set(declared).size!==declared.length||derived.length!==declared.length||derived.some(id=>!declared.includes(id))) throw new Error(`Epic contribution coverage mismatch for ${strategic.id}`);
-            for(const edge of strategic.epicContributions){
-              if(typeof edge.description!=='string'||!edge.description.trim()) throw new Error(`missing contribution description for ${strategic.id}/${edge.epic}`);
-              const entries=descriptionsByEpic.get(edge.epic)||[];
-              entries.push(edge.description.trim().toLowerCase());
-              descriptionsByEpic.set(edge.epic,entries);
+          echo "Pre-forecast assertions validated."
+          node -e '
+            const fs=require("fs");
+            const data=JSON.parse(fs.readFileSync("data/roadmap-relationships.json","utf8"));
+            const allowed=new Set([0,25,50,75,100]);
+            if(data.schemaVersion!=="roadmap-relationship-view/v5") throw new Error("roadmap relationship schema");
+            if(data.contributionSource!=="config/portfolio-strategic-kr-contributions.json"||!/^[0-9a-f]{40}$/.test(data.contributionBlobSha||"")) throw new Error("contribution contract provenance");
+            if(data.relationshipModel?.epicContributionSemantics!=="relationship-specific-description-required") throw new Error("Epic contribution semantics");
+            const krById=new Map((data.keyResults||[]).map(k=>[k.id,k]));
+            const descriptionsByEpic=new Map();
+            for(const strategic of data.headlineKeyResults||[]){
+              if(strategic.objective!==String(strategic.id||"").split("-HKR",1)[0]) throw new Error("Strategic KR Objective mismatch for "+strategic.id);
+              if(!Array.isArray(strategic.epicContributions)||strategic.epicContributions.length<1) throw new Error("missing Epic contributions for "+strategic.id);
+              const derived=[...new Set(strategic.measures.flatMap(id=>(krById.get(id)||{epics:[]}).epics))];
+              const declared=strategic.epicContributions.map(edge=>edge.epic);
+              if(new Set(declared).size!==declared.length||derived.length!==declared.length||derived.some(id=>!declared.includes(id))) throw new Error("Epic contribution coverage mismatch for "+strategic.id);
+              for(const edge of strategic.epicContributions){
+                if(typeof edge.description!=="string"||!edge.description.trim()) throw new Error("missing contribution description for "+strategic.id+"/"+edge.epic);
+                const entries=descriptionsByEpic.get(edge.epic)||[];
+                entries.push(edge.description.trim().toLowerCase());
+                descriptionsByEpic.set(edge.epic,entries);
+              }
             }
-          }
-          for(const [epic,entries] of descriptionsByEpic){
-            if(entries.length>1&&new Set(entries).size!==entries.length) throw new Error(`duplicate multi-KR contribution description for ${epic}`);
-          }
-          if(data.forecastModel?.method!=='linear-evidence-trend/v1') throw new Error('forecastModel method');
-          if(data.forecastModel.minimumSnapshots!==2||data.forecastModel.minimumSpanDays!==7) throw new Error('forecast bounds');
-          if(data.forecastModel.blockedBehavior!=='no-date-inferred'||data.forecastModel.planningWindows!=='explicit-roadmap-assumptions') throw new Error('forecast semantics');
-          if(!Array.isArray(data.progressHistory)||data.progressHistory.length<1) throw new Error('progressHistory missing');
-          let prior='';
-          for(const snapshot of data.progressHistory){
-            if(!/^\d{4}-\d{2}-\d{2}$/.test(snapshot.date)||snapshot.date<=prior) throw new Error('history dates');
-            if(snapshot.date>data.generatedAt) throw new Error('future history snapshot');
-            const ids=Object.keys(snapshot.epics||{});
-            if(ids.length<1||ids.some(id=>!/^EP-\d+$/.test(id))) throw new Error('history epic identifiers');
-            if(ids.some(id=>!allowed.has(snapshot.epics[id]))) throw new Error('history completion scale');
-            prior=snapshot.date;
-          }
-          const ep08=data.epics['EP-08'];
-          if(!ep08||!/externally blocked|external prerequisite|customer-dependent/i.test(`${ep08.status||''} ${ep08.progress||''} ${ep08.progressBasis||''} ${ep08.time||''}`)) throw new Error('EP-08 external block contract');
-          console.log('Portfolio forecast contract validated.');
-          NODE
+            for(const [epic,entries] of descriptionsByEpic) if(entries.length>1&&new Set(entries).size!==entries.length) throw new Error("duplicate multi-KR contribution description for "+epic);
+            if(data.forecastModel?.method!=="linear-evidence-trend/v1") throw new Error("forecastModel method");
+            if(data.forecastModel.minimumSnapshots!==2||data.forecastModel.minimumSpanDays!==7) throw new Error("forecast bounds");
+            if(data.forecastModel.blockedBehavior!=="no-date-inferred"||data.forecastModel.planningWindows!=="explicit-roadmap-assumptions") throw new Error("forecast semantics");
+            if(!Array.isArray(data.progressHistory)||data.progressHistory.length<1) throw new Error("progressHistory missing");
+            let prior="";
+            for(const snapshot of data.progressHistory){
+              if(!/^\d{4}-\d{2}-\d{2}$/.test(snapshot.date)||snapshot.date<=prior) throw new Error("history dates");
+              if(snapshot.date>data.generatedAt) throw new Error("future history snapshot");
+              const ids=Object.keys(snapshot.epics||{});
+              if(ids.length<1||ids.some(id=>!/^EP-\d+$/.test(id))) throw new Error("history epic identifiers");
+              if(ids.some(id=>!allowed.has(snapshot.epics[id]))) throw new Error("history completion scale");
+              prior=snapshot.date;
+            }
+            const ep08=data.epics["EP-08"];
+            if(!ep08||!/externally blocked|external prerequisite|customer-dependent/i.test((ep08.status||"")+" "+(ep08.progress||"")+" "+(ep08.progressBasis||"")+" "+(ep08.time||""))) throw new Error("EP-08 external block contract");
+            console.log("Portfolio forecast contract validated.");
+          '
+          echo "Forecast node assertions completed."
+          echo "validate-portfolio-outlook complete"
 
   verify-public-site:
     name: verify-custom-domain
