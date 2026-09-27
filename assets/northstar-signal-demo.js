@@ -210,6 +210,8 @@
     handoffConfirmed:false,
     handoffReceipt:null,
     managementProposalState:'idle',
+    managementIntent:'Decompose the selected authorized outcome into the smallest useful Epic set while preferring governed reuse and preserving measurable outcomes.',
+    managementSelectedDecisionIds:[],
     acceptedEpic:null,
     authorizationReturnView:null
   };
@@ -528,6 +530,36 @@
     return receipt?{decisionId:ctx.authorization.decisionId,carId:record.carId,packageId:receipt.packageId,evidenceDigest:receipt.evidenceDigest,objectiveId:ctx.objective.objectiveId,krId:ctx.kr.id}:null;
   }
 
+  function authorizationBindingFor(item) {
+    const record=authorizationRecord(item);
+    const receipt=state.authorizationReceipts[item.decisionId];
+    if(!record.authorized||!receipt)return null;
+    return {decisionId:item.decisionId,carId:record.carId,packageId:receipt.packageId,evidenceDigest:receipt.evidenceDigest,objectiveId:item.objectiveId,krId:item.krId,authorizedOutcome:item.outcome,authorizedScope:item.scope};
+  }
+
+  function authorizedManagementContexts() {
+    return authorizationQueue.map(item=>({item,binding:authorizationBindingFor(item)})).filter(entry=>entry.binding);
+  }
+
+  function ensureManagementSelection() {
+    const ctx=selectedOkrContext();
+    const valid=new Set(authorizedManagementContexts().map(entry=>entry.item.decisionId));
+    state.managementSelectedDecisionIds=state.managementSelectedDecisionIds.filter(id=>valid.has(id));
+    if(ctx.authorization&&valid.has(ctx.authorization.decisionId)&&!state.managementSelectedDecisionIds.length)state.managementSelectedDecisionIds=[ctx.authorization.decisionId];
+  }
+
+  function managementSourceBindings() {
+    ensureManagementSelection();
+    return state.managementSelectedDecisionIds.map(id=>{
+      const item=authorizationQueue.find(candidate=>candidate.decisionId===id);
+      return item?authorizationBindingFor(item):null;
+    }).filter(Boolean);
+  }
+
+  function managementSelectionDigest(bindings) {
+    return stableDigest(bindings.map(b=>[b.objectiveId,b.krId,b.decisionId,b.carId,b.packageId,b.evidenceDigest,b.authorizedOutcome,b.authorizedScope].join('|')).sort().join('||'));
+  }
+
   const managementEpicProposals=[
     {
       id:'MEP-0001',epic:'EP-23',title:'Managed Network Foundation',
@@ -559,7 +591,22 @@
   }
 
   function managementProposalsForSelectedContext() {
+    ensureManagementSelection();
     const ctx=selectedOkrContext();
+    const bindings=managementSourceBindings();
+    if(bindings.length>1){
+      const outcomes=bindings.map(b=>b.authorizedOutcome);
+      const scopes=bindings.map(b=>b.authorizedScope);
+      return [{
+        id:'MEP-MULTI-001',epic:'EP-CANDIDATE-MULTI-01',title:'Cross-KR Authorized Outcome Epic',
+        outcome:'Compose one bounded management Epic from the selected authorized outcomes: '+outcomes.join(' + ')+'. Management intent: '+state.managementIntent,
+        acceptance:['Each source KR/CAR remains independently traceable','The Epic stays within the union of the explicitly selected authorized scopes without creating new authority','Evidence requirements remain attributable to each source KR','Delivery completion cannot independently declare any source KR achieved'],
+        evidence:'Independent CAR bindings · selected-KR evidence requirements · management intent',
+        reuse:'MULTI-KR COMPOSITION · AUTHORITY REMAINS SEPARATE PER SOURCE CAR',
+        reuseTone:'green',
+        proposalContext:{bindings:bindings.map(b=>({...b})),selectionDigest:managementSelectionDigest(bindings),managementIntent:state.managementIntent,authorizedOutcomes:outcomes,authorizedScopes:scopes}
+      }];
+    }
     if(ctx.objective.objectiveId==='O9'&&ctx.kr.id==='KR9.4')return withProposalContext(managementEpicProposals,ctx);
     if(ctx.objective.objectiveId==='O10'&&ctx.kr.id==='KR10.1')return withProposalContext([
       {
@@ -583,14 +630,16 @@
   }
 
   function proposalMatchesSelectedAuthorization(proposal) {
-    const ctx=selectedOkrContext();
     const pc=proposal&&proposal.proposalContext;
-    return Boolean(ctx.authorization&&pc&&
-      pc.objectiveId===ctx.objective.objectiveId&&
-      pc.krId===ctx.kr.id&&
-      pc.decisionId===ctx.authorization.decisionId&&
-      pc.authorizedOutcome===ctx.authorization.outcome&&
-      pc.authorizedScope===ctx.authorization.scope);
+    const bindings=managementSourceBindings();
+    if(!pc||!bindings.length)return false;
+    if(Array.isArray(pc.bindings)){
+      return pc.managementIntent===state.managementIntent&&pc.selectionDigest===managementSelectionDigest(bindings)&&pc.bindings.length===bindings.length&&
+        bindings.every(binding=>pc.bindings.some(saved=>saved.decisionId===binding.decisionId&&saved.carId===binding.carId&&saved.packageId===binding.packageId&&saved.evidenceDigest===binding.evidenceDigest&&saved.authorizedOutcome===binding.authorizedOutcome&&saved.authorizedScope===binding.authorizedScope));
+    }
+    const ctx=selectedOkrContext();
+    return Boolean(ctx.authorization&&bindings.length===1&&pc.objectiveId===ctx.objective.objectiveId&&pc.krId===ctx.kr.id&&
+      pc.decisionId===ctx.authorization.decisionId&&pc.authorizedOutcome===ctx.authorization.outcome&&pc.authorizedScope===ctx.authorization.scope);
   }
 
   const managementChecks=[
@@ -613,15 +662,15 @@
   }
 
   function managementAcceptanceCurrent() {
-    const binding=selectedAuthorizationBinding();
     const accepted=state.acceptedEpic;
-    return Boolean(accepted&&binding&&accepted.authorizationBinding&&
-      accepted.authorizationBinding.carId===binding.carId&&
-      accepted.authorizationBinding.packageId===binding.packageId&&
-      accepted.authorizationBinding.evidenceDigest===binding.evidenceDigest&&
-      accepted.authorizationBinding.decisionId===binding.decisionId&&
-      accepted.authorizationBinding.objectiveId===binding.objectiveId&&
-      accepted.authorizationBinding.krId===binding.krId);
+    const bindings=managementSourceBindings();
+    if(!accepted||!Array.isArray(accepted.authorizationBindings)||!bindings.length)return false;
+    return accepted.managementIntent===state.managementIntent&&
+      accepted.selectionDigest===managementSelectionDigest(bindings)&&
+      accepted.authorizationBindings.length===bindings.length&&
+      bindings.every(binding=>accepted.authorizationBindings.some(saved=>
+        saved.carId===binding.carId&&saved.packageId===binding.packageId&&saved.evidenceDigest===binding.evidenceDigest&&
+        saved.decisionId===binding.decisionId&&saved.objectiveId===binding.objectiveId&&saved.krId===binding.krId));
   }
 
   function invalidateManagementAcceptance() {
@@ -632,8 +681,8 @@
 
   function invalidateManagementForAuthorization(decisionId) {
     const selectedDecisionId=selectedOkrContext().authorization?.decisionId||null;
-    const acceptedDecisionId=state.acceptedEpic?.authorizationBinding?.decisionId||null;
-    if((selectedDecisionId===decisionId&&state.managementProposalState!=='idle')||acceptedDecisionId===decisionId){
+    const acceptedDecisionIds=(state.acceptedEpic?.authorizationBindings||[]).map(binding=>binding.decisionId);
+    if((selectedDecisionId===decisionId&&state.managementProposalState!=='idle')||state.managementSelectedDecisionIds.includes(decisionId)||acceptedDecisionIds.includes(decisionId)){
       invalidateManagementAcceptance();
     }
   }
@@ -656,14 +705,19 @@
         '<div class="ns-composer-actions"><button type="button" class="primary" data-management-authorize>Authorize outcome to continue</button></div>'+
       '</section>';
     }
+    ensureManagementSelection();
+    const authorizedContexts=authorizedManagementContexts();
+    const sourceBindings=managementSourceBindings();
     const proposals=managementProposalsForSelectedContext();
     const proposed=state.managementProposalState!=='idle';
     const proposalsBound=proposals.length>0&&proposals.every(proposalMatchesSelectedAuthorization);
     const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent()&&proposalsBound;
+    const selector=authorizedContexts.map(({item,binding})=>'<label class="ns-mc-kr-choice"><input type="checkbox" data-management-kr-check="'+esc(item.decisionId)+'" '+(state.managementSelectedDecisionIds.includes(item.decisionId)?'checked':'')+'><span><strong>'+esc(item.objectiveId+' → '+item.krId)+'</strong><small>'+esc(binding.carId+' · '+item.outcome)+'</small></span></label>').join('');
     return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
-      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · Compose candidate Epics.</h2><p>Composite AI receives a bounded context package: Objective, KR, CPD, current CAR, constraints, evidence requirements and existing portfolio context.</p></div>'+badge(primary.carId,'green')+'</div>'+
-      '<div class="ns-mc-context"><small>BOUNDED CONTEXT</small><span>'+esc(ctx.objective.objectiveId)+'</span><span>'+esc(ctx.kr.id)+'</span><span>'+esc(ctx.authorization?ctx.authorization.decisionId:'NO AUTHORIZATION DECISION')+'</span><span>'+esc(primary.carId)+'</span><span>Existing product catalog</span><span>Existing Epic relationships</span></div>'+
-      (!proposed?'<div class="ns-mc-empty"><h3>Management intent</h3><p>Decompose the selected authorized Key Result into the smallest useful set of outcome-oriented Epics while preferring reuse over duplicate work.</p><button type="button" class="primary" data-management-draft>Propose Epics with Composite AI</button></div>':'')+
+      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>Compose candidate Epics from authorized outcomes.</h2><p>Management can provide intent and select one or more currently authorized KRs. Every selected KR keeps its own CAR and evidence binding.</p></div>'+badge(sourceBindings.length+' AUTHORIZED KR'+(sourceBindings.length===1?'':'S'),'green')+'</div>'+
+      '<div class="ns-mc-context"><small>BOUNDED CONTEXT</small>'+sourceBindings.map(binding=>'<span>'+esc(binding.objectiveId+' → '+binding.krId+' · '+binding.carId)+'</span>').join('')+'<span>Existing product catalog</span><span>Existing Epic relationships</span></div>'+
+      '<div class="ns-mc-input"><label for="ns-management-intent">Management intent</label><textarea id="ns-management-intent" data-management-intent rows="4" placeholder="Describe the Epic outcome, sequencing, dependencies, or management intent...">'+esc(state.managementIntent)+'</textarea><div class="ns-mc-kr-selector"><small>AUTHORIZED KRS TO USE</small>'+selector+'</div><p>Select one or more authorized KRs. Northstar keeps each source CAR independent; selection does not merge or widen authority.</p></div>'+
+      (!proposed?'<div class="ns-mc-empty"><h3>Ready to compose</h3><p>Composite AI will use the management intent plus the exact selected KR/CAR set, then deterministic checks validate scope and lineage before acceptance.</p><button type="button" class="primary" data-management-draft '+(!sourceBindings.length?'disabled':'')+'>Propose Epics with Composite AI</button></div>':'')+
       (proposed?'<div class="ns-mc-proposals"><small>AI-PROPOSED · SYNTHETIC FIXTURE</small>'+proposals.map((p,i)=>'<article data-management-proposal="'+esc(p.id)+'"><div class="ns-mc-proposal-head"><div><small>'+esc(p.id)+' · '+esc(p.epic)+'</small><h3>'+esc(p.title)+'</h3></div>'+badge(i===0?'PRIMARY':'CANDIDATE',i===0?'blue':'neutral')+'</div><p>'+esc(p.outcome)+'</p><div class="ns-mc-reuse '+p.reuseTone+'"><strong>REUSE / EQUIVALENCE</strong><span>'+esc(p.reuse)+'</span></div><div class="ns-mc-acceptance"><strong>Acceptance outcomes</strong>'+list(p.acceptance)+'</div><div class="ns-mc-evidence"><strong>Evidence</strong><span>'+esc(p.evidence)+'</span></div></article>').join('')+'</div>':'')+
       (proposed?'<div class="ns-composer-step validator"><small>DETERMINISTIC VALIDATION</small><h3>'+(accepted?'PRIMARY EPIC ACCEPTED BY MANAGEMENT':proposalsBound?'BOUNDED PROPOSAL READY FOR MANAGEMENT REVIEW':'PROPOSAL CONTEXT MISMATCH · FAIL CLOSED')+'</h3><div class="ns-composer-checks">'+managementChecks.map(([name,status,note],i)=>{const actual=i===0?(proposalsBound?'PASS':'FAIL'):status;return '<article><div><strong>'+esc(name)+'</strong><span>'+esc(i===0?(proposalsBound?'Every proposed Epic remains bound to the exact current CAR outcome and scope.':'Proposal context does not match the selected authorization outcome/scope.'):note)+'</span></div>'+badge(actual,actual==='PASS'?'green':'amber')+'</article>';}).join('')+'</div><p class="ns-composer-note">Composite AI proposes decomposition. Deterministic checks validate lineage, scope and structure. Management remains accountable for accepting work.</p></div>':'')+
       '<div class="ns-composer-actions">'+
@@ -1001,13 +1055,13 @@
   };
 
   function handoffPackage() {
-    const ctx=selectedOkrContext();
-    const primary=selectedAuthorization();
-    if(!ctx.authorization||!primary||!primary.authorized)return null;
     if(!managementAcceptanceCurrent())return null;
+    const bindings=state.acceptedEpic.authorizationBindings||[];
+    if(!bindings.length)return null;
     const adapter=backlogAdapters[state.handoffTarget];
-    const material=[ctx.objective.objectiveId,ctx.kr.id,ctx.authorization.decisionId,primary.carId,state.acceptedEpic.epic,state.acceptedEpic.title,ctx.kr.text,adapter.label,adapter.project,'Retain exact CAR binding','Evidence required before outcome claim'].join('|');
-    return {id:'BHP-0001',carId:primary.carId,objectiveId:ctx.objective.objectiveId,krId:ctx.kr.id,decisionId:ctx.authorization.decisionId,epic:state.acceptedEpic.epic,epicTitle:state.acceptedEpic.title,target:adapter.label,project:adapter.project,workItemType:adapter.type,digest:stableDigest(material+'|'+state.acceptedEpic.id+'|'+state.acceptedEpic.epic+'|'+state.acceptedEpic.title),status:state.handoffConfirmed?'HANDOFF CONFIRMED':'AWAITING HUMAN HANDOFF'};
+    const lineage=bindings.map(b=>b.objectiveId+' → '+b.krId+' → '+b.decisionId+' → '+b.carId);
+    const material=[...lineage,state.acceptedEpic.epic,state.acceptedEpic.title,state.acceptedEpic.managementIntent,adapter.label,adapter.project,'Retain independent source CAR bindings','Evidence required before outcome claim'].join('|');
+    return {id:'BHP-0001',carIds:bindings.map(b=>b.carId),lineage,sourceBindings:bindings.map(b=>({...b})),epic:state.acceptedEpic.epic,epicTitle:state.acceptedEpic.title,managementIntent:state.acceptedEpic.managementIntent,target:adapter.label,project:adapter.project,workItemType:adapter.type,digest:stableDigest(material+'|'+state.acceptedEpic.id),status:state.handoffConfirmed?'HANDOFF CONFIRMED':'AWAITING HUMAN HANDOFF'};
   }
 
   function invalidateHandoff(){state.handoffConfirmed=false;state.handoffReceipt=null;}
@@ -1020,9 +1074,9 @@
       '<div class="ns-boundary-box"><strong>Fail closed:</strong> Northstar will not represent backlog write authority without a current CAR and a separately confirmed handoff package.</div>';
     const targets=Object.entries(backlogAdapters).map(([id,a])=>'<button type="button" data-handoff-target="'+id+'" class="'+(state.handoffTarget===id?'active':'')+'" aria-pressed="'+(state.handoffTarget===id?'true':'false')+'"><strong>'+esc(a.label)+'</strong><span>'+esc(a.project)+'</span></button>').join('');
     return headline('Turn authorized intent into an executable handoff.','Northstar proposes a bounded backlog package while keeping strategy authority separate from permission to write into an execution system.','EXECUTION HANDOFF · '+pkg.id)+
-      '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(pkg.objectiveId)+' → '+esc(pkg.krId)+'</h3><p>'+esc(ctx.authorization?ctx.authorization.outcome:ctx.kr.text)+'</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>'+esc(pkg.carId)+'</h3><p>Current product-intent authorization.</p></article><b>→</b><article><small>HANDOFF PACKAGE</small><h3>'+esc(pkg.id)+'</h3><p>'+esc(pkg.status.replaceAll('_',' '))+'</p></article></div>'+
+      '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(pkg.sourceBindings.map(b=>b.objectiveId+' → '+b.krId).join(' + '))+'</h3><p>'+esc(pkg.managementIntent)+'</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>'+esc(pkg.carIds.join(' + '))+'</h3><p>Independent current product-intent authorizations.</p></article><b>→</b><article><small>HANDOFF PACKAGE</small><h3>'+esc(pkg.id)+'</h3><p>'+esc(pkg.status.replaceAll('_',' '))+'</p></article></div>'+
       '<section class="ns-handoff-workspace"><div class="ns-handoff-targets"><small>1 · CHOOSE EXECUTION TARGET</small><h3>Adapter boundary</h3><p>These are bounded demo contracts, not live connections.</p><div>'+targets+'</div></div>'+
-      '<div class="ns-handoff-package"><small>2 · REVIEW PROPOSED PACKAGE</small><h3>'+esc(pkg.epic)+' · '+esc(pkg.epicTitle)+'</h3>'+kv([['Target system',esc(pkg.target)],['Target project',esc(pkg.project)],['Work item type',esc(pkg.workItemType)],['Source authorization','<code>'+esc(pkg.carId)+'</code>'],['Strategic lineage',esc(pkg.objectiveId+' → '+pkg.krId+' → '+pkg.decisionId)],['Package digest','<code>'+esc(pkg.digest)+'</code>'],['Acceptance outcome','Reusable product contract retains the exact authorized outcome and scope.'],['Evidence requirement','Delivery evidence may update progress; benefit evidence is measured separately.']])+
+      '<div class="ns-handoff-package"><small>2 · REVIEW PROPOSED PACKAGE</small><h3>'+esc(pkg.epic)+' · '+esc(pkg.epicTitle)+'</h3>'+kv([['Target system',esc(pkg.target)],['Target project',esc(pkg.project)],['Work item type',esc(pkg.workItemType)],['Source authorizations',pkg.carIds.map(id=>'<code>'+esc(id)+'</code>').join(' + ')],['Strategic lineage',esc(pkg.lineage.join(' · '))],['Management intent',esc(pkg.managementIntent)],['Package digest','<code>'+esc(pkg.digest)+'</code>'],['Acceptance outcome','The Epic retains every selected KR/CAR binding without merging authority.'],['Evidence requirement','Delivery evidence may update progress; benefit evidence is measured separately per source KR.']])+
       '<div class="ns-handoff-actions"><button type="button" data-confirm-handoff '+(state.handoffConfirmed?'disabled':'')+'>'+(state.handoffConfirmed?'Handoff confirmed':'Confirm human handoff')+'</button></div></div></section>'+
       (state.handoffReceipt?'<div class="ns-handoff-receipt"><small>3 · IMMUTABLE HANDOFF RECEIPT</small><h3>'+esc(state.handoffReceipt.id)+' · '+esc(state.handoffReceipt.status.replaceAll('_',' '))+'</h3><p>'+esc(state.handoffReceipt.target)+' / '+esc(state.handoffReceipt.project)+' · '+esc(state.handoffReceipt.digest)+'</p><strong>No external write occurred.</strong> This synthetic receipt demonstrates the authority boundary that a live adapter would have to satisfy.</div>':'')+
       '<div class="ns-boundary-box"><strong>Demo boundary:</strong> Confirming '+esc(pkg.id)+' authorizes only this synthetic handoff record. External backlog writeback is not enabled. Jira, Azure DevOps or GitHub credentials and write permission would require a separately authorized live adapter contract.</div>'+
@@ -1073,6 +1127,17 @@
     $('role-state').textContent=state.role==='leader'?'LEADERSHIP':state.role==='manager'?'MANAGEMENT':'DELIVERY';
   }
 
+  document.addEventListener('input', e => {
+    const intent=e.target.closest('[data-management-intent]');
+    if(!intent)return;
+    if(intent.value!==state.managementIntent){
+      state.managementIntent=intent.value;
+      state.managementProposalState='idle';
+      state.acceptedEpic=null;
+      invalidateHandoff();
+    }
+  });
+
   document.addEventListener('click', e => {
     const composer=e.target.closest('[data-open-composer]');
     if(composer){ openComposer(composer); return; }
@@ -1083,10 +1148,18 @@
     if(e.target.closest('[data-composer-done]')){ closeComposer(); state.view='okr'; render(); return; }
     const composeKr=e.target.closest('[data-compose-kr]');
     if(composeKr){selectOkrContext(composeKr.dataset.composeObjective,composeKr.dataset.composeKr);state.role='manager';state.view='management';render();return;}
+    const managementIntent=e.target.closest('[data-management-intent]');
+    if(managementIntent)return;
+    const managementKr=e.target.closest('[data-management-kr-check]');
+    if(managementKr){
+      const id=managementKr.dataset.managementKrCheck;
+      state.managementSelectedDecisionIds=managementKr.checked?[...new Set([...state.managementSelectedDecisionIds,id])]:state.managementSelectedDecisionIds.filter(value=>value!==id);
+      state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;
+    }
     if(e.target.closest('[data-management-draft]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-regenerate]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-reject]')){state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
-    if(e.target.closest('[data-management-accept]')){const binding=selectedAuthorizationBinding();const proposals=managementProposalsForSelectedContext();if(binding&&proposals[0]&&proposalMatchesSelectedAuthorization(proposals[0])){state.managementProposalState='accepted';state.acceptedEpic={...proposals[0],authorizationBinding:{...binding}};}invalidateHandoff();render();return;}
+    if(e.target.closest('[data-management-accept]')){const bindings=managementSourceBindings();const proposals=managementProposalsForSelectedContext();if(bindings.length&&proposals[0]&&proposalMatchesSelectedAuthorization(proposals[0])){state.managementProposalState='accepted';state.acceptedEpic={...proposals[0],managementIntent:state.managementIntent,selectionDigest:managementSelectionDigest(bindings),authorizationBindings:bindings.map(binding=>({...binding}))};}invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-authorize]')){const ctx=selectedOkrContext();if(!ctx.authorization)return;state.authorizationReturnView='management';state.selectedAuthorizationId=ctx.authorization.decisionId;state.role='leader';state.view='authorization';render();return;}
     const authCheck=e.target.closest('[data-auth-check]');
     if(authCheck){
