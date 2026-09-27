@@ -118,6 +118,8 @@ jobs:
           grep -Fq "Leadership Decision Workspace" assets/northstar-signal-demo.js
           grep -Fq "openAuthorizationCeremony" assets/northstar-signal-demo.js
           grep -Fq "Separate CAR per item" assets/northstar-signal-demo.js
+          grep -Fq "PENDING CONFIRMATION" assets/northstar-signal-demo.js
+          grep -Fq "delete state.authorizationReceipts[id]" assets/northstar-signal-demo.js
           grep -Fq "Confirm exact authorization package" northstar-signal/demo/index.html
           grep -Fq "data-view=\"composer\"" northstar-signal/demo/index.html
           grep -Fq "Authorization Queue" northstar-signal/demo/index.html
