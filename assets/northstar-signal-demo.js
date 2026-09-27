@@ -512,13 +512,15 @@
   }
 
   function managementAcceptanceCurrent() {
-    const binding=currentPrimaryAuthorizationBinding();
+    const binding=selectedAuthorizationBinding();
     const accepted=state.acceptedEpic;
     return Boolean(accepted&&binding&&accepted.authorizationBinding&&
       accepted.authorizationBinding.carId===binding.carId&&
       accepted.authorizationBinding.packageId===binding.packageId&&
       accepted.authorizationBinding.evidenceDigest===binding.evidenceDigest&&
-      accepted.authorizationBinding.decision===binding.decision);
+      accepted.authorizationBinding.decisionId===binding.decisionId&&
+      accepted.authorizationBinding.objectiveId===binding.objectiveId&&
+      accepted.authorizationBinding.krId===binding.krId);
   }
 
   function invalidateManagementAcceptance() {
@@ -555,14 +557,15 @@
 
   function management() {
     const s=current();
-    const primary=primaryAuthorization();
+    const ctx=selectedOkrContext();
+    const primary=selectedAuthorization()||{authorized:false,decision:'NO DECISION',carId:null};
     return headline(primary.authorized?'Translate authorized intent into bounded delivery.':'No authorized product-intent handoff exists.',
       'Management carries the outcome, constraints and evidence requirements into execution. Composite AI may propose Epics, but it cannot accept work or widen the CAR.',
       'MANAGEMENT LENS')+
       kv([
         ['Decision state', badge(primary.decision,primary.authorized?'green':'blue')],
         ['Capability Authorization Record', primary.carId?'<code>'+esc(primary.carId)+'</code>':'No CAR emitted'],
-        ['Outcome', esc(model.proposedOutcome)],
+        ['Selected outcome', esc(ctx.objective.objectiveId+' → '+ctx.kr.id+' · '+ctx.kr.text)],
         ['Management owner', esc(model.manager)],
         ['Assigned team', esc(model.team)],
         ['Delivery system', esc(model.backlog)],
@@ -700,10 +703,12 @@
         confirmed:true
       };
     });
-    if(ids.includes(model.decisionId))invalidateManagementAcceptance();
+    if(ids.includes(model.decisionId)||(selectedOkrContext().authorization&&ids.includes(selectedOkrContext().authorization.decisionId)))invalidateManagementAcceptance();
     closeAuthorizationCeremony();
     state.selectedAuthorizationIds=[];
-    const returnToManagement=ids.includes(model.decisionId)&&state.authorizationReturnView==='management'&&primaryAuthorization().authorized;
+    const selectedCtx=selectedOkrContext();
+    const selectedRecord=selectedAuthorization();
+    const returnToManagement=Boolean(selectedCtx.authorization&&ids.includes(selectedCtx.authorization.decisionId)&&state.authorizationReturnView==='management'&&selectedRecord&&selectedRecord.authorized);
     state.authorizationReturnView=null;
     state.role=returnToManagement?'manager':state.role;
     state.view=returnToManagement?'management':'authorization';
@@ -788,12 +793,13 @@
   };
 
   function handoffPackage() {
-    const primary=primaryAuthorization();
-    if(!primary.authorized)return null;
+    const ctx=selectedOkrContext();
+    const primary=selectedAuthorization();
+    if(!ctx.authorization||!primary||!primary.authorized)return null;
     const adapter=backlogAdapters[state.handoffTarget];
-    const material=[model.objectiveId,model.krId,model.decisionId,primary.carId,model.epic,model.epicTitle,model.proposedOutcome,adapter.label,adapter.project,'Retain exact CAR binding','Evidence required before outcome claim'].join('|');
+    const material=[ctx.objective.objectiveId,ctx.kr.id,ctx.authorization.decisionId,primary.carId,state.acceptedEpic.epic,state.acceptedEpic.title,ctx.kr.text,adapter.label,adapter.project,'Retain exact CAR binding','Evidence required before outcome claim'].join('|');
     if(!managementAcceptanceCurrent())return null;
-    return {id:'BHP-0001',carId:primary.carId,objectiveId:model.objectiveId,krId:model.krId,decisionId:model.decisionId,epic:state.acceptedEpic.epic,epicTitle:state.acceptedEpic.title,target:adapter.label,project:adapter.project,workItemType:adapter.type,digest:stableDigest(material+'|'+state.acceptedEpic.id+'|'+state.acceptedEpic.epic+'|'+state.acceptedEpic.title),status:state.handoffConfirmed?'HANDOFF CONFIRMED':'AWAITING HUMAN HANDOFF'};
+    return {id:'BHP-0001',carId:primary.carId,objectiveId:ctx.objective.objectiveId,krId:ctx.kr.id,decisionId:ctx.authorization.decisionId,epic:state.acceptedEpic.epic,epicTitle:state.acceptedEpic.title,target:adapter.label,project:adapter.project,workItemType:adapter.type,digest:stableDigest(material+'|'+state.acceptedEpic.id+'|'+state.acceptedEpic.epic+'|'+state.acceptedEpic.title),status:state.handoffConfirmed?'HANDOFF CONFIRMED':'AWAITING HUMAN HANDOFF'};
   }
 
   function invalidateHandoff(){state.handoffConfirmed=false;state.handoffReceipt=null;}
@@ -870,8 +876,8 @@
     if(e.target.closest('[data-management-draft]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-regenerate]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-reject]')){state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
-    if(e.target.closest('[data-management-accept]')){const binding=currentPrimaryAuthorizationBinding();if(binding){state.managementProposalState='accepted';state.acceptedEpic={...managementEpicProposals[0],authorizationBinding:{...binding}};}invalidateHandoff();render();return;}
-    if(e.target.closest('[data-management-authorize]')){state.authorizationReturnView='management';state.selectedAuthorizationId=model.decisionId;state.role='leader';state.view='authorization';render();return;}
+    if(e.target.closest('[data-management-accept]')){const binding=selectedAuthorizationBinding();if(binding){state.managementProposalState='accepted';state.acceptedEpic={...managementEpicProposals[0],authorizationBinding:{...binding}};}invalidateHandoff();render();return;}
+    if(e.target.closest('[data-management-authorize]')){const ctx=selectedOkrContext();if(!ctx.authorization)return;state.authorizationReturnView='management';state.selectedAuthorizationId=ctx.authorization.decisionId;state.role='leader';state.view='authorization';render();return;}
     const authCheck=e.target.closest('[data-auth-check]');
     if(authCheck){
       const id=authCheck.dataset.authCheck;
@@ -903,7 +909,7 @@
       const nextDecision=action==='approve'?'APPROVED':action==='conditional'?'APPROVE CONDITIONALLY':action==='reuse'?'REUSE EXISTING':'DEFERRED';
       const priorDecision=authorizationDecision(authorizationQueue.find(item=>item.decisionId===id));
       state.authorizationDecisions[id]=nextDecision;
-      if(nextDecision!==priorDecision){delete state.authorizationReceipts[id];if(id===model.decisionId)invalidateManagementAcceptance();}
+      if(nextDecision!==priorDecision){delete state.authorizationReceipts[id];const selectedCtx=selectedOkrContext();if(id===model.decisionId||(selectedCtx.authorization&&id===selectedCtx.authorization.decisionId))invalidateManagementAcceptance();}
       state.view='authorization';
       render();
       return;
