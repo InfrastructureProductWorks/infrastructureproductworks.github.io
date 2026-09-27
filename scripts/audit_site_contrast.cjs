@@ -167,7 +167,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const o10ProposalText=await page.locator('.ns-management-composer').innerText();
         if(!/Governed Product Reuse Discovery/.test(o10ProposalText)||/Managed Network Foundation/.test(o10ProposalText))throw new Error('Selected O10/KR10.1 must generate context-specific Epics rather than the fixed network fixture');
         await page.locator('[data-management-accept]').click();
-        await page.locator('[data-view="handoff"]').click();
+        await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const o10Handoff=await page.locator('.ns-handoff-package').innerText();
         if(!/O10 → KR10.1 → CPD-0002/.test(o10Handoff)||!/Governed Product Reuse Discovery/.test(o10Handoff))throw new Error('Delivery must receive the accepted O10/KR10.1 Epic with exact selected lineage');
         await page.locator('[data-view="authorization"]').click();
@@ -175,7 +175,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-auth-action="approve"][data-auth-id="CPD-0001"]').click();
         await page.locator('[data-authorize-item="CPD-0001"]').click();
         await page.locator('[data-confirm-authorization]').click();
-        await page.locator('[data-view="handoff"]').click();
+        await page.locator('.ns-view-nav [data-view="handoff"]').click();
         if(!/Governed Product Reuse Discovery/.test(await page.locator('.ns-handoff-package').innerText()))throw new Error('Unrelated CPD-0001 confirmation must not invalidate accepted CPD-0002 work');
         await page.locator('[data-view="okr"]').click();
         await page.locator('[data-compose-kr="KR9.4"]').click();
