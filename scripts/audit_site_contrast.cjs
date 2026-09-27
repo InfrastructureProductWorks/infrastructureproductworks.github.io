@@ -134,7 +134,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         }
         for(const scenario of ['decision','delivered','measured']){
           await page.locator(`[data-scenario="${scenario}"]`).click();
-          for(const view of ['okr','leadership','management','decision','authorization','evidence','handoff','outcome']){
+          for(const view of ['okr','composer','leadership','management','decision','authorization','evidence','handoff','outcome']){
             await page.locator(`[data-view="${view}"]`).click();await audit(route,'scenario '+scenario+' / view '+view);
           }
           await page.locator('[data-view="okr"]').click();
@@ -150,6 +150,20 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           await close.click();
           if(await page.locator('#ns-trail-dialog[open]').count())throw new Error('Northstar trace drawer must close for scenario '+scenario);
         }
+        await page.locator('[data-view="authorization"]').click();
+        const authItems=page.locator('[data-auth-item]');
+        if(await authItems.count()!==4)throw new Error('Northstar authorization queue must expose four independent synthetic decisions');
+        const beforeDecision=await page.locator('[data-auth-item="CPD-0002"]').innerText();
+        await page.locator('[data-auth-select="CPD-0001"]').click();
+        await page.locator('[data-auth-action="approve"][data-auth-id="CPD-0001"]').click();
+        const selectedDetail=page.locator('.ns-auth-detail');
+        if(!/CAR-0001/.test(await selectedDetail.innerText()))throw new Error('Approved Northstar item must retain its exact CAR');
+        const afterDecision=await page.locator('[data-auth-item="CPD-0002"]').innerText();
+        if(beforeDecision!==afterDecision)throw new Error('Authorizing one Northstar queue item must not mutate another item');
+        await audit(route,'Authorization Queue / independent item decisions');
+        await page.locator('[data-view="composer"]').click();
+        if(await page.locator('.ns-composer-flow').count()!==1)throw new Error('Northstar Composer view must render inline');
+        await audit(route,'OKR Composer / first-class view');
         await page.locator('[data-view="okr"]').click();
         const composer=page.locator('[data-open-composer]').first();
         if(await composer.count()!==1||!await composer.isVisible())throw new Error('Northstar OKR Composer trigger must be visible');
