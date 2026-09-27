@@ -89,6 +89,7 @@ jobs:
           grep -Fq "node('details','roadmap-objective')" assets/portfolio.js
           echo "after roadmap objective renderer"
           grep -Fq "node('details','roadmap-headline-kr')" assets/portfolio.js
+          echo "after roadmap headline KR renderer"
           echo "after headline renderer"
           grep -Fq "roadmap-expand-all" portfolio/index.html
           echo "after expand"
