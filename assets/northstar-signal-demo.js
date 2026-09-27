@@ -262,8 +262,6 @@
 
   function openTrail(opener) {
     trailOpener=opener||null;
-    state.selectedKr=model.krId;
-    state.selectedObjective=model.objectiveId;
     const dialog=$('ns-trail-dialog');
     $('ns-trail-content').innerHTML=trailMarkup();
     if (typeof dialog.showModal === 'function') dialog.showModal();
@@ -452,6 +450,17 @@
       '<article><small>DOWNSTREAM BENEFIT FEEDBACK</small><h3>'+esc(s.benefitOutcome.replaceAll('_',' '))+'</h3><p>'+esc(s.benefitMeasurement==='UNKNOWN'?'No authoritative benefit measurement yet.':'Observed benefit evidence can inform investment learning without re-scoring KR9.4.')+'</p></article>'+
     '</div>'+
     '<div class="ns-attention"><h3>What needs leadership attention</h3>'+list(s.attention)+'</div>';
+  }
+
+  function selectOkrContext(objectiveId, krId) {
+    const changed=state.selectedObjective!==objectiveId||state.selectedKr!==krId;
+    state.selectedObjective=objectiveId;
+    state.selectedKr=krId;
+    if(changed){
+      state.managementProposalState='idle';
+      state.acceptedEpic=null;
+      invalidateHandoff();
+    }
   }
 
   function selectedOkrContext() {
@@ -888,7 +897,7 @@
     if(e.target.closest('[data-composer-accept]')){ composerStep='accepted'; state.composerAccepted=true; renderComposer(); return; }
     if(e.target.closest('[data-composer-done]')){ closeComposer(); state.view='okr'; render(); return; }
     const composeKr=e.target.closest('[data-compose-kr]');
-    if(composeKr){state.selectedKr=composeKr.dataset.composeKr;state.selectedObjective=composeKr.dataset.composeObjective;state.role='manager';state.view='management';state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
+    if(composeKr){selectOkrContext(composeKr.dataset.composeObjective,composeKr.dataset.composeKr);state.role='manager';state.view='management';render();return;}
     if(e.target.closest('[data-management-draft]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-regenerate]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-reject]')){state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
@@ -935,15 +944,13 @@
     if(e.target.closest('[data-confirm-handoff]')){const pkg=handoffPackage();if(pkg){state.handoffConfirmed=true;state.handoffReceipt={...pkg,status:'CONFIRMED · NO EXTERNAL WRITE'};}state.view='handoff';render();return;}
     const trail=e.target.closest('[data-open-trail]');
     if(trail){
-      state.selectedKr=trail.dataset.openTrail;
-      state.selectedObjective=model.objectiveId;
+      selectOkrContext(model.objectiveId,trail.dataset.openTrail);
       openTrail(trail);
       return;
     }
     const review=e.target.closest('[data-review-decision]');
     if(review){
-      state.selectedKr=review.dataset.reviewDecision;
-      state.selectedObjective=model.objectiveId;
+      selectOkrContext(model.objectiveId,review.dataset.reviewDecision);
       state.role='leader';
       state.view='decision';
       render();
