@@ -139,6 +139,7 @@ jobs:
             exit 1
           fi
           grep -Fq "scenario '+scenario+' / view '+view" scripts/audit_site_contrast.cjs
+          echo "Northstar public demo contract validated."
           grep -Fq "IAAP CONSOLE · INTERACTIVE SYNTHETIC WORKBENCH" console/demo/index.html
           grep -Fq "VERIFICATION PENDING" console/demo/index.html
           grep -Fq "AWAITING_HUMAN_REVIEW" assets/console-demo.js
