@@ -924,7 +924,7 @@
       const pkg=authorizationPackage(item,decision);
       return '<article class="ns-ceremony-item '+(eligibility.eligible?'eligible':'blocked')+'" data-ceremony-item="'+esc(id)+'">'+
         '<div><small>'+esc(item.objectiveId)+' → '+esc(item.krId)+' · '+esc(item.decisionId)+'</small><h3>'+esc(item.outcome)+'</h3><p>'+esc(item.scope)+'</p></div>'+
-        '<div class="ns-ceremony-proof">'+badge(decision,eligibility.eligible?'green':'amber')+
+        '<div class="ns-ceremony-proof"><strong class="ns-ceremony-status '+(eligibility.eligible?'green':'amber')+'">'+esc(decision.replaceAll('_',' '))+'</strong>'+
           '<span><b>Evidence digest</b><code>'+esc(pkg.evidenceDigest)+'</code></span>'+
           '<span><b>Approver</b>'+esc(pkg.approver)+'</span>'+
           '<span><b>Review</b>'+esc(pkg.reviewDate)+'</span>'+
