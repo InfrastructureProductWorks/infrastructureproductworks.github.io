@@ -388,9 +388,9 @@
         const outcome = isPrimary ? kr94Status : kr.outcome;
         const outcomeTone = outcome === 'UNKNOWN' || outcome === 'AT RISK' ? 'amber' : 'green';
         const source = kr.source;
-        const action = kr.interactive
-          ? '<button class="ns-okr-open" data-open-trail="'+esc(kr.id)+'" type="button">Open trail <span aria-hidden="true">→</span></button>'
-          : '<span class="ns-okr-source-note">Measured</span>';
+        const action = '<div class="ns-kr-actions">'+
+          (kr.interactive?'<button class="ns-okr-open" data-open-trail="'+esc(kr.id)+'" type="button">Open trail <span aria-hidden="true">→</span></button>':'<span class="ns-okr-source-note">Measured</span>')+
+          '<button class="ns-okr-open" data-compose-kr="'+esc(kr.id)+'" data-compose-objective="'+esc(objective.objectiveId)+'" type="button">Compose Epics <span aria-hidden="true">→</span></button></div>';
         const statusLabel = isPrimary ? 'KR STATUS' : 'OUTCOME';
         return '<div class="ns-kr-row'+(isPrimary?' primary':'')+'">'+
           '<div class="ns-kr-copy"><small>'+esc(kr.id)+'</small><strong>'+esc(kr.text)+'</strong><span>'+esc(kr.owner)+'</span></div>'+
@@ -454,6 +454,25 @@
     '<div class="ns-attention"><h3>What needs leadership attention</h3>'+list(s.attention)+'</div>';
   }
 
+  function selectedOkrContext() {
+    const objective=okrPortfolio.find(o=>o.objectiveId===state.selectedObjective)||okrPortfolio[0];
+    const kr=objective.krs.find(k=>k.id===state.selectedKr)||objective.krs[0];
+    const authorization=authorizationQueue.find(item=>item.objectiveId===objective.objectiveId&&item.krId===kr.id)||null;
+    return {objective,kr,authorization};
+  }
+
+  function selectedAuthorization() {
+    const ctx=selectedOkrContext();
+    return ctx.authorization?authorizationRecord(ctx.authorization):null;
+  }
+
+  function selectedAuthorizationBinding() {
+    const ctx=selectedOkrContext(), record=selectedAuthorization();
+    if(!ctx.authorization||!record||!record.authorized)return null;
+    const receipt=state.authorizationReceipts[ctx.authorization.decisionId];
+    return receipt?{decisionId:ctx.authorization.decisionId,carId:record.carId,packageId:receipt.packageId,evidenceDigest:receipt.evidenceDigest,objectiveId:ctx.objective.objectiveId,krId:ctx.kr.id}:null;
+  }
+
   const managementEpicProposals=[
     {
       id:'MEP-0001',epic:'EP-23',title:'Managed Network Foundation',
@@ -509,18 +528,20 @@
   }
 
   function managementComposer() {
-    const primary=primaryAuthorization();
+    const ctx=selectedOkrContext();
+    const primary=selectedAuthorization();
+    if(!ctx.authorization)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer"><div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+'</h2><p>'+esc(ctx.kr.text)+'</p></div>'+badge('AUTHORIZATION NOT DEFINED','amber')+'</div><div class="ns-boundary-box"><strong>No authorization decision is bound to this Key Result.</strong> Management can select it for planning context, but Northstar cannot generate an authorized Epic package or BHP until leadership establishes the required decision/CAR contract.</div></section>';
     if(!primary.authorized)return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
-      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>Translate an authorized outcome into candidate Epics.</h2><p>This workspace stays visible to management before authorization so the required sequence is explicit. Composite AI cannot propose executable work until the exact product-intent authorization is current.</p></div>'+badge('AUTHORIZATION REQUIRED','amber')+'</div>'+
-      '<div class="ns-mc-context"><small>REQUIRED BOUNDED CONTEXT</small><span>'+esc(model.objectiveId)+'</span><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span><span>Current CAR required</span><span>Exact package digest required</span></div>'+
+      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · Compose candidate Epics.</h2><p>This workspace stays visible to management before authorization so the required sequence is explicit. Composite AI cannot propose executable work until the exact product-intent authorization is current.</p></div>'+badge('AUTHORIZATION REQUIRED','amber')+'</div>'+
+      '<div class="ns-mc-context"><small>REQUIRED BOUNDED CONTEXT</small><span>'+esc(ctx.objective.objectiveId)+'</span><span>'+esc(ctx.kr.id)+'</span><span>'+esc(ctx.authorization?ctx.authorization.decisionId:'NO AUTHORIZATION DECISION')+'</span><span>Current CAR required</span><span>Exact package digest required</span></div>'+
       '<div class="ns-boundary-box"><strong>Fail closed · no CAR, no Epic proposal, no BHP.</strong> Complete the exact authorization package first. A CAR establishes bounded product intent; it does not create a BHP and it does not substitute for management acceptance.</div>'+
       '<div class="ns-composer-actions"><button type="button" class="primary" data-management-authorize>Authorize outcome to continue</button></div>'+
     '</section>';
     const proposed=state.managementProposalState!=='idle';
     const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent();
     return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
-      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>Translate the authorized outcome into candidate Epics.</h2><p>Composite AI receives a bounded context package: Objective, KR, CPD, current CAR, constraints, evidence requirements and existing portfolio context.</p></div>'+badge(primary.carId,'green')+'</div>'+
-      '<div class="ns-mc-context"><small>BOUNDED CONTEXT</small><span>'+esc(model.objectiveId)+'</span><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span><span>'+esc(primary.carId)+'</span><span>Existing product catalog</span><span>Existing Epic relationships</span></div>'+
+      '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+' · Compose candidate Epics.</h2><p>Composite AI receives a bounded context package: Objective, KR, CPD, current CAR, constraints, evidence requirements and existing portfolio context.</p></div>'+badge(primary.carId,'green')+'</div>'+
+      '<div class="ns-mc-context"><small>BOUNDED CONTEXT</small><span>'+esc(ctx.objective.objectiveId)+'</span><span>'+esc(ctx.kr.id)+'</span><span>'+esc(ctx.authorization?ctx.authorization.decisionId:'NO AUTHORIZATION DECISION')+'</span><span>'+esc(primary.carId)+'</span><span>Existing product catalog</span><span>Existing Epic relationships</span></div>'+
       (!proposed?'<div class="ns-mc-empty"><h3>Management intent</h3><p>Decompose the authorized managed-network outcome into the smallest useful set of outcome-oriented Epics while preferring reuse over duplicate work.</p><button type="button" class="primary" data-management-draft>Propose Epics with Composite AI</button></div>':'')+
       (proposed?'<div class="ns-mc-proposals"><small>AI-PROPOSED · SYNTHETIC FIXTURE</small>'+managementEpicProposals.map((p,i)=>'<article data-management-proposal="'+esc(p.id)+'"><div class="ns-mc-proposal-head"><div><small>'+esc(p.id)+' · '+esc(p.epic)+'</small><h3>'+esc(p.title)+'</h3></div>'+badge(i===0?'PRIMARY':'CANDIDATE',i===0?'blue':'neutral')+'</div><p>'+esc(p.outcome)+'</p><div class="ns-mc-reuse '+p.reuseTone+'"><strong>REUSE / EQUIVALENCE</strong><span>'+esc(p.reuse)+'</span></div><div class="ns-mc-acceptance"><strong>Acceptance outcomes</strong>'+list(p.acceptance)+'</div><div class="ns-mc-evidence"><strong>Evidence</strong><span>'+esc(p.evidence)+'</span></div></article>').join('')+'</div>':'')+
       (proposed?'<div class="ns-composer-step validator"><small>DETERMINISTIC VALIDATION</small><h3>'+(accepted?'PRIMARY EPIC ACCEPTED BY MANAGEMENT':'BOUNDED PROPOSAL READY FOR MANAGEMENT REVIEW')+'</h3><div class="ns-composer-checks">'+managementChecks.map(([name,status,note])=>'<article><div><strong>'+esc(name)+'</strong><span>'+esc(note)+'</span></div>'+badge(status,status==='PASS'?'green':'amber')+'</article>').join('')+'</div><p class="ns-composer-note">Composite AI proposes decomposition. Deterministic checks validate lineage, scope and structure. Management remains accountable for accepting work.</p></div>':'')+
@@ -844,6 +865,8 @@
     if(e.target.closest('[data-composer-reset]')){ composerStep='intent'; state.composerAccepted=false; renderComposer(); return; }
     if(e.target.closest('[data-composer-accept]')){ composerStep='accepted'; state.composerAccepted=true; renderComposer(); return; }
     if(e.target.closest('[data-composer-done]')){ closeComposer(); state.view='okr'; render(); return; }
+    const composeKr=e.target.closest('[data-compose-kr]');
+    if(composeKr){state.selectedKr=composeKr.dataset.composeKr;state.selectedObjective=composeKr.dataset.composeObjective;state.role='manager';state.view='management';state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-draft]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-regenerate]')){state.managementProposalState='proposed';state.acceptedEpic=null;invalidateHandoff();render();return;}
     if(e.target.closest('[data-management-reject]')){state.managementProposalState='idle';state.acceptedEpic=null;invalidateHandoff();render();return;}
