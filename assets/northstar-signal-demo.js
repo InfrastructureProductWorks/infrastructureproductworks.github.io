@@ -217,6 +217,7 @@
     return '<div class="ns-view-head"><p class="eyebrow">'+esc(eyebrow)+'</p><h2>'+esc(title)+'</h2><p>'+esc(copy)+'</p></div>';
   }
   function current() { return scenarioData[state.scenario]; }
+  function primaryAuthorization() { return authorizationRecord(authorizationQueue[0]); }
 
   function scopeBanner() {
     if (!state.selectedKr) return '';
@@ -234,18 +235,19 @@
 
   function trailMarkup() {
     const s=current();
+    const record=primaryAuthorization();
     return '<div class="ns-trail-lineage" aria-label="Northstar traceability chain">'+
       '<div class="ns-trail-step"><small>OBJECTIVE</small><strong>'+esc(model.objectiveId)+'</strong><span>'+esc(model.objective)+'</span></div>'+
       '<div class="ns-trail-arrow" aria-hidden="true">↓</div>'+
       '<div class="ns-trail-step emphasis"><small>KEY RESULT</small><strong>'+esc(model.krId)+'</strong><span>'+esc(model.keyResult)+'</span></div>'+
       '<div class="ns-trail-arrow" aria-hidden="true">↓</div>'+
-      '<div class="ns-trail-step"><small>DECISION</small><strong>'+esc(model.decisionId)+'</strong><span>'+esc(s.decision.replaceAll('_',' '))+'</span></div>'+
+      '<div class="ns-trail-step"><small>DECISION</small><strong>'+esc(model.decisionId)+'</strong><span>'+esc(record.decision.replaceAll('_',' '))+'</span></div>'+
       '<div class="ns-trail-arrow" aria-hidden="true">↓</div>'+
-      '<div class="ns-trail-step"><small>CAPABILITY AUTHORIZATION</small><strong>'+esc(model.carId)+'</strong><span>Current bounded product intent</span></div>'+
+      '<div class="ns-trail-step"><small>CAPABILITY AUTHORIZATION</small><strong>'+(record.carId?esc(record.carId):'NO CAR')+'</strong><span>'+esc(record.authorized?'Current bounded product intent':'No authorized product-intent handoff')+'</span></div>'+
       '<div class="ns-trail-arrow" aria-hidden="true">↓</div>'+
-      '<div class="ns-trail-step"><small>EPIC</small><strong>'+esc(model.epic)+'</strong><span>'+esc(model.epicTitle)+'</span></div>'+
+      '<div class="ns-trail-step"><small>EPIC</small><strong>'+esc(model.epic)+'</strong><span>'+esc(record.authorized?model.epicTitle:'Candidate delivery context only · not authorized for handoff')+'</span></div>'+
     '</div>'+
-    '<div class="ns-trail-evidence"><small>KR9.4 AUTHORIZATION EVIDENCE</small><h3>Northstar decision and authorization evidence</h3><p>Decision: <strong>'+esc(s.decision.replaceAll('_',' '))+'</strong> · Authorization: <strong>'+esc(s.authorization.replaceAll('_',' '))+'</strong></p><p>This evidence establishes the bounded decision-to-CAR requirement for KR9.4.</p></div>'+
+    '<div class="ns-trail-evidence"><small>KR9.4 AUTHORIZATION EVIDENCE</small><h3>Northstar decision and authorization evidence</h3><p>Decision: <strong>'+esc(record.decision.replaceAll('_',' '))+'</strong> · Authorization: <strong>'+esc(record.authorization.replaceAll('_',' '))+'</strong></p><p>'+(record.authorized?'This evidence establishes the bounded decision-to-CAR requirement for KR9.4.':'No CAR is emitted while the selected decision does not authorize new product intent.')+'</p></div>'+
     '<div class="ns-trail-evidence secondary"><small>DOWNSTREAM BENEFIT FEEDBACK</small><h3>'+esc(s.benefitSource)+'</h3><p>Delivery: <strong>'+esc(s.delivery.replaceAll('_',' '))+'</strong> · Benefit signal: <strong>'+esc(s.benefitOutcome.replaceAll('_',' '))+'</strong></p><p>Benefit evidence informs investment learning. It does not substitute for the authorization evidence that proves KR9.4.</p></div>'+
     '<div class="ns-trail-actions"><button type="button" data-trail-decision>Open decision</button><button type="button" data-trail-evidence>Open evidence</button></div>';
   }
@@ -367,8 +369,9 @@
   function okrOverview() {
     const s=current();
     const benefitUnproven = s.benefitOutcome === 'UNKNOWN' ? 1 : 0;
-    const decisionPending = s.decision !== 'APPROVED';
-    const kr94Status = s.authorization === 'CURRENT' ? 'ON TRACK' : 'UNKNOWN';
+    const primary=primaryAuthorization();
+    const decisionPending = !['APPROVED','REUSE EXISTING','DEFERRED'].includes(primary.decision);
+    const kr94Status = primary.authorized ? 'ON TRACK' : 'UNKNOWN';
 
     const objectiveCards = okrPortfolio.map((objective, objectiveIndex) => {
       const krRows = objective.krs.map(kr => {
@@ -413,7 +416,7 @@
       '</div>'+
       '<aside class="ns-attention-rail">'+
         '<div class="ns-rail-head"><small>LEADERSHIP ATTENTION</small><h3>What needs you now</h3></div>'+
-        '<article class="ns-attention-card '+(decisionPending?'':'resolved')+'"><div class="ns-attention-top"><span class="priority">'+(decisionPending?'DECISION':'DECISION RESOLVED')+'</span>'+badge(s.decision,decisionPending?'blue':'green')+'</div><h4>'+esc(model.proposedOutcome)+'</h4><p>'+(decisionPending?esc(s.attention[0]):'The decision is approved. Northstar keeps it visible for traceability while attention shifts to delivery and measured benefit.')+'</p><div class="ns-attention-meta"><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span></div><button class="ns-okr-open primary" data-review-decision="'+esc(model.krId)+'" type="button">'+(decisionPending?'Review decision':'View decision record')+' <span aria-hidden="true">→</span></button></article>'+
+        '<article class="ns-attention-card '+(decisionPending?'':'resolved')+'"><div class="ns-attention-top"><span class="priority">'+(decisionPending?'DECISION':'DECISION RESOLVED')+'</span>'+badge(primary.decision,decisionPending?'blue':primary.authorized?'green':'amber')+'</div><h4>'+esc(model.proposedOutcome)+'</h4><p>'+(decisionPending?esc(s.attention[0]):primary.authorized?'The decision authorizes bounded product intent. Northstar keeps the exact CAR visible while attention shifts downstream.':primary.decision==='REUSE EXISTING'?'The decision resolved to reuse an existing governed product, so no new CAR or build handoff is emitted.':'The decision is deferred. No CAR or authorized downstream handoff exists until leadership revisits it.')+'</p><div class="ns-attention-meta"><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span></div><button class="ns-okr-open primary" data-review-decision="'+esc(model.krId)+'" type="button">'+(decisionPending?'Review decision':'View decision record')+' <span aria-hidden="true">→</span></button></article>'+
         '<article class="ns-rail-insight"><small>WHY THIS MATTERS</small><strong>Closing '+esc(model.epic)+' will not close '+esc(model.krId)+'.</strong><p>KR9.4 is assessed from decision/CAR evidence; downstream benefit is measured separately.</p></article>'+
         '<article class="ns-rail-proof"><small>TRACEABILITY</small><div><b>Objective</b><span>→</span><b>KR</b><span>→</span><b>Decision</b><span>→</span><b>CAR</b><span>→</span><b>Epic</b></div></article>'+
       '</aside>'+
@@ -423,20 +426,21 @@
 
   function leadership() {
     const s=current();
-    const kr94Status = s.authorization === 'CURRENT' ? 'ON TRACK' : 'UNKNOWN';
+    const primary=primaryAuthorization();
+    const kr94Status = primary.authorized ? 'ON TRACK' : 'UNKNOWN';
     return headline(
       model.objective,
       model.keyResult,
       model.objectiveId+' · '+model.krId
     )+
     '<div class="ns-metrics">'+
-      '<article><small>DECISION</small>'+badge(s.decision,'blue')+'<p>'+esc(model.decisionId)+' · review '+esc(model.decisionReview)+'</p></article>'+
-      '<article><small>AUTHORIZATION</small>'+badge(s.authorization,'green')+'<p>'+esc(model.carId)+' · review '+esc(model.carReview)+'</p></article>'+
-      '<article><small>DELIVERY</small>'+badge(s.delivery,'blue')+'<p>'+esc(model.epic)+' · '+esc(model.team)+'</p></article>'+
+      '<article><small>DECISION</small>'+badge(primary.decision,primary.authorized?'green':'blue')+'<p>'+esc(model.decisionId)+' · review '+esc(model.decisionReview)+'</p></article>'+
+      '<article><small>AUTHORIZATION</small>'+badge(primary.authorization,primary.authorized?'green':'amber')+'<p>'+(primary.carId?esc(primary.carId)+' · review '+esc(model.carReview):'No CAR emitted')+'</p></article>'+
+      '<article><small>DELIVERY</small>'+badge(s.delivery,'blue')+'<p>'+esc(model.epic)+' · '+esc(primary.authorized?model.team:'candidate context only')+'</p></article>'+
       '<article><small>BENEFIT FEEDBACK</small>'+badge(s.benefitOutcome,s.benefitOutcome==='UNKNOWN'?'amber':'green')+'<p>'+esc(s.benefitSource)+'</p></article>'+
     '</div>'+
     '<div class="ns-truth">'+
-      '<article><small>KR9.4 AUTHORIZATION STATUS</small><h3>'+esc(kr94Status.replaceAll('_',' '))+'</h3><p>Decision/CAR evidence establishes the authorization requirement independently of backlog completion.</p></article>'+
+      '<article><small>KR9.4 AUTHORIZATION STATUS</small><h3>'+esc(kr94Status.replaceAll('_',' '))+'</h3><p>'+(primary.authorized?'Decision/CAR evidence establishes the authorization requirement independently of backlog completion.':'The current decision emits no CAR, so KR9.4 authorization evidence is not established.')+'</p></article>'+
       '<article><small>DOWNSTREAM BENEFIT FEEDBACK</small><h3>'+esc(s.benefitOutcome.replaceAll('_',' '))+'</h3><p>'+esc(s.benefitMeasurement==='UNKNOWN'?'No authoritative benefit measurement yet.':'Observed benefit evidence can inform investment learning without re-scoring KR9.4.')+'</p></article>'+
     '</div>'+
     '<div class="ns-attention"><h3>What needs leadership attention</h3>'+list(s.attention)+'</div>';
@@ -444,11 +448,14 @@
 
   function management() {
     const s=current();
-    return headline('Translate authorized intent into bounded delivery.',
+    const primary=primaryAuthorization();
+    return headline(primary.authorized?'Translate authorized intent into bounded delivery.':'No authorized product-intent handoff exists.',
       'Management carries the outcome, constraints, evidence requirements and team mapping into execution without turning Northstar into another sprint tool.',
       'MANAGEMENT LENS')+
       kv([
-        ['Authorized outcome', esc(model.proposedOutcome)],
+        ['Decision state', badge(primary.decision,primary.authorized?'green':'blue')],
+        ['Capability Authorization Record', primary.carId?'<code>'+esc(primary.carId)+'</code>':'No CAR emitted'],
+        ['Outcome', esc(model.proposedOutcome)],
         ['Management owner', esc(model.manager)],
         ['Assigned team', esc(model.team)],
         ['Delivery system', esc(model.backlog)],
@@ -456,18 +463,18 @@
         ['Epic', '<code>'+esc(model.epic)+'</code> · '+esc(model.epicTitle)]
       ])+
       '<div class="ns-grid-3">'+
-        '<article><small>DEPENDENCY</small><h3>Accepted CAR binding</h3><p>Delivery cannot silently widen or replace the authorized outcome.</p></article>'+
+        '<article><small>DEPENDENCY</small><h3>'+(primary.authorized?'Accepted CAR binding':'Authorization required')+'</h3><p>'+(primary.authorized?'Delivery cannot silently widen or replace the authorized outcome.':'Management cannot treat candidate backlog context as an authorized handoff without a current CAR.')+'</p></article>'+
         '<article><small>TARGET MEASURE</small><h3>Exact lineage retained</h3><p>Division → Objective → KR → CAR → Epic remains intact.</p></article>'+
         '<article><small>CONSTRAINT</small><h3>No live writeback</h3><p>The public demo does not write to Jira, GitHub, Azure DevOps or cloud systems.</p></article>'+
       '</div>';
   }
 
   function decision() {
-    const s=current();
+    const primary=primaryAuthorization();
     return headline(model.proposedOutcome,
       'Leadership sees the mission consequence, evidence quality and credible choices without having to translate infrastructure implementation jargon.',
       model.decisionId+' · DECISION BRIEF')+
-      '<div class="ns-state-row">'+badge(s.decision,'blue')+badge('HIGH EVIDENCE','green')+badge('REVIEW '+model.decisionReview,'neutral')+'</div>'+
+      '<div class="ns-state-row">'+badge(primary.decision,primary.authorized?'green':'blue')+badge(primary.authorization,primary.authorized?'green':'amber')+badge('HIGH EVIDENCE','green')+badge('REVIEW '+model.decisionReview,'neutral')+'</div>'+
       '<div class="ns-options">'+model.alternatives.map(([name,meaning,consequence]) =>
         '<article><small>'+esc(name.toUpperCase())+'</small><h3>'+esc(meaning)+'</h3><p>'+esc(consequence)+'</p></article>'
       ).join('')+'</div>'+
@@ -556,13 +563,14 @@
 
   function handoff() {
     const s=current();
-    return headline('Carry authority into delivery without handing authority to the backlog.',
-      'The handoff preserves the exact outcome and CAR while letting the delivery team keep using its own execution system.',
+    const primary=primaryAuthorization();
+    return headline(primary.authorized?'Carry authority into delivery without handing authority to the backlog.':'No authorized backlog handoff exists.',
+      primary.authorized?'The handoff preserves the exact outcome and CAR while letting the delivery team keep using its own execution system.':'The candidate Epic can remain visible as planning context, but Northstar does not present it as an authorized handoff when the decision emits no CAR.',
       'BACKLOG HANDOFF')+
       '<div class="ns-airlock">'+
         '<article><small>STRATEGY</small><h3>'+esc(model.objectiveId)+' → '+esc(model.krId)+'</h3><p>Division outcome and accountable benefit owner.</p></article><b>→</b>'+
-        '<article><small>AUTHORIZATION</small><h3>'+esc(model.carId)+'</h3><p>Exact scope, constraints and evidence requirements.</p></article><b>→</b>'+
-        '<article><small>DELIVERY</small><h3>'+esc(model.epic)+'</h3><p>'+esc(model.team)+' · '+esc(s.delivery.replaceAll('_',' '))+'</p></article>'+
+        '<article><small>AUTHORIZATION</small><h3>'+(primary.carId?esc(primary.carId):'NO CAR')+'</h3><p>'+esc(primary.authorized?'Exact scope, constraints and evidence requirements.':'Decision state: '+primary.decision.replaceAll('_',' ')+' · no authorized product-intent handoff.')+'</p></article><b>→</b>'+
+        '<article><small>DELIVERY</small><h3>'+esc(model.epic)+'</h3><p>'+esc(primary.authorized?model.team+' · '+s.delivery.replaceAll('_',' '):'Candidate context only · not authorized')+'</p></article>'+
       '</div>'+
       '<div class="ns-boundary-box"><strong>Demo boundary:</strong> External backlog writeback is not enabled. A live adapter would require a separately authorized contract.</div>';
   }
