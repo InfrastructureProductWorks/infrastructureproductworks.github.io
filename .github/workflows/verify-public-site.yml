@@ -118,8 +118,11 @@ jobs:
           grep -Fq "/assets/northstar-signal-demo.js?v=${northstar_demo_js_blob}" northstar-signal/demo/index.html
           echo "after northstar hash"
           node --check assets/northstar-signal-demo.js
+          echo "after northstar syntax"
           grep -Fq "No benefit claim yet." assets/northstar-signal-demo.js
+          echo "after benefit copy"
           grep -Fq "External backlog writeback is not enabled." assets/northstar-signal-demo.js
+          echo "after backlog boundary"
           grep -Fq "button.setAttribute('aria-pressed', active ? 'true' : 'false')" assets/northstar-signal-demo.js
           grep -Fq "KR9.4 AUTHORIZATION STATUS" assets/northstar-signal-demo.js
           grep -Fq "DOWNSTREAM BENEFIT FEEDBACK" assets/northstar-signal-demo.js
