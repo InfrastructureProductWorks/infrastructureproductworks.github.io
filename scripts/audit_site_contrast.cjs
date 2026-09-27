@@ -209,6 +209,9 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-view="evidence"]').click();
         const deferredEvidence=await page.locator('#northstar-view').innerText();
         if(!/O11 → KR11.1/.test(deferredEvidence)||!/CPD-0004/.test(deferredEvidence)||!/deferred/i.test(deferredEvidence)||!/NOT DEMONSTRATED/.test(deferredEvidence)||!/INSUFFICIENT/.test(deferredEvidence)||/CAR-0001/.test(deferredEvidence))throw new Error('Deferred selected-KR evidence must remain explicitly insufficient and must not be represented as demonstrated product proof');
+        await page.locator('[data-view="decision"]').click();
+        const deferredDecision=await page.locator('#northstar-view').innerText();
+        if(!/CPD-0004 · DECISION BRIEF/.test(deferredDecision)||!/MEDIUM EVIDENCE/.test(deferredDecision)||!/decision evidence insufficient/i.test(deferredDecision)||!/No new product investment should advance/.test(deferredDecision)||!/Portfolio Manager/.test(deferredDecision)||/managed-network/i.test(deferredDecision))throw new Error('Deferred Decision context must derive evidence, profile and investment framing from CPD-0004 rather than the primary managed-network fixture');
         // Legacy authorization and CAR-rebinding regressions require a pristine demo state.
         // Reload after the multi-persona journey so those tests prove their own invariants independently.
         await page.reload({waitUntil:'networkidle'});
