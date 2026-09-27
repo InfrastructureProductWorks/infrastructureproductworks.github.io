@@ -130,8 +130,11 @@ jobs:
           grep -Fq "DOWNSTREAM BENEFIT FEEDBACK" assets/northstar-signal-demo.js
           echo "after benefit heading"
           grep -Fq "Northstar decision/CAR binding" assets/northstar-signal-demo.js
+          echo "after car binding"
           grep -Fq "const kr94Status = primary.authorized ? 'ON TRACK' : 'UNKNOWN';" assets/northstar-signal-demo.js
+          echo "after primary status"
           grep -Fq "function primaryAuthorization()" assets/northstar-signal-demo.js
+          echo "after primary function"
           grep -Fq "No authorized product-intent handoff" assets/northstar-signal-demo.js
           grep -Fq "const benefitUnproven = s.benefitOutcome === 'UNKNOWN' ? 1 : 0;" assets/northstar-signal-demo.js
           grep -Fq "Create OKR with Composite AI" assets/northstar-signal-demo.js
