@@ -84,6 +84,45 @@
     ]
   };
 
+  const authorizationQueue = [
+    {
+      decisionId:'CPD-0001', carId:'CAR-0001', objectiveId:'O9', krId:'KR9.4',
+      outcome:'Create a reusable managed-network foundation product.',
+      owner:'Division Leader', productOwner:'Product Leader',
+      scope:'Product contract definition · bounded validation',
+      environments:'Development · Test',
+      evidence:'Guard result · Console review · Forge product contract',
+      initialDecision:'APPROVE CONDITIONALLY'
+    },
+    {
+      decisionId:'CPD-0002', carId:'CAR-0002', objectiveId:'O10', krId:'KR10.1',
+      outcome:'Standardize a reusable data-platform foundation product.',
+      owner:'Division Leader', productOwner:'Data Platform Product Leader',
+      scope:'Reusable data-platform product definition · bounded validation',
+      environments:'Development · Test',
+      evidence:'Reuse assessment · Guard result · accountable review',
+      initialDecision:'APPROVED'
+    },
+    {
+      decisionId:'CPD-0003', carId:null, objectiveId:'O10', krId:'KR10.1',
+      outcome:'Create a second Kubernetes platform for an overlapping consumer need.',
+      owner:'Division Leader', productOwner:'Application Platform Product Leader',
+      scope:'Evaluate equivalence before new productization',
+      environments:'No new environment authorized',
+      evidence:'Accepted product catalog · equivalence evidence',
+      initialDecision:'REUSE EXISTING'
+    },
+    {
+      decisionId:'CPD-0004', carId:null, objectiveId:'O11', krId:'KR11.1',
+      outcome:'Modernize a legacy capability without sufficient outcome evidence.',
+      owner:'Division Leader', productOwner:'Portfolio Manager',
+      scope:'Decision deferred pending stronger outcome and evidence definition',
+      environments:'None',
+      evidence:'Outcome definition · baseline · target · accountable evidence source',
+      initialDecision:'DEFERRED'
+    }
+  ];
+
   const okrPortfolio = [
     {
       objectiveId: 'O9',
@@ -145,7 +184,16 @@
     }
   ];
 
-  const state = { view: 'okr', role: 'leader', scenario: 'decision', selectedKr: model.krId, selectedObjective: model.objectiveId, composerAccepted: false };
+  const state = {
+    view:'okr',
+    role:'leader',
+    scenario:'decision',
+    selectedKr:model.krId,
+    selectedObjective:model.objectiveId,
+    composerAccepted:false,
+    selectedAuthorizationId:'CPD-0001',
+    authorizationDecisions:Object.fromEntries(authorizationQueue.map(item=>[item.decisionId,item.initialDecision]))
+  };
   let trailOpener = null;
   let composerOpener = null;
   let composerStep = 'intent';
@@ -294,10 +342,26 @@
   }
 
   function renderComposer() {
+    if(state.view==='composer'){
+      render();
+      const inlineFocus=$('northstar-view')?.querySelector('[data-composer-accept],[data-composer-done],[data-composer-draft]');
+      if(inlineFocus) inlineFocus.focus();
+      return;
+    }
     $('ns-composer-content').innerHTML=composerMarkup();
     const dialog=$('ns-composer-dialog');
     const focus=dialog.querySelector('[data-composer-accept],[data-composer-done],[data-composer-draft]');
     if(focus) focus.focus();
+  }
+
+  function composerView() {
+    return headline(
+      'Turn leader intent into structurally sound OKRs.',
+      'Start with plain-language intent. Composite AI proposes an Objective and measurable Key Results; deterministic Northstar checks validate structure before accountable human acceptance.',
+      'COMPOSITE AI · OKR COMPOSER'
+    )+
+    '<div class="ns-boundary-box"><strong>Authority boundary:</strong> AI proposes. Northstar validates structure. A human decides whether the draft is useful. Acceptance here creates no funding, personnel, procurement, cloud, deployment, provisioning or risk authority.</div>'+
+    composerMarkup();
   }
 
   function okrOverview() {
@@ -413,23 +477,70 @@
       '</div>';
   }
 
+  function authorizationDecision(item) {
+    if(item.decisionId===model.decisionId && state.authorizationDecisions[item.decisionId]===item.initialDecision){
+      return current().decision;
+    }
+    return state.authorizationDecisions[item.decisionId];
+  }
+
+  function authorizationRecord(item) {
+    const decision=authorizationDecision(item);
+    const authorized=decision==='APPROVED'||decision==='APPROVE CONDITIONALLY';
+    return {
+      decision,
+      authorized,
+      carId:authorized ? (item.carId||('CAR-'+item.decisionId.split('-')[1])) : null,
+      authorization:authorized?'CURRENT':decision==='REUSE EXISTING'?'NO NEW CAR':'NOT AUTHORIZED'
+    };
+  }
+
   function authorization() {
-    const s=current();
-    return headline(model.proposedOutcome,
-      'The Capability Authorization Record turns the leadership decision into a bounded product-intent contract. It is not cloud or spending authority.',
-      model.carId+' · CAPABILITY AUTHORIZATION')+
-      '<div class="ns-state-row">'+badge(s.authorization,'green')+badge(model.objectiveId+' → '+model.krId,'blue')+'</div>'+
+    const selected=authorizationQueue.find(item=>item.decisionId===state.selectedAuthorizationId)||authorizationQueue[0];
+    const selectedRecord=authorizationRecord(selected);
+    const cards=authorizationQueue.map(item=>{
+      const record=authorizationRecord(item);
+      const selectedClass=item.decisionId===selected.decisionId?' selected':'';
+      const tone=record.authorized?'green':record.decision==='DEFERRED'?'amber':'blue';
+      return '<article class="ns-auth-card'+selectedClass+'" data-auth-item="'+esc(item.decisionId)+'">'+
+        '<div class="ns-auth-card-head"><div><small>'+esc(item.objectiveId)+' → '+esc(item.krId)+'</small><h3>'+esc(item.outcome)+'</h3></div>'+badge(record.decision,tone)+'</div>'+
+        '<div class="ns-auth-meta"><span>'+esc(item.decisionId)+'</span><span>'+(record.carId?esc(record.carId):'NO NEW CAR')+'</span><span>'+esc(item.owner)+'</span></div>'+
+        '<p>'+esc(item.scope)+'</p>'+
+        '<button type="button" data-auth-select="'+esc(item.decisionId)+'">Review item</button>'+
+      '</article>';
+    }).join('');
+    const pending=authorizationQueue.filter(item=>!['APPROVED','REUSE EXISTING','DEFERRED'].includes(authorizationDecision(item))).length;
+    const authorizedCount=authorizationQueue.filter(item=>authorizationRecord(item).authorized).length;
+
+    return headline(
+      'Decision & Authorization Queue',
+      'Review several proposed outcomes without collapsing them into one blanket approval. Every item keeps its own decision, evidence, scope, accountable owner and Capability Authorization Record behavior.',
+      'DECISION & AUTHORIZATION QUEUE'
+    )+
+    '<div class="ns-auth-summary"><article><small>QUEUE ITEMS</small><strong>'+authorizationQueue.length+'</strong><span>Independent decisions</span></article><article><small>AUTHORIZED</small><strong>'+authorizedCount+'</strong><span>Current bounded product-intent records</span></article><article><small>NEEDS DECISION</small><strong>'+pending+'</strong><span>Human decision still required</span></article></div>'+
+    '<div class="ns-auth-layout"><div class="ns-auth-list">'+cards+'</div>'+
+    '<section class="ns-auth-detail" aria-label="Selected authorization item">'+
+      '<div class="ns-auth-detail-head"><div><small>SELECTED ITEM · '+esc(selected.decisionId)+'</small><h3>'+esc(selected.outcome)+'</h3></div>'+badge(selectedRecord.authorization,selectedRecord.authorized?'green':'amber')+'</div>'+
       kv([
-        ['Consumers', esc(model.consumers)],
-        ['Approved scope', 'Product contract definition · bounded validation'],
-        ['Allowed environments', 'Development · Test'],
-        ['Product owner', esc(model.productOwner)],
-        ['Benefit owner', esc(model.leader)],
-        ['Required evidence', 'Guard result · Console review · Forge product contract']
+        ['Decision', badge(selectedRecord.decision,selectedRecord.authorized?'green':'blue')],
+        ['Capability Authorization Record', selectedRecord.carId?'<code>'+esc(selectedRecord.carId)+'</code>':'No CAR emitted'],
+        ['Strategic lineage', esc(selected.objectiveId+' → '+selected.krId)],
+        ['Approved / evaluated scope', esc(selected.scope)],
+        ['Allowed environments', esc(selected.environments)],
+        ['Product owner', esc(selected.productOwner)],
+        ['Benefit / decision owner', esc(selected.owner)],
+        ['Required evidence', esc(selected.evidence)]
       ])+
-      '<div class="ns-denied"><h3>Not granted by this authorization</h3>'+
-        model.authorityDenied.map(x=>'<span>× '+esc(x)+'</span>').join('')+
-      '</div>';
+      '<div class="ns-auth-actions" aria-label="Synthetic decision actions">'+
+        '<button type="button" data-auth-action="conditional" data-auth-id="'+esc(selected.decisionId)+'">Approve conditionally</button>'+
+        '<button type="button" data-auth-action="approve" data-auth-id="'+esc(selected.decisionId)+'">Approve</button>'+
+        '<button type="button" data-auth-action="reuse" data-auth-id="'+esc(selected.decisionId)+'">Reuse existing</button>'+
+        '<button type="button" data-auth-action="defer" data-auth-id="'+esc(selected.decisionId)+'">Defer</button>'+
+      '</div>'+
+      '<div class="ns-boundary-box"><strong>Synthetic decision only.</strong> These controls demonstrate record-state changes. They do not authenticate an approver, write an enterprise system, create spending authority, accept risk, deploy, provision or mutate cloud resources.</div>'+
+      '<div class="ns-denied"><h3>Not granted by a Northstar CAR</h3>'+model.authorityDenied.map(x=>'<span>× '+esc(x)+'</span>').join('')+'</div>'+
+    '</section></div>'+
+    '<div class="ns-auth-mechanics"><small>HOW AUTHORIZATION ACTUALLY WORKS</small><div><article><b>1</b><strong>Evidence ready</strong><span>Northstar assembles the exact outcome, alternatives, scope and evidence.</span></article><article><b>2</b><strong>Human decision</strong><span>An accountable organizational approver chooses approve, conditional approval, reuse or defer.</span></article><article><b>3</b><strong>Exact CAR emitted</strong><span>Approved product intent gets a bounded CAR tied to that decision and scope.</span></article><article><b>4</b><strong>CAR carried downstream</strong><span>Backlog and productization handoffs retain the exact CAR; they cannot widen it.</span></article><article><b>5</b><strong>Separate execution authority</strong><span>Deployment, provisioning, risk acceptance and other privileged actions still require their own authorized controls.</span></article></div></div>';
   }
 
   function evidence() {
@@ -478,7 +589,7 @@
       '</div>';
   }
 
-  const renderers={okr:okrOverview,leadership,management,decision,authorization,evidence,handoff,outcome};
+  const renderers={okr:okrOverview,composer:composerView,leadership,management,decision,authorization,evidence,handoff,outcome};
 
   function setPressed(selector, selected) {
     document.querySelectorAll(selector).forEach(button => {
@@ -492,7 +603,7 @@
     setPressed('[data-view]', b=>b.dataset.view===state.view);
     setPressed('[data-role]', b=>b.dataset.role===state.role);
     setPressed('[data-scenario]', b=>b.dataset.scenario===state.scenario);
-    const scoped = state.view === 'okr' ? '' : scopeBanner();
+    const scoped = ['okr','composer','authorization'].includes(state.view) ? '' : scopeBanner();
     $('northstar-view').innerHTML=scoped+renderers[state.view]();
     $('scenario-state').textContent=current().label.toUpperCase();
     $('role-state').textContent=state.role==='leader'?'LEADERSHIP':state.role==='manager'?'MANAGEMENT':'DELIVERY';
@@ -506,6 +617,23 @@
     if(e.target.closest('[data-composer-reset]')){ composerStep='intent'; state.composerAccepted=false; renderComposer(); return; }
     if(e.target.closest('[data-composer-accept]')){ composerStep='accepted'; state.composerAccepted=true; renderComposer(); return; }
     if(e.target.closest('[data-composer-done]')){ closeComposer(); state.view='okr'; render(); return; }
+    const authSelect=e.target.closest('[data-auth-select]');
+    if(authSelect){
+      state.selectedAuthorizationId=authSelect.dataset.authSelect;
+      state.view='authorization';
+      render();
+      return;
+    }
+    const authAction=e.target.closest('[data-auth-action]');
+    if(authAction){
+      const id=authAction.dataset.authId;
+      const action=authAction.dataset.authAction;
+      state.selectedAuthorizationId=id;
+      state.authorizationDecisions[id]=action==='approve'?'APPROVED':action==='conditional'?'APPROVE CONDITIONALLY':action==='reuse'?'REUSE EXISTING':'DEFERRED';
+      state.view='authorization';
+      render();
+      return;
+    }
     const trail=e.target.closest('[data-open-trail]');
     if(trail){
       state.selectedKr=trail.dataset.openTrail;
