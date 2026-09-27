@@ -148,12 +148,18 @@ jobs:
           grep -Fq "openAuthorizationCeremony" assets/northstar-signal-demo.js
           grep -Fq "Separate CAR per item" assets/northstar-signal-demo.js
           grep -Fq "PENDING CONFIRMATION" assets/northstar-signal-demo.js
+          grep -Fq "COMPOSITE AI · MANAGEMENT COMPOSER" assets/northstar-signal-demo.js
+          grep -Fq "managementEpicProposals" assets/northstar-signal-demo.js
+          grep -Fq "CAR scope binding" assets/northstar-signal-demo.js
+          grep -Fq "REUSE / EQUIVALENCE" assets/northstar-signal-demo.js
+          grep -Fq "Management acceptance required." assets/northstar-signal-demo.js
           grep -Fq "BHP-0001" assets/northstar-signal-demo.js
           grep -Fq "AWAITING HUMAN HANDOFF" assets/northstar-signal-demo.js
           grep -Fq "CONFIRMED · NO EXTERNAL WRITE" assets/northstar-signal-demo.js
           grep -Fq "Jira" assets/northstar-signal-demo.js
           grep -Fq "Azure DevOps" assets/northstar-signal-demo.js
           grep -Fq "GitHub Issues" assets/northstar-signal-demo.js
+          grep -Fq "Management Composer / AI Epic proposals + deterministic validation" scripts/audit_site_contrast.cjs
           grep -Fq "Execution Handoff / bounded adapter contract" scripts/audit_site_contrast.cjs
           grep -Fq "Execution Handoff / independent authorization lineage" scripts/audit_site_contrast.cjs
           grep -Fq "if(ids.includes(model.decisionId))invalidateHandoff()" assets/northstar-signal-demo.js
