@@ -150,7 +150,19 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           await close.click();
           if(await page.locator('#ns-trail-dialog[open]').count())throw new Error('Northstar trace drawer must close for scenario '+scenario);
         }
-        await page.locator('[data-view="authorization"]').click();
+        await page.locator('[data-view="okr"]').click();
+        const composeKr=page.locator('[data-compose-kr="KR10.2"]');
+        if(await composeKr.count()!==1)throw new Error('Leader persona must be able to choose a specific KR for management decomposition');
+        await composeKr.click();
+        const unsupportedComposer=await page.locator('.ns-management-composer').innerText();
+        if(!/O10 → KR10.2/.test(unsupportedComposer)||!/AUTHORIZATION NOT DEFINED/.test(unsupportedComposer)||await page.locator('[data-management-draft]').count())throw new Error('Manager persona must preserve selected KR context and fail closed when no authorization decision exists');
+        await page.locator('[data-view="okr"]').click();
+        await page.locator('[data-compose-kr="KR9.4"]').click();
+        const selectedPrimaryComposer=await page.locator('.ns-management-composer').innerText();
+        if(!/O9 → KR9.4/.test(selectedPrimaryComposer)||!/AUTHORIZATION REQUIRED/.test(selectedPrimaryComposer))throw new Error('Manager persona must receive the exact selected primary KR and its authorization state');
+        await page.locator('[data-management-authorize]').click();
+        if(!/CPD-0001/.test(await page.locator('.ns-auth-detail').innerText()))throw new Error('Leader authorization continuation must preserve the manager-selected KR decision');
+                await page.locator('[data-view="authorization"]').click();
         const authItems=page.locator('[data-auth-item]');
         if(await authItems.count()!==4)throw new Error('Northstar authorization queue must expose four independent synthetic decisions');
         const reuseSeed=await page.locator('[data-auth-item="CPD-0003"]').innerText();
@@ -267,6 +279,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const lineageReceiptAfter=await page.locator('.ns-handoff-receipt').innerText();
         if(lineageReceiptBefore!==lineageReceiptAfter)throw new Error('Unrelated Northstar authorization must not invalidate or mutate CPD-0001 handoff receipt');
+        if(!/O9 → KR9.4 → CPD-0001/.test(await page.locator('.ns-handoff-package').innerText()))throw new Error('Delivery persona must receive exact selected Objective/KR/decision lineage');
         await audit(route,'Execution Handoff / independent authorization lineage');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-select="CPD-0001"]').click();
