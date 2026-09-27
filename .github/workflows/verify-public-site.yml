@@ -89,8 +89,11 @@ jobs:
           grep -Fq "node('details','roadmap-objective')" assets/portfolio.js
           echo "after roadmap objective renderer"
           grep -Fq "node('details','roadmap-headline-kr')" assets/portfolio.js
+          echo "after headline renderer"
           grep -Fq "roadmap-expand-all" portfolio/index.html
+          echo "after expand"
           grep -Fq "roadmap-collapse-all" portfolio/index.html
+          echo "after collapse"
           grep -Fq "PORTFOLIO INQUIRY" support/index.html
           grep -Fq "PORTFOLIO USE NOTICE" terms/index.html
           grep -Fq "Organization-hosted concept. Synthetic validation. Non-authoritative." console/index.html
