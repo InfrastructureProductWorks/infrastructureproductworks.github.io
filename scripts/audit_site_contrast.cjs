@@ -203,6 +203,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-authorize-item="CPD-0001"]').click();
         if(await page.locator('#ns-authorization-ceremony-dialog[open]').count()!==1)throw new Error('Approved Northstar item must require authorization ceremony');
         await page.locator('[data-confirm-authorization]').click();
+        await page.locator('[data-view="authorization"]').click();
         if(!/CAR-0001/.test(await selectedDetail.innerText())||!/CURRENT/.test(await selectedDetail.innerText()))throw new Error('Confirmed Northstar package must emit its exact current CAR');
         const afterDecision=await page.locator('[data-auth-item="CPD-0002"]').innerText();
         if(beforeDecision!==afterDecision)throw new Error('Authorizing one Northstar queue item must not mutate another item');
