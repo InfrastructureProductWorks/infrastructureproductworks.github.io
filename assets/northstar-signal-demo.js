@@ -696,9 +696,9 @@
   }
 
   function invalidateManagementForAuthorization(decisionId) {
-    const selectedDecisionId=selectedOkrContext().authorization?.decisionId||null;
+    const draftDecisionIds=state.managementProposalState!=='idle'?[...state.managementSelectedDecisionIds]:[];
     const acceptedDecisionIds=(state.acceptedEpic?.authorizationBindings||[]).map(binding=>binding.decisionId);
-    if((selectedDecisionId===decisionId&&state.managementProposalState!=='idle')||state.managementSelectedDecisionIds.includes(decisionId)||acceptedDecisionIds.includes(decisionId)){
+    if(draftDecisionIds.includes(decisionId)||acceptedDecisionIds.includes(decisionId)){
       invalidateManagementAcceptance();
     }
   }
@@ -942,8 +942,7 @@
         confirmed:true
       };
     });
-    const acceptedDecisionIds=(state.acceptedEpic?.authorizationBindings||[]).map(binding=>binding.decisionId);
-    if(ids.some(id=>state.managementSelectedDecisionIds.includes(id)||acceptedDecisionIds.includes(id)))invalidateManagementAcceptance();
+    ids.forEach(invalidateManagementForAuthorization);
     closeAuthorizationCeremony();
     state.selectedAuthorizationIds=[];
     const selectedCtx=selectedOkrContext();
@@ -1148,11 +1147,20 @@
     const intent=e.target.closest('[data-management-intent]');
     if(!intent)return;
     if(intent.value!==state.managementIntent){
-      state.managementIntent=intent.value;
+      const nextValue=intent.value;
+      const caret=typeof intent.selectionStart==='number'?intent.selectionStart:nextValue.length;
+      state.managementIntent=nextValue;
       state.managementProposalState='idle';
       state.managementProposalDigest=null;
       state.acceptedEpic=null;
       invalidateHandoff();
+      render();
+      const refreshed=document.querySelector('[data-management-intent]');
+      if(refreshed){
+        refreshed.focus();
+        const pos=Math.min(caret,refreshed.value.length);
+        if(typeof refreshed.setSelectionRange==='function')refreshed.setSelectionRange(pos,pos);
+      }
     }
   });
 
