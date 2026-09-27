@@ -50,7 +50,7 @@
     division: 'Platform & Cloud Services',
     period: 'FY27 · Q1',
     objectiveId: 'O9',
-    objective: 'Align cloud-product investment and execution to evidence-backed division outcomes.',
+    objective: 'Align cloud-product investment and execution to evidence-backed cloud platform outcomes.',
     krId: 'KR9.4',
     keyResult: 'Every authorized reusable cloud-product outcome emits an exact Capability Authorization Record before delivery begins.',
     proposedOutcome: 'Create a reusable managed-network foundation product.',
@@ -126,7 +126,7 @@
   const okrPortfolio = [
     {
       objectiveId: 'O9',
-      objective: 'Align cloud-product investment and execution to evidence-backed division outcomes.',
+      objective: 'Align cloud-product investment and execution to evidence-backed cloud platform outcomes.',
       krs: [
         {
           id: 'KR9.4',
@@ -232,12 +232,12 @@
     if (state.view === 'outcome') {
       return '<div class="ns-scope-bar downstream" aria-label="Downstream benefit feedback context">'+
         '<div><small>DOWNSTREAM BENEFIT FEEDBACK</small><strong>Separate from '+esc(state.selectedKr)+' authorization status</strong><span>Benefit evidence informs learning after authorization. It does not re-score the authorization Key Result.</span></div>'+
-        '<button type="button" data-back-okr>Back to My Division OKRs</button>'+
+        '<button type="button" data-back-okr>Back to Cloud Platform OKRs</button>'+
       '</div>';
     }
     return '<div class="ns-scope-bar" aria-label="Selected outcome context">'+
       '<div><small>SELECTED KEY RESULT</small><strong>'+esc(state.selectedObjective)+' <span aria-hidden="true">→</span> '+esc(state.selectedKr)+'</strong><span>'+esc(model.keyResult)+'</span></div>'+
-      '<button type="button" data-back-okr>Back to My Division OKRs</button>'+
+      '<button type="button" data-back-okr>Back to Cloud Platform OKRs</button>'+
     '</div>';
   }
 
@@ -327,7 +327,7 @@
       '<div class="ns-composer-actions">'+
         (!proposed ? '<button type="button" class="primary" data-composer-draft>Draft with Composite AI</button>' : '')+
         (proposed && !accepted ? '<button type="button" class="primary" data-composer-accept>Accept synthetic draft</button><button type="button" data-composer-reset>Start over</button>' : '')+
-        (accepted ? '<button type="button" class="primary" data-composer-done>Return to My Division OKRs</button>' : '')+
+        (accepted ? '<button type="button" class="primary" data-composer-done>Return to Cloud Platform OKRs</button>' : '')+
       '</div>'+
     '</div>';
   }
@@ -407,7 +407,7 @@
     }).join('');
 
     return '<div class="ns-dashboard-head">'+
-      '<div><p class="eyebrow">'+esc(model.division)+' · '+esc(model.period)+'</p><h2>My Division OKRs</h2><p>Leadership starts with outcomes, not tickets. Delivery status is visible, but it never substitutes for the named evidence source that proves a Key Result.</p><div class="ns-dashboard-actions"><button type="button" class="ns-okr-open primary" data-open-composer>Create OKR with Composite AI</button><span>AI proposes · Northstar validates · you decide</span></div></div>'+
+      '<div><p class="eyebrow">'+esc(model.division)+' · '+esc(model.period)+'</p><h2>Cloud Platform OKRs</h2><p>Leadership starts with outcomes, not tickets. Delivery status is visible, but it never substitutes for the named evidence source that proves a Key Result.</p><div class="ns-dashboard-actions"><button type="button" class="ns-okr-open primary" data-open-composer>Create OKR with Composite AI</button><span>AI proposes · Northstar validates · you decide</span></div></div>'+
       '<div class="ns-dashboard-status"><span class="pulse"></span><div><small>PORTFOLIO SIGNAL</small><strong>'+(state.composerAccepted?'Synthetic OKR draft accepted for review':benefitUnproven?'1 downstream benefit still unproven':'All highlighted benefit signals measured')+'</strong></div></div>'+
     '</div>'+
     (state.composerAccepted?'<div class="ns-composer-accepted"><strong>Accepted synthetic draft</strong><span>The structurally sound draft is ready for accountable review. The demo does not create an authoritative Strategic Outcome Record or write to an external system.</span><button type="button" data-open-composer>Review draft</button></div>':'')+

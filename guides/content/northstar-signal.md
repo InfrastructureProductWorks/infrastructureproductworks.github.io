@@ -2,8 +2,8 @@
 
 Infrastructure Product Works | Synthetic evaluation experience
 
-## 1 Start with your division outcomes
-Open the [Northstar Signal synthetic demo](/northstar-signal/demo/). The default Leadership view opens on **My Division OKRs** so the accountable leader begins with outcomes rather than a product request.
+## 1 Start with your cloud platform outcomes
+Open the [Northstar Signal synthetic demo](/northstar-signal/demo/). The default Leadership view opens on **Cloud Platform OKRs** so the accountable leader begins with outcomes rather than a product request.
 
 Use only fictional information. The public demo does not connect to enterprise systems, approve funding, provision cloud resources, accept risk, or create production work.
 
@@ -85,7 +85,7 @@ It does not use live enterprise data, live Composite AI providers, production cr
 The demo proves the interaction model and bounded contracts. Any future live adapter or execution path must preserve those authority boundaries rather than bypass them.
 
 ## 13 Troubleshooting
-If the demo appears to be on the wrong step, return to **My Division OKRs**, choose the Leadership role, and select **Decision Review**.
+If the demo appears to be on the wrong step, return to **Cloud Platform OKRs**, choose the Leadership role, and select **Decision Review**.
 
 If the OKR Composer is not visible, use the left navigation and choose **OKR Composer**. For management decomposition, choose **Management Composer** in the role controls or left navigation. The Management Composer remains visible before authorization, but it fails closed: without a current CAR it offers no Epic proposal, no management acceptance, and no BHP. Complete the exact authorization package, return to Management Composer, generate the bounded Composite AI Epic proposals, review deterministic CAR/reuse validation, and explicitly accept the selected Epic. If the current CAR/package digest changes, that management acceptance is invalid and must be performed again. If an authorization item cannot be confirmed, inspect whether that item is intentionally blocked; selecting it with other items does not make it eligible.
 
