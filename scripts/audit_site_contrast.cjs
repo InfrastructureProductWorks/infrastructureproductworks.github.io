@@ -257,7 +257,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-view="okr"]').click();
         await page.locator('[data-compose-kr="KR11.1"]').click();
         const deferredManagement=await page.locator('.ns-management-composer').innerText();
-        if(!/O11 → KR11.1/.test(deferredManagement)||!/DEFERRED/.test(deferredManagement)||!/No Epic proposal/.test(deferredManagement)||await page.locator('[data-management-authorize]').count()||await page.locator('[data-management-draft]').count())throw new Error('Locked deferred authorization must fail closed in Management without an impossible authorize continuation');
+        if(!/AUTHORIZED KR/.test(deferredManagement)||!/O9 → KR9.4/.test(deferredManagement)||!/CAR-0001/.test(deferredManagement)||await page.locator('[data-management-authorize]').count()||await page.locator('[data-management-draft]').count()!==1)throw new Error('A deferred selected page-context KR must not block composition from other current CAR-backed KRs or expose an impossible authorization continuation');
         await page.locator('[data-view="evidence"]').click();
         const deferredEvidence=await page.locator('#northstar-view').innerText();
         if(!/O11 → KR11.1/.test(deferredEvidence)||!/CPD-0004/.test(deferredEvidence)||!/deferred/i.test(deferredEvidence)||!/NOT DEMONSTRATED/.test(deferredEvidence)||!/INSUFFICIENT/.test(deferredEvidence)||/CAR-0001/.test(deferredEvidence))throw new Error('Deferred selected-KR evidence must remain explicitly insufficient and must not be represented as demonstrated product proof');
