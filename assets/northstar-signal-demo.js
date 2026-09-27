@@ -560,6 +560,14 @@
     invalidateHandoff();
   }
 
+  function invalidateManagementForAuthorization(decisionId) {
+    const selectedDecisionId=selectedOkrContext().authorization?.decisionId||null;
+    const acceptedDecisionId=state.acceptedEpic?.authorizationBinding?.decisionId||null;
+    if((selectedDecisionId===decisionId&&state.managementProposalState!=='idle')||acceptedDecisionId===decisionId){
+      invalidateManagementAcceptance();
+    }
+  }
+
   function managementComposer() {
     const ctx=selectedOkrContext();
     const primary=selectedAuthorization();
@@ -995,7 +1003,7 @@
       const nextDecision=action==='approve'?'APPROVED':action==='conditional'?'APPROVE CONDITIONALLY':action==='reuse'?'REUSE EXISTING':'DEFERRED';
       const priorDecision=authorizationDecision(authorizationQueue.find(item=>item.decisionId===id));
       state.authorizationDecisions[id]=nextDecision;
-      if(nextDecision!==priorDecision){delete state.authorizationReceipts[id];if(state.acceptedEpic?.authorizationBinding?.decisionId===id)invalidateManagementAcceptance();}
+      if(nextDecision!==priorDecision){delete state.authorizationReceipts[id];invalidateManagementForAuthorization(id);}
       state.view='authorization';
       render();
       return;
