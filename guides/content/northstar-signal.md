@@ -87,6 +87,6 @@ The demo proves the interaction model and bounded contracts. Any future live ada
 ## 13 Troubleshooting
 If the demo appears to be on the wrong step, return to **My Division OKRs**, choose the Leadership role, and select **Decision Review**.
 
-If the OKR Composer is not visible, use the left navigation and choose **OKR Composer**. If an authorization item cannot be confirmed, inspect whether that item is intentionally blocked; selecting it with other items does not make it eligible.
+If the OKR Composer is not visible, use the left navigation and choose **OKR Composer**. For management decomposition, choose **Management Composer** in the role controls or left navigation. The Management Composer remains visible before authorization, but it fails closed: without a current CAR it offers no Epic proposal, no management acceptance, and no BHP. Complete the exact authorization package, return to Management Composer, generate the bounded Composite AI Epic proposals, review deterministic CAR/reuse validation, and explicitly accept the selected Epic. If the current CAR/package digest changes, that management acceptance is invalid and must be performed again. If an authorization item cannot be confirmed, inspect whether that item is intentionally blocked; selecting it with other items does not make it eligible.
 
 If a link or control does not behave as described, return to the [Northstar Signal product page](/northstar-signal/) and reopen the synthetic demo.
