@@ -396,7 +396,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-auth-action="defer"][data-auth-id="CPD-0001"]').click();
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const blockedHandoff=await handoffView.innerText();
-        if(!/NO CURRENT CAR/.test(blockedHandoff)||!/BLOCKED/.test(blockedHandoff)||await page.locator('[data-confirm-handoff]').count())throw new Error('Northstar execution handoff must fail closed without a current CAR');
+        if(!/NO CURRENT SOURCE CAR/.test(blockedHandoff)||!/BLOCKED/.test(blockedHandoff)||await page.locator('[data-confirm-handoff]').count())throw new Error('Northstar execution handoff must fail closed without a current source CAR');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-action="conditional"][data-auth-id="CPD-0001"]').click();
         await page.locator('[data-authorize-item="CPD-0001"]').click();
