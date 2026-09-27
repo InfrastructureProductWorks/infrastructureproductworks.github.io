@@ -202,16 +202,17 @@ main>.hero .button.ghost{background:#ffffff12;color:#fff;border-color:#ffffff55}
 .ns-composer-dialog{width:min(860px,94vw);max-height:90vh;margin:auto;border:1px solid #bfd0dd;border-radius:20px;padding:0;background:#f4f8fb;color:#17253b;box-shadow:0 30px 100px #07192b66}
 .ns-composer-dialog[open]{display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden}
 .ns-composer-dialog::backdrop{background:#07192bb3;backdrop-filter:blur(3px)}
-.ns-composer-head{position:relative;display:block;padding:20px 72px 20px 22px;background:#0a4264;color:#fff}
+.ns-composer-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start;padding:20px 22px;background:#0a4264;color:#fff}
 .ns-composer-head small{display:block;color:#9edcff;font-size:9px;font-weight:900;letter-spacing:.1em}
 .ns-composer-head h2{margin:5px 0 3px;color:#fff;font-size:24px}
 .ns-composer-head p{margin:0;color:#d9ebf5;font-size:11px;line-height:1.45}
 .ns-composer-head>div{min-width:0}
-.ns-composer-head button{appearance:none;position:absolute;top:18px;right:18px;width:36px;height:36px;border:1px solid #ffffff55;border-radius:9px;background:#ffffff12;color:#fff;font-size:20px;cursor:pointer}
+.ns-composer-head button{appearance:none;position:static;width:36px;height:36px;border:1px solid #ffffff55;border-radius:9px;background:#ffffff12;color:#fff;font-size:20px;cursor:pointer}
 .ns-composer-body{min-height:0;padding:18px 20px;overflow:auto}
 .ns-composer-flow{display:grid;gap:12px}
 .ns-composer-step{padding:16px;border:1px solid #d6e2eb;border-radius:14px;background:#fff}
-.ns-composer-step>small,.ns-composer-warnings>small{display:block;color:#0b719b;font-size:9px;font-weight:900;letter-spacing:.09em}
+.ns-composer-step>small,.ns-composer-warnings>small{display:block;color:#0b719b;font-size:9px;font-weight:900;letter-spacing:.09em;line-height:1.35}
+.ns-composer-warnings>small{margin-bottom:8px}
 .ns-composer-step h3{margin:6px 0 16px;font-size:18px;line-height:1.35}
 .ns-composer-step label{display:block;margin-bottom:6px;color:#53677d;font-size:10px;font-weight:900}
 .ns-composer-step textarea{width:100%;box-sizing:border-box;resize:vertical;border:1px solid #aebfce;border-radius:10px;padding:11px 12px;background:#fff;color:#17314d;font:500 12px/1.5 inherit}
@@ -235,8 +236,8 @@ main>.hero .button.ghost{background:#ffffff12;color:#fff;border-color:#ffffff55}
 .ns-composer-actions button.primary{background:#0b3a59;border-color:#0b719b;color:#fff}
 @media(max-width:700px){
   .ns-composer-dialog{width:96vw;max-height:92vh}
-  .ns-composer-head{padding:18px 62px 18px 18px}
-  .ns-composer-head button{top:14px;right:14px}
+  .ns-composer-head{grid-template-columns:minmax(0,1fr) 36px;gap:12px;padding:18px}
+  .ns-composer-head button{position:static}
   .ns-composer-head h2{font-size:21px;line-height:1.2}
   .ns-composer-head p{max-width:none;line-height:1.45}
   .ns-composer-step{padding:18px}
