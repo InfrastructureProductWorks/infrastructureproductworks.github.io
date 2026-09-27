@@ -178,7 +178,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const deferredTrail=await page.locator('#ns-trail-dialog[open]').innerText();
         if(!/DEFERRED/.test(deferredTrail)||!/NO CAR/.test(deferredTrail))throw new Error('Northstar trace trail must suppress CAR after deferred CPD-0001');
         await page.locator('[data-close-trail]').click();
-        await page.locator('[data-view="handoff"]').click();
+        await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const deferredHandoff=await page.locator('#northstar-view').innerText();
         if(!/NO CURRENT CAR/.test(deferredHandoff)||!/BLOCKED/.test(deferredHandoff)||!/Fail closed/.test(deferredHandoff))throw new Error('Northstar execution handoff must fail closed after deferred CPD-0001');
         await page.locator('[data-view="authorization"]').click();
@@ -200,7 +200,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const blocked=await page.locator('[data-auth-item="CPD-0004"]').innerText();
         if(!/CONFIRMED/.test(confirmed)||!/CAR-0001/.test(confirmed))throw new Error('Eligible Northstar item must retain its own confirmed CAR receipt');
         if(/CONFIRMED/.test(blocked))throw new Error('Ineligible Northstar item must not piggyback on multi-select authorization');
-        await page.locator('[data-view="handoff"]').click();
+        await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const handoffView=page.locator('#northstar-view');
         if(!/Management acceptance required/.test(await handoffView.innerText())||await page.locator('[data-confirm-handoff]').count())throw new Error('Northstar must not create BHP before management accepts a validated Epic');
         await page.locator('[data-view="management"]').click();
@@ -212,7 +212,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await audit(route,'Management Composer / AI Epic proposals + deterministic validation');
         await page.locator('[data-management-accept]').click();
         if(!/MANAGEMENT ACCEPTED/.test(await page.locator('.ns-management-composer').innerText()))throw new Error('Northstar Management Composer must require explicit management acceptance');
-        await page.locator('[data-view="handoff"]').click();
+        await page.locator('.ns-view-nav [data-view="handoff"]').click();
         if(!/BHP-0001/.test(await handoffView.innerText())||!/AWAITING HUMAN HANDOFF/.test(await handoffView.innerText()))throw new Error('Accepted management Epic must enable bounded BHP generation');
         await page.locator('[data-confirm-handoff]').click();
         const receipt=await page.locator('.ns-handoff-receipt').innerText();
@@ -222,13 +222,13 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-auth-action="conditional"][data-auth-id="CPD-0001"]').click();
         await page.locator('[data-authorize-item="CPD-0001"]').click();
         await page.locator('[data-confirm-authorization]').click();
-        await page.locator('[data-view="handoff"]').click();
+        await page.locator('.ns-view-nav [data-view="handoff"]').click();
         if(!/Management acceptance required/.test(await handoffView.innerText())||await page.locator('.ns-handoff-receipt').count())throw new Error('Reauthorizing source CAR must invalidate prior management acceptance and BHP receipt');
         await page.locator('[data-view="management"]').click();
         if(!/None · management review required/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar must require management to accept Epic against replacement CAR package');
         await page.locator('[data-management-draft]').click();
         await page.locator('[data-management-accept]').click();
-        await page.locator('[data-view="handoff"]').click();
+        await page.locator('.ns-view-nav [data-view="handoff"]').click();
         if(!/BHP-0001/.test(await handoffView.innerText()))throw new Error('Fresh management acceptance must restore BHP eligibility');
         await page.locator('[data-confirm-handoff]').click();
         await audit(route,'Management Composer / CAR package rebinding');
@@ -236,7 +236,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-auth-select="CPD-0002"]').click();
         await page.locator('[data-authorize-item="CPD-0002"]').click();
         await page.locator('[data-confirm-authorization]').click();
-        await page.locator('[data-view="handoff"]').click();
+        await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const preservedReceipt=await page.locator('.ns-handoff-receipt').innerText();
         if(!/BHP-0001/.test(preservedReceipt)||!/Jira/.test(preservedReceipt))throw new Error('Authorizing unrelated Northstar item must preserve existing handoff receipt');
         await page.locator('[data-handoff-target="ado"]').click();
@@ -249,14 +249,14 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-auth-select="CPD-0002"]').click();
         await page.locator('[data-authorize-item="CPD-0002"]').click();
         await page.locator('[data-confirm-authorization]').click();
-        await page.locator('[data-view="handoff"]').click();
+        await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const lineageReceiptAfter=await page.locator('.ns-handoff-receipt').innerText();
         if(lineageReceiptBefore!==lineageReceiptAfter)throw new Error('Unrelated Northstar authorization must not invalidate or mutate CPD-0001 handoff receipt');
         await audit(route,'Execution Handoff / independent authorization lineage');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-select="CPD-0001"]').click();
         await page.locator('[data-auth-action="defer"][data-auth-id="CPD-0001"]').click();
-        await page.locator('[data-view="handoff"]').click();
+        await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const blockedHandoff=await handoffView.innerText();
         if(!/NO CURRENT CAR/.test(blockedHandoff)||!/BLOCKED/.test(blockedHandoff)||await page.locator('[data-confirm-handoff]').count())throw new Error('Northstar execution handoff must fail closed without a current CAR');
         await page.locator('[data-view="authorization"]').click();
