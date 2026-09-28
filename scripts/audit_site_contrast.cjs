@@ -156,6 +156,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
             await page.locator('[data-lineage-scenario="'+failure+'"]').click();
             const failed=await page.locator('#northstar-view').innerText();
             if(!/LINEAGE INTEGRITY\s+REJECTED/.test(failed)||!/Fail closed\./.test(failed))throw new Error('Northstar recursive lineage scenario '+failure+' must fail closed');
+            if(failure==='wrongKr'&&!/Candidate replay target · selected KR definition is not inherited across coordinates/.test(failed))throw new Error('Wrong-KR replay must not pair a substituted KR ID with the selected KR definition');
           }
           await page.locator('[data-lineage-scenario="current"]').click();
           const recovered=await page.locator('#northstar-view').innerText();
