@@ -199,6 +199,16 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           await page.locator('[data-confirm-authorization]').click();
           await page.locator('[data-view="lineage"]').click();
           if(await page.locator('.ns-geometry-node.rejected').count()!==1)throw new Error('Reconfirming an identical authorization receipt under an active failure scenario must re-reveal the rejected node');
+          await page.locator('[data-lineage-scenario="wrongKr"]').click();
+          await page.locator('[data-lineage-fit]').click();
+          await page.locator('[data-lineage-node="assurance"]').click();
+          while(await page.locator('[data-lineage-zoom="in"]:not([disabled])').count())await page.locator('[data-lineage-zoom="in"]:not([disabled])').click();
+          await page.locator('[data-view="authorization"]').click();
+          await page.locator('[data-auth-select="CPD-0002"]').click();
+          await page.locator('[data-authorize-item="CPD-0002"]').click();
+          await page.locator('[data-confirm-authorization]').click();
+          await page.locator('[data-view="lineage"]').click();
+          if(await page.locator('.ns-geometry-node.rejected').count()!==1)throw new Error('Reconfirming an identical authorization package under an active failure scenario must re-reveal the rejected node');
           await page.locator('[data-lineage-scenario="current"]').click();
           if(await page.locator('.ns-geometry-node.rejected').count())throw new Error('Returning to Current lineage must clear synthetic rejection styling');
           await page.locator('[data-view="okr"]').click();
