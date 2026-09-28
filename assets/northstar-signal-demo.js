@@ -219,7 +219,9 @@
     acceptedEpic:null,
     authorizationReturnView:null,
     lineageScenario:'current',
-    lineageFocus:'objective'
+    lineageFocus:'objective',
+    lineageObjective:model.objectiveId,
+    lineageKr:model.krId
   };
   let trailOpener = null;
   let composerOpener = null;
@@ -274,8 +276,9 @@
         '<button type="button" data-back-okr>Back to Cloud Platform OKRs</button>'+
       '</div>';
     }
+    const ctx=state.view==='lineage'?lineageOkrContext():selectedOkrContext();
     return '<div class="ns-scope-bar" aria-label="Selected outcome context">'+
-      '<div><small>SELECTED KEY RESULT</small><strong>'+esc(state.selectedObjective)+' <span aria-hidden="true">→</span> '+esc(state.selectedKr)+'</strong><span>'+esc(selectedOkrContext().kr.text)+'</span></div>'+
+      '<div><small>'+(state.view==='lineage'?'BROWSING KEY RESULT':'SELECTED KEY RESULT')+'</small><strong>'+esc(ctx.objective.objectiveId)+' <span aria-hidden="true">→</span> '+esc(ctx.kr.id)+'</strong><span>'+esc(ctx.kr.text)+'</span></div>'+
       '<button type="button" data-back-okr>Back to Cloud Platform OKRs</button>'+
     '</div>';
   }
@@ -532,6 +535,24 @@
     const kr=objective.krs.find(k=>k.id===state.selectedKr)||objective.krs[0];
     const authorization=authorizationQueue.find(item=>item.objectiveId===objective.objectiveId&&item.krId===kr.id)||null;
     return {objective,kr,authorization};
+  }
+
+  function lineageOkrContext() {
+    const objective=okrPortfolio.find(o=>o.approved&&o.objectiveId===state.lineageObjective)||okrPortfolio.find(o=>o.approved&&o.objectiveId===state.selectedObjective)||okrPortfolio.find(o=>o.approved)||okrPortfolio[0];
+    const kr=objective.krs.find(k=>k.id===state.lineageKr)||objective.krs[0];
+    const authorization=authorizationQueue.find(item=>item.objectiveId===objective.objectiveId&&item.krId===kr.id)||null;
+    return {objective,kr,authorization};
+  }
+
+  function setLineageContext(objectiveId, krId) {
+    const objective=okrPortfolio.find(o=>o.approved&&o.objectiveId===objectiveId);
+    if(!objective)return false;
+    const kr=objective.krs.find(k=>k.id===krId)||objective.krs[0];
+    state.lineageObjective=objective.objectiveId;
+    state.lineageKr=kr.id;
+    state.lineageFocus=krId? 'kr':'objective';
+    state.lineageScenario='current';
+    return true;
   }
 
   function selectedFeedback() {
@@ -1165,7 +1186,7 @@
   };
 
   function recursiveLineageBoundTuple(){
-    const ctx=selectedOkrContext();
+    const ctx=lineageOkrContext();
     const item=ctx.authorization;
     const record=item?authorizationRecord(item):null;
     const receipt=item?state.authorizationReceipts[item.decisionId]:null;
@@ -1222,7 +1243,7 @@
 
   function recursiveLineage(){
     const scenario=recursiveLineageScenarios[state.lineageScenario]?state.lineageScenario:'current';
-    const ctx=selectedOkrContext();
+    const ctx=lineageOkrContext();
     const bound=recursiveLineageBoundTuple();
     const candidate=recursiveLineageCandidate(bound,scenario);
     const evaluation=recursiveLineageEvaluation(bound,candidate,scenario);
@@ -1404,18 +1425,18 @@
     const objectiveOpen=e.target.closest('[data-lineage-objective-open]');
     if(objectiveOpen){
       const objective=okrPortfolio.find(item=>item.approved&&item.objectiveId===objectiveOpen.dataset.lineageObjectiveOpen);
-      if(objective){selectOkrContext(objective.objectiveId,objective.krs[0].id);state.lineageScenario='current';state.lineageFocus='objective';state.view='lineage';render();}
+      if(objective){setLineageContext(objective.objectiveId,objective.krs[0].id);state.lineageFocus='objective';state.view='lineage';render();}
       return;
     }
     const lineageObjective=e.target.closest('[data-lineage-objective-root]');
     if(lineageObjective&&!e.target.closest('[data-lineage-kr]')){
       const objective=okrPortfolio.find(item=>item.approved&&item.objectiveId===lineageObjective.dataset.lineageObjectiveRoot);
-      if(objective){selectOkrContext(objective.objectiveId,objective.krs[0].id);state.lineageScenario='current';state.lineageFocus='objective';state.view='lineage';render();const replacement=document.querySelector('[data-lineage-objective-root="'+objective.objectiveId+'"]');if(replacement)replacement.focus();}
+      if(objective){setLineageContext(objective.objectiveId,objective.krs[0].id);state.lineageFocus='objective';state.view='lineage';render();const replacement=document.querySelector('[data-lineage-objective-root="'+objective.objectiveId+'"]');if(replacement)replacement.focus();}
       return;
     }
     const lineageKr=e.target.closest('[data-lineage-kr]');
     if(lineageKr){
-      selectOkrContext(lineageKr.dataset.lineageObjective,lineageKr.dataset.lineageKr);state.lineageScenario='current';state.lineageFocus='kr';state.view='lineage';render();const replacement=document.querySelector('[data-lineage-kr="'+lineageKr.dataset.lineageKr+'"]');if(replacement)replacement.focus();return;
+      setLineageContext(lineageKr.dataset.lineageObjective,lineageKr.dataset.lineageKr);state.lineageFocus='kr';state.view='lineage';render();const replacement=document.querySelector('[data-lineage-kr="'+lineageKr.dataset.lineageKr+'"]');if(replacement)replacement.focus();return;
     }
     const lineageNode=e.target.closest('[data-lineage-node]');
     if(lineageNode){state.lineageFocus=lineageNode.dataset.lineageNode;state.view='lineage';render();const replacement=document.querySelector('.ns-lineage-node[data-lineage-node="'+state.lineageFocus+'"]')||document.querySelector('.ns-lineage-breadcrumb [data-lineage-node="'+state.lineageFocus+'"]');if(replacement)replacement.focus();return;}
@@ -1430,7 +1451,10 @@
     const lineageScenario=e.target.closest('[data-lineage-scenario]');
     if(lineageScenario){const next=lineageScenario.dataset.lineageScenario;if(recursiveLineageScenarios[next]){state.lineageScenario=next;state.view='lineage';render();}return;}
     const view=e.target.closest('[data-view]');
-    if(view){ state.view=view.dataset.view; render(); return; }
+    if(view){
+      if(view.dataset.view==='lineage'){state.lineageObjective=state.selectedObjective;state.lineageKr=state.selectedKr;state.lineageFocus='objective';state.lineageScenario='current';}
+      state.view=view.dataset.view; render(); return;
+    }
     const role=e.target.closest('[data-role]');
     if(role){
       state.role=role.dataset.role;
