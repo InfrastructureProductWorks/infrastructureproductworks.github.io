@@ -550,6 +550,23 @@
     const kr=objective.krs.find(k=>k.id===krId)||objective.krs[0];
     state.lineageObjective=objective.objectiveId;
     state.lineageKr=kr.id;
+    state.lineageScenario='current';
+    return true;
+  }
+
+  function lineageOkrContext() {
+    const objective=okrPortfolio.find(o=>o.approved&&o.objectiveId===state.lineageObjective)||okrPortfolio.find(o=>o.approved&&o.objectiveId===state.selectedObjective)||okrPortfolio.find(o=>o.approved)||okrPortfolio[0];
+    const kr=objective.krs.find(k=>k.id===state.lineageKr)||objective.krs[0];
+    const authorization=authorizationQueue.find(item=>item.objectiveId===objective.objectiveId&&item.krId===kr.id)||null;
+    return {objective,kr,authorization};
+  }
+
+  function setLineageContext(objectiveId, krId) {
+    const objective=okrPortfolio.find(o=>o.approved&&o.objectiveId===objectiveId);
+    if(!objective)return false;
+    const kr=objective.krs.find(k=>k.id===krId)||objective.krs[0];
+    state.lineageObjective=objective.objectiveId;
+    state.lineageKr=kr.id;
     state.lineageFocus=krId? 'kr':'objective';
     state.lineageScenario='current';
     return true;
