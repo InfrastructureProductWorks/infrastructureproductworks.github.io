@@ -1183,8 +1183,8 @@
   ];}
   function lineageAncestors(nodes,id){const out=[];let n=nodes.find(x=>x.id===id);while(n){out.unshift(n);n=n.parent?nodes.find(x=>x.id===n.parent):null;}return out;}
   function recursiveLineage(){
-    const scenario=recursiveLineageScenarios[state.lineageScenario]?state.lineageScenario:'current',bound=recursiveLineageBoundTuple(),candidate=recursiveLineageCandidate(bound,scenario),evaluation=recursiveLineageEvaluation(bound,candidate,scenario),nodes=lineageGraph(candidate);
-    if(evaluation.bad&&state.lineageScenarioFocusApplied!==scenario&&nodes.some(n=>n.id===evaluation.bad)){state.lineageFocus=evaluation.bad;state.lineageScenarioFocusApplied=scenario;}
+    const scenario=recursiveLineageScenarios[state.lineageScenario]?state.lineageScenario:'current',bound=recursiveLineageBoundTuple(),candidate=recursiveLineageCandidate(bound,scenario),evaluation=recursiveLineageEvaluation(bound,candidate,scenario),nodes=lineageGraph(candidate),rejectionRevealKey=scenario+'|'+bound.digest;
+    if(evaluation.bad&&state.lineageScenarioFocusApplied!==rejectionRevealKey&&nodes.some(n=>n.id===evaluation.bad)){state.lineageFocus=evaluation.bad;state.lineageScenarioFocusApplied=rejectionRevealKey;}
     else if(!nodes.some(n=>n.id===state.lineageFocus))state.lineageFocus='objective';
     const focus=nodes.find(n=>n.id===state.lineageFocus),focusIndex=nodes.indexOf(focus),from=Math.max(0,focusIndex-state.lineageDepth),to=Math.min(nodes.length-1,focusIndex+state.lineageDepth),visible=nodes.slice(from,to+1),crumbs=lineageAncestors(nodes,focus.id);
     const graph=visible.map((n,i)=>'<button type="button" class="ns-geometry-node '+(n.id===focus.id?'selected ':'')+(evaluation.bad===n.id?'rejected':'')+'" data-lineage-node="'+esc(n.id)+'" aria-pressed="'+(n.id===focus.id?'true':'false')+'"><small>'+esc(n.type)+'</small><strong>'+esc(n.label)+'</strong><span>'+esc(n.note)+'</span></button>'+(i<visible.length-1?'<span class="ns-geometry-link" aria-hidden="true">'+(i<Math.max(0,4-from)?'↓':'↑')+'</span>':'')).join('');
