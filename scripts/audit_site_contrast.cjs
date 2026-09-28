@@ -162,7 +162,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
             const alternate=page.locator('.ns-geometry-node:not(.rejected)').first();
             if(await alternate.count()){
               await alternate.click();
-              if(await alternate.getAttribute('aria-pressed')!=='true')throw new Error('Rejection scenarios must not override a user's subsequent node focus');
+              if(await alternate.getAttribute('aria-pressed')!=='true')throw new Error("Rejection scenarios must not override a user's subsequent node focus");
             }
           }
           await page.locator('[data-lineage-scenario="current"]').click();
