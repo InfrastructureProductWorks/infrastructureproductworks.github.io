@@ -137,6 +137,7 @@
   const okrPortfolio = [
     {
       objectiveId: 'O9',
+      approved: true,
       objective: 'Align cloud-product investment and execution to evidence-backed cloud platform outcomes.',
       krs: [
         {
@@ -159,6 +160,7 @@
     },
     {
       objectiveId: 'O10',
+      approved: true,
       objective: 'Increase reuse of governed infrastructure products before new productization begins.',
       krs: [
         {
@@ -181,6 +183,7 @@
     },
     {
       objectiveId: 'O11',
+      approved: true,
       objective: 'Improve evidence-backed platform decision quality and traceability.',
       krs: [
         {
@@ -215,7 +218,8 @@
     managementSelectedDecisionIds:[],
     acceptedEpic:null,
     authorizationReturnView:null,
-    lineageScenario:'current'
+    lineageScenario:'current',
+    lineageFocus:'objective'
   };
   let trailOpener = null;
   let composerOpener = null;
@@ -434,7 +438,7 @@
       const health = objectiveIndex === 1 ? 'WATCH' : 'ON TRACK';
       const tone = objectiveIndex === 1 ? 'amber' : 'green';
       return '<article class="ns-objective-card">'+
-        '<div class="ns-objective-head"><div class="ns-objective-id">'+esc(objective.objectiveId)+'</div><div class="ns-objective-title"><small>DIVISION OBJECTIVE</small><h3>'+esc(objective.objective)+'</h3></div><div class="ns-objective-health">'+badge(health,tone)+'<span>'+objective.krs.length+' Key Result'+(objective.krs.length===1?'':'s')+'</span></div></div>'+
+        '<div class="ns-objective-head"><div class="ns-objective-id">'+esc(objective.objectiveId)+'</div><div class="ns-objective-title"><small>DIVISION OBJECTIVE</small><h3>'+esc(objective.objective)+'</h3></div><div class="ns-objective-health">'+badge(health,tone)+'<span>'+objective.krs.length+' Key Result'+(objective.krs.length===1?'':'s')+'</span><button class="ns-okr-open" type="button" data-lineage-objective-open="'+esc(objective.objectiveId)+'">Explore lineage <span aria-hidden="true">→</span></button></div></div>'+
         '<div class="ns-objective-krs">'+krRows+'</div>'+
       '</article>';
     }).join('');
@@ -1203,34 +1207,51 @@
     return {result:'VERIFIED',tone:'green',reason:'The displayed path is derived from the selected OKR, current exact authorization, accepted Epic and bound Assurance evidence.'};
   }
 
+  function recursiveLineageNodes(candidate,ctx){
+    return [
+      {id:'objective',type:'OBJECTIVE',label:candidate.objectiveId,note:ctx.objective.objective},
+      {id:'kr',type:'KEY RESULT',label:candidate.krId,note:ctx.kr.text},
+      {id:'decision',type:'DECISION',label:candidate.decisionId,note:'Selected decision context'},
+      {id:'car',type:'CAPABILITY AUTHORIZATION',label:candidate.carId,note:candidate.carRevision},
+      {id:'edge',type:'CONTRIBUTION EDGE',label:candidate.edge,note:candidate.epic+' → '+candidate.krId},
+      {id:'epic',type:'EPIC',label:candidate.epic,note:'Accepted management decomposition required'},
+      {id:'product',type:'INFRASTRUCTURE PRODUCT',label:candidate.product,note:candidate.scope},
+      {id:'assurance',type:'ASSURANCE EVIDENCE',label:candidate.assurance,note:'Recursive evidence observation'}
+    ];
+  }
+
   function recursiveLineage(){
     const scenario=recursiveLineageScenarios[state.lineageScenario]?state.lineageScenario:'current';
+    const ctx=selectedOkrContext();
     const bound=recursiveLineageBoundTuple();
     const candidate=recursiveLineageCandidate(bound,scenario);
     const evaluation=recursiveLineageEvaluation(bound,candidate,scenario);
-    const nodes=[
-      ['STRATEGIC OUTCOME',candidate.objectiveId,'Selected division outcome'],
-      ['KEY RESULT',candidate.krId,scenario==='wrongKr'?'Candidate replay target':'Selected measurable contribution target'],
-      ['DECISION',candidate.decisionId,'Selected decision context'],
-      ['CAPABILITY AUTHORIZATION',candidate.carId,candidate.carRevision],
-      ['CONTRIBUTION EDGE',candidate.edge,candidate.epic+' → '+candidate.krId],
-      ['EPIC',candidate.epic,'Accepted management decomposition required'],
-      ['INFRASTRUCTURE PRODUCT',candidate.product,candidate.scope],
-      ['ASSURANCE EVIDENCE',candidate.assurance,'Recursive evidence observation']
-    ];
-    const nodesHtml=nodes.map(([type,id,note],index)=>'<article class="ns-lineage-node '+(evaluation.result==='REJECTED'&&((scenario==='wrongKr'&&index===1)||(scenario==='stale'&&index===3)||(scenario==='expanded'&&index===6))?'rejected':'')+'"><small>'+esc(type)+'</small><strong>'+esc(id)+'</strong><span>'+esc(note)+'</span><em>'+esc(index<=4?'AUTHORITY / CONSTRAINTS ↓':'EVIDENCE / OBSERVATIONS ↑')+'</em></article>'+(index<nodes.length-1?'<b class="ns-lineage-arrow" aria-hidden="true">'+(index<4?'↓':'↑')+'</b>':'')).join('');
+    const nodes=recursiveLineageNodes(candidate,ctx);
+    let focusIndex=nodes.findIndex(node=>node.id===state.lineageFocus);
+    if(focusIndex<0){state.lineageFocus='objective';focusIndex=0;}
+    const visibleEnd=Math.min(nodes.length,focusIndex+2);
+    const visible=nodes.slice(0,visibleEnd);
+    const rejectedId=scenario==='wrongKr'?'kr':scenario==='stale'?'car':scenario==='expanded'?'product':null;
+    const nodesHtml=visible.map((node,index)=>'<button type="button" class="ns-lineage-node '+(node.id===state.lineageFocus?'selected ':'')+(evaluation.result==='REJECTED'&&rejectedId===node.id?'rejected':'')+'" data-lineage-node="'+esc(node.id)+'" aria-pressed="'+(node.id===state.lineageFocus?'true':'false')+'"><small>'+esc(node.type)+'</small><strong>'+esc(node.label)+'</strong><span>'+esc(node.note)+'</span><em>'+esc(index<=4?'AUTHORITY / CONSTRAINTS ↓':'EVIDENCE / OBSERVATIONS ↑')+'</em></button>'+(index<visible.length-1?'<b class="ns-lineage-arrow" aria-hidden="true">'+(index<4?'↓':'↑')+'</b>':'')).join('');
     const controls=Object.entries(recursiveLineageScenarios).map(([id,item])=>'<button type="button" data-lineage-scenario="'+esc(id)+'" class="'+(scenario===id?'active':'')+'" aria-pressed="'+(scenario===id?'true':'false')+'">'+esc(item.label)+'</button>').join('');
-    return headline('See why the work exists — and why the evidence is trusted.','Northstar visualizes the selected strategy-to-evidence lineage while Assurance owns recursive evaluation semantics. This synthetic view does not create authority or calculate Key Result attainment.','RECURSIVE LINEAGE · ASSURANCE')+
+    const approvedObjectives=okrPortfolio.filter(objective=>objective.approved);
+    const objectiveRoots=approvedObjectives.map(objective=>'<button type="button" data-lineage-objective="'+esc(objective.objectiveId)+'" class="'+(objective.objectiveId===ctx.objective.objectiveId?'active':'')+'" aria-pressed="'+(objective.objectiveId===ctx.objective.objectiveId?'true':'false')+'"><strong>'+esc(objective.objectiveId)+'</strong><span>'+esc(objective.objective)+'</span></button>').join('');
+    const krRoots=ctx.objective.krs.map(kr=>'<button type="button" data-lineage-kr="'+esc(kr.id)+'" data-lineage-objective="'+esc(ctx.objective.objectiveId)+'" class="'+(kr.id===ctx.kr.id?'active':'')+'" aria-pressed="'+(kr.id===ctx.kr.id?'true':'false')+'"><strong>'+esc(kr.id)+'</strong><span>'+esc(kr.text)+'</span></button>').join('');
+    const breadcrumb=nodes.slice(0,focusIndex+1).map(node=>'<button type="button" data-lineage-node="'+esc(node.id)+'">'+esc(node.label)+'</button>').join('<span aria-hidden="true">›</span>');
+    return headline('See why the work exists — and why the evidence is trusted.','Choose an approved Objective root, select one of its Key Results, then drill down or back up the exact bounded lineage. Assurance owns recursive evaluation semantics.','RECURSIVE LINEAGE · ASSURANCE')+
+      '<section class="ns-lineage-root-picker" aria-label="Approved Objective nodes"><div class="ns-lineage-picker-head"><small>APPROVED OBJECTIVE NODES</small><strong>Select where to enter the lineage</strong></div><div class="ns-lineage-root-grid">'+objectiveRoots+'</div></section>'+
+      '<section class="ns-lineage-kr-picker" aria-label="Key Results for selected Objective"><div class="ns-lineage-picker-head"><small>KEY RESULTS UNDER '+esc(ctx.objective.objectiveId)+'</small><strong>Choose the measurable contribution path</strong></div><div class="ns-lineage-kr-grid">'+krRoots+'</div></section>'+
       '<div class="ns-lineage-status '+esc(evaluation.tone)+'"><div><small>LINEAGE INTEGRITY</small><strong>'+esc(evaluation.result)+'</strong></div><p>'+esc(evaluation.reason)+'</p></div>'+
       '<div class="ns-lineage-controls" aria-label="Synthetic lineage scenarios">'+controls+'</div>'+
-      '<div class="ns-lineage-layout"><section><div class="ns-lineage-flow" aria-label="Recursive strategy to assurance lineage">'+nodesHtml+'</div></section>'+
-      '<aside class="ns-lineage-proof"><small>CANDIDATE PATH TUPLE</small><h3>'+esc(candidate.objectiveId)+' → '+esc(candidate.krId)+' → '+esc(candidate.decisionId)+' → '+esc(candidate.carId)+' → '+esc(candidate.edge)+'</h3>'+kv([
+      '<div class="ns-lineage-toolbar"><div class="ns-lineage-breadcrumb" aria-label="Lineage breadcrumb">'+breadcrumb+'</div><div class="ns-lineage-actions"><button type="button" data-lineage-step="up" '+(focusIndex===0?'disabled':'')+'>Drill up</button><button type="button" data-lineage-step="down" '+(focusIndex===nodes.length-1?'disabled':'')+'>Drill down</button><button type="button" data-lineage-full>Show full path</button></div></div>'+
+      '<div class="ns-lineage-layout"><section><div class="ns-lineage-flow" aria-label="Selectable recursive strategy to assurance lineage">'+nodesHtml+'</div></section>'+
+      '<aside class="ns-lineage-proof"><small>SELECTED NODE</small><h3>'+esc(nodes[focusIndex].type)+' · '+esc(nodes[focusIndex].label)+'</h3><p>'+esc(nodes[focusIndex].note)+'</p><small>CANDIDATE PATH TUPLE</small><h3>'+esc(candidate.objectiveId)+' → '+esc(candidate.krId)+' → '+esc(candidate.decisionId)+' → '+esc(candidate.carId)+' → '+esc(candidate.edge)+'</h3>'+kv([
         ['Candidate digest','<code>'+esc(candidate.digest)+'</code>'],
         ['Bound digest','<code>'+esc(bound.digest)+'</code>'],
         ['Outcome measurement','Northstar · separate measurement contract'],
         ['Evidence integrity','Assurance · recursive geometry'],
         ['Authority rule','Child scope may remain equal or narrow; never broaden']
-      ])+'<div class="ns-boundary-box"><strong>Important:</strong> Assurance evidence can support why Northstar trusts an observation. It does not independently turn delivery evidence into an authoritative KR result.</div></aside></div>'+
+      ])+'<div class="ns-boundary-box"><strong>Current release:</strong> Northstar begins with approved Objectives and their Key Results. Strategic Outcome Management is not part of this release.</div></aside></div>'+
       (evaluation.result==='REJECTED'?'<div class="ns-lineage-rejection" role="status"><strong>Fail closed.</strong> '+esc(evaluation.reason)+'</div>':evaluation.result==='VERIFIED'?'<div class="ns-lineage-success" role="status"><strong>Verified path.</strong> The selected strategy, authorization, contribution, accepted Epic and evidence remain attributable to one bounded lineage.</div>':evaluation.result==='READY FOR ASSURANCE'?'<div class="ns-lineage-pending" role="status"><strong>Ready for Assurance evaluation.</strong> The upstream lineage is exact, but no Assurance evidence record is bound yet.</div>':'<div class="ns-lineage-pending" role="status"><strong>Awaiting exact authorization and accepted work.</strong> No downstream Assurance evidence is claimed for this selected path.</div>');
   }
 
@@ -1381,6 +1402,32 @@
       render();
       return;
     }
+    const objectiveOpen=e.target.closest('[data-lineage-objective-open]');
+    if(objectiveOpen){
+      const objective=okrPortfolio.find(item=>item.approved&&item.objectiveId===objectiveOpen.dataset.lineageObjectiveOpen);
+      if(objective){selectOkrContext(objective.objectiveId,objective.krs[0].id);state.lineageScenario='current';state.lineageFocus='objective';state.view='lineage';render();}
+      return;
+    }
+    const lineageObjective=e.target.closest('[data-lineage-objective]');
+    if(lineageObjective&&!e.target.closest('[data-lineage-kr]')){
+      const objective=okrPortfolio.find(item=>item.approved&&item.objectiveId===lineageObjective.dataset.lineageObjective);
+      if(objective){selectOkrContext(objective.objectiveId,objective.krs[0].id);state.lineageScenario='current';state.lineageFocus='objective';state.view='lineage';render();const replacement=document.querySelector('[data-lineage-objective="'+objective.objectiveId+'"]');if(replacement)replacement.focus();}
+      return;
+    }
+    const lineageKr=e.target.closest('[data-lineage-kr]');
+    if(lineageKr){
+      selectOkrContext(lineageKr.dataset.lineageObjective,lineageKr.dataset.lineageKr);state.lineageScenario='current';state.lineageFocus='kr';state.view='lineage';render();const replacement=document.querySelector('[data-lineage-kr="'+lineageKr.dataset.lineageKr+'"]');if(replacement)replacement.focus();return;
+    }
+    const lineageNode=e.target.closest('[data-lineage-node]');
+    if(lineageNode){state.lineageFocus=lineageNode.dataset.lineageNode;state.view='lineage';render();const replacement=document.querySelector('.ns-lineage-node[data-lineage-node="'+state.lineageFocus+'"]')||document.querySelector('.ns-lineage-breadcrumb [data-lineage-node="'+state.lineageFocus+'"]');if(replacement)replacement.focus();return;}
+    const lineageStep=e.target.closest('[data-lineage-step]');
+    if(lineageStep){
+      const ids=['objective','kr','decision','car','edge','epic','product','assurance'];
+      let index=Math.max(0,ids.indexOf(state.lineageFocus));
+      index=Math.max(0,Math.min(ids.length-1,index+(lineageStep.dataset.lineageStep==='down'?1:-1)));
+      state.lineageFocus=ids[index];state.view='lineage';render();const replacement=document.querySelector('[data-lineage-step="'+lineageStep.dataset.lineageStep+'"]:not(:disabled)')||document.querySelector('.ns-lineage-node[data-lineage-node="'+state.lineageFocus+'"]');if(replacement)replacement.focus();return;
+    }
+    if(e.target.closest('[data-lineage-full]')){state.lineageFocus='assurance';state.view='lineage';render();const replacement=document.querySelector('[data-lineage-full]');if(replacement)replacement.focus();return;}
     const lineageScenario=e.target.closest('[data-lineage-scenario]');
     if(lineageScenario){const next=lineageScenario.dataset.lineageScenario;if(recursiveLineageScenarios[next]){state.lineageScenario=next;state.view='lineage';render();}return;}
     const view=e.target.closest('[data-view]');
