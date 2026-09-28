@@ -217,7 +217,8 @@
     authorizationReturnView:null,
     lineageScenario:'current',
     lineageFocus:'objective',
-    lineageDepth:2
+    lineageDepth:2,
+    lineageScenarioFocusApplied:null
   };
   let trailOpener = null;
   let composerOpener = null;
@@ -1182,7 +1183,7 @@
   function lineageAncestors(nodes,id){const out=[];let n=nodes.find(x=>x.id===id);while(n){out.unshift(n);n=n.parent?nodes.find(x=>x.id===n.parent):null;}return out;}
   function recursiveLineage(){
     const scenario=recursiveLineageScenarios[state.lineageScenario]?state.lineageScenario:'current',bound=recursiveLineageBoundTuple(),candidate=recursiveLineageCandidate(bound,scenario),evaluation=recursiveLineageEvaluation(bound,candidate,scenario),nodes=lineageGraph(candidate);
-    if(evaluation.bad&&nodes.some(n=>n.id===evaluation.bad))state.lineageFocus=evaluation.bad;
+    if(evaluation.bad&&state.lineageScenarioFocusApplied!==scenario&&nodes.some(n=>n.id===evaluation.bad)){state.lineageFocus=evaluation.bad;state.lineageScenarioFocusApplied=scenario;}
     else if(!nodes.some(n=>n.id===state.lineageFocus))state.lineageFocus='objective';
     const focus=nodes.find(n=>n.id===state.lineageFocus),focusIndex=nodes.indexOf(focus),from=Math.max(0,focusIndex-state.lineageDepth),to=Math.min(nodes.length-1,focusIndex+state.lineageDepth),visible=nodes.slice(from,to+1),crumbs=lineageAncestors(nodes,focus.id);
     const graph=visible.map((n,i)=>'<button type="button" class="ns-geometry-node '+(n.id===focus.id?'selected ':'')+(evaluation.bad===n.id?'rejected':'')+'" data-lineage-node="'+esc(n.id)+'" aria-pressed="'+(n.id===focus.id?'true':'false')+'"><small>'+esc(n.type)+'</small><strong>'+esc(n.label)+'</strong><span>'+esc(n.note)+'</span></button>'+(i<visible.length-1?'<span class="ns-geometry-link" aria-hidden="true">'+(i<Math.max(0,4-from)?'↓':'↑')+'</span>':'')).join('');
@@ -1190,7 +1191,7 @@
     return headline('Explore the recursive geometry.','Select a node to focus its exact lineage. Drill in or out without inventing upstream strategy, product, resource or Assurance records.','RECURSIVE GEOMETRY · OBJECTIVE → EVIDENCE')+
       '<div class="ns-lineage-status '+esc(evaluation.tone)+'"><div><small>LINEAGE INTEGRITY</small><strong>'+esc(evaluation.result)+'</strong></div><p>'+esc(evaluation.reason)+'</p></div>'+
       '<div class="ns-lineage-controls" aria-label="Synthetic lineage scenarios">'+controls+'</div>'+
-      '<div class="ns-geometry-toolbar"><div class="ns-geometry-breadcrumb" aria-label="Focused lineage">'+crumbs.map(n=>'<button type="button" data-lineage-node="'+esc(n.id)+'">'+esc(n.label)+'</button>').join('<span>›</span>')+'</div><div><button type="button" data-lineage-zoom="out" '+(state.lineageDepth>=nodes.length?'disabled':'')+'>Zoom out</button><button type="button" data-lineage-zoom="in" '+(state.lineageDepth<=1?'disabled':'')+'>Zoom in</button><button type="button" data-lineage-fit>Fit graph</button></div></div>'+
+      '<div class="ns-geometry-toolbar"><div class="ns-geometry-breadcrumb" aria-label="Focused lineage">'+crumbs.map(n=>'<button type="button" data-lineage-node="'+esc(n.id)+'">'+esc(n.label)+'</button>').join('<span>›</span>')+'</div><div><button type="button" data-lineage-zoom="out" '+(state.lineageDepth>=7?'disabled':'')+'>Zoom out</button><button type="button" data-lineage-zoom="in" '+(state.lineageDepth<=1?'disabled':'')+'>Zoom in</button><button type="button" data-lineage-fit>Fit graph</button></div></div>'+
       '<div class="ns-geometry-layout"><section class="ns-geometry-canvas" aria-label="Selectable recursive geometry">'+graph+'</section><aside class="ns-lineage-proof"><small>SELECTED NODE</small><h3>'+esc(focus.type)+' · '+esc(focus.label)+'</h3>'+kv([['Detail',esc(focus.note)],['Candidate digest','<code>'+esc(candidate.digest)+'</code>'],['Bound digest','<code>'+esc(bound.digest)+'</code>'],['Authority flow','Objective → KR → CAR → contribution → Epic'],['Evidence flow','Assurance / resource observations return upward'],['Product context',esc(candidate.product)],['Assurance state',esc(candidate.assurance)]])+'<div class="ns-boundary-box"><strong>Current-release boundary:</strong> Northstar begins with Objective/Key Result. Strategic Outcome Management is not demonstrated in this release.</div></aside></div>'+
       (evaluation.result==='REJECTED'?'<div class="ns-lineage-rejection" role="status"><strong>Fail closed.</strong> '+esc(evaluation.reason)+'</div>':'<div class="ns-lineage-pending" role="status"><strong>'+esc(evaluation.result==='READY FOR ASSURANCE'?'Ready for Assurance evaluation.':'Awaiting exact authorization and accepted work.')+'</strong> Unbound downstream nodes remain explicit rather than being fabricated.</div>');
   }
@@ -1348,7 +1349,7 @@
     if(lineageZoom){state.lineageDepth=Math.max(1,Math.min(7,state.lineageDepth+(lineageZoom.dataset.lineageZoom==='out'?1:-1)));state.view='lineage';render();return;}
     if(e.target.closest('[data-lineage-fit]')){state.lineageFocus='objective';state.lineageDepth=7;state.view='lineage';render();return;}
     const lineageScenario=e.target.closest('[data-lineage-scenario]');
-    if(lineageScenario){const next=lineageScenario.dataset.lineageScenario;if(recursiveLineageScenarios[next]){state.lineageScenario=next;state.view='lineage';render();}return;}
+    if(lineageScenario){const next=lineageScenario.dataset.lineageScenario;if(recursiveLineageScenarios[next]){state.lineageScenario=next;state.lineageScenarioFocusApplied=null;state.view='lineage';render();}return;}
     const view=e.target.closest('[data-view]');
     if(view){ state.view=view.dataset.view; render(); return; }
     const role=e.target.closest('[data-role]');
