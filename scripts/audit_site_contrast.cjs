@@ -471,6 +471,12 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         if(await page.locator('.ns-composer-flow').count()!==1)throw new Error('Northstar Composer view must render inline');
         await audit(route,'OKR Composer / first-class view');
         await page.locator('[data-view="okr"]').click();
+        const goldenObjective=page.locator('.ns-objective-card').filter({hasText:'O10'}).first();
+        if(!/CURRENT CAR\s+·\s+CAR-0002/.test(await goldenObjective.innerText())||!/Explore CAR lineage/.test(await goldenObjective.innerText()))throw new Error('Northstar demo must visibly expose one synthetic Objective with a current CAR golden path');
+        await page.locator('[data-lineage-objective-open="O10"]').click();
+        const goldenLineage=await page.locator('#northstar-view').innerText();
+        if(!/O10/.test(goldenLineage)||!/KR10\.1/.test(goldenLineage)||!/CAPABILITY AUTHORIZATION\s+CAR-0002/.test(goldenLineage)||!/CURRENT CAR\s+·\s+CAR-0002/.test(goldenLineage))throw new Error('Northstar CAR golden path must visibly connect O10 to KR10.1 and CAR-0002');
+        await page.locator('[data-view="okr"]').click();
         const composer=page.locator('[data-open-composer]').first();
         if(await composer.count()!==1||!await composer.isVisible())throw new Error('Northstar OKR Composer trigger must be visible');
         await composer.click();
