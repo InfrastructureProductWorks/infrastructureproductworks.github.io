@@ -140,11 +140,23 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           await page.locator('[data-view="lineage"]').click();
           const currentLineage=await page.locator('#northstar-view').innerText();
           if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(currentLineage)||!/Outcome measurement\s+Northstar/.test(currentLineage)||!/Evidence integrity\s+Assurance/.test(currentLineage))throw new Error('Northstar recursive lineage must truthfully render the current strategy-to-evidence state');
+          if(await page.locator('[data-lineage-objective-root]').count()!==3)throw new Error('Northstar recursive lineage must expose all three approved Objective roots');
+          if(!/APPROVED OBJECTIVE NODES/.test(currentLineage)||!/OBJECTIVE\s+O9/.test(currentLineage)||/STRATEGIC OUTCOME/.test(currentLineage))throw new Error('Northstar recursive lineage must begin at approved Objective nodes and must not present Strategic Outcome Management in this release');
+          await page.locator('[data-lineage-objective-root="O10"]').click();
+          if(!/O10\s+Increase reuse of governed infrastructure products/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar Objective roots must be selectable');
+          await page.locator('[data-lineage-kr="KR10.2"]').click();
+          if(!/KEY RESULT\s+KR10\.2/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar selected Objective must expose selectable child KRs');
+          await page.locator('[data-lineage-step="down"]').click();
+          if(!/SELECTED NODE\s+DECISION/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar lineage must drill down from KR to Decision');
+          await page.locator('[data-lineage-step="up"]').click();
+          if(!/SELECTED NODE\s+KEY RESULT/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar lineage must drill back up to the parent node');
+          await page.locator('[data-lineage-objective-root="O9"]').click();
           if(/PENDING AUTHORIZATION/.test(currentLineage)&&(/CE-EP-23-KR9\.4/.test(currentLineage)||/AE-0001/.test(currentLineage)))throw new Error('Northstar must not fabricate contribution or Assurance evidence before current authorization exists');
           for(const failure of ['wrongKr','stale','expanded']){
             await page.locator('[data-lineage-scenario="'+failure+'"]').click();
             const failed=await page.locator('#northstar-view').innerText();
             if(!/LINEAGE INTEGRITY\s+REJECTED/.test(failed)||!/Fail closed\./.test(failed))throw new Error('Northstar recursive lineage scenario '+failure+' must fail closed');
+            if(failure==='wrongKr'&&!/Candidate replay target · selected KR definition is not inherited across coordinates/.test(failed))throw new Error('Wrong-KR replay must not pair a substituted KR ID with the selected KR definition');
           }
           await page.locator('[data-lineage-scenario="current"]').click();
           const recovered=await page.locator('#northstar-view').innerText();
@@ -224,6 +236,18 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('.ns-view-nav [data-view="lineage"]').click();
         const multiLineage=await page.locator('#northstar-view').innerText();
         if(!/O10 → KR10\.1/.test(multiLineage)||!/LINEAGE INTEGRITY\s+READY FOR ASSURANCE/.test(multiLineage)||!/INFRASTRUCTURE PRODUCT\s+NOT BOUND/.test(multiLineage))throw new Error('Selected O10 lineage must accept the multi-KR Epic only because its exact O10 binding is present and must not invent a product identity');
+        const acceptedBeforeBrowse=await page.locator('#northstar-view').innerText();
+        await page.locator('[data-lineage-objective-root="O11"]').click();
+        await page.locator('[data-lineage-objective-root="O10"]').click();
+        await page.locator('[data-lineage-kr="KR10.1"]').click();
+        const acceptedAfterBrowse=await page.locator('#northstar-view').innerText();
+        if(!/LINEAGE INTEGRITY\s+READY FOR ASSURANCE/.test(acceptedAfterBrowse)||!/EP-CANDIDATE-MULTI-01/.test(acceptedAfterBrowse))throw new Error('Browsing other Objective/KR roots must not invalidate an accepted Epic or its exact lineage');
+        await page.locator('[data-lineage-objective-root="O11"]').click();
+        if(!/O11 → KR11\.1/.test(await page.locator('#northstar-view').innerText()))throw new Error('Lineage browsing must allow read-only navigation to another approved Objective');
+        await page.locator('[data-lineage-objective-root="O10"]').click();
+        await page.locator('[data-lineage-kr="KR10.1"]').click();
+        const restoredMultiLineage=await page.locator('#northstar-view').innerText();
+        if(!/O10 → KR10\.1/.test(restoredMultiLineage)||!/LINEAGE INTEGRITY\s+READY FOR ASSURANCE/.test(restoredMultiLineage))throw new Error('Browsing another Objective must not clear accepted Epic or authorization state');
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const o10Handoff=await page.locator('.ns-handoff-package').innerText();
         if(!/CPD-0001/.test(o10Handoff)||!/CPD-0002/.test(o10Handoff)||!/CAR-0001/.test(o10Handoff)||!/CAR-0002/.test(o10Handoff)||!/Cross-KR Authorized Outcome Epic/.test(o10Handoff))throw new Error('Delivery must receive a multi-KR Epic with every selected Objective/KR/decision/CAR binding preserved');
