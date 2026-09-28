@@ -154,10 +154,16 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           if(widerCount<narrowCount)throw new Error('Zoom out must reveal equal or greater recursive context');
           await page.locator('[data-lineage-fit]').click();
           if(await page.locator('.ns-geometry-node').count()<8)throw new Error('Fit graph must restore the full Objective-to-Assurance geometry');
+          if(await page.locator('[data-lineage-zoom="out"]:not([disabled])').count())throw new Error('Zoom out must disable at the explorer maximum depth');
           for(const failure of ['wrongKr','stale','expanded']){
             await page.locator('[data-lineage-scenario="'+failure+'"]').click();
             const failed=await page.locator('#northstar-view').innerText();
             if(!/LINEAGE INTEGRITY\s+REJECTED/.test(failed)||!/Fail closed\./.test(failed)||await page.locator('.ns-geometry-node.rejected').count()!==1)throw new Error('Recursive geometry scenario '+failure+' must visibly reject the affected node');
+            const alternate=page.locator('.ns-geometry-node:not(.rejected)').first();
+            if(await alternate.count()){
+              await alternate.click();
+              if(await alternate.getAttribute('aria-pressed')!=='true')throw new Error('Rejection scenarios must not override a user's subsequent node focus');
+            }
           }
           await page.locator('[data-lineage-scenario="current"]').click();
           if(await page.locator('.ns-geometry-node.rejected').count())throw new Error('Returning to Current lineage must clear synthetic rejection styling');
