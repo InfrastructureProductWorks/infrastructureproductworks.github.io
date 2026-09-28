@@ -50,11 +50,15 @@ Authorization is tied to the exact reviewed item and its decision context. The r
 Changing the item, expanding its scope, substituting a proposal, or reusing authorization in another context requires a new valid decision path. A CAR does not grant general platform, funding, procurement, risk-acceptance, or cloud-execution authority.
 
 ## 8 Inspect evidence and lineage
-Open **Evidence** and use the authorization-trail controls where available.
+Open **Evidence** and use the authorization-trail controls where available. Then open **Recursive Lineage** to inspect the selected strategy-to-Assurance path.
 
 Follow the synthetic lineage from Objective and Key Result through decision evidence, authorization, backlog handoff, delivery evidence, and benefit feedback. The demo keeps these records distinct so one stage cannot overwrite the meaning of another.
 
 Use the evidence view to answer: what was proposed, what evidence supported it, what was actually authorized, what work inherited that authorization, and what later evidence measured the result?
+
+In **Recursive Lineage**, review the current selected Objective/KR path and its candidate/bound tuple. **Current lineage** shows only bindings that actually exist. The synthetic **Wrong KR replay**, **Stale revision**, and **Authority expansion** controls mutate the candidate tuple so you can see Northstar fail closed. Choose **Current lineage** afterward to reset the demonstration.
+
+Direction matters: authority and constraints propagate downward toward delivery; evidence and observations return upward. A current CAR and accepted Epic can make a path **READY FOR ASSURANCE**, but Northstar does not display Assurance evidence as verified until an actual Assurance evidence record is bound. Product context likewise remains **NOT BOUND** until a source-owned product record exists.
 
 ## 9 Compose management Epics from authorized KRs
 Switch to **Management** and open **Management Composer**.
