@@ -268,6 +268,23 @@
   function current() { return scenarioData[state.scenario]; }
   function primaryAuthorization() { return authorizationRecord(authorizationQueue[0]); }
 
+  function currentCarForObjective(objectiveId) {
+    for (const item of authorizationQueue.filter(candidate=>candidate.objectiveId===objectiveId&&candidate.carId)) {
+      const record=authorizationRecord(item);
+      const receipt=state.authorizationReceipts[item.decisionId];
+      if(record.authorized&&receipt&&receipt.confirmed&&receipt.carId===item.carId)return {item,record,receipt};
+    }
+    return null;
+  }
+
+  function currentCarForKr(objectiveId,krId) {
+    const item=authorizationQueue.find(candidate=>candidate.objectiveId===objectiveId&&candidate.krId===krId&&candidate.carId);
+    if(!item)return null;
+    const record=authorizationRecord(item);
+    const receipt=state.authorizationReceipts[item.decisionId];
+    return record.authorized&&receipt&&receipt.confirmed&&receipt.carId===item.carId?{item,record,receipt}:null;
+  }
+
   function scopeBanner() {
     if (!state.selectedKr) return '';
     if (state.view === 'outcome') {
@@ -428,20 +445,22 @@
         const outcome = isPrimary ? kr94Status : kr.outcome;
         const outcomeTone = outcome === 'UNKNOWN' || outcome === 'AT RISK' ? 'amber' : 'green';
         const source = kr.source;
+        const krCar=currentCarForKr(objective.objectiveId,kr.id);
         const action = '<div class="ns-kr-actions">'+
           (kr.interactive?'<button class="ns-okr-open" data-open-trail="'+esc(kr.id)+'" type="button">Open trail <span aria-hidden="true">→</span></button>':'<span class="ns-okr-source-note">Measured</span>')+
           '<button class="ns-okr-open" data-compose-kr="'+esc(kr.id)+'" data-compose-objective="'+esc(objective.objectiveId)+'" type="button">Compose Epics <span aria-hidden="true">→</span></button></div>';
         const statusLabel = isPrimary ? 'KR STATUS' : 'OUTCOME';
         return '<div class="ns-kr-row'+(isPrimary?' primary':'')+'">'+
-          '<div class="ns-kr-copy"><small>'+esc(kr.id)+'</small><strong>'+esc(kr.text)+'</strong><span>'+esc(kr.owner)+'</span></div>'+
+          '<div class="ns-kr-copy"><small>'+esc(kr.id)+'</small><strong>'+esc(kr.text)+'</strong><span>'+esc(kr.owner)+'</span>'+(krCar?'<span class="ns-kr-car"><b>CURRENT CAR</b> · '+esc(krCar.record.carId)+'</span>':'')+'</div>'+
           '<div class="ns-kr-signals"><div><span>DELIVERY</span>'+badge(delivery,'blue')+'</div><div><span>'+statusLabel+'</span>'+badge(outcome,outcomeTone)+'</div></div>'+
           '<div class="ns-kr-source"><span>EVIDENCE SOURCE</span><strong>'+esc(source)+'</strong>'+action+'</div>'+
         '</div>';
       }).join('');
       const health = objectiveIndex === 1 ? 'WATCH' : 'ON TRACK';
       const tone = objectiveIndex === 1 ? 'amber' : 'green';
+      const objectiveCar=currentCarForObjective(objective.objectiveId);
       return '<article class="ns-objective-card">'+
-        '<div class="ns-objective-head"><div class="ns-objective-id">'+esc(objective.objectiveId)+'</div><div class="ns-objective-title"><small>DIVISION OBJECTIVE</small><h3>'+esc(objective.objective)+'</h3></div><div class="ns-objective-health">'+badge(health,tone)+'<span>'+objective.krs.length+' Key Result'+(objective.krs.length===1?'':'s')+'</span><button class="ns-okr-open" type="button" data-lineage-objective-open="'+esc(objective.objectiveId)+'">Explore lineage <span aria-hidden="true">→</span></button></div></div>'+
+        '<div class="ns-objective-head"><div class="ns-objective-id">'+esc(objective.objectiveId)+'</div><div class="ns-objective-title"><small>DIVISION OBJECTIVE</small><h3>'+esc(objective.objective)+'</h3></div><div class="ns-objective-health">'+badge(health,tone)+'<span>'+objective.krs.length+' Key Result'+(objective.krs.length===1?'':'s')+'</span>'+(objectiveCar?'<span class="ns-objective-car"><b>CURRENT CAR</b> · '+esc(objectiveCar.record.carId)+'</span>':'')+'<button class="ns-okr-open" type="button" data-lineage-objective-open="'+esc(objective.objectiveId)+'">'+(objectiveCar?'Explore CAR lineage':'Explore lineage')+' <span aria-hidden="true">→</span></button></div></div>'+
         '<div class="ns-objective-krs">'+krRows+'</div>'+
       '</article>';
     }).join('');
@@ -1272,8 +1291,8 @@
     const nodesHtml=visible.map((node,index)=>'<button type="button" class="ns-lineage-node '+(node.id===state.lineageFocus?'selected ':'')+(evaluation.result==='REJECTED'&&rejectedId===node.id?'rejected':'')+'" data-lineage-node="'+esc(node.id)+'" aria-pressed="'+(node.id===state.lineageFocus?'true':'false')+'"><small>'+esc(node.type)+'</small><strong>'+esc(node.label)+'</strong><span>'+esc(node.note)+'</span><em>'+esc(index<=4?'AUTHORITY / CONSTRAINTS ↓':'EVIDENCE / OBSERVATIONS ↑')+'</em></button>'+(index<visible.length-1?'<b class="ns-lineage-arrow" aria-hidden="true">'+(index<4?'↓':'↑')+'</b>':'')).join('');
     const controls=Object.entries(recursiveLineageScenarios).map(([id,item])=>'<button type="button" data-lineage-scenario="'+esc(id)+'" class="'+(scenario===id?'active':'')+'" aria-pressed="'+(scenario===id?'true':'false')+'">'+esc(item.label)+'</button>').join('');
     const approvedObjectives=okrPortfolio.filter(objective=>objective.approved);
-    const objectiveRoots=approvedObjectives.map(objective=>'<button type="button" data-lineage-objective-root="'+esc(objective.objectiveId)+'" class="'+(objective.objectiveId===ctx.objective.objectiveId?'active':'')+'" aria-pressed="'+(objective.objectiveId===ctx.objective.objectiveId?'true':'false')+'"><strong>'+esc(objective.objectiveId)+'</strong><span>'+esc(objective.objective)+'</span></button>').join('');
-    const krRoots=ctx.objective.krs.map(kr=>'<button type="button" data-lineage-kr="'+esc(kr.id)+'" data-lineage-objective="'+esc(ctx.objective.objectiveId)+'" class="'+(kr.id===ctx.kr.id?'active':'')+'" aria-pressed="'+(kr.id===ctx.kr.id?'true':'false')+'"><strong>'+esc(kr.id)+'</strong><span>'+esc(kr.text)+'</span></button>').join('');
+    const objectiveRoots=approvedObjectives.map(objective=>{const car=currentCarForObjective(objective.objectiveId);return '<button type="button" data-lineage-objective-root="'+esc(objective.objectiveId)+'" class="'+(objective.objectiveId===ctx.objective.objectiveId?'active':'')+'" aria-pressed="'+(objective.objectiveId===ctx.objective.objectiveId?'true':'false')+'"><strong>'+esc(objective.objectiveId)+'</strong><span>'+esc(objective.objective)+'</span>'+(car?'<em>CURRENT CAR · '+esc(car.record.carId)+'</em>':'')+'</button>';}).join('');
+    const krRoots=ctx.objective.krs.map(kr=>{const car=currentCarForKr(ctx.objective.objectiveId,kr.id);return '<button type="button" data-lineage-kr="'+esc(kr.id)+'" data-lineage-objective="'+esc(ctx.objective.objectiveId)+'" class="'+(kr.id===ctx.kr.id?'active':'')+'" aria-pressed="'+(kr.id===ctx.kr.id?'true':'false')+'"><strong>'+esc(kr.id)+'</strong><span>'+esc(kr.text)+'</span>'+(car?'<em>CURRENT CAR · '+esc(car.record.carId)+'</em>':'')+'</button>';}).join('');
     const breadcrumb=nodes.slice(0,focusIndex+1).map(node=>'<button type="button" data-lineage-node="'+esc(node.id)+'">'+esc(node.label)+'</button>').join('<span aria-hidden="true">›</span>');
     return headline('See why the work exists — and why the evidence is trusted.','Choose an approved Objective root, select one of its Key Results, then drill down or back up the exact bounded lineage. Assurance owns recursive evaluation semantics.','RECURSIVE LINEAGE · ASSURANCE')+
       '<section class="ns-lineage-root-picker" aria-label="Approved Objective nodes"><div class="ns-lineage-picker-head"><small>APPROVED OBJECTIVE NODES</small><strong>Select where to enter the lineage</strong></div><div class="ns-lineage-root-grid">'+objectiveRoots+'</div></section>'+
