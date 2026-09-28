@@ -1229,8 +1229,7 @@
     const nodes=recursiveLineageNodes(candidate,ctx);
     let focusIndex=nodes.findIndex(node=>node.id===state.lineageFocus);
     if(focusIndex<0){state.lineageFocus='objective';focusIndex=0;}
-    const visibleEnd=Math.min(nodes.length,focusIndex+2);
-    const visible=nodes.slice(0,visibleEnd);
+    const visible=nodes;
     const rejectedId=scenario==='wrongKr'?'kr':scenario==='stale'?'car':scenario==='expanded'?'product':null;
     const nodesHtml=visible.map((node,index)=>'<button type="button" class="ns-lineage-node '+(node.id===state.lineageFocus?'selected ':'')+(evaluation.result==='REJECTED'&&rejectedId===node.id?'rejected':'')+'" data-lineage-node="'+esc(node.id)+'" aria-pressed="'+(node.id===state.lineageFocus?'true':'false')+'"><small>'+esc(node.type)+'</small><strong>'+esc(node.label)+'</strong><span>'+esc(node.note)+'</span><em>'+esc(index<=4?'AUTHORITY / CONSTRAINTS ↓':'EVIDENCE / OBSERVATIONS ↑')+'</em></button>'+(index<visible.length-1?'<b class="ns-lineage-arrow" aria-hidden="true">'+(index<4?'↓':'↑')+'</b>':'')).join('');
     const controls=Object.entries(recursiveLineageScenarios).map(([id,item])=>'<button type="button" data-lineage-scenario="'+esc(id)+'" class="'+(scenario===id?'active':'')+'" aria-pressed="'+(scenario===id?'true':'false')+'">'+esc(item.label)+'</button>').join('');
