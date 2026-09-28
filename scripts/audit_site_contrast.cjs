@@ -134,9 +134,29 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         }
         for(const scenario of ['decision','delivered','measured']){
           await page.locator(`[data-scenario="${scenario}"]`).click();
-          for(const view of ['okr','composer','leadership','management','decision','authorization','evidence','handoff','outcome']){
+          for(const view of ['okr','composer','leadership','management','decision','authorization','evidence','lineage','handoff','outcome']){
             await page.locator(`[data-view="${view}"]`).click();await audit(route,'scenario '+scenario+' / view '+view);
           }
+          await page.locator('[data-view="lineage"]').click();
+          const currentLineage=await page.locator('#northstar-view').innerText();
+          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(currentLineage)||!/Outcome measurement\s+Northstar/.test(currentLineage)||!/Evidence integrity\s+Assurance/.test(currentLineage))throw new Error('Northstar recursive lineage must truthfully render the current strategy-to-evidence state');
+          if(/PENDING AUTHORIZATION/.test(currentLineage)&&(/CE-EP-23-KR9\.4/.test(currentLineage)||/AE-0001/.test(currentLineage)))throw new Error('Northstar must not fabricate contribution or Assurance evidence before current authorization exists');
+          for(const failure of ['wrongKr','stale','expanded']){
+            await page.locator('[data-lineage-scenario="'+failure+'"]').click();
+            const failed=await page.locator('#northstar-view').innerText();
+            if(!/LINEAGE INTEGRITY\s+REJECTED/.test(failed)||!/Fail closed\./.test(failed))throw new Error('Northstar recursive lineage scenario '+failure+' must fail closed');
+          }
+          await page.locator('[data-lineage-scenario="current"]').click();
+          const recovered=await page.locator('#northstar-view').innerText();
+          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(recovered))throw new Error('Northstar recursive lineage must recover to the truthful current state after negative tests');
+          await page.locator('[data-view="okr"]').click();
+          await page.locator('[data-compose-kr="KR10.1"]').click();
+          await page.locator('[data-view="lineage"]').click();
+          const selectedLineage=await page.locator('#northstar-view').innerText();
+          if(!/O10 → KR10\.1/.test(selectedLineage)||/O9 → KR9\.4 → CPD-0001/.test(selectedLineage))throw new Error('Recursive lineage must derive from the selected OKR context without leaking the primary O9 path');
+          await page.locator('[data-view="okr"]').click();
+          await page.locator('[data-open-trail="KR9.4"]').click();
+          await page.locator('[data-close-trail]').click();
           await page.locator('[data-view="okr"]').click();
           const trail=page.locator('[data-open-trail="KR9.4"]');
           if(await trail.count()!==1)throw new Error('Northstar KR9.4 trace trigger must exist exactly once for scenario '+scenario);
@@ -201,6 +221,9 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const o10ProposalText=await page.locator('.ns-management-composer').innerText();
         if(!/Cross-KR Authorized Outcome Epic/.test(o10ProposalText)||!/CPD-0001/.test(o10ProposalText)||!/CPD-0002/.test(o10ProposalText)||!/CAR scope binding\s+Every proposed Epic remains bound to the exact current CAR outcome and scope/i.test(o10ProposalText))throw new Error('Selecting multiple authorized KRs must generate a cross-KR Epic bound to the exact selected CAR set');
         await page.locator('[data-management-accept]').click();
+        await page.locator('.ns-view-nav [data-view="lineage"]').click();
+        const multiLineage=await page.locator('#northstar-view').innerText();
+        if(!/O10 → KR10\.1/.test(multiLineage)||!/LINEAGE INTEGRITY\s+READY FOR ASSURANCE/.test(multiLineage)||!/INFRASTRUCTURE PRODUCT\s+NOT BOUND/.test(multiLineage))throw new Error('Selected O10 lineage must accept the multi-KR Epic only because its exact O10 binding is present and must not invent a product identity');
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const o10Handoff=await page.locator('.ns-handoff-package').innerText();
         if(!/CPD-0001/.test(o10Handoff)||!/CPD-0002/.test(o10Handoff)||!/CAR-0001/.test(o10Handoff)||!/CAR-0002/.test(o10Handoff)||!/Cross-KR Authorized Outcome Epic/.test(o10Handoff))throw new Error('Delivery must receive a multi-KR Epic with every selected Objective/KR/decision/CAR binding preserved');
@@ -217,9 +240,13 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const cpd1Checked=await page.locator('[data-management-kr-check="CPD-0001"]').isChecked();
         const cpd2Checked=await page.locator('[data-management-kr-check="CPD-0002"]').isChecked();
         if(!cpd1Checked||cpd2Checked)throw new Error('Single-KR composition must preserve the exact checked authorization set');
-        if(!/Managed Network Foundation/.test(singleProposalCard)||/Reusable Data Platform Foundation/.test(singleProposalCard)||!/Create the managed-network Epic only from the checked authorization/.test(singleProposalCard)||!/CAR scope binding\s+Every proposed Epic remains bound to the exact current CAR outcome and scope/i.test(singleComposerText))throw new Error('Single-KR generation must derive its proposal and management intent from the checked authorization rather than the page context');
         await page.locator('[data-management-accept]').click();
-        if(!/MANAGEMENT ACCEPTED/.test(await page.locator('.ns-management-composer').innerText()))throw new Error('Single-KR proposal must be explicitly accepted before handoff');
+        await page.locator('.ns-view-nav [data-view="lineage"]').click();
+        const mismatchedAcceptedLineage=await page.locator('#northstar-view').innerText();
+        if(!/O10 → KR10\.1/.test(mismatchedAcceptedLineage)||!/PENDING AUTHORIZATION/.test(mismatchedAcceptedLineage)||/CE-EP-23-KR10\.1/.test(mismatchedAcceptedLineage))throw new Error('An accepted Epic bound only to O9/KR9.4 must not be consumed as O10/KR10.1 lineage');
+        await page.locator('.ns-view-nav [data-view="management"]').click();
+        if(!/Managed Network Foundation/.test(singleProposalCard)||/Reusable Data Platform Foundation/.test(singleProposalCard)||!/Create the managed-network Epic only from the checked authorization/.test(singleProposalCard)||!/CAR scope binding\s+Every proposed Epic remains bound to the exact current CAR outcome and scope/i.test(singleComposerText))throw new Error('Single-KR generation must derive its proposal and management intent from the checked authorization rather than the page context');
+        if(!/MANAGEMENT ACCEPTED/.test(await page.locator('.ns-management-composer').innerText()))throw new Error('Single-KR proposal acceptance must remain intact after lineage inspection');
         await page.locator('[data-management-intent]').fill('Revised managed-network intent must invalidate the visible proposal immediately.');
         const afterIntentEdit=await page.locator('.ns-management-composer').innerText();
         if(await page.locator('[data-management-proposal]').count()||await page.locator('[data-management-accept]').count()||/MANAGEMENT ACCEPTED/.test(afterIntentEdit)||await page.locator('[data-view="handoff"].primary').count())throw new Error('Editing management intent must immediately remove stale proposal and acceptance UI');

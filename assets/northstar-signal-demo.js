@@ -214,7 +214,8 @@
     managementIntent:'Decompose the selected authorized outcome into the smallest useful Epic set while preferring governed reuse and preserving measurable outcomes.',
     managementSelectedDecisionIds:[],
     acceptedEpic:null,
-    authorizationReturnView:null
+    authorizationReturnView:null,
+    lineageScenario:'current'
   };
   let trailOpener = null;
   let composerOpener = null;
@@ -1151,7 +1152,89 @@
       '</div>';
   }
 
-  const renderers={okr:okrOverview,composer:composerView,leadership,management,decision,authorization,evidence,handoff,outcome};
+
+  const recursiveLineageScenarios={
+    current:{label:'Current lineage'},
+    wrongKr:{label:'Wrong KR replay'},
+    stale:{label:'Stale revision'},
+    expanded:{label:'Authority expansion'}
+  };
+
+  function recursiveLineageBoundTuple(){
+    const ctx=selectedOkrContext();
+    const item=ctx.authorization;
+    const record=item?authorizationRecord(item):null;
+    const receipt=item?state.authorizationReceipts[item.decisionId]:null;
+    const authorized=Boolean(item&&record&&record.authorized&&receipt);
+    const exactAcceptedBinding=authorized&&state.acceptedEpic&&Array.isArray(state.acceptedEpic.authorizationBindings)
+      ? state.acceptedEpic.authorizationBindings.find(binding=>
+          binding.objectiveId===ctx.objective.objectiveId&&binding.krId===ctx.kr.id&&binding.decisionId===item.decisionId&&
+          binding.carId===record.carId&&binding.packageId===receipt.packageId&&binding.evidenceDigest===receipt.evidenceDigest)
+      : null;
+    const acceptedForSelected=Boolean(exactAcceptedBinding&&managementAcceptanceCurrent());
+    const epic=acceptedForSelected?state.acceptedEpic.epic:'NO AUTHORIZED EPIC';
+    const edge=acceptedForSelected?'CE-'+epic+'-'+ctx.kr.id:'NO CURRENT CONTRIBUTION EDGE';
+    const car=authorized?record.carId:'NO CURRENT CAR';
+    const product='NOT BOUND';
+    const assurance='NOT EVALUATED';
+    const scope=item?.scope||'NO AUTHORIZED SCOPE';
+    const revision=receipt?.evidenceDigest||'NO CURRENT REVISION';
+    const tuple={objectiveId:ctx.objective.objectiveId,krId:ctx.kr.id,decisionId:item?.decisionId||'NO DECISION',carId:car,carRevision:revision,epic,edge,scope,product,assurance,authorized:acceptedForSelected,assuranceBound:false};
+    tuple.digest=stableDigest([tuple.objectiveId,tuple.krId,tuple.decisionId,tuple.carId,tuple.carRevision,tuple.epic,tuple.edge,tuple.scope,tuple.product,tuple.assurance].join('|'));
+    return tuple;
+  }
+
+  function recursiveLineageCandidate(bound,scenario){
+    const candidate={...bound};
+    if(scenario==='wrongKr')candidate.krId=bound.krId==='KR10.1'?'KR9.4':'KR10.1';
+    if(scenario==='stale')candidate.carRevision=bound.carRevision==='NO CURRENT REVISION'?'STALE-REVISION':bound.carRevision+'-stale';
+    if(scenario==='expanded')candidate.scope=bound.scope+' + IAM administrator';
+    candidate.edge=candidate.epic!=='NO AUTHORIZED EPIC'?'CE-'+candidate.epic+'-'+candidate.krId:bound.edge;
+    candidate.digest=stableDigest([candidate.objectiveId,candidate.krId,candidate.decisionId,candidate.carId,candidate.carRevision,candidate.epic,candidate.edge,candidate.scope,candidate.product,candidate.assurance].join('|'));
+    return candidate;
+  }
+
+  function recursiveLineageEvaluation(bound,candidate,scenario){
+    if(scenario==='wrongKr'&&(candidate.krId!==bound.krId||candidate.edge!==bound.edge))return {result:'REJECTED',tone:'red',reason:'The candidate changes the target Key Result/contribution edge. Cross-KR replay cannot inherit the bound authorization.'};
+    if(scenario==='stale'&&candidate.carRevision!==bound.carRevision)return {result:'REJECTED',tone:'red',reason:'The candidate carries a stale CAR revision/digest. Prior validity cannot silently carry forward.'};
+    if(scenario==='expanded'&&candidate.scope!==bound.scope)return {result:'REJECTED',tone:'red',reason:'The candidate expands downstream scope beyond the parent CAR. Child authority may stay equal or narrow; never broaden.'};
+    if(!bound.authorized)return {result:'PENDING AUTHORIZATION',tone:'amber',reason:'The selected OKR does not currently have the complete CAR → accepted Epic lineage required for downstream Assurance evaluation. Northstar fails closed.'};
+    if(!bound.assuranceBound)return {result:'READY FOR ASSURANCE',tone:'amber',reason:'Strategy, CAR and accepted Epic lineage are exact, but no Assurance evidence record is bound. Northstar will not manufacture evidence from management acceptance.'};
+    return {result:'VERIFIED',tone:'green',reason:'The displayed path is derived from the selected OKR, current exact authorization, accepted Epic and bound Assurance evidence.'};
+  }
+
+  function recursiveLineage(){
+    const scenario=recursiveLineageScenarios[state.lineageScenario]?state.lineageScenario:'current';
+    const bound=recursiveLineageBoundTuple();
+    const candidate=recursiveLineageCandidate(bound,scenario);
+    const evaluation=recursiveLineageEvaluation(bound,candidate,scenario);
+    const nodes=[
+      ['STRATEGIC OUTCOME',candidate.objectiveId,'Selected division outcome'],
+      ['KEY RESULT',candidate.krId,scenario==='wrongKr'?'Candidate replay target':'Selected measurable contribution target'],
+      ['DECISION',candidate.decisionId,'Selected decision context'],
+      ['CAPABILITY AUTHORIZATION',candidate.carId,candidate.carRevision],
+      ['CONTRIBUTION EDGE',candidate.edge,candidate.epic+' → '+candidate.krId],
+      ['EPIC',candidate.epic,'Accepted management decomposition required'],
+      ['INFRASTRUCTURE PRODUCT',candidate.product,candidate.scope],
+      ['ASSURANCE EVIDENCE',candidate.assurance,'Recursive evidence observation']
+    ];
+    const nodesHtml=nodes.map(([type,id,note],index)=>'<article class="ns-lineage-node '+(evaluation.result==='REJECTED'&&((scenario==='wrongKr'&&index===1)||(scenario==='stale'&&index===3)||(scenario==='expanded'&&index===6))?'rejected':'')+'"><small>'+esc(type)+'</small><strong>'+esc(id)+'</strong><span>'+esc(note)+'</span><em>'+esc(index<=4?'AUTHORITY / CONSTRAINTS ↓':'EVIDENCE / OBSERVATIONS ↑')+'</em></article>'+(index<nodes.length-1?'<b class="ns-lineage-arrow" aria-hidden="true">'+(index<4?'↓':'↑')+'</b>':'')).join('');
+    const controls=Object.entries(recursiveLineageScenarios).map(([id,item])=>'<button type="button" data-lineage-scenario="'+esc(id)+'" class="'+(scenario===id?'active':'')+'" aria-pressed="'+(scenario===id?'true':'false')+'">'+esc(item.label)+'</button>').join('');
+    return headline('See why the work exists — and why the evidence is trusted.','Northstar visualizes the selected strategy-to-evidence lineage while Assurance owns recursive evaluation semantics. This synthetic view does not create authority or calculate Key Result attainment.','RECURSIVE LINEAGE · ASSURANCE')+
+      '<div class="ns-lineage-status '+esc(evaluation.tone)+'"><div><small>LINEAGE INTEGRITY</small><strong>'+esc(evaluation.result)+'</strong></div><p>'+esc(evaluation.reason)+'</p></div>'+
+      '<div class="ns-lineage-controls" aria-label="Synthetic lineage scenarios">'+controls+'</div>'+
+      '<div class="ns-lineage-layout"><section><div class="ns-lineage-flow" aria-label="Recursive strategy to assurance lineage">'+nodesHtml+'</div></section>'+
+      '<aside class="ns-lineage-proof"><small>CANDIDATE PATH TUPLE</small><h3>'+esc(candidate.objectiveId)+' → '+esc(candidate.krId)+' → '+esc(candidate.decisionId)+' → '+esc(candidate.carId)+' → '+esc(candidate.edge)+'</h3>'+kv([
+        ['Candidate digest','<code>'+esc(candidate.digest)+'</code>'],
+        ['Bound digest','<code>'+esc(bound.digest)+'</code>'],
+        ['Outcome measurement','Northstar · separate measurement contract'],
+        ['Evidence integrity','Assurance · recursive geometry'],
+        ['Authority rule','Child scope may remain equal or narrow; never broaden']
+      ])+'<div class="ns-boundary-box"><strong>Important:</strong> Assurance evidence can support why Northstar trusts an observation. It does not independently turn delivery evidence into an authoritative KR result.</div></aside></div>'+
+      (evaluation.result==='REJECTED'?'<div class="ns-lineage-rejection" role="status"><strong>Fail closed.</strong> '+esc(evaluation.reason)+'</div>':evaluation.result==='VERIFIED'?'<div class="ns-lineage-success" role="status"><strong>Verified path.</strong> The selected strategy, authorization, contribution, accepted Epic and evidence remain attributable to one bounded lineage.</div>':evaluation.result==='READY FOR ASSURANCE'?'<div class="ns-lineage-pending" role="status"><strong>Ready for Assurance evaluation.</strong> The upstream lineage is exact, but no Assurance evidence record is bound yet.</div>':'<div class="ns-lineage-pending" role="status"><strong>Awaiting exact authorization and accepted work.</strong> No downstream Assurance evidence is claimed for this selected path.</div>');
+  }
+
+  const renderers={okr:okrOverview,composer:composerView,leadership,management,decision,authorization,evidence,lineage:recursiveLineage,handoff,outcome};
 
   function setPressed(selector, selected) {
     document.querySelectorAll(selector).forEach(button => {
@@ -1298,6 +1381,8 @@
       render();
       return;
     }
+    const lineageScenario=e.target.closest('[data-lineage-scenario]');
+    if(lineageScenario){const next=lineageScenario.dataset.lineageScenario;if(recursiveLineageScenarios[next]){state.lineageScenario=next;state.view='lineage';render();}return;}
     const view=e.target.closest('[data-view]');
     if(view){ state.view=view.dataset.view; render(); return; }
     const role=e.target.closest('[data-role]');
