@@ -247,6 +247,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         if(!/Cross-KR Authorized Outcome Epic/.test(o10ProposalText)||!/CPD-0001/.test(o10ProposalText)||!/CPD-0002/.test(o10ProposalText)||!/CAR scope binding\s+Every proposed Epic remains bound to the exact current CAR outcome and scope/i.test(o10ProposalText))throw new Error('Selecting multiple authorized KRs must generate a cross-KR Epic bound to the exact selected CAR set');
         await page.locator('[data-management-accept]').click();
         await page.locator('.ns-view-nav [data-view="lineage"]').click();
+        await page.locator('[data-lineage-fit]').click();
         const multiLineage=await page.locator('#northstar-view').innerText();
         if(!/O10/.test(multiLineage)||!/KR10\.1/.test(multiLineage)||!/LINEAGE INTEGRITY\s+READY FOR ASSURANCE/.test(multiLineage)||!/INFRASTRUCTURE PRODUCT/.test(multiLineage)||!/NOT BOUND/.test(multiLineage))throw new Error('Selected O10 lineage must accept the multi-KR Epic only because its exact O10 binding is present and must not invent a product identity');
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
@@ -267,6 +268,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         if(!cpd1Checked||cpd2Checked)throw new Error('Single-KR composition must preserve the exact checked authorization set');
         await page.locator('[data-management-accept]').click();
         await page.locator('.ns-view-nav [data-view="lineage"]').click();
+        await page.locator('[data-lineage-fit]').click();
         const mismatchedAcceptedLineage=await page.locator('#northstar-view').innerText();
         if(!/O10 → KR10\.1/.test(mismatchedAcceptedLineage)||!/PENDING AUTHORIZATION/.test(mismatchedAcceptedLineage)||/CE-EP-23-KR10\.1/.test(mismatchedAcceptedLineage))throw new Error('An accepted Epic bound only to O9/KR9.4 must not be consumed as O10/KR10.1 lineage');
         await page.locator('.ns-view-nav [data-view="management"]').click();
