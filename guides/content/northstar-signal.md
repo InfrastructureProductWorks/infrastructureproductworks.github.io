@@ -56,9 +56,13 @@ Follow the synthetic lineage from Objective and Key Result through decision evid
 
 Use the evidence view to answer: what was proposed, what evidence supported it, what was actually authorized, what work inherited that authorization, and what later evidence measured the result?
 
-In **Recursive Lineage**, review the current selected Objective/KR path and its candidate/bound tuple. **Current lineage** shows only bindings that actually exist. The synthetic **Wrong KR replay**, **Stale revision**, and **Authority expansion** controls mutate the candidate tuple so you can see Northstar fail closed. Choose **Current lineage** afterward to reset the demonstration.
+In **Recursive Lineage**, use the node explorer to inspect the current Objective → Key Result → CAR → contribution edge → Epic → Product → Resource → Assurance path. The current release begins at **Objective**; Strategic Outcome Management is a future capability and is not represented as a current Northstar record.
 
-Direction matters: authority and constraints propagate downward toward delivery; evidence and observations return upward. A current CAR and accepted Epic can make a path **READY FOR ASSURANCE**, but Northstar does not display Assurance evidence as verified until an actual Assurance evidence record is bound. Product context likewise remains **NOT BOUND** until a source-owned product record exists.
+Select any node to focus it. Use the breadcrumb to move back through its ancestry, **Zoom in** to narrow the visible neighborhood, **Zoom out** to reveal more context, and **Fit graph** to restore the full current geometry. On smaller screens the same nodes reflow vertically while retaining selection and drill behavior.
+
+**Current lineage** shows only bindings that actually exist. The synthetic **Wrong KR replay**, **Stale revision**, and **Authority expansion** controls mutate the candidate tuple so you can see the affected node fail closed. Choose **Current lineage** afterward to reset the scenario.
+
+Direction matters: authority and constraints propagate downward from Objective toward delivery; evidence and observations return upward. A current CAR and accepted Epic can make a path **READY FOR ASSURANCE**, but Northstar does not display Assurance evidence as verified until an actual Assurance evidence record is bound. Product and Resource context likewise remain **NOT BOUND** until source-owned records exist.
 
 ## 9 Compose management Epics from authorized KRs
 Switch to **Management** and open **Management Composer**.
