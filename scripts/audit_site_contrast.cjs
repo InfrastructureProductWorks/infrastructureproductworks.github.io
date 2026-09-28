@@ -139,7 +139,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           }
           await page.locator('[data-view="lineage"]').click();
           const currentLineage=await page.locator('#northstar-view').innerText();
-          if(!/LINEAGE INTEGRITY\\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(currentLineage)||!/Outcome measurement\s+Northstar/.test(currentLineage)||!/Evidence integrity\s+Assurance/.test(currentLineage))throw new Error('Northstar recursive lineage must truthfully render the current strategy-to-evidence state');
+          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(currentLineage)||!/Outcome measurement\s+Northstar/.test(currentLineage)||!/Evidence integrity\s+Assurance/.test(currentLineage))throw new Error('Northstar recursive lineage must truthfully render the current strategy-to-evidence state');
           if(/PENDING AUTHORIZATION/.test(currentLineage)&&(/CE-EP-23-KR9\.4/.test(currentLineage)||/AE-0001/.test(currentLineage)))throw new Error('Northstar must not fabricate contribution or Assurance evidence before current authorization exists');
           for(const failure of ['wrongKr','stale','expanded']){
             await page.locator('[data-lineage-scenario="'+failure+'"]').click();
