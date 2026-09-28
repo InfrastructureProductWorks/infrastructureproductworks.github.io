@@ -140,9 +140,9 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           await page.locator('[data-view="lineage"]').click();
           const currentLineage=await page.locator('#northstar-view').innerText();
           if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(currentLineage)||!/Outcome measurement\s+Northstar/.test(currentLineage)||!/Evidence integrity\s+Assurance/.test(currentLineage))throw new Error('Northstar recursive lineage must truthfully render the current strategy-to-evidence state');
-          if(await page.locator('[data-lineage-objective]').count()!==3)throw new Error('Northstar recursive lineage must expose all three approved Objective roots');
+          if(await page.locator('[data-lineage-objective-root]').count()!==3)throw new Error('Northstar recursive lineage must expose all three approved Objective roots');
           if(!/APPROVED OBJECTIVE NODES/.test(currentLineage)||!/OBJECTIVE\s+O9/.test(currentLineage)||/STRATEGIC OUTCOME/.test(currentLineage))throw new Error('Northstar recursive lineage must begin at approved Objective nodes and must not present Strategic Outcome Management in this release');
-          await page.locator('[data-lineage-objective="O10"]').click();
+          await page.locator('[data-lineage-objective-root="O10"]').click();
           if(!/O10\s+Increase reuse of governed infrastructure products/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar Objective roots must be selectable');
           await page.locator('[data-lineage-kr="KR10.2"]').click();
           if(!/KEY RESULT\s+KR10\.2/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar selected Objective must expose selectable child KRs');
@@ -150,7 +150,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           if(!/SELECTED NODE\s+DECISION/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar lineage must drill down from KR to Decision');
           await page.locator('[data-lineage-step="up"]').click();
           if(!/SELECTED NODE\s+KEY RESULT/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar lineage must drill back up to the parent node');
-          await page.locator('[data-lineage-objective="O9"]').click();
+          await page.locator('[data-lineage-objective-root="O9"]').click();
           if(/PENDING AUTHORIZATION/.test(currentLineage)&&(/CE-EP-23-KR9\.4/.test(currentLineage)||/AE-0001/.test(currentLineage)))throw new Error('Northstar must not fabricate contribution or Assurance evidence before current authorization exists');
           for(const failure of ['wrongKr','stale','expanded']){
             await page.locator('[data-lineage-scenario="'+failure+'"]').click();
