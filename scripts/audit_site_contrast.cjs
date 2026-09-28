@@ -236,6 +236,12 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('.ns-view-nav [data-view="lineage"]').click();
         const multiLineage=await page.locator('#northstar-view').innerText();
         if(!/O10 → KR10\.1/.test(multiLineage)||!/LINEAGE INTEGRITY\s+READY FOR ASSURANCE/.test(multiLineage)||!/INFRASTRUCTURE PRODUCT\s+NOT BOUND/.test(multiLineage))throw new Error('Selected O10 lineage must accept the multi-KR Epic only because its exact O10 binding is present and must not invent a product identity');
+        await page.locator('[data-lineage-objective-root="O11"]').click();
+        if(!/O11 → KR11\.1/.test(await page.locator('#northstar-view').innerText()))throw new Error('Lineage browsing must allow read-only navigation to another approved Objective');
+        await page.locator('[data-lineage-objective-root="O10"]').click();
+        await page.locator('[data-lineage-kr="KR10.1"]').click();
+        const restoredMultiLineage=await page.locator('#northstar-view').innerText();
+        if(!/O10 → KR10\.1/.test(restoredMultiLineage)||!/LINEAGE INTEGRITY\s+READY FOR ASSURANCE/.test(restoredMultiLineage))throw new Error('Browsing another Objective must not clear accepted Epic or authorization state');
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const o10Handoff=await page.locator('.ns-handoff-package').innerText();
         if(!/CPD-0001/.test(o10Handoff)||!/CPD-0002/.test(o10Handoff)||!/CAR-0001/.test(o10Handoff)||!/CAR-0002/.test(o10Handoff)||!/Cross-KR Authorized Outcome Epic/.test(o10Handoff))throw new Error('Delivery must receive a multi-KR Epic with every selected Objective/KR/decision/CAR binding preserved');
