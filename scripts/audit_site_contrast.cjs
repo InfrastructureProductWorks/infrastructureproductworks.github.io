@@ -165,6 +165,13 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
               if(await alternate.getAttribute('aria-pressed')!=='true')throw new Error("Rejection scenarios must not override a user's subsequent node focus");
             }
           }
+          await page.locator('[data-lineage-scenario="wrongKr"]').click();
+          await page.locator('[data-lineage-node="assurance"]').click();
+          while(await page.locator('[data-lineage-zoom="in"]:not([disabled])').count())await page.locator('[data-lineage-zoom="in"]:not([disabled])').click();
+          await page.locator('[data-view="okr"]').click();
+          await page.locator('[data-compose-kr="KR10.1"]').click();
+          await page.locator('[data-view="lineage"]').click();
+          if(await page.locator('.ns-geometry-node.rejected').count()!==1||!/KR/.test(await page.locator('.ns-geometry-node.rejected').innerText()))throw new Error('Changing OKR context under an active failure scenario must reveal the newly rejected node');
           await page.locator('[data-lineage-scenario="current"]').click();
           if(await page.locator('.ns-geometry-node.rejected').count())throw new Error('Returning to Current lineage must clear synthetic rejection styling');
           await page.locator('[data-view="okr"]').click();
