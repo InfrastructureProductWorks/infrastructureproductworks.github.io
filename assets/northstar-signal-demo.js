@@ -1235,7 +1235,7 @@
     const nodesHtml=visible.map((node,index)=>'<button type="button" class="ns-lineage-node '+(node.id===state.lineageFocus?'selected ':'')+(evaluation.result==='REJECTED'&&rejectedId===node.id?'rejected':'')+'" data-lineage-node="'+esc(node.id)+'" aria-pressed="'+(node.id===state.lineageFocus?'true':'false')+'"><small>'+esc(node.type)+'</small><strong>'+esc(node.label)+'</strong><span>'+esc(node.note)+'</span><em>'+esc(index<=4?'AUTHORITY / CONSTRAINTS ↓':'EVIDENCE / OBSERVATIONS ↑')+'</em></button>'+(index<visible.length-1?'<b class="ns-lineage-arrow" aria-hidden="true">'+(index<4?'↓':'↑')+'</b>':'')).join('');
     const controls=Object.entries(recursiveLineageScenarios).map(([id,item])=>'<button type="button" data-lineage-scenario="'+esc(id)+'" class="'+(scenario===id?'active':'')+'" aria-pressed="'+(scenario===id?'true':'false')+'">'+esc(item.label)+'</button>').join('');
     const approvedObjectives=okrPortfolio.filter(objective=>objective.approved);
-    const objectiveRoots=approvedObjectives.map(objective=>'<button type="button" data-lineage-objective="'+esc(objective.objectiveId)+'" class="'+(objective.objectiveId===ctx.objective.objectiveId?'active':'')+'" aria-pressed="'+(objective.objectiveId===ctx.objective.objectiveId?'true':'false')+'"><strong>'+esc(objective.objectiveId)+'</strong><span>'+esc(objective.objective)+'</span></button>').join('');
+    const objectiveRoots=approvedObjectives.map(objective=>'<button type="button" data-lineage-objective-root="'+esc(objective.objectiveId)+'" class="'+(objective.objectiveId===ctx.objective.objectiveId?'active':'')+'" aria-pressed="'+(objective.objectiveId===ctx.objective.objectiveId?'true':'false')+'"><strong>'+esc(objective.objectiveId)+'</strong><span>'+esc(objective.objective)+'</span></button>').join('');
     const krRoots=ctx.objective.krs.map(kr=>'<button type="button" data-lineage-kr="'+esc(kr.id)+'" data-lineage-objective="'+esc(ctx.objective.objectiveId)+'" class="'+(kr.id===ctx.kr.id?'active':'')+'" aria-pressed="'+(kr.id===ctx.kr.id?'true':'false')+'"><strong>'+esc(kr.id)+'</strong><span>'+esc(kr.text)+'</span></button>').join('');
     const breadcrumb=nodes.slice(0,focusIndex+1).map(node=>'<button type="button" data-lineage-node="'+esc(node.id)+'">'+esc(node.label)+'</button>').join('<span aria-hidden="true">›</span>');
     return headline('See why the work exists — and why the evidence is trusted.','Choose an approved Objective root, select one of its Key Results, then drill down or back up the exact bounded lineage. Assurance owns recursive evaluation semantics.','RECURSIVE LINEAGE · ASSURANCE')+
@@ -1408,10 +1408,10 @@
       if(objective){selectOkrContext(objective.objectiveId,objective.krs[0].id);state.lineageScenario='current';state.lineageFocus='objective';state.view='lineage';render();}
       return;
     }
-    const lineageObjective=e.target.closest('[data-lineage-objective]');
+    const lineageObjective=e.target.closest('[data-lineage-objective-root]');
     if(lineageObjective&&!e.target.closest('[data-lineage-kr]')){
-      const objective=okrPortfolio.find(item=>item.approved&&item.objectiveId===lineageObjective.dataset.lineageObjective);
-      if(objective){selectOkrContext(objective.objectiveId,objective.krs[0].id);state.lineageScenario='current';state.lineageFocus='objective';state.view='lineage';render();const replacement=document.querySelector('[data-lineage-objective="'+objective.objectiveId+'"]');if(replacement)replacement.focus();}
+      const objective=okrPortfolio.find(item=>item.approved&&item.objectiveId===lineageObjective.dataset.lineageObjectiveRoot);
+      if(objective){selectOkrContext(objective.objectiveId,objective.krs[0].id);state.lineageScenario='current';state.lineageFocus='objective';state.view='lineage';render();const replacement=document.querySelector('[data-lineage-objective-root="'+objective.objectiveId+'"]');if(replacement)replacement.focus();}
       return;
     }
     const lineageKr=e.target.closest('[data-lineage-kr]');
