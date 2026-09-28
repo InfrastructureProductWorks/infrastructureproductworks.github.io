@@ -139,16 +139,24 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           }
           await page.locator('[data-view="lineage"]').click();
           const currentLineage=await page.locator('#northstar-view').innerText();
-          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(currentLineage)||!/Outcome measurement\s+Northstar/.test(currentLineage)||!/Evidence integrity\s+Assurance/.test(currentLineage))throw new Error('Northstar recursive lineage must truthfully render the current strategy-to-evidence state');
-          if(/PENDING AUTHORIZATION/.test(currentLineage)&&(/CE-EP-23-KR9\.4/.test(currentLineage)||/AE-0001/.test(currentLineage)))throw new Error('Northstar must not fabricate contribution or Assurance evidence before current authorization exists');
+          if(!/OBJECTIVE/.test(currentLineage)||/STRATEGIC OUTCOME/.test(currentLineage)||!/LINEAGE INTEGRITY\s+(READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(currentLineage))throw new Error('Recursive geometry must be Objective-rooted and must not expose Strategic Outcome as a current-release node');
+          if(await page.locator('[data-lineage-node]').count()<5)throw new Error('Recursive geometry must expose selectable lineage nodes');
+          await page.locator('[data-lineage-node="kr"]').click();
+          if(!/KEY RESULT/.test(await page.locator('.ns-lineage-proof').innerText()))throw new Error('Selecting a KR node must focus its details');
+          await page.locator('[data-lineage-zoom="in"]').click();
+          const narrowCount=await page.locator('.ns-geometry-node').count();
+          await page.locator('[data-lineage-zoom="out"]').click();
+          const widerCount=await page.locator('.ns-geometry-node').count();
+          if(widerCount<narrowCount)throw new Error('Zoom out must reveal equal or greater recursive context');
+          await page.locator('[data-lineage-fit]').click();
+          if(await page.locator('.ns-geometry-node').count()<8)throw new Error('Fit graph must restore the full Objective-to-Assurance geometry');
           for(const failure of ['wrongKr','stale','expanded']){
             await page.locator('[data-lineage-scenario="'+failure+'"]').click();
             const failed=await page.locator('#northstar-view').innerText();
-            if(!/LINEAGE INTEGRITY\s+REJECTED/.test(failed)||!/Fail closed\./.test(failed))throw new Error('Northstar recursive lineage scenario '+failure+' must fail closed');
+            if(!/LINEAGE INTEGRITY\s+REJECTED/.test(failed)||!/Fail closed\./.test(failed)||await page.locator('.ns-geometry-node.rejected').count()!==1)throw new Error('Recursive geometry scenario '+failure+' must visibly reject the affected node');
           }
           await page.locator('[data-lineage-scenario="current"]').click();
-          const recovered=await page.locator('#northstar-view').innerText();
-          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(recovered))throw new Error('Northstar recursive lineage must recover to the truthful current state after negative tests');
+          if(await page.locator('.ns-geometry-node.rejected').count())throw new Error('Returning to Current lineage must clear synthetic rejection styling');
           await page.locator('[data-view="okr"]').click();
           await page.locator('[data-compose-kr="KR10.1"]').click();
           await page.locator('[data-view="lineage"]').click();
