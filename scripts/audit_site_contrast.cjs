@@ -140,7 +140,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           await page.locator('[data-view="lineage"]').click();
           const currentLineage=await page.locator('#northstar-view').innerText();
           if(!/OBJECTIVE/.test(currentLineage)||/STRATEGIC OUTCOME/.test(currentLineage)||!/LINEAGE INTEGRITY\s+(READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(currentLineage))throw new Error('Recursive geometry must be Objective-rooted and must not expose Strategic Outcome as a current-release node');
-          if(await page.locator('[data-lineage-node]').count()<5)throw new Error('Recursive geometry must expose selectable lineage nodes');
+          if(await page.locator('.ns-geometry-node').count()!==3)throw new Error('Recursive geometry initial Objective focus must expose its three-node neighborhood');
           await page.locator('[data-lineage-node="kr"]').click();
           if(!/KEY RESULT/.test(await page.locator('.ns-lineage-proof').innerText()))throw new Error('Selecting a KR node must focus its details');
           await page.locator('[data-lineage-zoom="in"]').click();
