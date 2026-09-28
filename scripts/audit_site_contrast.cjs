@@ -236,6 +236,12 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('.ns-view-nav [data-view="lineage"]').click();
         const multiLineage=await page.locator('#northstar-view').innerText();
         if(!/O10 → KR10\.1/.test(multiLineage)||!/LINEAGE INTEGRITY\s+READY FOR ASSURANCE/.test(multiLineage)||!/INFRASTRUCTURE PRODUCT\s+NOT BOUND/.test(multiLineage))throw new Error('Selected O10 lineage must accept the multi-KR Epic only because its exact O10 binding is present and must not invent a product identity');
+        const acceptedBeforeBrowse=await page.locator('#northstar-view').innerText();
+        await page.locator('[data-lineage-objective-root="O11"]').click();
+        await page.locator('[data-lineage-objective-root="O10"]').click();
+        await page.locator('[data-lineage-kr="KR10.1"]').click();
+        const acceptedAfterBrowse=await page.locator('#northstar-view').innerText();
+        if(!/LINEAGE INTEGRITY\s+READY FOR ASSURANCE/.test(acceptedAfterBrowse)||!/EP-CANDIDATE-MULTI-01/.test(acceptedAfterBrowse))throw new Error('Browsing other Objective/KR roots must not invalidate an accepted Epic or its exact lineage');
         await page.locator('[data-lineage-objective-root="O11"]').click();
         if(!/O11 → KR11\.1/.test(await page.locator('#northstar-view').innerText()))throw new Error('Lineage browsing must allow read-only navigation to another approved Objective');
         await page.locator('[data-lineage-objective-root="O10"]').click();
