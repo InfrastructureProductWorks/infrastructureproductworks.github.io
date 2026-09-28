@@ -218,7 +218,8 @@
     lineageScenario:'current',
     lineageFocus:'objective',
     lineageDepth:2,
-    lineageScenarioFocusApplied:null
+    lineageScenarioFocusApplied:null,
+    authorizationReceiptGeneration:0
   };
   let trailOpener = null;
   let composerOpener = null;
@@ -965,6 +966,7 @@
       const decision=authorizationDecision(item);
       const pkg=authorizationPackage(item,decision);
       state.authorizationDecisions[id]=decision==='APPROVE CONDITIONALLY'?'APPROVE CONDITIONALLY':'APPROVED';
+      state.authorizationReceiptGeneration+=1;
       state.authorizationReceipts[id]={
         packageId:pkg.packageId,
         evidenceDigest:pkg.evidenceDigest,
@@ -972,7 +974,8 @@
         reviewDate:pkg.reviewDate,
         decision:state.authorizationDecisions[id],
         carId:item.carId||('CAR-'+item.decisionId.split('-')[1]),
-        confirmed:true
+        confirmed:true,
+        generation:state.authorizationReceiptGeneration
       };
     });
     ids.forEach(invalidateManagementForAuthorization);
@@ -1164,9 +1167,9 @@
     const authorized=Boolean(item&&record&&record.authorized&&receipt);
     const exactAcceptedBinding=authorized&&state.acceptedEpic&&Array.isArray(state.acceptedEpic.authorizationBindings)?state.acceptedEpic.authorizationBindings.find(binding=>binding.objectiveId===ctx.objective.objectiveId&&binding.krId===ctx.kr.id&&binding.decisionId===item.decisionId&&binding.carId===record.carId&&binding.packageId===receipt.packageId&&binding.evidenceDigest===receipt.evidenceDigest):null;
     const acceptedForSelected=Boolean(exactAcceptedBinding&&managementAcceptanceCurrent());
-    const tuple={objectiveId:ctx.objective.objectiveId,objectiveText:ctx.objective.title||ctx.objective.objective||ctx.objective.text||'Selected Objective',krId:ctx.kr.id,krText:ctx.kr.text,decisionId:item?.decisionId||'NO DECISION',carId:authorized?record.carId:'NO CURRENT CAR',carRevision:receipt?.evidenceDigest||'NO CURRENT REVISION',epic:acceptedForSelected?state.acceptedEpic.epic:'NO AUTHORIZED EPIC',scope:item?.scope||'NO AUTHORIZED SCOPE',product:'NOT BOUND',resource:'NOT BOUND',assurance:'NOT EVALUATED',authorized:acceptedForSelected,assuranceBound:false};
+    const tuple={objectiveId:ctx.objective.objectiveId,objectiveText:ctx.objective.title||ctx.objective.objective||ctx.objective.text||'Selected Objective',krId:ctx.kr.id,krText:ctx.kr.text,decisionId:item?.decisionId||'NO DECISION',carId:authorized?record.carId:'NO CURRENT CAR',carRevision:receipt?.evidenceDigest||'NO CURRENT REVISION',receiptGeneration:receipt?.generation||0,epic:acceptedForSelected?state.acceptedEpic.epic:'NO AUTHORIZED EPIC',scope:item?.scope||'NO AUTHORIZED SCOPE',product:'NOT BOUND',resource:'NOT BOUND',assurance:'NOT EVALUATED',authorized:acceptedForSelected,assuranceBound:false};
     tuple.edge=acceptedForSelected?'CE-'+tuple.epic+'-'+tuple.krId:'NO CURRENT CONTRIBUTION EDGE';
-    tuple.digest=stableDigest([tuple.objectiveId,tuple.krId,tuple.decisionId,tuple.carId,tuple.carRevision,tuple.epic,tuple.edge,tuple.scope,tuple.product,tuple.resource,tuple.assurance].join('|'));
+    tuple.digest=stableDigest([tuple.objectiveId,tuple.krId,tuple.decisionId,tuple.carId,tuple.carRevision,tuple.receiptGeneration,tuple.epic,tuple.edge,tuple.scope,tuple.product,tuple.resource,tuple.assurance].join('|'));
     return tuple;
   }
   function recursiveLineageCandidate(bound,scenario){const c={...bound};if(scenario==='wrongKr')c.krId=bound.krId==='KR10.1'?'KR9.4':'KR10.1';if(scenario==='stale')c.carRevision=bound.carRevision==='NO CURRENT REVISION'?'STALE-REVISION':bound.carRevision+'-stale';if(scenario==='expanded')c.scope=bound.scope+' + IAM administrator';c.edge=c.epic!=='NO AUTHORIZED EPIC'?'CE-'+c.epic+'-'+c.krId:bound.edge;c.digest=stableDigest([c.objectiveId,c.krId,c.decisionId,c.carId,c.carRevision,c.epic,c.edge,c.scope,c.product,c.resource,c.assurance].join('|'));return c;}
