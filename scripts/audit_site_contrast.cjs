@@ -166,6 +166,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
             }
           }
           await page.locator('[data-lineage-scenario="wrongKr"]').click();
+          await page.locator('[data-lineage-fit]').click();
           await page.locator('[data-lineage-node="assurance"]').click();
           while(await page.locator('[data-lineage-zoom="in"]:not([disabled])').count())await page.locator('[data-lineage-zoom="in"]:not([disabled])').click();
           await page.locator('[data-view="okr"]').click();
