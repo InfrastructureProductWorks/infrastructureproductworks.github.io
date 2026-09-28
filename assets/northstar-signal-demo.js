@@ -522,6 +522,7 @@
       state.managementProposalDigest=null;
       state.managementSelectedDecisionIds=[];
       state.acceptedEpic=null;
+      state.lineageScenarioFocusApplied=null;
       invalidateHandoff();
     }
   }
