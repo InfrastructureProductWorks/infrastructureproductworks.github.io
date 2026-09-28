@@ -148,7 +148,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           }
           await page.locator('[data-lineage-scenario="current"]').click();
           const recovered=await page.locator('#northstar-view').innerText();
-          if(!/LINEAGE INTEGRITY\\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(recovered))throw new Error('Northstar recursive lineage must recover to the truthful current state after negative tests');
+          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(recovered))throw new Error('Northstar recursive lineage must recover to the truthful current state after negative tests');
           await page.locator('[data-view="okr"]').click();
           await page.locator('[data-compose-kr="KR10.1"]').click();
           await page.locator('[data-view="lineage"]').click();
