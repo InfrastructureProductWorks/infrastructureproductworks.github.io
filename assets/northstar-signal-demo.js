@@ -1210,7 +1210,7 @@
   function recursiveLineageNodes(candidate,ctx){
     return [
       {id:'objective',type:'OBJECTIVE',label:candidate.objectiveId,note:ctx.objective.objective},
-      {id:'kr',type:'KEY RESULT',label:candidate.krId,note:ctx.kr.text},
+      {id:'kr',type:'KEY RESULT',label:candidate.krId,note:state.lineageScenario==='wrongKr'?'Candidate replay target · selected KR definition is not inherited across coordinates':ctx.kr.text},
       {id:'decision',type:'DECISION',label:candidate.decisionId,note:'Selected decision context'},
       {id:'car',type:'CAPABILITY AUTHORIZATION',label:candidate.carId,note:candidate.carRevision},
       {id:'edge',type:'CONTRIBUTION EDGE',label:candidate.edge,note:candidate.epic+' → '+candidate.krId},
