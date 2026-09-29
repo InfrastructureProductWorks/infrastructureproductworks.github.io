@@ -491,7 +491,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('.ns-view-nav [data-view="lineage"]').click();
         await page.locator('[data-lineage-objective-root="O9"]').click();
         await page.locator('[data-lineage-kr="KR9.4"]').click();
-        await page.locator('[data-lineage-context-action="evidence"]').click();
+        await page.locator('.ns-view-nav [data-view="evidence"]').click();
         if(!/Management acceptance binding/.test(await page.locator('#northstar-view').innerText()))throw new Error('Returning to O9 evidence must recover the accepted Epic from its own saved source binding');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-select="CPD-0002"]').click();
