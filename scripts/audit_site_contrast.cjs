@@ -317,7 +317,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-view="management"]').click();
         const preservedComposer=await page.locator('.ns-management-composer').innerText();
         if(!/MANAGEMENT ACCEPTED/.test(preservedComposer)||!/CPD-0001/.test(preservedComposer)||!/CAR-0001/.test(preservedComposer)||/AUTHORIZATION REQUIRED/.test(preservedComposer))throw new Error('Management Composer must remain available from accepted source bindings even when the page-context authorization is no longer current');
-        if(!/ACTIVE/.test(o10Feedback)||!/ON TRACK/.test(o10Feedback)||/READY/.test(o10Feedback)||/UNKNOWN/.test(o10Feedback))throw new Error('Delivery feedback must use the selected O10/KR10.1 signals rather than the KR9.4 scenario');
+        if(!/MULTI-SOURCE/.test(o10Feedback)||!/MIXED/.test(o10Feedback)||/Delivery progress\s+ACTIVE/.test(o10Feedback)||/Benefit achieved\s+ON TRACK/.test(o10Feedback))throw new Error('Multi-KR handoff feedback must aggregate the saved package bindings rather than borrow only the currently browsed O10/KR10.1 signals');
         await page.locator('[data-view="outcome"]').click();
         const o10Outcome=await page.locator('#northstar-view').innerText();
         if(!/O10 → KR10.1/.test(o10Outcome)||!/ACTIVE/.test(o10Outcome)||!/ON TRACK/.test(o10Outcome)||/KR9.4 authorization/.test(o10Outcome))throw new Error('Outcome feedback must remain bound to the selected O10/KR10.1 context');
