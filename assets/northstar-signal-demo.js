@@ -221,7 +221,9 @@
     lineageScenario:'current',
     lineageFocus:'objective',
     lineageObjective:model.objectiveId,
-    lineageKr:model.krId
+    lineageKr:model.krId,
+    lineageQuestion:'',
+    lineageAnswer:''
   };
   let trailOpener = null;
   let composerOpener = null;
@@ -570,6 +572,8 @@
     state.lineageObjective=objective.objectiveId;
     state.lineageKr=kr.id;
     state.lineageScenario='current';
+    state.lineageQuestion='';
+    state.lineageAnswer='';
     return true;
   }
 
@@ -1277,6 +1281,87 @@
     ];
   }
 
+  function lineageLeadershipInterpretation(ctx,bound,candidate,evaluation,node){
+    const item=ctx.authorization;
+    const record=item?authorizationRecord(item):null;
+    const owner=item?.owner||ctx.kr.owner||model.leader;
+    const authorized=Boolean(record&&record.authorized);
+    const stale=state.lineageScenario==='stale';
+    const rejected=evaluation.result==='REJECTED';
+    const meaningByNode={
+      objective:'This is the approved leadership Objective this lineage supports.',
+      kr:'This is the measurable Key Result used to judge whether the work is contributing to the Objective.',
+      decision:item?'This is the accountable decision that determined how the selected outcome may proceed.':'No authorization decision is bound to this Key Result yet.',
+      car:authorized?'This CAR is the exact bounded product-intent authorization for this path. It does not grant funding, staffing, risk acceptance, deployment or provisioning authority.':'No current Capability Authorization Record is available for this path.',
+      edge:bound.edge!=='NO CURRENT CONTRIBUTION EDGE'?'This contribution edge proves how accepted work is tied back to the selected Key Result.':'No accepted contribution edge exists yet.',
+      epic:bound.epic!=='NO AUTHORIZED EPIC'?'This is accepted management work derived from the authorized outcome.':'No accepted Epic is currently bound to this authorization.',
+      product:bound.product!=='NOT BOUND'?'This is the governed infrastructure product bound to the accepted work.':'No infrastructure product identity is bound yet.',
+      assurance:bound.assurance!=='NOT EVALUATED'?'This is the Assurance observation supporting trust in the downstream state.':'Assurance has not evaluated a bound downstream evidence record yet.'
+    };
+    let attention='No immediate exception is shown for this node.';
+    let next='Continue following the lineage or inspect the supporting record.';
+    if(rejected){
+      attention=evaluation.reason;
+      next=state.lineageScenario==='stale'
+        ? 'Compare the candidate revision with the current CAR before allowing downstream reliance.'
+        : state.lineageScenario==='wrongKr'
+          ? 'Return the candidate to the exact authorized Key Result coordinates.'
+          : 'Narrow the proposed child scope so it does not exceed the parent authorization.';
+    }else if(authorized&&!bound.authorized){
+      attention='Product intent is authorized, but the path does not yet contain accepted Epic lineage for downstream Assurance evaluation.';
+      next='Review the management decomposition and accept bounded work before downstream handoff.';
+    }else if(evaluation.result==='READY FOR ASSURANCE'){
+      attention='The strategy, authorization and accepted work are exact, but no Assurance evidence record is bound yet.';
+      next='Request or review the downstream Assurance evidence before treating the path as verified.';
+    }else if(!item){
+      attention='This Key Result has no bound authorization decision.';
+      next='Establish an explicit decision before representing downstream product-intent authority.';
+    }
+    const why=item
+      ? 'This path connects '+ctx.objective.objectiveId+' to '+ctx.kr.id+' so leadership can see whether the decision, authorization and downstream work remain tied to the intended outcome.'
+      : 'This path shows where the evidence chain stops so leadership can see what is missing rather than infer authority that does not exist.';
+    return {
+      meaning:meaningByNode[node.id]||node.note,
+      why,
+      attention,
+      owner,
+      next,
+      status:rejected?'NEEDS ATTENTION':evaluation.result,
+      tone:rejected?'red':evaluation.tone
+    };
+  }
+
+  function lineageQuestionAnswer(question,ctx,bound,candidate,evaluation,node,interpretation){
+    const q=String(question||'').trim();
+    const lower=q.toLowerCase();
+    if(!q)return '';
+    if(/why|matter|purpose|important/.test(lower))return interpretation.why;
+    if(/stale|revision|digest|changed|mismatch/.test(lower)){
+      if(state.lineageScenario==='stale')return 'The candidate CAR revision does not match the current bound revision. Northstar rejects that substitution so prior approval cannot silently carry forward. The next step is to compare the current authorization package before downstream reliance.';
+      return candidate.carRevision===bound.carRevision?'The candidate is using the current bound CAR revision for this path.':'The candidate revision differs from the bound CAR revision, so the lineage must fail closed.';
+    }
+    if(/depend|affected|impact|downstream|block/.test(lower))return bound.epic!=='NO AUTHORIZED EPIC'
+      ? 'The accepted Epic '+bound.epic+' is the current downstream work explicitly bound to '+ctx.objective.objectiveId+' → '+ctx.kr.id+'. Product and Assurance records remain separate and must be bound independently.'
+      : 'There is no accepted Epic contribution currently bound to this path, so Northstar shows no downstream work as authorized by this lineage.';
+    if(/who|owner|accountable/.test(lower))return interpretation.owner+' is the accountable role shown for this selected path. Northstar preserves that accountability separately from technical implementation ownership.';
+    if(/next|action|do now|what should/.test(lower))return interpretation.next;
+    if(/scope|authority|allow|permission|authorize/.test(lower))return 'The displayed CAR authorizes only the bounded product intent and scope shown in this lineage. It does not grant funding, staffing, procurement, risk acceptance, deployment, provisioning or general cloud-execution authority.';
+    if(/objective|key result|kr|outcome/.test(lower))return 'This node is traced to '+ctx.objective.objectiveId+' → '+ctx.kr.id+'. The Objective expresses the leadership outcome; the Key Result names the measurable contribution target. Delivery completion does not independently prove the Key Result.';
+    return interpretation.meaning+' '+interpretation.attention+' '+interpretation.next;
+  }
+
+  function lineageQuickQuestions(node,evaluation){
+    const questions=[
+      ['why','Why does this matter?'],
+      ['risk',evaluation.result==='REJECTED'?'What is wrong here?':'What needs attention?'],
+      ['impact','What depends on this?'],
+      ['next','What should happen next?'],
+      ['authority','What authority does this grant?']
+    ];
+    if(node.id==='car')questions.splice(1,0,['revision','Is this the current revision?']);
+    return questions;
+  }
+
   function recursiveLineage(){
     const scenario=recursiveLineageScenarios[state.lineageScenario]?state.lineageScenario:'current';
     const ctx=lineageOkrContext();
@@ -1301,13 +1386,36 @@
       '<div class="ns-lineage-controls" aria-label="Synthetic lineage scenarios">'+controls+'</div>'+
       '<div class="ns-lineage-toolbar"><div class="ns-lineage-breadcrumb" aria-label="Lineage breadcrumb">'+breadcrumb+'</div><div class="ns-lineage-actions"><button type="button" data-lineage-step="up" '+(focusIndex===0?'disabled':'')+'>Drill up</button><button type="button" data-lineage-step="down" '+(focusIndex===nodes.length-1?'disabled':'')+'>Drill down</button><button type="button" data-lineage-full>Show full path</button></div></div>'+
       '<div class="ns-lineage-layout"><section><div class="ns-lineage-flow" aria-label="Selectable recursive strategy to assurance lineage">'+nodesHtml+'</div></section>'+
-      '<aside class="ns-lineage-proof"><small>SELECTED NODE</small><h3>'+esc(nodes[focusIndex].type)+' · '+esc(nodes[focusIndex].label)+'</h3><p>'+esc(nodes[focusIndex].note)+'</p><small>CANDIDATE PATH TUPLE</small><h3>'+esc(candidate.objectiveId)+' → '+esc(candidate.krId)+' → '+esc(candidate.decisionId)+' → '+esc(candidate.carId)+' → '+esc(candidate.edge)+'</h3>'+kv([
-        ['Candidate digest','<code>'+esc(candidate.digest)+'</code>'],
-        ['Bound digest','<code>'+esc(bound.digest)+'</code>'],
-        ['Outcome measurement','Northstar · separate measurement contract'],
-        ['Evidence integrity','Assurance · recursive geometry'],
-        ['Authority rule','Child scope may remain equal or narrow; never broaden']
-      ])+'<div class="ns-boundary-box"><strong>Current release:</strong> Northstar begins with approved Objectives and their Key Results. Strategic Outcome Management is not part of this release.</div></aside></div>'+
+      '<aside class="ns-lineage-proof">'+
+        (()=>{const node=nodes[focusIndex],meaning=lineageLeadershipInterpretation(ctx,bound,candidate,evaluation,node),questions=lineageQuickQuestions(node,evaluation),answer=state.lineageAnswer||'';return ''+
+        '<div class="ns-leader-meaning '+esc(meaning.tone)+'"><div class="ns-leader-meaning-head"><div><small>WHAT THIS MEANS</small><h3>'+esc(node.type)+' · '+esc(node.label)+'</h3></div>'+badge(meaning.status,meaning.tone==='red'?'amber':meaning.tone==='green'?'green':'amber')+'</div>'+
+        '<p class="ns-leader-summary">'+esc(meaning.meaning)+'</p>'+
+        '<div class="ns-leader-meaning-grid">'+
+          '<article><small>WHY IT MATTERS</small><p>'+esc(meaning.why)+'</p></article>'+
+          '<article><small>WHAT NEEDS ATTENTION</small><p>'+esc(meaning.attention)+'</p></article>'+
+          '<article><small>ACCOUNTABLE ROLE</small><p>'+esc(meaning.owner)+'</p></article>'+
+          '<article><small>WHAT HAPPENS NEXT</small><p>'+esc(meaning.next)+'</p></article>'+
+        '</div></div>'+
+        '<section class="ns-lineage-ask" aria-label="Ask Northstar about selected lineage node"><div class="ns-lineage-ask-head"><div><small>ASK NORTHSTAR</small><strong>Ask about this node in plain language</strong></div><span>Synthetic guided explanation · no approval authority</span></div>'+
+          '<div class="ns-lineage-question-chips">'+questions.map(([id,label])=>'<button type="button" data-lineage-question="'+esc(id)+'" data-lineage-question-text="'+esc(label)+'">'+esc(label)+'</button>').join('')+'</div>'+
+          '<div class="ns-lineage-ask-form"><input type="text" data-lineage-ask-input aria-label="Ask Northstar a question" placeholder="Example: What work depends on this CAR?" value="'+esc(state.lineageQuestion)+'"><button type="button" data-lineage-ask-submit>Ask</button></div>'+
+          (answer?'<div class="ns-lineage-answer" role="status"><small>NORTHSTAR EXPLAINS</small><p>'+esc(answer)+'</p></div>':'')+
+        '</section>'+
+        '<div class="ns-lineage-decision-actions" aria-label="Actions for selected lineage node">'+
+          '<button type="button" data-lineage-context-action="leadership">Open leadership view</button>'+
+          (ctx.authorization?'<button type="button" data-lineage-context-action="decision">Open decision brief</button><button type="button" class="primary" data-lineage-context-action="authorization">Open authorization record</button>':'')+
+          (node.id==='epic'||node.id==='edge'?'<button type="button" data-lineage-context-action="management">Review management work</button>':'')+
+          (node.id==='assurance'||node.id==='product'?'<button type="button" data-lineage-context-action="evidence">Review evidence</button>':'')+
+        '</div>'+
+        '<details class="ns-lineage-technical"><summary>View technical proof</summary><div class="ns-lineage-technical-body"><small>CANDIDATE PATH TUPLE</small><h3>'+esc(candidate.objectiveId)+' → '+esc(candidate.krId)+' → '+esc(candidate.decisionId)+' → '+esc(candidate.carId)+' → '+esc(candidate.edge)+'</h3>'+kv([
+          ['Candidate digest','<code>'+esc(candidate.digest)+'</code>'],
+          ['Bound digest','<code>'+esc(bound.digest)+'</code>'],
+          ['Outcome measurement','Northstar · separate measurement contract'],
+          ['Evidence integrity','Assurance · recursive geometry'],
+          ['Authority rule','Child scope may remain equal or narrow; never broaden']
+        ])+'<div class="ns-boundary-box"><strong>Current release:</strong> Northstar begins with approved Objectives and their Key Results. Strategic Outcome Management is not part of this release.</div></div></details>'+
+        '';})()+
+      '</aside></div>'+
       (evaluation.result==='REJECTED'?'<div class="ns-lineage-rejection" role="status"><strong>Fail closed.</strong> '+esc(evaluation.reason)+'</div>':evaluation.result==='VERIFIED'?'<div class="ns-lineage-success" role="status"><strong>Verified path.</strong> The selected strategy, authorization, contribution, accepted Epic and evidence remain attributable to one bounded lineage.</div>':evaluation.result==='READY FOR ASSURANCE'?'<div class="ns-lineage-pending" role="status"><strong>Ready for Assurance evaluation.</strong> The upstream lineage is exact, but no Assurance evidence record is bound yet.</div>':'<div class="ns-lineage-pending" role="status"><strong>Awaiting exact authorization and accepted work.</strong> No downstream Assurance evidence is claimed for this selected path.</div>');
   }
 
@@ -1475,17 +1583,42 @@
       setLineageContext(lineageKr.dataset.lineageObjective,lineageKr.dataset.lineageKr);state.lineageFocus='kr';state.view='lineage';render();const replacement=document.querySelector('[data-lineage-kr="'+lineageKr.dataset.lineageKr+'"]');if(replacement)replacement.focus();return;
     }
     const lineageNode=e.target.closest('[data-lineage-node]');
-    if(lineageNode){state.lineageFocus=lineageNode.dataset.lineageNode;state.view='lineage';render();const replacement=document.querySelector('.ns-lineage-node[data-lineage-node="'+state.lineageFocus+'"]')||document.querySelector('.ns-lineage-breadcrumb [data-lineage-node="'+state.lineageFocus+'"]');if(replacement)replacement.focus();return;}
+    if(lineageNode){state.lineageFocus=lineageNode.dataset.lineageNode;state.lineageQuestion='';state.lineageAnswer='';state.view='lineage';render();const replacement=document.querySelector('.ns-lineage-node[data-lineage-node="'+state.lineageFocus+'"]')||document.querySelector('.ns-lineage-breadcrumb [data-lineage-node="'+state.lineageFocus+'"]');if(replacement)replacement.focus();return;}
     const lineageStep=e.target.closest('[data-lineage-step]');
     if(lineageStep){
       const ids=['objective','kr','decision','car','edge','epic','product','assurance'];
       let index=Math.max(0,ids.indexOf(state.lineageFocus));
       index=Math.max(0,Math.min(ids.length-1,index+(lineageStep.dataset.lineageStep==='down'?1:-1)));
-      state.lineageFocus=ids[index];state.view='lineage';render();const replacement=document.querySelector('[data-lineage-step="'+lineageStep.dataset.lineageStep+'"]:not(:disabled)')||document.querySelector('.ns-lineage-node[data-lineage-node="'+state.lineageFocus+'"]');if(replacement)replacement.focus();return;
+      state.lineageFocus=ids[index];state.lineageQuestion='';state.lineageAnswer='';state.view='lineage';render();const replacement=document.querySelector('[data-lineage-step="'+lineageStep.dataset.lineageStep+'"]:not(:disabled)')||document.querySelector('.ns-lineage-node[data-lineage-node="'+state.lineageFocus+'"]');if(replacement)replacement.focus();return;
     }
-    if(e.target.closest('[data-lineage-full]')){state.lineageFocus='assurance';state.view='lineage';render();const replacement=document.querySelector('[data-lineage-full]');if(replacement)replacement.focus();return;}
+    if(e.target.closest('[data-lineage-full]')){state.lineageFocus='assurance';state.lineageQuestion='';state.lineageAnswer='';state.view='lineage';render();const replacement=document.querySelector('[data-lineage-full]');if(replacement)replacement.focus();return;}
+    const lineageQuestion=e.target.closest('[data-lineage-question]');
+    if(lineageQuestion){
+      const ctx=lineageOkrContext(),bound=recursiveLineageBoundTuple(),candidate=recursiveLineageCandidate(bound,state.lineageScenario),evaluation=recursiveLineageEvaluation(bound,candidate,state.lineageScenario),nodes=recursiveLineageNodes(candidate,ctx),node=nodes.find(item=>item.id===state.lineageFocus)||nodes[0],meaning=lineageLeadershipInterpretation(ctx,bound,candidate,evaluation,node);
+      const question=lineageQuestion.dataset.lineageQuestionText||lineageQuestion.textContent||'';
+      state.lineageQuestion=question;
+      state.lineageAnswer=lineageQuestionAnswer(question,ctx,bound,candidate,evaluation,node,meaning);
+      state.view='lineage';render();const input=document.querySelector('[data-lineage-ask-input]');if(input)input.focus();return;
+    }
+    if(e.target.closest('[data-lineage-ask-submit]')){
+      const input=document.querySelector('[data-lineage-ask-input]');
+      const question=input?input.value:'';
+      const ctx=lineageOkrContext(),bound=recursiveLineageBoundTuple(),candidate=recursiveLineageCandidate(bound,state.lineageScenario),evaluation=recursiveLineageEvaluation(bound,candidate,state.lineageScenario),nodes=recursiveLineageNodes(candidate,ctx),node=nodes.find(item=>item.id===state.lineageFocus)||nodes[0],meaning=lineageLeadershipInterpretation(ctx,bound,candidate,evaluation,node);
+      state.lineageQuestion=question;
+      state.lineageAnswer=lineageQuestionAnswer(question,ctx,bound,candidate,evaluation,node,meaning);
+      state.view='lineage';render();const replacement=document.querySelector('[data-lineage-ask-input]');if(replacement){replacement.focus();replacement.setSelectionRange(replacement.value.length,replacement.value.length);}return;
+    }
+    const lineageAction=e.target.closest('[data-lineage-context-action]');
+    if(lineageAction){
+      const ctx=lineageOkrContext(),action=lineageAction.dataset.lineageContextAction;
+      selectOkrContext(ctx.objective.objectiveId,ctx.kr.id);
+      if(action==='authorization'&&ctx.authorization)state.selectedAuthorizationId=ctx.authorization.decisionId;
+      state.role=action==='management'?'manager':'leader';
+      state.view=action==='authorization'?'authorization':action;
+      render();return;
+    }
     const lineageScenario=e.target.closest('[data-lineage-scenario]');
-    if(lineageScenario){const next=lineageScenario.dataset.lineageScenario;if(recursiveLineageScenarios[next]){state.lineageScenario=next;state.view='lineage';render();}return;}
+    if(lineageScenario){const next=lineageScenario.dataset.lineageScenario;if(recursiveLineageScenarios[next]){state.lineageScenario=next;state.lineageQuestion='';state.lineageAnswer='';state.view='lineage';render();}return;}
     const view=e.target.closest('[data-view]');
     if(view){
       if(view.dataset.view==='lineage'){state.lineageObjective=state.selectedObjective;state.lineageKr=state.selectedKr;state.lineageFocus='objective';state.lineageScenario='current';}
