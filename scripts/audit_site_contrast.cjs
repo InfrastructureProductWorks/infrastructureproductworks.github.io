@@ -533,8 +533,10 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-lineage-objective-open="O10"]').click();
         const goldenLineage=await page.locator('#northstar-view').innerText();
         if(!/O10/.test(goldenLineage)||!/KR10\.1/.test(goldenLineage)||!/CAPABILITY AUTHORIZATION\s+CAR-0002/.test(goldenLineage)||!/CURRENT CAR\s+·\s+CAR-0002/.test(goldenLineage))throw new Error('Northstar CAR golden path must visibly connect O10 to KR10.1 and CAR-0002');
-        if(!/LINEAGE INTEGRITY\s+EPIC ACCEPTANCE PENDING/.test(goldenLineage)||!/CAPABILITY AUTHORIZATION\s+·\s+CAR-0002[\s\S]*AUTHORIZED/.test(goldenLineage)||!/Product intent is authorized by CAR-0002/.test(goldenLineage))throw new Error('A current CAR must remain visibly AUTHORIZED while incomplete downstream lineage is labeled Epic acceptance pending');
-        if(/CAPABILITY AUTHORIZATION\s+·\s+CAR-0002[\s\S]{0,500}PENDING AUTHORIZATION/.test(goldenLineage))throw new Error('Downstream Epic state must never relabel an authorized CAR as pending authorization');
+        if(!/LINEAGE INTEGRITY\s+EPIC ACCEPTANCE PENDING/.test(goldenLineage)||!/Product intent is authorized by CAR-0002/.test(goldenLineage))throw new Error('A current CAR must preserve authorization while incomplete downstream lineage is labeled Epic acceptance pending');
+        await page.locator('[data-lineage-node="car"]').click();
+        const carInterpretation=await page.locator('.ns-leader-meaning').innerText();
+        if(!/CAPABILITY AUTHORIZATION\s+·\s+CAR-0002/.test(carInterpretation)||!/AUTHORIZED/.test(carInterpretation)||/PENDING AUTHORIZATION|EPIC ACCEPTANCE PENDING|AUTHORIZATION REQUIRED/.test(carInterpretation))throw new Error('The CAR interpretation badge itself must display AUTHORIZED independently of downstream Epic acceptance state');
         await page.locator('[data-view="okr"]').click();
         const composer=page.locator('[data-open-composer]').first();
         if(await composer.count()!==1||!await composer.isVisible())throw new Error('Northstar OKR Composer trigger must be visible');
