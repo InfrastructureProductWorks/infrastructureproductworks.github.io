@@ -156,6 +156,15 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           if(!/does not match the current bound revision/.test(await page.locator('#northstar-view').innerText()))throw new Error('Specific stale-revision questions must receive the actionable stale-revision explanation');
           await page.locator('[data-lineage-objective-root="O11"]').click();
           if(await page.locator('.ns-lineage-answer').count())throw new Error('Ask Northstar answer must clear when Objective or KR browsing context changes');
+          await page.locator('[data-lineage-objective-root="O10"]').click();
+          await page.locator('[data-lineage-kr="KR10.1"]').click();
+          await page.locator('[data-lineage-scenario="wrongKr"]').click();
+          await page.locator('[data-lineage-ask-input]').fill('Why is this the wrong KR?');
+          await page.locator('[data-lineage-ask-submit]').click();
+          if(!/rejects that cross-KR replay/.test(await page.locator('#northstar-view').innerText()))throw new Error('Wrong-KR questions must explain the cross-KR replay failure and corrective action');
+          await page.locator('[data-view="okr"]').click();
+          await page.locator('[data-lineage-objective-open="O10"]').click();
+          if(await page.locator('.ns-lineage-answer').count())throw new Error('Re-entering lineage from a different selected context must clear prior Ask Northstar answers');
           if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(currentLineage))throw new Error('Northstar recursive lineage must truthfully render the current strategy-to-evidence state');
           await page.locator('.ns-lineage-technical').evaluate(el=>el.open=true);
           const technicalLineage=await page.locator('.ns-lineage-technical').innerText();
