@@ -477,6 +477,13 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-confirm-handoff]').click();
         await audit(route,'Execution Handoff / bounded adapter contract');
         const lineageReceiptBefore=await page.locator('.ns-handoff-receipt').innerText();
+        await page.locator('.ns-view-nav [data-view="lineage"]').click();
+        await page.locator('[data-lineage-objective-root="O10"]').click();
+        await page.locator('[data-lineage-kr="KR10.1"]').click();
+        await page.locator('[data-lineage-context-action="leadership"]').click();
+        await page.locator('.ns-view-nav [data-view="handoff"]').click();
+        const receiptAfterLeadershipBrowse=await page.locator('.ns-handoff-receipt').innerText();
+        if(receiptAfterLeadershipBrowse!==lineageReceiptBefore)throw new Error('Read-only lineage navigation into leadership context must preserve accepted Epic and handoff receipt');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-select="CPD-0002"]').click();
         await page.locator('[data-authorize-item="CPD-0002"]').click();
