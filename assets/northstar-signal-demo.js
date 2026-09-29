@@ -1650,8 +1650,13 @@
     if(lineageScenario){const next=lineageScenario.dataset.lineageScenario;if(recursiveLineageScenarios[next]){state.lineageScenario=next;state.lineageQuestion='';state.lineageAnswer='';state.view='lineage';render();}return;}
     const view=e.target.closest('[data-view]');
     if(view){
-      if(view.dataset.view==='lineage'){setLineageContext(state.selectedObjective,state.selectedKr);state.lineageFocus='objective';}
-      state.view=view.dataset.view; render(); return;
+      const nextView=view.dataset.view;
+      if(nextView==='lineage'){setLineageContext(state.selectedObjective,state.selectedKr);state.lineageFocus='objective';}
+      else if(state.view==='lineage'&&['leadership','management','decision','evidence','handoff','outcome'].includes(nextView)){
+        const ctx=lineageOkrContext();
+        browseOkrContext(ctx.objective.objectiveId,ctx.kr.id);
+      }
+      state.view=nextView; render(); return;
     }
     const role=e.target.closest('[data-role]');
     if(role){
