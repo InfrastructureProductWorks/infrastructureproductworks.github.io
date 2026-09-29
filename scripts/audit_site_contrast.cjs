@@ -139,6 +139,10 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           }
           await page.locator('[data-view="lineage"]').click();
           const currentLineage=await page.locator('#northstar-view').innerText();
+          if(!/WHAT THIS MEANS/.test(currentLineage)||!/WHY IT MATTERS/.test(currentLineage)||!/WHAT NEEDS ATTENTION/.test(currentLineage)||!/ACCOUNTABLE ROLE/.test(currentLineage)||!/WHAT HAPPENS NEXT/.test(currentLineage))throw new Error('Northstar lineage must translate technical lineage into leadership meaning');
+          if(await page.locator('[data-lineage-ask-input]').count()!==1||await page.locator('[data-lineage-ask-submit]').count()!==1||await page.locator('.ns-lineage-technical summary').count()!==1)throw new Error('Northstar lineage must expose Ask Northstar and collapsible technical proof');
+          await page.locator('[data-lineage-question="why"]').click();
+          if(!/NORTHSTAR EXPLAINS/.test(await page.locator('#northstar-view').innerText()))throw new Error('Ask Northstar guided explanation must answer contextual leadership questions');
           if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(currentLineage)||!/Outcome measurement\s+Northstar/.test(currentLineage)||!/Evidence integrity\s+Assurance/.test(currentLineage))throw new Error('Northstar recursive lineage must truthfully render the current strategy-to-evidence state');
           if(await page.locator('[data-lineage-objective-root]').count()!==3)throw new Error('Northstar recursive lineage must expose all three approved Objective roots');
           if(!/APPROVED OBJECTIVE NODES/.test(currentLineage)||!/OBJECTIVE\s+O9/.test(currentLineage)||/STRATEGIC OUTCOME/.test(currentLineage))throw new Error('Northstar recursive lineage must begin at approved Objective nodes and must not present Strategic Outcome Management in this release');
