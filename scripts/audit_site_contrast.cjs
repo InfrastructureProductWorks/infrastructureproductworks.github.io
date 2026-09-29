@@ -484,6 +484,10 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('.ns-view-nav [data-view="handoff"]').click();
         const receiptAfterLeadershipBrowse=await page.locator('.ns-handoff-receipt').innerText();
         if(receiptAfterLeadershipBrowse!==lineageReceiptBefore)throw new Error('Read-only lineage navigation into leadership context must preserve accepted Epic and handoff receipt');
+        await page.locator('.ns-view-nav [data-view="evidence"]').click();
+        if(!/Management acceptance binding/.test(await page.locator('#northstar-view').innerText()))throw new Error('Read-only evidence view must validate accepted Epic from its saved source bindings rather than current management selection');
+        await page.locator('.ns-view-nav [data-view="outcome"]').click();
+        if(!/EP-23/.test(await page.locator('#northstar-view').innerText()))throw new Error('Outcome view must preserve the accepted Epic when its saved source binding remains current');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-select="CPD-0002"]').click();
         await page.locator('[data-authorize-item="CPD-0002"]').click();
