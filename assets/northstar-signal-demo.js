@@ -507,7 +507,7 @@
         : record&&record.decision==='DEFERRED'
           ? 'Deferred · no CAR'
           : 'No current CAR';
-    const deliveryDetail=managementAcceptanceCurrent()&&state.acceptedEpic
+    const deliveryDetail=acceptedEpicAppliesToContext(ctx)&&state.acceptedEpic
       ? state.acceptedEpic.epic+' · '+state.acceptedEpic.title
       : ctx.kr.id+' portfolio delivery context';
     const attention=s.attention&&s.attention.length?s.attention:[
@@ -768,6 +768,31 @@
     return {carId:record.carId,packageId:pkg.packageId,evidenceDigest:pkg.evidenceDigest,decision};
   }
 
+  function sameAuthorizationBinding(left,right) {
+    return Boolean(left&&right&&
+      left.carId===right.carId&&left.packageId===right.packageId&&left.evidenceDigest===right.evidenceDigest&&
+      left.decisionId===right.decisionId&&left.objectiveId===right.objectiveId&&left.krId===right.krId&&
+      left.authorizedOutcome===right.authorizedOutcome&&left.authorizedScope===right.authorizedScope);
+  }
+
+  function acceptedEpicCurrentBindings() {
+    const accepted=state.acceptedEpic;
+    if(!accepted||!Array.isArray(accepted.authorizationBindings)||!accepted.authorizationBindings.length)return [];
+    if(accepted.managementIntent!==state.managementIntent)return [];
+    const current=accepted.authorizationBindings.map(saved=>{
+      const item=authorizationQueue.find(candidate=>candidate.decisionId===saved.decisionId);
+      const live=item?authorizationBindingFor(item):null;
+      return sameAuthorizationBinding(saved,live)?live:null;
+    });
+    if(current.some(binding=>!binding))return [];
+    if(accepted.selectionDigest!==managementSelectionDigest(current))return [];
+    return current;
+  }
+
+  function acceptedEpicAppliesToContext(ctx) {
+    return acceptedEpicCurrentBindings().some(binding=>binding.objectiveId===ctx.objective.objectiveId&&binding.krId===ctx.kr.id);
+  }
+
   function managementAcceptanceCurrent() {
     const accepted=state.acceptedEpic;
     const bindings=managementSourceBindings();
@@ -775,9 +800,7 @@
     return accepted.managementIntent===state.managementIntent&&
       accepted.selectionDigest===managementSelectionDigest(bindings)&&
       accepted.authorizationBindings.length===bindings.length&&
-      bindings.every(binding=>accepted.authorizationBindings.some(saved=>
-        saved.carId===binding.carId&&saved.packageId===binding.packageId&&saved.evidenceDigest===binding.evidenceDigest&&
-        saved.decisionId===binding.decisionId&&saved.objectiveId===binding.objectiveId&&saved.krId===binding.krId));
+      bindings.every(binding=>accepted.authorizationBindings.some(saved=>sameAuthorizationBinding(saved,binding)));
   }
 
   function invalidateManagementAcceptance() {
@@ -1139,7 +1162,7 @@
     }
     const feedback=selectedFeedback();
     rows.push(['Outcome',feedback.benefitSource,'OPERATIONAL CONTEXT','HIGH',feedback.benefitOutcome==='UNAVAILABLE'?'UNAVAILABLE':'CURRENT',ctx.kr.id+' delivery '+feedback.delivery.replaceAll('_',' ')+' · outcome '+feedback.benefitOutcome.replaceAll('_',' ')]);
-    if(managementAcceptanceCurrent()&&state.acceptedEpic){
+    if(acceptedEpicAppliesToContext(ctx)&&state.acceptedEpic){
       rows.push(['Delivery','Management acceptance binding','DEMONSTRATED','HIGH','CURRENT',state.acceptedEpic.epic+' · '+state.acceptedEpic.title+' remains bound to the selected authorization context.']);
     }
     return rows;
@@ -1164,9 +1187,8 @@
   };
 
   function handoffPackage() {
-    if(!managementAcceptanceCurrent())return null;
-    const bindings=state.acceptedEpic.authorizationBindings||[];
-    if(!bindings.length)return null;
+    const bindings=acceptedEpicCurrentBindings();
+    if(!bindings.length||!state.acceptedEpic)return null;
     const adapter=backlogAdapters[state.handoffTarget];
     const lineage=bindings.map(b=>b.objectiveId+' → '+b.krId+' → '+b.decisionId+' → '+b.carId);
     const material=[...lineage,state.acceptedEpic.epic,state.acceptedEpic.title,state.acceptedEpic.managementIntent,adapter.label,adapter.project,'Retain independent source CAR bindings','Evidence required before outcome claim'].join('|');
@@ -1195,7 +1217,7 @@
   function outcome() {
     const s=selectedFeedback(), ctx=selectedOkrContext();
     const isPrimary=ctx.objective.objectiveId===model.objectiveId&&ctx.kr.id===model.krId;
-    const deliveryLabel=managementAcceptanceCurrent()&&state.acceptedEpic?state.acceptedEpic.epic:'Selected KR';
+    const deliveryLabel=acceptedEpicAppliesToContext(ctx)&&state.acceptedEpic?state.acceptedEpic.epic:'Selected KR';
     return headline('Did the product deliver the expected benefit?',
       'This view is downstream feedback for '+ctx.objective.objectiveId+' → '+ctx.kr.id+'. It keeps delivery activity separate from observed benefit and does not re-score authorization status.',
       'DOWNSTREAM BENEFIT FEEDBACK')+
@@ -1235,7 +1257,7 @@
           binding.objectiveId===ctx.objective.objectiveId&&binding.krId===ctx.kr.id&&binding.decisionId===item.decisionId&&
           binding.carId===record.carId&&binding.packageId===receipt.packageId&&binding.evidenceDigest===receipt.evidenceDigest)
       : null;
-    const acceptedForSelected=Boolean(exactAcceptedBinding&&managementAcceptanceCurrent());
+    const acceptedForSelected=Boolean(exactAcceptedBinding&&acceptedEpicAppliesToContext(ctx));
     const epic=acceptedForSelected?state.acceptedEpic.epic:'NO AUTHORIZED EPIC';
     const edge=acceptedForSelected?'CE-'+epic+'-'+ctx.kr.id:'NO CURRENT CONTRIBUTION EDGE';
     const car=authorized?record.carId:'NO CURRENT CAR';
