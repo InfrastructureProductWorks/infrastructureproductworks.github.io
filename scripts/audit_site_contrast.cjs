@@ -167,9 +167,9 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           await page.locator('[data-lineage-kr="KR10.2"]').click();
           if(!/KEY RESULT\s+KR10\.2/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar selected Objective must expose selectable child KRs');
           await page.locator('[data-lineage-step="down"]').click();
-          if(!/SELECTED NODE\s+DECISION/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar lineage must drill down from KR to Decision');
+          if(!/WHAT THIS MEANS\s+DECISION/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar lineage must drill down from KR to Decision in the leadership interpretation');
           await page.locator('[data-lineage-step="up"]').click();
-          if(!/SELECTED NODE\s+KEY RESULT/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar lineage must drill back up to the parent node');
+          if(!/WHAT THIS MEANS\s+KEY RESULT/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar lineage must drill back up to the parent node in the leadership interpretation');
           await page.locator('[data-lineage-objective-root="O9"]').click();
           if(/PENDING AUTHORIZATION/.test(currentLineage)&&(/CE-EP-23-KR9\.4/.test(currentLineage)||/AE-0001/.test(currentLineage)))throw new Error('Northstar must not fabricate contribution or Assurance evidence before current authorization exists');
           for(const failure of ['wrongKr','stale','expanded']){
