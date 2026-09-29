@@ -485,9 +485,14 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const receiptAfterLeadershipBrowse=await page.locator('.ns-handoff-receipt').innerText();
         if(receiptAfterLeadershipBrowse!==lineageReceiptBefore)throw new Error('Read-only lineage navigation into leadership context must preserve accepted Epic and handoff receipt');
         await page.locator('.ns-view-nav [data-view="evidence"]').click();
-        if(!/Management acceptance binding/.test(await page.locator('#northstar-view').innerText()))throw new Error('Read-only evidence view must validate accepted Epic from its saved source bindings rather than current management selection');
+        if(/Management acceptance binding/.test(await page.locator('#northstar-view').innerText()))throw new Error('O10 evidence view must not claim the O9-bound accepted Epic merely because that artifact still exists');
         await page.locator('.ns-view-nav [data-view="outcome"]').click();
-        if(!/EP-23/.test(await page.locator('#northstar-view').innerText()))throw new Error('Outcome view must preserve the accepted Epic when its saved source binding remains current');
+        if(/EP-23/.test(await page.locator('#northstar-view').innerText()))throw new Error('O10 outcome view must not inherit the O9-bound accepted Epic');
+        await page.locator('.ns-view-nav [data-view="lineage"]').click();
+        await page.locator('[data-lineage-objective-root="O9"]').click();
+        await page.locator('[data-lineage-kr="KR9.4"]').click();
+        await page.locator('[data-lineage-context-action="evidence"]').click();
+        if(!/Management acceptance binding/.test(await page.locator('#northstar-view').innerText()))throw new Error('Returning to O9 evidence must recover the accepted Epic from its own saved source binding');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-select="CPD-0002"]').click();
         await page.locator('[data-authorize-item="CPD-0002"]').click();
