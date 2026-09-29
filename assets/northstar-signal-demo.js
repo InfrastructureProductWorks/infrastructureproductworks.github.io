@@ -295,6 +295,16 @@
         '<button type="button" data-back-okr>Back to Cloud Platform OKRs</button>'+
       '</div>';
     }
+    if(state.view==='management'){
+      const bindings=explicitManagementSourceBindings();
+      if(bindings.length){
+        const labels=bindings.map(binding=>binding.objectiveId+' → '+binding.krId).join(' + ');
+        return '<div class="ns-scope-bar" aria-label="Management working context">'+
+          '<div><small>MANAGEMENT WORKING KEY RESULT'+(bindings.length===1?'':' SET')+'</small><strong>'+esc(labels)+'</strong><span>Composite AI working selection. Accepted artifacts remain bound to their own exact source records.</span></div>'+
+          '<button type="button" data-back-okr>Back to Cloud Platform OKRs</button>'+
+        '</div>';
+      }
+    }
     const ctx=state.view==='lineage'?lineageOkrContext():selectedOkrContext();
     return '<div class="ns-scope-bar" aria-label="Selected outcome context">'+
       '<div><small>'+(state.view==='lineage'?'BROWSING KEY RESULT':'SELECTED KEY RESULT')+'</small><strong>'+esc(ctx.objective.objectiveId)+' <span aria-hidden="true">→</span> '+esc(ctx.kr.id)+'</strong><span>'+esc(ctx.kr.text)+'</span></div>'+
@@ -1675,10 +1685,6 @@
     if(lineageAction){
       const ctx=lineageOkrContext(),action=lineageAction.dataset.lineageContextAction;
       browseOkrContext(ctx.objective.objectiveId,ctx.kr.id);
-      if(action==='management'){
-        const binding=ctx.authorization?authorizationBindingFor(ctx.authorization):null;
-        state.managementSelectedDecisionIds=binding?[ctx.authorization.decisionId]:[];
-      }
       if(action==='authorization'&&ctx.authorization)state.selectedAuthorizationId=ctx.authorization.decisionId;
       state.role=action==='management'?'manager':'leader';
       state.view=action==='authorization'?'authorization':action;
