@@ -156,7 +156,10 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           if(!/does not match the current bound revision/.test(await page.locator('#northstar-view').innerText()))throw new Error('Specific stale-revision questions must receive the actionable stale-revision explanation');
           await page.locator('[data-lineage-objective-root="O11"]').click();
           if(await page.locator('.ns-lineage-answer').count())throw new Error('Ask Northstar answer must clear when Objective or KR browsing context changes');
-          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(currentLineage)||!/Outcome measurement\s+Northstar/.test(currentLineage)||!/Evidence integrity\s+Assurance/.test(currentLineage))throw new Error('Northstar recursive lineage must truthfully render the current strategy-to-evidence state');
+          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(currentLineage))throw new Error('Northstar recursive lineage must truthfully render the current strategy-to-evidence state');
+          await page.locator('.ns-lineage-technical').evaluate(el=>el.open=true);
+          const technicalLineage=await page.locator('.ns-lineage-technical').innerText();
+          if(!/Outcome measurement\s+Northstar/.test(technicalLineage)||!/Evidence integrity\s+Assurance/.test(technicalLineage)||!/Candidate digest/.test(technicalLineage)||!/Bound digest/.test(technicalLineage))throw new Error('Northstar technical proof must retain outcome, evidence-integrity and digest semantics behind the disclosure');
           if(await page.locator('[data-lineage-objective-root]').count()!==3)throw new Error('Northstar recursive lineage must expose all three approved Objective roots');
           if(!/APPROVED OBJECTIVE NODES/.test(currentLineage)||!/OBJECTIVE\s+O9/.test(currentLineage)||/STRATEGIC OUTCOME/.test(currentLineage))throw new Error('Northstar recursive lineage must begin at approved Objective nodes and must not present Strategic Outcome Management in this release');
           await page.locator('[data-lineage-objective-root="O10"]').click();
