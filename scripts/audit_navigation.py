@@ -23,9 +23,11 @@ if not canonical:
     raise SystemExit("Homepage is missing header navigation.")
 
 required = (
+    '<summary>Products</summary>',
     'href="/northstar-signal/"',
     'DECIDE · ALIGN',
     '>Northstar Signal</a>',
+    '<details class="mobile-nav">',
     'href="/storefront/"',
     'href="/guard/"',
     'href="/forge/"',
@@ -46,12 +48,12 @@ for path in sorted(ROOT.rglob("index.html")):
     text = path.read_text(encoding="utf-8")
     if "<header" not in text.lower():
         continue
-    nav = site_nav(path)
+    header = site_header(path)
     checked += 1
-    if nav is None:
-        failures.append(f"{rel}: header has no navigation")
-    elif nav != canonical:
-        failures.append(f"{rel}: header navigation differs from index.html")
+    if header is None:
+        failures.append(f"{rel}: missing site header")
+    elif header != canonical:
+        failures.append(f"{rel}: desktop/mobile header navigation differs from index.html")
 
 if failures:
     print("Navigation consistency audit failed:", file=sys.stderr)
@@ -59,4 +61,4 @@ if failures:
         print(f" - {failure}", file=sys.stderr)
     sys.exit(1)
 
-print(f"Navigation consistency audit passed for {checked} public pages.")
+print(f"Desktop/mobile navigation consistency audit passed for {checked} public pages.")
