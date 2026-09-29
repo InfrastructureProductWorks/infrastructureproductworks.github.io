@@ -1328,7 +1328,7 @@
     if(scenario==='wrongKr'&&(candidate.krId!==bound.krId||candidate.edge!==bound.edge))return {result:'REJECTED',tone:'red',reason:'The candidate changes the target Key Result/contribution edge. Cross-KR replay cannot inherit the bound authorization.'};
     if(scenario==='stale'&&candidate.carRevision!==bound.carRevision)return {result:'REJECTED',tone:'red',reason:'The candidate carries a stale CAR revision/digest. Prior validity cannot silently carry forward.'};
     if(scenario==='expanded'&&candidate.scope!==bound.scope)return {result:'REJECTED',tone:'red',reason:'The candidate expands downstream scope beyond the parent CAR. Child authority may stay equal or narrow; never broaden.'};
-    if(!bound.authorized)return {result:'PENDING AUTHORIZATION',tone:'amber',reason:'The selected OKR does not currently have the complete CAR → accepted Epic lineage required for downstream Assurance evaluation. Northstar fails closed.'};
+    if(!bound.authorized){const ctx=lineageOkrContext();const item=ctx.authorization;const record=item?authorizationRecord(item):null;const receipt=item?state.authorizationReceipts[item.decisionId]:null;const carAuthorized=Boolean(item&&record&&record.authorized&&receipt);return carAuthorized?{result:'EPIC ACCEPTANCE PENDING',tone:'amber',reason:'Product intent is authorized by '+record.carId+', but no accepted Epic is currently bound to this exact Objective/Key Result authorization. Downstream Assurance evaluation remains unavailable.'}:{result:'AUTHORIZATION REQUIRED',tone:'amber',reason:'No current Capability Authorization Record establishes product-intent authorization for this selected Objective/Key Result. Northstar fails closed.'};}
     if(!bound.assuranceBound)return {result:'READY FOR ASSURANCE',tone:'amber',reason:'Strategy, CAR and accepted Epic lineage are exact, but no Assurance evidence record is bound. Northstar will not manufacture evidence from management acceptance.'};
     return {result:'VERIFIED',tone:'green',reason:'The displayed path is derived from the selected OKR, current exact authorization, accepted Epic and bound Assurance evidence.'};
   }
@@ -1391,7 +1391,7 @@
       attention,
       owner,
       next,
-      status:rejected?'NEEDS ATTENTION':evaluation.result,
+      status:rejected?'NEEDS ATTENTION':node.id==='car'&&authorized?'AUTHORIZED':evaluation.result,
       tone:rejected?'red':evaluation.tone
     };
   }
@@ -1489,7 +1489,7 @@
         ])+'<div class="ns-boundary-box"><strong>Current release:</strong> Northstar begins with approved Objectives and their Key Results. Strategic Outcome Management is not part of this release.</div></div></details>'+
         '';})()+
       '</aside></div>'+
-      (evaluation.result==='REJECTED'?'<div class="ns-lineage-rejection" role="status"><strong>Fail closed.</strong> '+esc(evaluation.reason)+'</div>':evaluation.result==='VERIFIED'?'<div class="ns-lineage-success" role="status"><strong>Verified path.</strong> The selected strategy, authorization, contribution, accepted Epic and evidence remain attributable to one bounded lineage.</div>':evaluation.result==='READY FOR ASSURANCE'?'<div class="ns-lineage-pending" role="status"><strong>Ready for Assurance evaluation.</strong> The upstream lineage is exact, but no Assurance evidence record is bound yet.</div>':'<div class="ns-lineage-pending" role="status"><strong>Awaiting exact authorization and accepted work.</strong> No downstream Assurance evidence is claimed for this selected path.</div>');
+      (evaluation.result==='REJECTED'?'<div class="ns-lineage-rejection" role="status"><strong>Fail closed.</strong> '+esc(evaluation.reason)+'</div>':evaluation.result==='VERIFIED'?'<div class="ns-lineage-success" role="status"><strong>Verified path.</strong> The selected strategy, authorization, contribution, accepted Epic and evidence remain attributable to one bounded lineage.</div>':evaluation.result==='READY FOR ASSURANCE'?'<div class="ns-lineage-pending" role="status"><strong>Ready for Assurance evaluation.</strong> The upstream lineage is exact, but no Assurance evidence record is bound yet.</div>':evaluation.result==='EPIC ACCEPTANCE PENDING'?'<div class="ns-lineage-pending" role="status"><strong>Epic acceptance pending.</strong> Product intent remains authorized; no downstream Assurance evidence is claimed until accepted work is bound to this exact authorization.</div>':'<div class="ns-lineage-pending" role="status"><strong>Authorization required.</strong> No downstream Assurance evidence is claimed for this selected path.</div>');
   }
 
   const renderers={okr:okrOverview,composer:composerView,leadership,management,decision,authorization,evidence,lineage:recursiveLineage,handoff,outcome};
