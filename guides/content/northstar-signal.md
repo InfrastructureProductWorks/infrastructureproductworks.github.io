@@ -7,6 +7,8 @@ Open the [Northstar Signal synthetic demo](/northstar-signal/demo/). The default
 
 Use only fictional information. The public demo does not connect to enterprise systems, approve funding, provision cloud resources, accept risk, or create production work.
 
+The dashboard can contain multiple approved Objectives. Select an Objective to focus its Key Results, then use the available lineage/drill actions to move into the selected KR, decision/CAR, Epic, evidence, or outcome context. At least one synthetic Objective exposes a current CAR so you can follow a complete golden path.
+
 Review the Objective, each Key Result, its evidence source, and the current status shown by the synthetic fixture. The current public demo does not expose numeric baseline, target, or observed-benefit values. Delivery progress and Key Result status are intentionally separate.
 
 ## 2 Draft an OKR from leadership intent
@@ -56,6 +58,10 @@ Follow the synthetic lineage from Objective and Key Result through decision evid
 
 Use the evidence view to answer: what was proposed, what evidence supported it, what was actually authorized, what work inherited that authorization, and what later evidence measured the result?
 
+In **Recursive Lineage**, choose the Objective you want to inspect, select its Key Result, and drill into the nodes that have actual bindings. You can move between leadership, management, authorization, evidence, backlog, and outcome context without changing which source owns an already accepted artifact.
+
+A useful check is to browse one Objective after accepting an Epic from another. The accepted Epic should remain attached to its original Objective/KR and must not appear as evidence for the Objective you merely browsed. Return to the original Objective and Northstar should recover the accepted Epic from its saved source binding.
+
 In **Recursive Lineage**, review the current selected Objective/KR path and its candidate/bound tuple. **Current lineage** shows only bindings that actually exist. The synthetic **Wrong KR replay**, **Stale revision**, and **Authority expansion** controls mutate the candidate tuple so you can see Northstar fail closed. Choose **Current lineage** afterward to reset the demonstration.
 
 Direction matters: authority and constraints propagate downward toward delivery; evidence and observations return upward. A current CAR and accepted Epic can make a path **READY FOR ASSURANCE**, but Northstar does not display Assurance evidence as verified until an actual Assurance evidence record is bound. Product context likewise remains **NOT BOUND** until a source-owned product record exists.
@@ -65,18 +71,18 @@ Switch to **Management** and open **Management Composer**.
 
 Enter management intent in the text box. Describe the Epic outcome, sequencing, dependencies, or decomposition you want Composite AI to propose. The synthetic demo uses that exact text as part of the proposal binding; changing the intent invalidates stale proposal and acceptance state. The current public demo uses bounded synthetic proposal fixtures and does not call a live model provider.
 
-Select one or more **currently authorized KRs**. Each selected KR keeps its own Objective, Key Result, decision, CAR, package digest, evidence digest, authorized outcome, and authorized scope. Selecting multiple KRs does not merge the CARs or widen authority.
+Select one or more **currently authorized KRs**. The list is the current CAR-backed management pool; it is not limited to whichever Objective/KR you happened to browse most recently. Each selected KR keeps its own Objective, Key Result, decision, CAR, package digest, evidence digest, authorized outcome, and authorized scope. Selecting multiple KRs does not merge the CARs or widen authority.
 
 Choose **Propose Epics with Composite AI**. For a single selected KR, the proposal must stay within that KR's authorized outcome and scope. For multiple selected KRs, the demo can propose one cross-KR Epic, but deterministic validation requires every source binding to remain independently attributable.
 
 Review the deterministic validation results before accepting an Epic. In the current synthetic demo the checks cover source lineage, scope binding, reuse/equivalence, evidence requirements, and authority expansion. Management remains accountable for accepting the proposal.
 
-If management intent, the selected KR set, or any actual source CAR/package/evidence binding changes, Northstar invalidates the stale proposal or acceptance. Changing an unrelated page-context authorization does not invalidate an Epic that is not sourced from it.
+If management intent, the selected KR set, or any actual source CAR/package/evidence binding changes, Northstar invalidates the stale proposal or acceptance. Reauthorizing a source therefore requires fresh management acceptance before a handoff can continue. Authorizing an unrelated Objective/KR does not invalidate an Epic whose saved sources did not change. Changing an unrelated page-context authorization does not invalidate an Epic that is not sourced from it.
 
 ## 10 Review the bounded backlog handoff
 After management accepts an Epic, open **Backlog handoff**.
 
-Review the handoff package before confirming it. For multi-KR composition, verify that every source retains its independent **Objective → KR → Decision → CAR** lineage. The handoff can carry one management Epic while preserving multiple independent authorization records; it does not create new authority beyond the selected source scopes.
+Review the handoff package before confirming it. The package is reconstructed from the accepted Epic's saved source bindings, not from whichever Objective/KR is currently open elsewhere in the demo. For multi-KR composition, verify that every source retains its independent **Objective → KR → Decision → CAR** lineage. The handoff can carry one management Epic while preserving multiple independent authorization records; it does not create new authority beyond the selected source scopes.
 
 Choose the synthetic execution target to inspect the adapter boundary. The demo can represent Jira, Azure DevOps, or GitHub Issues as bounded targets, but it does not write to those systems.
 
@@ -98,14 +104,21 @@ Review the status-only benefit feedback shown by the current synthetic fixture. 
 
 This demonstrates the intended loop from leadership intent toward outcome evidence while preserving the distinction between decision, authorization, execution, and benefit status.
 
-## 13 Know where the demo stops
+## 13 Understand the current strategy path
+The current Northstar experience intentionally keeps the visible strategy path direct:
+
+**Objective → Key Result → Decision / CAR → Epic → Delivery / Evidence → Outcome**
+
+A separate Strategic Outcomes workspace is not part of the current demo journey. That concept may be revisited as a future capability, but users should not expect an extra Strategic Outcomes navigation layer between OKRs and decisions today.
+
+## 14 Know where the demo stops
 The public Northstar Signal experience is documentation-first and synthetic.
 
 It does not use live enterprise data, live Composite AI providers, production credentials, personnel decisions, funding authority, procurement authority, risk acceptance, external-system writeback, cloud execution, or provisioning.
 
 The demo proves the interaction model and bounded contracts. Any future live adapter or execution path must preserve those authority boundaries rather than bypass them.
 
-## 14 Troubleshooting
+## 15 Troubleshooting
 If the demo appears to be on the wrong step, return to **Cloud Platform OKRs**, choose the Leadership role, and select **Decision Review**.
 
 If the OKR Composer is not visible, use the left navigation and choose **OKR Composer**.
