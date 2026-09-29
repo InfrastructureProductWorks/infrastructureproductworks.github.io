@@ -565,13 +565,6 @@
     return {objective,kr,authorization};
   }
 
-  function lineageOkrContext() {
-    const objective=okrPortfolio.find(o=>o.approved&&o.objectiveId===state.lineageObjective)||okrPortfolio.find(o=>o.approved&&o.objectiveId===state.selectedObjective)||okrPortfolio.find(o=>o.approved)||okrPortfolio[0];
-    const kr=objective.krs.find(k=>k.id===state.lineageKr)||objective.krs[0];
-    const authorization=authorizationQueue.find(item=>item.objectiveId===objective.objectiveId&&item.krId===kr.id)||null;
-    return {objective,kr,authorization};
-  }
-
   function setLineageContext(objectiveId, krId) {
     const objective=okrPortfolio.find(o=>o.approved&&o.objectiveId===objectiveId);
     if(!objective)return false;
@@ -1325,6 +1318,10 @@
     const q=String(question||'').trim();
     const lower=q.toLowerCase();
     if(!q)return '';
+    if(/wrong\s*(kr|key result)|right\s*(kr|key result)|substitut.*(kr|key result)|(kr|key result).*substitut|replay.*(kr|key result)|cross[- ]?(kr|key result)/.test(lower)){
+      if(state.lineageScenario==='wrongKr')return 'The displayed candidate changes the Key Result coordinates from the bound authorization. Northstar rejects that cross-KR replay so authority cannot be inherited by a different outcome. Return the candidate to '+bound.objectiveId+' → '+bound.krId+' before relying on the authorization.';
+      return candidate.krId===bound.krId?'The candidate Key Result matches the exact bound authorization coordinates '+bound.objectiveId+' → '+bound.krId+'.':'The candidate Key Result does not match the bound authorization coordinates, so the path must fail closed.';
+    }
     if(/stale|revision|digest|changed|mismatch/.test(lower)){
       if(state.lineageScenario==='stale')return 'The candidate CAR revision does not match the current bound revision. Northstar rejects that substitution so prior approval cannot silently carry forward. The next step is to compare the current authorization package before downstream reliance.';
       return candidate.carRevision===bound.carRevision?'The candidate is using the current bound CAR revision for this path.':'The candidate revision differs from the bound CAR revision, so the lineage must fail closed.';
@@ -1615,7 +1612,7 @@
     if(lineageScenario){const next=lineageScenario.dataset.lineageScenario;if(recursiveLineageScenarios[next]){state.lineageScenario=next;state.lineageQuestion='';state.lineageAnswer='';state.view='lineage';render();}return;}
     const view=e.target.closest('[data-view]');
     if(view){
-      if(view.dataset.view==='lineage'){state.lineageObjective=state.selectedObjective;state.lineageKr=state.selectedKr;state.lineageFocus='objective';state.lineageScenario='current';}
+      if(view.dataset.view==='lineage'){setLineageContext(state.selectedObjective,state.selectedKr);state.lineageFocus='objective';}
       state.view=view.dataset.view; render(); return;
     }
     const role=e.target.closest('[data-role]');
