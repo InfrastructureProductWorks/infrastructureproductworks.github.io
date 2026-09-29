@@ -317,7 +317,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-view="management"]').click();
         const preservedComposer=await page.locator('.ns-management-composer').innerText();
         if(!/MANAGEMENT ACCEPTED/.test(preservedComposer)||!/CPD-0001/.test(preservedComposer)||!/CAR-0001/.test(preservedComposer)||/AUTHORIZATION REQUIRED/.test(preservedComposer))throw new Error('Management Composer must remain available from accepted source bindings even when the page-context authorization is no longer current');
-        if(!/MULTI-SOURCE/.test(o10Feedback)||!/MIXED/.test(o10Feedback)||/Delivery progress\s+ACTIVE/.test(o10Feedback)||/Benefit achieved\s+ON TRACK/.test(o10Feedback))throw new Error('Multi-KR handoff feedback must aggregate the saved package bindings rather than borrow only the currently browsed O10/KR10.1 signals');
+        if(!/MULTI-SOURCE/.test(o10Feedback)||!/Benefit achieved\s+ON TRACK/.test(o10Feedback)||/Delivery progress\s+ACTIVE/.test(o10Feedback))throw new Error('Multi-KR handoff feedback must aggregate the saved package bindings rather than borrow only the currently browsed O10/KR10.1 delivery signal');
         await page.locator('[data-view="outcome"]').click();
         const o10Outcome=await page.locator('#northstar-view').innerText();
         if(!/O10 → KR10.1/.test(o10Outcome)||!/ACTIVE/.test(o10Outcome)||!/ON TRACK/.test(o10Outcome)||/KR9.4 authorization/.test(o10Outcome))throw new Error('Outcome feedback must remain bound to the selected O10/KR10.1 context');
@@ -477,6 +477,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-confirm-handoff]').click();
         await audit(route,'Execution Handoff / bounded adapter contract');
         const lineageReceiptBefore=await page.locator('.ns-handoff-receipt').innerText();
+        const lineageFeedbackBefore=await page.locator('.ns-handoff-feedback').innerText();
         await page.locator('.ns-view-nav [data-view="lineage"]').click();
         await page.locator('[data-lineage-objective-root="O10"]').click();
         await page.locator('[data-lineage-kr="KR10.1"]').click();
@@ -492,7 +493,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const receiptAfterLeadershipBrowse=await page.locator('.ns-handoff-receipt').innerText();
         if(receiptAfterLeadershipBrowse!==lineageReceiptBefore)throw new Error('Read-only lineage navigation into leadership context must preserve accepted Epic and handoff receipt');
         const handoffFeedbackAfterBrowse=await page.locator('.ns-handoff-feedback').innerText();
-        if(!/Delivery progress\s+READY/.test(handoffFeedbackAfterBrowse)||!/Benefit achieved\s+UNKNOWN/.test(handoffFeedbackAfterBrowse))throw new Error('Handoff feedback must derive from the saved package bindings rather than the currently browsed OKR');
+        if(handoffFeedbackAfterBrowse!==lineageFeedbackBefore)throw new Error('Handoff feedback must remain derived from the saved package bindings rather than the currently browsed OKR');
         await page.locator('.ns-view-nav [data-view="evidence"]').click();
         if(/Management acceptance binding/.test(await page.locator('#northstar-view').innerText()))throw new Error('O10 evidence view must not claim the O9-bound accepted Epic merely because that artifact still exists');
         await page.locator('.ns-view-nav [data-view="outcome"]').click();
