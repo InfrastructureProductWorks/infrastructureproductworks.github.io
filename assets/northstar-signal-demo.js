@@ -587,8 +587,7 @@
     return true;
   }
 
-  function selectedFeedback() {
-    const ctx=selectedOkrContext();
+  function feedbackForOkrContext(ctx) {
     if(ctx.objective.objectiveId===model.objectiveId&&ctx.kr.id===model.krId)return current();
     return {
       delivery:ctx.kr.delivery||'UNAVAILABLE',
@@ -597,6 +596,10 @@
       benefitSource:ctx.kr.source||'No context-specific feedback fixture',
       attention:[]
     };
+  }
+
+  function selectedFeedback() {
+    return feedbackForOkrContext(selectedOkrContext());
   }
 
   function selectedAuthorization() {
@@ -692,6 +695,22 @@
     const kr=objective?.krs.find(k=>k.id===binding.krId);
     const authorization=authorizationQueue.find(item=>item.decisionId===binding.decisionId);
     return objective&&kr&&authorization?{objective,kr,authorization}:null;
+  }
+
+  function feedbackForBindings(bindings) {
+    const feedback=(bindings||[]).map(managementContextForBinding).filter(Boolean).map(feedbackForOkrContext);
+    if(!feedback.length)return selectedFeedback();
+    if(feedback.length===1)return feedback[0];
+    const unique=value=>[...new Set(feedback.map(item=>item[value]))];
+    const deliveries=unique('delivery');
+    const outcomes=unique('benefitOutcome');
+    return {
+      delivery:deliveries.length===1?deliveries[0]:'MULTI-SOURCE',
+      benefitMeasurement:'PER-SOURCE SIGNALS',
+      benefitOutcome:outcomes.length===1?outcomes[0]:'MIXED',
+      benefitSource:feedback.map(item=>item.benefitSource).join(' · '),
+      attention:[]
+    };
   }
 
   function managementProposalsForSelectedContext() {
@@ -843,7 +862,7 @@
     const proposals=managementProposalsForSelectedContext();
     const proposed=state.managementProposalState!=='idle'&&state.managementProposalDigest===currentManagementDraftDigest();
     const proposalsBound=proposed&&proposals.length>0&&proposals.every(proposalMatchesSelectedAuthorization);
-    const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent()&&proposalsBound;
+    const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent()&&acceptedEpicAppliesToContext(ctx)&&proposalsBound;
     const selector=authorizedContexts.map(({item,binding})=>'<label class="ns-mc-kr-choice"><input type="checkbox" data-management-kr-check="'+esc(item.decisionId)+'" '+(state.managementSelectedDecisionIds.includes(item.decisionId)?'checked':'')+'><span><strong>'+esc(item.objectiveId+' → '+item.krId)+'</strong><small>'+esc(item.decisionId+' · '+binding.carId+' · '+item.outcome)+'</small></span></label>').join('');
     return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
       '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>Compose candidate Epics from authorized outcomes.</h2><p>Management can provide intent and select one or more currently authorized KRs. Every selected KR keeps its own CAR and evidence binding.</p></div>'+badge(authorizedContexts.length+' AUTHORIZED KR'+(authorizedContexts.length===1?'':'S')+' AVAILABLE','green')+'</div>'+
@@ -875,7 +894,7 @@
         ['Assigned team', esc(model.team)],
         ['Delivery system', esc(model.backlog)],
         ['Delivery state', badge(s.delivery,'blue')],
-        ['Accepted Epic', managementAcceptanceCurrent()?'<code>'+esc(state.acceptedEpic.epic)+'</code> · '+esc(state.acceptedEpic.title):'None · management review required']
+        ['Accepted Epic', managementAcceptanceCurrent()&&acceptedEpicAppliesToContext(ctx)?'<code>'+esc(state.acceptedEpic.epic)+'</code> · '+esc(state.acceptedEpic.title):'None · management review required']
       ])+
       '<div class="ns-grid-3"><article><small>DEPENDENCY</small><h3>'+(primary.authorized?'Accepted CAR binding':'Authorization required')+'</h3><p>'+(primary.authorized?'AI and management cannot silently widen or replace the authorized outcome.':'Management cannot promote candidate work without a current CAR.')+'</p></article><article><small>TRANSLATION</small><h3>Composite AI assisted</h3><p>Objective → KR → CAR becomes candidate outcome-oriented Epics with reuse checks.</p></article><article><small>CONSTRAINT</small><h3>No live writeback</h3><p>Accepting an Epic creates no Jira, GitHub or Azure DevOps work item.</p></article></div>'+
       managementComposer();
@@ -1204,7 +1223,8 @@
   function invalidateHandoff(){state.handoffConfirmed=false;state.handoffReceipt=null;}
 
   function handoff() {
-    const s=selectedFeedback(), ctx=selectedOkrContext(), sourceBindings=explicitManagementSourceBindings(), pkg=handoffPackage();
+    const ctx=selectedOkrContext(), sourceBindings=explicitManagementSourceBindings(), pkg=handoffPackage();
+    const s=pkg?feedbackForBindings(pkg.sourceBindings):selectedFeedback();
     if(!pkg&&sourceBindings.length)return headline('Management acceptance required.','Current source CAR bindings exist, but Northstar will not create BHP-0001 until management accepts a deterministically validated Epic proposal for that exact source set.','EXECUTION HANDOFF')+'<div class="ns-boundary-box"><strong>Fail closed:</strong> Return to Management, review the Composite AI proposal and explicitly accept an Epic before handoff.</div>';
     if(!pkg)return headline('No authorized backlog handoff exists.','A candidate Epic may remain visible as planning context, but Northstar cannot create a handoff package until at least one exact source Capability Authorization Record is current and selected.','EXECUTION HANDOFF')+
       '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+'</h3><p>Page context remains visible, but it does not substitute for an accepted source binding.</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>NO CURRENT SOURCE CAR</h3><p>No exact current source binding satisfies this handoff contract.</p></article><b>→</b><article><small>DELIVERY</small><h3>BLOCKED</h3><p>No authorized handoff package.</p></article></div>'+
@@ -1647,6 +1667,10 @@
     if(lineageAction){
       const ctx=lineageOkrContext(),action=lineageAction.dataset.lineageContextAction;
       browseOkrContext(ctx.objective.objectiveId,ctx.kr.id);
+      if(action==='management'){
+        const binding=ctx.authorization?authorizationBindingFor(ctx.authorization):null;
+        state.managementSelectedDecisionIds=binding?[ctx.authorization.decisionId]:[];
+      }
       if(action==='authorization'&&ctx.authorization)state.selectedAuthorizationId=ctx.authorization.decisionId;
       state.role=action==='management'?'manager':'leader';
       state.view=action==='authorization'?'authorization':action;
