@@ -484,8 +484,8 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-lineage-node="epic"]').click();
         await page.locator('[data-lineage-context-action="management"]').click();
         const managementBrowseText=await page.locator('#northstar-view').innerText();
-        if(!/O10 → KR10\.1/.test(managementBrowseText)||/Accepted Epic\s+EP-23/.test(managementBrowseText))throw new Error('Read-only management navigation must scope accepted Epic visibility to the selected saved binding');
-        if(await page.locator('[data-management-kr-check="CPD-0002"]:checked').count()!==1||await page.locator('[data-management-kr-check="CPD-0001"]:checked').count())throw new Error('Read-only management navigation must establish a context-specific working selection without deleting accepted artifacts');
+        if(!/MANAGEMENT WORKING KEY RESULT\s+O9 → KR9\.4/.test(managementBrowseText)||!/Accepted Epic\s+EP-23/.test(managementBrowseText)||/Selected outcome\s+O10 → KR10\.1/.test(managementBrowseText))throw new Error('Read-only management navigation must present the accepted Epic under its independent saved working binding rather than the browsed lineage context');
+        if(await page.locator('[data-management-kr-check="CPD-0001"]:checked').count()!==1||await page.locator('[data-management-kr-check="CPD-0002"]:checked').count())throw new Error('Read-only management navigation must not mutate the independent management composition selection');
         await page.locator('.ns-view-nav [data-view="lineage"]').click();
         await page.locator('[data-lineage-node="kr"]').click();
         await page.locator('[data-lineage-context-action="leadership"]').click();
