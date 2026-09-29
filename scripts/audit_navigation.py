@@ -1,26 +1,21 @@
 #!/usr/bin/env python3
-"""Fail when public page header navigation drifts from the homepage contract."""
+"""Fail when public desktop or mobile header navigation drifts from the homepage contract."""
 from pathlib import Path
 import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 CANONICAL_PATH = ROOT / "index.html"
+HEADER_RE = re.compile(r"<header\b[^>]*>.*?</header>", re.I | re.S)
 
-HEADER_RE = re.compile(r"<header\b[^>]*>(.*?)</header>", re.I | re.S)
-NAV_RE = re.compile(r"<nav\b[^>]*>.*?</nav>", re.I | re.S)
-
-def site_nav(path: Path):
+def site_header(path: Path):
     text = path.read_text(encoding="utf-8")
     header = HEADER_RE.search(text)
-    if not header:
-        return None
-    nav = NAV_RE.search(header.group(0))
-    return re.sub(r"\s+", " ", nav.group(0)).strip() if nav else None
+    return re.sub(r"\s+", " ", header.group(0)).strip() if header else None
 
-canonical = site_nav(CANONICAL_PATH)
+canonical = site_header(CANONICAL_PATH)
 if not canonical:
-    raise SystemExit("Homepage is missing header navigation.")
+    raise SystemExit("Homepage is missing its site header.")
 
 required = (
     '<summary>Products</summary>',
@@ -36,6 +31,7 @@ required = (
     'href="/crossplane/"',
     'href="/operating-model/"',
     'href="/guides/"',
+    'href="/support/"',
 )
 missing = [token for token in required if token not in canonical]
 if missing:
@@ -48,8 +44,8 @@ for path in sorted(ROOT.rglob("index.html")):
     text = path.read_text(encoding="utf-8")
     if "<header" not in text.lower():
         continue
-    header = site_header(path)
     checked += 1
+    header = site_header(path)
     if header is None:
         failures.append(f"{rel}: missing site header")
     elif header != canonical:
