@@ -551,6 +551,15 @@
     }
   }
 
+  function browseOkrContext(objectiveId, krId) {
+    const objective=okrPortfolio.find(o=>o.objectiveId===objectiveId);
+    if(!objective)return false;
+    const kr=objective.krs.find(k=>k.id===krId)||objective.krs[0];
+    state.selectedObjective=objective.objectiveId;
+    state.selectedKr=kr.id;
+    return true;
+  }
+
   function selectedOkrContext() {
     const objective=okrPortfolio.find(o=>o.objectiveId===state.selectedObjective)||okrPortfolio[0];
     const kr=objective.krs.find(k=>k.id===state.selectedKr)||objective.krs[0];
@@ -1524,13 +1533,13 @@
     if(e.target.closest('[data-confirm-handoff]')){const pkg=handoffPackage();if(pkg){state.handoffConfirmed=true;state.handoffReceipt={...pkg,status:'CONFIRMED · NO EXTERNAL WRITE'};}state.view='handoff';render();return;}
     const trail=e.target.closest('[data-open-trail]');
     if(trail){
-      selectOkrContext(model.objectiveId,trail.dataset.openTrail);
+      browseOkrContext(model.objectiveId,trail.dataset.openTrail);
       openTrail(trail);
       return;
     }
     const review=e.target.closest('[data-review-decision]');
     if(review){
-      selectOkrContext(model.objectiveId,review.dataset.reviewDecision);
+      browseOkrContext(model.objectiveId,review.dataset.reviewDecision);
       state.role='leader';
       state.view='decision';
       render();
@@ -1602,7 +1611,7 @@
     const lineageAction=e.target.closest('[data-lineage-context-action]');
     if(lineageAction){
       const ctx=lineageOkrContext(),action=lineageAction.dataset.lineageContextAction;
-      selectOkrContext(ctx.objective.objectiveId,ctx.kr.id);
+      browseOkrContext(ctx.objective.objectiveId,ctx.kr.id);
       if(action==='authorization'&&ctx.authorization)state.selectedAuthorizationId=ctx.authorization.decisionId;
       state.role=action==='management'?'manager':'leader';
       state.view=action==='authorization'?'authorization':action;
