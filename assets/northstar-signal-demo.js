@@ -862,7 +862,7 @@
     const proposals=managementProposalsForSelectedContext();
     const proposed=state.managementProposalState!=='idle'&&state.managementProposalDigest===currentManagementDraftDigest();
     const proposalsBound=proposed&&proposals.length>0&&proposals.every(proposalMatchesSelectedAuthorization);
-    const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent()&&acceptedEpicAppliesToContext(ctx)&&proposalsBound;
+    const accepted=state.managementProposalState==='accepted'&&managementAcceptanceCurrent()&&proposalsBound;
     const selector=authorizedContexts.map(({item,binding})=>'<label class="ns-mc-kr-choice"><input type="checkbox" data-management-kr-check="'+esc(item.decisionId)+'" '+(state.managementSelectedDecisionIds.includes(item.decisionId)?'checked':'')+'><span><strong>'+esc(item.objectiveId+' → '+item.krId)+'</strong><small>'+esc(item.decisionId+' · '+binding.carId+' · '+item.outcome)+'</small></span></label>').join('');
     return '<section class="ns-management-composer" aria-label="Composite AI Management Composer">'+
       '<div class="ns-mc-head"><div><small>COMPOSITE AI · MANAGEMENT COMPOSER</small><h2>Compose candidate Epics from authorized outcomes.</h2><p>Management can provide intent and select one or more currently authorized KRs. Every selected KR keeps its own CAR and evidence binding.</p></div>'+badge(authorizedContexts.length+' AUTHORIZED KR'+(authorizedContexts.length===1?'':'S')+' AVAILABLE','green')+'</div>'+
@@ -880,21 +880,29 @@
   }
 
   function management() {
-    const s=selectedFeedback();
-    const ctx=selectedOkrContext();
-    const primary=selectedAuthorization()||{authorized:false,decision:'NO DECISION',carId:null};
+    const bindings=explicitManagementSourceBindings();
+    const workingContexts=bindings.map(managementContextForBinding).filter(Boolean);
+    const ctx=workingContexts.length===1?workingContexts[0]:selectedOkrContext();
+    const s=bindings.length?feedbackForBindings(bindings):feedbackForOkrContext(ctx);
+    const primary=ctx.authorization?authorizationRecord(ctx.authorization):{authorized:false,decision:'NO DECISION',carId:null};
+    const selectedOutcome=bindings.length>1
+      ? bindings.map(binding=>binding.objectiveId+' → '+binding.krId).join(' + ')
+      : ctx.objective.objectiveId+' → '+ctx.kr.id+' · '+ctx.kr.text;
+    const carDisplay=bindings.length>1
+      ? bindings.map(binding=>'<code>'+esc(binding.carId)+'</code>').join(' + ')
+      : primary.carId?'<code>'+esc(primary.carId)+'</code>':'No CAR emitted';
     return headline(primary.authorized?'Translate authorized intent into bounded delivery.':'No authorized product-intent handoff exists.',
       'Management carries the outcome, constraints and evidence requirements into execution. Composite AI may propose Epics, but it cannot accept work or widen the CAR.',
       'MANAGEMENT LENS')+
       kv([
         ['Decision state', badge(primary.decision,primary.authorized?'green':'blue')],
-        ['Capability Authorization Record', primary.carId?'<code>'+esc(primary.carId)+'</code>':'No CAR emitted'],
-        ['Selected outcome', esc(ctx.objective.objectiveId+' → '+ctx.kr.id+' · '+ctx.kr.text)],
+        ['Capability Authorization Record', carDisplay],
+        ['Selected outcome', esc(selectedOutcome)],
         ['Management owner', esc(model.manager)],
         ['Assigned team', esc(model.team)],
         ['Delivery system', esc(model.backlog)],
         ['Delivery state', badge(s.delivery,'blue')],
-        ['Accepted Epic', managementAcceptanceCurrent()&&acceptedEpicAppliesToContext(ctx)?'<code>'+esc(state.acceptedEpic.epic)+'</code> · '+esc(state.acceptedEpic.title):'None · management review required']
+        ['Accepted Epic', managementAcceptanceCurrent()?'<code>'+esc(state.acceptedEpic.epic)+'</code> · '+esc(state.acceptedEpic.title):'None · management review required']
       ])+
       '<div class="ns-grid-3"><article><small>DEPENDENCY</small><h3>'+(primary.authorized?'Accepted CAR binding':'Authorization required')+'</h3><p>'+(primary.authorized?'AI and management cannot silently widen or replace the authorized outcome.':'Management cannot promote candidate work without a current CAR.')+'</p></article><article><small>TRANSLATION</small><h3>Composite AI assisted</h3><p>Objective → KR → CAR becomes candidate outcome-oriented Epics with reuse checks.</p></article><article><small>CONSTRAINT</small><h3>No live writeback</h3><p>Accepting an Epic creates no Jira, GitHub or Azure DevOps work item.</p></article></div>'+
       managementComposer();
