@@ -565,18 +565,6 @@
     return {objective,kr,authorization};
   }
 
-  function setLineageContext(objectiveId, krId) {
-    const objective=okrPortfolio.find(o=>o.approved&&o.objectiveId===objectiveId);
-    if(!objective)return false;
-    const kr=objective.krs.find(k=>k.id===krId)||objective.krs[0];
-    state.lineageObjective=objective.objectiveId;
-    state.lineageKr=kr.id;
-    state.lineageScenario='current';
-    state.lineageQuestion='';
-    state.lineageAnswer='';
-    return true;
-  }
-
   function lineageOkrContext() {
     const objective=okrPortfolio.find(o=>o.approved&&o.objectiveId===state.lineageObjective)||okrPortfolio.find(o=>o.approved&&o.objectiveId===state.selectedObjective)||okrPortfolio.find(o=>o.approved)||okrPortfolio[0];
     const kr=objective.krs.find(k=>k.id===state.lineageKr)||objective.krs[0];
@@ -592,6 +580,8 @@
     state.lineageKr=kr.id;
     state.lineageFocus=krId? 'kr':'objective';
     state.lineageScenario='current';
+    state.lineageQuestion='';
+    state.lineageAnswer='';
     return true;
   }
 
@@ -1335,7 +1325,6 @@
     const q=String(question||'').trim();
     const lower=q.toLowerCase();
     if(!q)return '';
-    if(/why|matter|purpose|important/.test(lower))return interpretation.why;
     if(/stale|revision|digest|changed|mismatch/.test(lower)){
       if(state.lineageScenario==='stale')return 'The candidate CAR revision does not match the current bound revision. Northstar rejects that substitution so prior approval cannot silently carry forward. The next step is to compare the current authorization package before downstream reliance.';
       return candidate.carRevision===bound.carRevision?'The candidate is using the current bound CAR revision for this path.':'The candidate revision differs from the bound CAR revision, so the lineage must fail closed.';
@@ -1345,7 +1334,12 @@
       : 'There is no accepted Epic contribution currently bound to this path, so Northstar shows no downstream work as authorized by this lineage.';
     if(/who|owner|accountable/.test(lower))return interpretation.owner+' is the accountable role shown for this selected path. Northstar preserves that accountability separately from technical implementation ownership.';
     if(/next|action|do now|what should/.test(lower))return interpretation.next;
-    if(/scope|authority|allow|permission|authorize/.test(lower))return 'The displayed CAR authorizes only the bounded product intent and scope shown in this lineage. It does not grant funding, staffing, procurement, risk acceptance, deployment, provisioning or general cloud-execution authority.';
+    if(/scope|authority|allow|permission|authorize/.test(lower)){
+      if(evaluation.result==='REJECTED')return 'This candidate is rejected and grants no authority. Northstar will not infer permission from a stale, substituted or broadened lineage.';
+      if(bound.carId==='NO CURRENT CAR')return 'No current Capability Authorization Record is bound to this path, so Northstar shows no product-intent authority. An explicit current CAR is required before downstream work can rely on authorization.';
+      return 'The current CAR authorizes only the bounded product intent and scope shown in this lineage. It does not grant funding, staffing, procurement, risk acceptance, deployment, provisioning or general cloud-execution authority.';
+    }
+    if(/why|matter|purpose|important/.test(lower))return interpretation.why;
     if(/objective|key result|kr|outcome/.test(lower))return 'This node is traced to '+ctx.objective.objectiveId+' → '+ctx.kr.id+'. The Objective expresses the leadership outcome; the Key Result names the measurable contribution target. Delivery completion does not independently prove the Key Result.';
     return interpretation.meaning+' '+interpretation.attention+' '+interpretation.next;
   }
