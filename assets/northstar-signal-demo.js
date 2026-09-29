@@ -1132,7 +1132,13 @@
 
   function selectedEvidenceRecords() {
     const ctx=selectedOkrContext();
-    if(ctx.objective.objectiveId===model.objectiveId&&ctx.kr.id===model.krId)return model.evidence;
+    if(ctx.objective.objectiveId===model.objectiveId&&ctx.kr.id===model.krId){
+      const rows=model.evidence.map(row=>[...row]);
+      if(acceptedEpicAppliesToContext(ctx)&&state.acceptedEpic){
+        rows.push(['Delivery','Management acceptance binding','DEMONSTRATED','HIGH','CURRENT',state.acceptedEpic.epic+' · '+state.acceptedEpic.title+' remains bound to the selected authorization context.']);
+      }
+      return rows;
+    }
     const rows=[
       ['Key Result',ctx.kr.source||'No evidence source defined','OPERATIONAL CONTEXT','HIGH','CURRENT',ctx.objective.objectiveId+' → '+ctx.kr.id+' · '+ctx.kr.text]
     ];
