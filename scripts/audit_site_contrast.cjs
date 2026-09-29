@@ -165,7 +165,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           await page.locator('[data-view="okr"]').click();
           await page.locator('[data-lineage-objective-open="O10"]').click();
           if(await page.locator('.ns-lineage-answer').count())throw new Error('Re-entering lineage from a different selected context must clear prior Ask Northstar answers');
-          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(currentLineage))throw new Error('Northstar recursive lineage must truthfully render the current strategy-to-evidence state');
+          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|EPIC ACCEPTANCE PENDING|AUTHORIZATION REQUIRED)/.test(currentLineage))throw new Error('Northstar recursive lineage must truthfully render the current strategy-to-evidence state');
           await page.locator('.ns-lineage-technical').evaluate(el=>el.open=true);
           const technicalLineage=await page.locator('.ns-lineage-technical').innerText();
           if(!/Outcome measurement\s+Northstar/.test(technicalLineage)||!/Evidence integrity\s+Assurance/.test(technicalLineage)||!/Candidate digest/.test(technicalLineage)||!/Bound digest/.test(technicalLineage))throw new Error('Northstar technical proof must retain outcome, evidence-integrity and digest semantics behind the disclosure');
@@ -180,7 +180,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           await page.locator('[data-lineage-step="up"]').click();
           if(!/WHAT THIS MEANS\s+KEY RESULT/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar lineage must drill back up to the parent node in the leadership interpretation');
           await page.locator('[data-lineage-objective-root="O9"]').click();
-          if(/PENDING AUTHORIZATION/.test(currentLineage)&&(/CE-EP-23-KR9\.4/.test(currentLineage)||/AE-0001/.test(currentLineage)))throw new Error('Northstar must not fabricate contribution or Assurance evidence before current authorization exists');
+          if(/AUTHORIZATION REQUIRED/.test(currentLineage)&&(/CE-EP-23-KR9\.4/.test(currentLineage)||/AE-0001/.test(currentLineage)))throw new Error('Northstar must not fabricate contribution or Assurance evidence before current authorization exists');
           for(const failure of ['wrongKr','stale','expanded']){
             await page.locator('[data-lineage-scenario="'+failure+'"]').click();
             const failed=await page.locator('#northstar-view').innerText();
@@ -189,7 +189,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           }
           await page.locator('[data-lineage-scenario="current"]').click();
           const recovered=await page.locator('#northstar-view').innerText();
-          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|PENDING AUTHORIZATION)/.test(recovered))throw new Error('Northstar recursive lineage must recover to the truthful current state after negative tests');
+          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|EPIC ACCEPTANCE PENDING|AUTHORIZATION REQUIRED)/.test(recovered))throw new Error('Northstar recursive lineage must recover to the truthful current state after negative tests');
           await page.locator('[data-view="okr"]').click();
           await page.locator('[data-compose-kr="KR10.1"]').click();
           await page.locator('[data-view="lineage"]').click();
@@ -296,7 +296,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-management-accept]').click();
         await page.locator('.ns-view-nav [data-view="lineage"]').click();
         const mismatchedAcceptedLineage=await page.locator('#northstar-view').innerText();
-        if(!/O10 → KR10\.1/.test(mismatchedAcceptedLineage)||!/PENDING AUTHORIZATION/.test(mismatchedAcceptedLineage)||/CE-EP-23-KR10\.1/.test(mismatchedAcceptedLineage))throw new Error('An accepted Epic bound only to O9/KR9.4 must not be consumed as O10/KR10.1 lineage');
+        if(!/O10 → KR10\.1/.test(mismatchedAcceptedLineage)||!/EPIC ACCEPTANCE PENDING/.test(mismatchedAcceptedLineage)||/CE-EP-23-KR10\.1/.test(mismatchedAcceptedLineage))throw new Error('An accepted Epic bound only to O9/KR9.4 must not be consumed as O10/KR10.1 lineage');
         await page.locator('.ns-view-nav [data-view="management"]').click();
         if(!/Managed Network Foundation/.test(singleProposalCard)||/Reusable Data Platform Foundation/.test(singleProposalCard)||!/Create the managed-network Epic only from the checked authorization/.test(singleProposalCard)||!/CAR scope binding\s+Every proposed Epic remains bound to the exact current CAR outcome and scope/i.test(singleComposerText))throw new Error('Single-KR generation must derive its proposal and management intent from the checked authorization rather than the page context');
         if(!/MANAGEMENT ACCEPTED/.test(await page.locator('.ns-management-composer').innerText()))throw new Error('Single-KR proposal acceptance must remain intact after lineage inspection');
@@ -533,6 +533,8 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('[data-lineage-objective-open="O10"]').click();
         const goldenLineage=await page.locator('#northstar-view').innerText();
         if(!/O10/.test(goldenLineage)||!/KR10\.1/.test(goldenLineage)||!/CAPABILITY AUTHORIZATION\s+CAR-0002/.test(goldenLineage)||!/CURRENT CAR\s+·\s+CAR-0002/.test(goldenLineage))throw new Error('Northstar CAR golden path must visibly connect O10 to KR10.1 and CAR-0002');
+        if(!/LINEAGE INTEGRITY\s+EPIC ACCEPTANCE PENDING/.test(goldenLineage)||!/CAPABILITY AUTHORIZATION\s+·\s+CAR-0002[\s\S]*AUTHORIZED/.test(goldenLineage)||!/Product intent is authorized by CAR-0002/.test(goldenLineage))throw new Error('A current CAR must remain visibly AUTHORIZED while incomplete downstream lineage is labeled Epic acceptance pending');
+        if(/CAPABILITY AUTHORIZATION\s+·\s+CAR-0002[\s\S]{0,500}PENDING AUTHORIZATION/.test(goldenLineage))throw new Error('Downstream Epic state must never relabel an authorized CAR as pending authorization');
         await page.locator('[data-view="okr"]').click();
         const composer=page.locator('[data-open-composer]').first();
         if(await composer.count()!==1||!await composer.isVisible())throw new Error('Northstar OKR Composer trigger must be visible');
