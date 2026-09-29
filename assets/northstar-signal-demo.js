@@ -637,6 +637,13 @@
     }).filter(Boolean);
   }
 
+  function explicitManagementSourceBindings() {
+    return state.managementSelectedDecisionIds.map(id=>{
+      const item=authorizationQueue.find(candidate=>candidate.decisionId===id);
+      return item?authorizationBindingFor(item):null;
+    }).filter(Boolean);
+  }
+
   function managementSelectionDigest(bindings) {
     return stableDigest(bindings.map(b=>[b.objectiveId,b.krId,b.decisionId,b.carId,b.packageId,b.evidenceDigest,b.authorizedOutcome,b.authorizedScope].join('|')).sort().join('||'));
   }
@@ -1169,7 +1176,7 @@
   function invalidateHandoff(){state.handoffConfirmed=false;state.handoffReceipt=null;}
 
   function handoff() {
-    const s=selectedFeedback(), ctx=selectedOkrContext(), sourceBindings=managementSourceBindings(), pkg=handoffPackage();
+    const s=selectedFeedback(), ctx=selectedOkrContext(), sourceBindings=explicitManagementSourceBindings(), pkg=handoffPackage();
     if(!pkg&&sourceBindings.length)return headline('Management acceptance required.','Current source CAR bindings exist, but Northstar will not create BHP-0001 until management accepts a deterministically validated Epic proposal for that exact source set.','EXECUTION HANDOFF')+'<div class="ns-boundary-box"><strong>Fail closed:</strong> Return to Management, review the Composite AI proposal and explicitly accept an Epic before handoff.</div>';
     if(!pkg)return headline('No authorized backlog handoff exists.','A candidate Epic may remain visible as planning context, but Northstar cannot create a handoff package until at least one exact source Capability Authorization Record is current and selected.','EXECUTION HANDOFF')+
       '<div class="ns-airlock"><article><small>STRATEGY</small><h3>'+esc(ctx.objective.objectiveId)+' → '+esc(ctx.kr.id)+'</h3><p>Page context remains visible, but it does not substitute for an accepted source binding.</p></article><b>→</b><article><small>AUTHORIZATION</small><h3>NO CURRENT SOURCE CAR</h3><p>No exact current source binding satisfies this handoff contract.</p></article><b>→</b><article><small>DELIVERY</small><h3>BLOCKED</h3><p>No authorized handoff package.</p></article></div>'+
