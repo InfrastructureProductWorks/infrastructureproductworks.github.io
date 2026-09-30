@@ -146,6 +146,18 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           const shellColor=await page.locator('.ns-shell').evaluate(el=>getComputedStyle(el).backgroundColor);
           if(shellColor!=='rgb(4, 17, 30)')throw new Error('Northstar application shell must use the dark visual system');
           if(await page.locator('.ns-lineage-branch').count()!==3||await page.locator('.ns-lineage-branch-krs [data-lineage-kr]').count()!==5)throw new Error('Lineage portfolio graph must preserve all approved Objectives and their five child KRs');
+          // Fork topology must remain truthful at widths on both sides of the
+          // proof-panel breakpoint, including tablets and smaller laptops.
+          for(const forkWidth of [320,390,800,801,900,1024,1200,1440]){
+            await page.setViewportSize({width:forkWidth,height:viewport.height});
+            const forkLayout=await page.locator('.ns-lineage-branch-krs').evaluateAll(groups=>groups.map(group=>{
+              const children=[...group.children].map(child=>{const r=child.getBoundingClientRect();return {top:r.top,width:r.width};});
+              return {children,columns:getComputedStyle(group).gridTemplateColumns};
+            }));
+            if(forkLayout.some(group=>group.children.some(child=>child.width<100)||group.children.some(child=>Math.abs(child.top-group.children[0].top)>2)))throw new Error('Sibling KRs must fork from their Objective in a usable shared row at '+forkWidth+'px');
+            if(await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth+2))throw new Error('Objective/KR fork layout must not overflow at '+forkWidth+'px');
+          }
+          await page.setViewportSize(viewport);
           const initialZoom=await page.locator('.ns-lineage-node strong').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
           await page.locator('[data-lineage-zoom="in"]').click();
           if(await page.locator('.ns-lineage-node strong').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize))<=initialZoom)throw new Error('Lineage zoom must change the rendered node size');

@@ -484,9 +484,11 @@ body:has(dialog[open]) .ns-demo,body:has(dialog[open]) main>.hero,body:has(dialo
 dialog::backdrop{background:#030d17;backdrop-filter:none}
 
 /* Sibling KRs fan out from their Objective; they never imply KR-to-KR lineage. */
-.ns-lineage-branch-krs{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+.ns-lineage-root-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.ns-lineage-branch-krs{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ns-lineage-branch-krs>button:only-child{grid-column:1/-1}
 .ns-lineage-branch-krs:before{height:13px}
-.ns-lineage-branch-krs:after{content:'';position:absolute;top:13px;left:25%;right:25%;height:2px;background:#6bd6f7;box-shadow:0 0 8px #38bdff}
+.ns-lineage-branch-krs:after{content:'';position:absolute;top:13px;left:calc(25% - 3px);right:calc(25% - 3px);height:2px;background:#6bd6f7;box-shadow:0 0 8px #38bdff}
 .ns-lineage-branch-krs>button{position:relative}
 .ns-lineage-branch-krs>button:before{content:'';position:absolute;top:-14px;left:50%;height:13px;width:2px;background:#6bd6f7;box-shadow:0 0 8px #38bdff}
 .ns-lineage-branch-krs:has(>button:only-child):after{display:none}
