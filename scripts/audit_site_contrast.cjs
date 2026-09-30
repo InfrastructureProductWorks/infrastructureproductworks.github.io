@@ -138,6 +138,25 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
             await page.locator(`[data-view="${view}"]`).click();await audit(route,'scenario '+scenario+' / view '+view);
           }
           await page.locator('[data-view="lineage"]').click();
+          // Northstar recursive-lineage UI contract: presentation may evolve, but selection,
+          // semantic node treatment, progressive context, responsive layout and fail-closed
+          // behavior must remain observable in the rendered browser surface.
+          const lineageFlow=page.locator('.ns-lineage-flow');
+          if(await lineageFlow.count()!==1||!await lineageFlow.isVisible())throw new Error('Northstar lineage visual surface must render exactly once and remain visible');
+          if(await page.locator('.ns-lineage-visual-key').count()!==1)throw new Error('Northstar lineage must expose the semantic visual key');
+          const lineageNodes=page.locator('.ns-lineage-node');
+          if(await lineageNodes.count()<8)throw new Error('Northstar lineage visual surface must retain the complete bounded path');
+          const selectedNode=page.locator('.ns-lineage-node.selected');
+          if(await selectedNode.count()!==1||await selectedNode.getAttribute('data-lineage-node')!=='objective')throw new Error('Northstar lineage must enter with exactly one selected Objective node');
+          if(await page.locator('.ns-lineage-node.is-context').count()<1)throw new Error('Northstar lineage must progressively de-emphasize distant context without hiding it');
+          const box=await lineageFlow.boundingBox();
+          if(!box||box.width<280||box.height<300)throw new Error('Northstar lineage canvas must retain a usable rendered footprint at '+mode+' viewport');
+          const overflow=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,view:document.documentElement.clientWidth,flow:document.querySelector('.ns-lineage-flow')?.scrollWidth||0,flowView:document.querySelector('.ns-lineage-flow')?.clientWidth||0}));
+          if(overflow.doc>overflow.view+2||overflow.flow>overflow.flowView+2)throw new Error('Northstar lineage visual surface must not introduce horizontal overflow at '+mode+' viewport');
+          await page.locator('[data-lineage-node="car"]').click();
+          if(await page.locator('.ns-lineage-node.selected[data-lineage-node="car"]').count()!==1)throw new Error('Selecting a lineage node must move visual focus to that exact node');
+          if(await page.locator('.ns-lineage-node[data-lineage-node="car"]').getAttribute('aria-pressed')!=='true')throw new Error('Selected lineage node must expose aria-pressed=true');
+          await page.locator('[data-lineage-node="objective"]').click();
           const currentLineage=await page.locator('#northstar-view').innerText();
           if(!/WHAT THIS MEANS/.test(currentLineage)||!/WHY IT MATTERS/.test(currentLineage)||!/WHAT NEEDS ATTENTION/.test(currentLineage)||!/ACCOUNTABLE ROLE/.test(currentLineage)||!/WHAT HAPPENS NEXT/.test(currentLineage))throw new Error('Northstar lineage must translate technical lineage into leadership meaning');
           if(await page.locator('[data-lineage-ask-input]').count()!==1||await page.locator('[data-lineage-ask-submit]').count()!==1||await page.locator('.ns-lineage-technical summary').count()!==1)throw new Error('Northstar lineage must expose Ask Northstar and collapsible technical proof');
