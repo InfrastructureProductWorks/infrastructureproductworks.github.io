@@ -157,7 +157,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
             }
           }
           await page.locator('[data-view="lineage"]').click();
-          // Northstar recursive-lineage UI contract: presentation may evolve, but selection,
+          // Northstar traceability UI contract: presentation may evolve, but selection,
           // semantic node treatment, progressive context, responsive layout and fail-closed
           // behavior must remain observable in the rendered browser surface.
           // The dark visual system covers the application, and the portfolio graph
@@ -232,12 +232,12 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           await page.locator('[data-view="okr"]').click();
           await page.locator('[data-lineage-objective-open="O10"]').click();
           if(await page.locator('.ns-lineage-answer').count())throw new Error('Re-entering lineage from a different selected context must clear prior Ask Northstar answers');
-          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|EPIC ACCEPTANCE PENDING|AUTHORIZATION REQUIRED)/.test(currentLineage))throw new Error('Northstar recursive lineage must truthfully render the current strategy-to-evidence state');
+          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|EPIC ACCEPTANCE PENDING|AUTHORIZATION REQUIRED)/.test(currentLineage))throw new Error('Northstar end-to-end traceability must truthfully render the current strategy-to-evidence state');
           await page.locator('.ns-lineage-technical').evaluate(el=>el.open=true);
           const technicalLineage=await page.locator('.ns-lineage-technical').innerText();
           if(!/Outcome measurement\s+Northstar/.test(technicalLineage)||!/Evidence integrity\s+Assurance/.test(technicalLineage)||!/Candidate digest/.test(technicalLineage)||!/Bound digest/.test(technicalLineage))throw new Error('Northstar technical proof must retain outcome, evidence-integrity and digest semantics behind the disclosure');
-          if(await page.locator('[data-lineage-objective-root]').count()!==3)throw new Error('Northstar recursive lineage must expose all three approved Objective roots');
-          if(!/APPROVED OBJECTIVE NODES/.test(currentLineage)||!/OBJECTIVE\s+O9/.test(currentLineage)||/STRATEGIC OUTCOME/.test(currentLineage))throw new Error('Northstar recursive lineage must begin at approved Objective nodes and must not present Strategic Outcome Management in this release');
+          if(await page.locator('[data-lineage-objective-root]').count()!==3)throw new Error('Northstar end-to-end traceability must expose all three approved Objective roots');
+          if(!/APPROVED OBJECTIVE NODES/.test(currentLineage)||!/OBJECTIVE\s+O9/.test(currentLineage)||/STRATEGIC OUTCOME/.test(currentLineage))throw new Error('Northstar end-to-end traceability must begin at approved Objective nodes and must not present Strategic Outcome Management in this release');
           await page.locator('[data-lineage-objective-root="O10"]').click();
           if(!/O10\s+Increase reuse of governed infrastructure products/.test(await page.locator('#northstar-view').innerText()))throw new Error('Northstar Objective roots must be selectable');
           await page.locator('[data-lineage-kr="KR10.2"]').click();
@@ -251,17 +251,17 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           for(const failure of ['wrongKr','stale','expanded']){
             await page.locator('[data-lineage-scenario="'+failure+'"]').click();
             const failed=await page.locator('#northstar-view').innerText();
-            if(!/LINEAGE INTEGRITY\s+REJECTED/.test(failed)||!/Fail closed\./.test(failed))throw new Error('Northstar recursive lineage scenario '+failure+' must fail closed');
+            if(!/LINEAGE INTEGRITY\s+REJECTED/.test(failed)||!/Fail closed\./.test(failed))throw new Error('Northstar end-to-end traceability scenario '+failure+' must fail closed');
             if(failure==='wrongKr'&&!/Candidate replay target · selected KR definition is not inherited across coordinates/.test(failed))throw new Error('Wrong-KR replay must not pair a substituted KR ID with the selected KR definition');
           }
           await page.locator('[data-lineage-scenario="current"]').click();
           const recovered=await page.locator('#northstar-view').innerText();
-          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|EPIC ACCEPTANCE PENDING|AUTHORIZATION REQUIRED)/.test(recovered))throw new Error('Northstar recursive lineage must recover to the truthful current state after negative tests');
+          if(!/LINEAGE INTEGRITY\s+(VERIFIED|READY FOR ASSURANCE|EPIC ACCEPTANCE PENDING|AUTHORIZATION REQUIRED)/.test(recovered))throw new Error('Northstar end-to-end traceability must recover to the truthful current state after negative tests');
           await page.locator('[data-view="okr"]').click();
           await page.locator('[data-compose-kr="KR10.1"]').click();
           await page.locator('[data-view="lineage"]').click();
           const selectedLineage=await page.locator('#northstar-view').innerText();
-          if(!/O10 → KR10\.1/.test(selectedLineage)||/O9 → KR9\.4 → CPD-0001/.test(selectedLineage))throw new Error('Recursive lineage must derive from the selected OKR context without leaking the primary O9 path');
+          if(!/O10 → KR10\.1/.test(selectedLineage)||/O9 → KR9\.4 → CPD-0001/.test(selectedLineage))throw new Error('End-to-end traceability must derive from the selected OKR context without leaking the primary O9 path');
           await page.locator('[data-view="okr"]').click();
           await page.locator('[data-open-trail="KR9.4"]').click();
           await page.locator('[data-close-trail]').click();

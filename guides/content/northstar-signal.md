@@ -52,17 +52,17 @@ Authorization is tied to the exact reviewed item and its decision context. The r
 Changing the item, expanding its scope, substituting a proposal, or reusing authorization in another context requires a new valid decision path. A CAR does not grant general platform, funding, procurement, risk-acceptance, or cloud-execution authority.
 
 ## 8 Inspect evidence and lineage
-Open **Evidence** and use the authorization-trail controls where available. Then open **Recursive Lineage** to inspect the selected strategy-to-Assurance path.
+Open **Evidence** and use the authorization-trail controls where available. Then open **End-to-End Traceability** to inspect the selected strategy-to-Assurance path.
 
 Follow the synthetic lineage from Objective and Key Result through decision evidence, authorization, backlog handoff, delivery evidence, and benefit feedback. The demo keeps these records distinct so one stage cannot overwrite the meaning of another.
 
 Use the evidence view to answer: what was proposed, what evidence supported it, what was actually authorized, what work inherited that authorization, and what later evidence measured the result?
 
-In **Recursive Lineage**, choose the Objective you want to inspect, select its Key Result, and drill into the nodes that have actual bindings. You can move between leadership, management, authorization, evidence, backlog, and outcome context without changing which source owns an already accepted artifact.
+In **End-to-End Traceability**, choose the Objective you want to inspect, select its Key Result, and drill into the nodes that have actual bindings. You can move between leadership, management, authorization, evidence, backlog, and outcome context without changing which source owns an already accepted artifact.
 
 A useful check is to browse one Objective after accepting an Epic from another. The accepted Epic should remain attached to its original Objective/KR and must not appear as evidence for the Objective you merely browsed. Return to the original Objective and Northstar should recover the accepted Epic from its saved source binding.
 
-In **Recursive Lineage**, review the current selected Objective/KR path and its candidate/bound tuple. **Current lineage** shows only bindings that actually exist. The synthetic **Wrong KR replay**, **Stale revision**, and **Authority expansion** controls mutate the candidate tuple so you can see Northstar fail closed. Choose **Current lineage** afterward to reset the demonstration.
+In **End-to-End Traceability**, review the current selected Objective/KR path and its candidate/bound tuple. **Current lineage** shows only bindings that actually exist. The synthetic **Wrong KR replay**, **Stale revision**, and **Authority expansion** controls mutate the candidate tuple so you can see Northstar fail closed. Choose **Current lineage** afterward to reset the demonstration.
 
 Direction matters: authority and constraints propagate downward toward delivery; evidence and observations return upward. A current CAR and accepted Epic can make a path **READY FOR ASSURANCE**, but Northstar does not display Assurance evidence as verified until an actual Assurance evidence record is bound. Product context likewise remains **NOT BOUND** until a source-owned product record exists.
 

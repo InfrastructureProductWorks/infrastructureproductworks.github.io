@@ -2,19 +2,6 @@ name: Verify public site
 
 on:
   pull_request:
-    paths:
-      - '**/*.html'
-      - '**/*.js'
-      - '**/*.cjs'
-      - '**/*.json'
-      - '**/*.svg'
-      - assets/portfolio.css
-      - assets/guides.css
-      - guides/content/*.md
-      - scripts/build_guides.py
-      - scripts/validate_guides.py
-      - scripts/audit_navigation.py
-      - .github/workflows/verify-public-site.yml
   push:
     branches: [main]
   workflow_dispatch:
@@ -34,6 +21,7 @@ jobs:
           python3 scripts/build_guides.py --check
           python3 scripts/validate_guides.py
           python3 scripts/audit_navigation.py
+          python3 scripts/audit_public_language.py
 
   validate-ethics-boundary:
     name: validate-ethics-boundary
