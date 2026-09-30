@@ -2,20 +2,6 @@ name: Verify public site
 
 on:
   pull_request:
-    paths:
-      - '**/*.html'
-      - '**/*.js'
-      - '**/*.cjs'
-      - '**/*.json'
-      - '**/*.svg'
-      - assets/portfolio.css
-      - assets/guides.css
-      - guides/content/*.md
-      - scripts/build_guides.py
-      - scripts/validate_guides.py
-      - scripts/audit_navigation.py
-      - scripts/audit_public_language.py
-      - .github/workflows/verify-public-site.yml
   push:
     branches: [main]
   workflow_dispatch:
