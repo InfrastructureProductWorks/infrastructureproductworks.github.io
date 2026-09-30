@@ -129,6 +129,17 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('#tamper-demo').click();await audit(route,'tampered evidence');
       }
       if(route==='/northstar-signal/demo/'){
+        // Supporting copy remains reachable with a keyboard while the working
+        // canvas no longer sits beneath an always-expanded introduction.
+        for(const selector of ['.ns-demo-intro','.ns-boundary','.ns-control-help']){
+          const disclosure=page.locator(selector).first();
+          await disclosure.locator('summary').press('Enter');
+          if(!await disclosure.evaluate(el=>el.open))throw new Error('Demo help disclosure must open with the keyboard');
+          await audit(route,'expanded '+selector);
+          await disclosure.locator('summary').press('Enter');
+          if(await disclosure.evaluate(el=>el.open))throw new Error('Demo help disclosure must close with the keyboard');
+        }
+        if(!await page.locator('.ns-boundary summary').isVisible())throw new Error('Synthetic-only boundary must stay visible when help is collapsed');
         for(const role of ['leader','manager','delivery']){
           await page.locator(`[data-role="${role}"]`).click();await audit(route,'role '+role);
         }
@@ -136,6 +147,14 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           await page.locator(`[data-scenario="${scenario}"]`).click();
           for(const view of ['okr','composer','leadership','management','decision','authorization','evidence','lineage','handoff','outcome']){
             await page.locator(`[data-view="${view}"]`).click();await audit(route,'scenario '+scenario+' / view '+view);
+            if(view==='lineage'){
+              await page.evaluate(()=>scrollTo(0,0));
+              if(mode==='desktop'){
+                const graphTop=await page.locator('.ns-lineage-universe').evaluate(el=>el.getBoundingClientRect().top);
+                if(graphTop>=900)throw new Error('Desktop lineage canvas must begin in the first viewport');
+              }
+              await page.screenshot({path:`${output}/northstar-lineage-${scenario}.png`,fullPage:true});
+            }
           }
           await page.locator('[data-view="lineage"]').click();
           // Northstar recursive-lineage UI contract: presentation may evolve, but selection,
@@ -626,3 +645,4 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
     if(unique.size)process.exitCode=1;
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
+
