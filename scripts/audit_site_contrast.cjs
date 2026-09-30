@@ -141,6 +141,17 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           // Northstar recursive-lineage UI contract: presentation may evolve, but selection,
           // semantic node treatment, progressive context, responsive layout and fail-closed
           // behavior must remain observable in the rendered browser surface.
+          // The dark visual system covers the application, and the portfolio graph
+          // exposes every approved root and child without duplicating context selectors.
+          const shellColor=await page.locator('.ns-shell').evaluate(el=>getComputedStyle(el).backgroundColor);
+          if(shellColor!=='rgb(4, 17, 30)')throw new Error('Northstar application shell must use the dark visual system');
+          if(await page.locator('.ns-lineage-branch').count()!==3||await page.locator('.ns-lineage-branch-krs [data-lineage-kr]').count()!==5)throw new Error('Lineage portfolio graph must preserve all approved Objectives and their five child KRs');
+          const initialZoom=await page.locator('.ns-lineage-node strong').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+          await page.locator('[data-lineage-zoom="in"]').click();
+          if(await page.locator('.ns-lineage-node strong').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize))<=initialZoom)throw new Error('Lineage zoom must change the rendered node size');
+          if(!await page.locator('[data-lineage-zoom="in"]').evaluate(el=>el===document.activeElement))throw new Error('Lineage zoom must retain keyboard focus');
+          await page.locator('[data-lineage-zoom="fit"]').click();
+          if(await page.locator('.ns-lineage-node strong').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize))!==16)throw new Error('Fit to screen must restore bounded lineage sizing');
           const lineageFlow=page.locator('.ns-lineage-flow');
           if(await lineageFlow.count()!==1||!await lineageFlow.isVisible())throw new Error('Northstar lineage visual surface must render exactly once and remain visible');
           if(await page.locator('.ns-lineage-visual-key').count()!==1)throw new Error('Northstar lineage must expose the semantic visual key');
@@ -439,6 +450,14 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const ceremonyText=await ceremony.innerText();
         if(!/1 of 2 selected items eligible/.test(ceremonyText)||!/Evidence digest/.test(ceremonyText)||!/Still not granted/.test(ceremonyText))throw new Error('Northstar ceremony must expose eligibility, digest and authority exclusions');
         await audit(route,'Leadership Decision Workspace / multi-select ceremony');
+        // Audit the scrollable package at both ends so every selected item's proof
+        // is independently readable, including a blocked item below the fold.
+        const ceremonyBody=ceremony.locator('.ns-ceremony-body');
+        await ceremonyBody.focus();
+        await ceremonyBody.evaluate(el=>{el.scrollTop=el.scrollHeight;});
+        const blockedProof=ceremony.locator('.blocked .ns-ceremony-proof');
+        if(!await blockedProof.isVisible())throw new Error('Blocked authorization proof must remain accessible inside the package');
+        await audit(route,'Leadership Decision Workspace / multi-select ceremony scrolled proof');
         await page.locator('[data-confirm-authorization]').click();
         if(await page.locator('#ns-authorization-ceremony-dialog[open]').count())throw new Error('Northstar authorization ceremony must close after confirmation');
         await page.locator('[data-view="management"]').click();
