@@ -466,6 +466,22 @@ body>header .nav-products>summary,body>header .mobile-nav>summary{color:#c3dce9}
 .ns-lineage-success,.ns-mc-reuse.green{background:#0c3024;color:#b7f2cf}
 .ns-lineage-pending,.ns-mc-reuse.amber,.ns-ceremony-item.blocked{background:#302813;color:#ffe3a0}
 .ns-ceremony-status.green{color:#b7f2cf}.ns-ceremony-status.amber{color:#ffe3a0}
+
+body>header .mobile-nav>summary{background:#0a2031;border-color:#31546b}
+.ns-ceremony-head{flex-shrink:0}
+.ns-ceremony-body{flex:1 1 auto}
+
+
+.ns-ceremony-head small{display:block;line-height:1.6}
+.ns-ceremony-head h2{line-height:1.4}
+.ns-ceremony-item h3{line-height:1.6}
+.ns-ceremony-proof>span{line-height:1.7}
+
+.ns-ceremony-dialog{position:fixed;isolation:isolate}
+
+/* Modal tasks suspend the background workspace until the user closes them. */
+body:has(dialog[open]) .ns-demo,body:has(dialog[open]) main>.hero,body:has(dialog[open])>header,body:has(dialog[open])>footer{visibility:hidden}
+dialog::backdrop{background:#030d17;backdrop-filter:none}
 </style>
 <script src="../../assets/northstar-signal-demo.js?v=ef3a04ef132f6a5f1e6219c8578d20c2cca51f3a" defer></script>
 </head>
