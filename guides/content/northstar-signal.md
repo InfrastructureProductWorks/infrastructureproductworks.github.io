@@ -58,13 +58,23 @@ Follow the synthetic lineage from Objective and Key Result through decision evid
 
 Use the evidence view to answer: what was proposed, what evidence supported it, what was actually authorized, what work inherited that authorization, and what later evidence measured the result?
 
-In **Recursive Lineage**, choose the Objective you want to inspect, select its Key Result, and drill into the nodes that have actual bindings. You can move between leadership, management, authorization, evidence, backlog, and outcome context without changing which source owns an already accepted artifact.
+In **Recursive Lineage**, choose the Objective you want to inspect, select its Key Result, and drill into the nodes that have actual bindings. The working canvas now uses a dark, connected visual system so the active path reads as one strategy-to-Assurance chain rather than a stack of unrelated records. You can move between leadership, management, authorization, evidence, backlog, and outcome context without changing which source owns an already accepted artifact.
+
+Use the visual key to read the path: **Objective** identifies the strategy root, **Key Result** identifies the measurable contribution, **Authorization** identifies the bounded decision/CAR portion of the path, **Execution** identifies accepted downstream work and product context, and **Assurance** identifies evidence evaluation. These colors and node treatments are navigation aids; they do not create or change authority.
+
+Exactly one lineage node is visually selected at a time. The selected node receives the strongest emphasis, nearby nodes remain prominent, and more distant nodes are deliberately subdued so you can follow the current context without losing the complete bounded path. Selecting a node changes the interpretation panel to that node; it does not rewrite the underlying lineage.
+
+Use **Drill up** to move toward the Objective, **Drill down** to move toward downstream execution and evidence, and **Show full path** to bring the complete lineage into view. The connected lines show relationship and direction, while the records themselves remain source-owned.
+
+The interpretation panel separates three levels of information. **What This Means** translates the selected node into leadership language. **Ask Northstar** provides bounded synthetic explanations about the selected context but has no approval authority. **View technical proof** exposes the candidate/bound tuple, digests, ownership boundaries, and authority rule for deeper inspection.
 
 A useful check is to browse one Objective after accepting an Epic from another. The accepted Epic should remain attached to its original Objective/KR and must not appear as evidence for the Objective you merely browsed. Return to the original Objective and Northstar should recover the accepted Epic from its saved source binding.
 
 In **Recursive Lineage**, review the current selected Objective/KR path and its candidate/bound tuple. **Current lineage** shows only bindings that actually exist. The synthetic **Wrong KR replay**, **Stale revision**, and **Authority expansion** controls mutate the candidate tuple so you can see Northstar fail closed. Choose **Current lineage** afterward to reset the demonstration.
 
 Direction matters: authority and constraints propagate downward toward delivery; evidence and observations return upward. A current CAR and accepted Epic can make a path **READY FOR ASSURANCE**, but Northstar does not display Assurance evidence as verified until an actual Assurance evidence record is bound. Product context likewise remains **NOT BOUND** until a source-owned product record exists.
+
+The visual treatment follows the same rule. A glowing or emphasized node means **current visual focus**, not approval. A dimmed node remains part of the path. A rejected/tampered candidate is rendered as a failure state and remains fail-closed; visual styling never converts an invalid lineage into a valid one.
 
 ## 9 Compose management Epics from authorized KRs
 Switch to **Management** and open **Management Composer**.
