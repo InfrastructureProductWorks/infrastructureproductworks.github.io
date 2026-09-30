@@ -148,12 +148,12 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           for(const view of ['okr','composer','leadership','management','decision','authorization','evidence','lineage','handoff','outcome']){
             await page.locator(`[data-view="${view}"]`).click();await audit(route,'scenario '+scenario+' / view '+view);
             if(view==='lineage'){
-              await page.evaluate(()=>scrollTo(0,0));
+              await page.evaluate(()=>scrollTo({top:0,left:0,behavior:'instant'}));
+              await page.screenshot({path:`${output}/northstar-lineage-${scenario}.png`,fullPage:true});
               if(mode==='desktop'){
                 const graphTop=await page.locator('.ns-lineage-universe').evaluate(el=>el.getBoundingClientRect().top);
-                if(graphTop>=900)throw new Error('Desktop lineage canvas must begin in the first viewport');
+                if(graphTop>=900)throw new Error('Desktop lineage canvas must begin in the first viewport; top='+graphTop);
               }
-              await page.screenshot({path:`${output}/northstar-lineage-${scenario}.png`,fullPage:true});
             }
           }
           await page.locator('[data-view="lineage"]').click();
