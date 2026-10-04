@@ -1,10 +1,10 @@
 name: Verify site text contrast
 on:
   pull_request:
-    paths: ['**/*.html', '**/*.css', '**/*.js', 'scripts/audit_site_contrast.cjs', '.github/workflows/verify-site-contrast.yml']
+    paths: ['**/*.html', '**/*.css', '**/*.js', '**/*.cjs', '**/*.json', '.github/workflows/verify-site-contrast.yml']
   push:
     branches: [main]
-    paths: ['**/*.html', '**/*.css', '**/*.js', 'scripts/audit_site_contrast.cjs', '.github/workflows/verify-site-contrast.yml']
+    paths: ['**/*.html', '**/*.css', '**/*.js', '**/*.cjs', '**/*.json', '.github/workflows/verify-site-contrast.yml']
 permissions:
   contents: read
 jobs:
