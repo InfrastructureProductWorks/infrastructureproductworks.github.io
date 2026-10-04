@@ -53,15 +53,31 @@ const mobile = process.env.CONTRAST_VIEWPORT === 'mobile';
     assert(await page.locator('#sample-json').isVisible());
     // A missing or malformed response must never display a passing assessment.
     for (const response of [{status:503,body:'unavailable'}, {status:200,contentType:'application/json',body:'{"synthetic":true,"cases":[]}'}]) {
-      await page.route('**/assets/guard-demo-reports.json', route => route.fulfill(response));
+      await page.route('**/assets/guard-demo-reports.json?*', route => route.fulfill(response));
       await page.reload();
       await page.waitForFunction(() => document.querySelector('#demo-status').textContent.includes('unavailable'));
       assert(await page.locator('#guard-output').isHidden());
       assert(await page.locator('#guard-scenario').isDisabled());
       assert(await page.locator('#download-report').isDisabled());
       assert(await page.locator('#download-okr-report').isDisabled());
-      await page.unroute('**/assets/guard-demo-reports.json');
+      await page.unroute('**/assets/guard-demo-reports.json?*');
     }
+    // Returning visitors may retain the pre-OKR markup while loading the new script.
+    const currentHtml = await fs.readFile('guard/demo/index.html', 'utf8');
+    const legacyHtml = currentHtml.split('\n').filter(line => !line.includes('id="sample-okr-report"')).join('\n');
+    await page.route('**/guard/demo/', route => route.fulfill({status:200,contentType:'text/html',body:legacyHtml}));
+    await page.reload();
+    await page.waitForSelector('#guard-output:not([hidden])');
+    await page.selectOption('#guard-scenario', 'fail');
+    const legacyReport = await page.locator('#sample-report').textContent();
+    assert(legacyReport.includes('Candidate task T2'));
+    const [legacyDownload] = await Promise.all([page.waitForEvent('download'), page.click('#download-report')]);
+    assert.equal(await fs.readFile(await legacyDownload.path(), 'utf8'), legacyReport);
+    await page.route('**/assets/guard-demo-reports.json?*', route => route.fulfill({status:503,body:'unavailable'}));
+    await page.reload();
+    await page.waitForFunction(() => document.querySelector('#demo-status').textContent.includes('unavailable'));
+    assert(await page.locator('#guard-output').isHidden());
+    assert(await page.locator('#download-report').isDisabled());
     assert.deepEqual(errors, []);
     const nojs = await browser.newContext({javaScriptEnabled:false});
     const fallback = await nojs.newPage();

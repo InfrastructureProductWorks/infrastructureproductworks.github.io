@@ -91,7 +91,7 @@ if (typeof document !== 'undefined') {
     output.hidden = true;
     select.disabled = true;
     download.disabled = true;
-    downloadOkr.disabled = true;
+    if (downloadOkr) downloadOkr.disabled = true;
     status.textContent = 'Sample reports are unavailable. Reload to try again, or use the Guard user guide above. No assessment has been performed.';
   }
   function render() {
@@ -108,12 +108,12 @@ if (typeof document !== 'undefined') {
       setText('continuity-explanation', sample.continuitySummary.explanation);
       setText('next-action', sample.nextAction);
       setText('sample-report', report);
-      setText('sample-okr-report', okrReport);
+      if (downloadOkr) setText('sample-okr-report', okrReport);
       setText('sample-json', JSON.stringify({ schemaVersion: bundle.schemaVersion, synthetic: true, boundary: bundle.boundary, scope: bundle.scope, sample }, null, 2));
       selected = { id: sample.id, report, okrReport };
       output.hidden = false;
       download.disabled = false;
-      downloadOkr.disabled = false;
+      if (downloadOkr) downloadOkr.disabled = false;
       status.textContent = 'Showing the synthetic ' + sample.label + ' report. No live evaluation has run.';
     } catch { unavailable(); }
   }
@@ -131,8 +131,8 @@ if (typeof document !== 'undefined') {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   download.addEventListener('click', () => downloadSelected('assessment'));
-  downloadOkr.addEventListener('click', () => downloadSelected('okr'));
-  fetch('/assets/guard-demo-reports.json').then(response => {
+  if (downloadOkr) downloadOkr.addEventListener('click', () => downloadSelected('okr'));
+  fetch('/assets/guard-demo-reports.json?v=523cdb373ad9974d8882b7222e18b44506446bc6').then(response => {
     if (!response.ok) throw new Error('Sample unavailable');
     return response.json();
   }).then(data => {

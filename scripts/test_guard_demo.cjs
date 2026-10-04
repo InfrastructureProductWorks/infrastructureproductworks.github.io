@@ -61,3 +61,13 @@ assert(html.includes('<noscript>'));
 assert(html.includes('id="guard-output" hidden'));
 assert(html.includes('id="guard-scenario" disabled'));
 console.log('Guard sample report consistency: PASS');
+
+// Cache keys must change with every coupled demo asset, including the report fixture.
+const {execFileSync} = require('node:child_process');
+const script = fs.readFileSync('assets/guard-demo.js', 'utf8');
+for (const asset of ['guard-demo.js', 'guard-demo.css', 'guard-demo-reports.json']) {
+  const hash = execFileSync('git', ['hash-object', 'assets/' + asset], {encoding:'utf8'}).trim();
+  const reference = '/assets/' + asset + '?v=' + hash;
+  assert(html.includes(reference), 'Missing current asset version: ' + asset);
+  if (asset.endsWith('.json')) assert(script.includes(reference), 'Report fetch must use the same version');
+}
