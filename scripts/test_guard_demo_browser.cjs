@@ -25,6 +25,16 @@ const mobile = process.env.CONTRAST_VIEWPORT === 'mobile';
       const download = await pending;
       assert.equal(download.suggestedFilename(), `iaap-guard-synthetic-${id}-report.txt`);
       assert.equal(await fs.readFile(await download.path(),'utf8'), displayed);
+      const okrDisplayed = await page.locator('#sample-okr-report').textContent();
+      assert(okrDisplayed.includes(json.sample.scan.revision.sha));
+      assert(okrDisplayed.includes('SYNTHETIC OKR IMPROVEMENT REPORT'));
+      if (id === 'pass') assert(okrDisplayed.includes('No candidate remediation work'));
+      else for (const text of ['Objective O1', 'Key result KR1', 'Epic EP1', 'Feature F1', 'Candidate story US1', 'Candidate task T2']) assert(okrDisplayed.includes(text));
+      const okrPending = page.waitForEvent('download');
+      await page.getByRole('button', {name:'Download OKR report (.txt)',exact:true}).click();
+      const okrDownload = await okrPending;
+      assert.equal(okrDownload.suggestedFilename(), `iaap-guard-synthetic-${id}-okr-report.txt`);
+      assert.equal(await fs.readFile(await okrDownload.path(),'utf8'), okrDisplayed);
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Horizontal overflow');
     }
     await page.locator('#guard-scenario').focus();
@@ -42,6 +52,7 @@ const mobile = process.env.CONTRAST_VIEWPORT === 'mobile';
       assert(await page.locator('#guard-output').isHidden());
       assert(await page.locator('#guard-scenario').isDisabled());
       assert(await page.locator('#download-report').isDisabled());
+      assert(await page.locator('#download-okr-report').isDisabled());
       await page.unroute('**/assets/guard-demo-reports.json');
     }
     assert.deepEqual(errors, []);

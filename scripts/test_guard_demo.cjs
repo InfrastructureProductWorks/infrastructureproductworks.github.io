@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const {formatGuardReport} = require('../assets/guard-demo.js');
+const {formatGuardReport, formatGuardOkrReport} = require('../assets/guard-demo.js');
 const bundle = require('../assets/guard-demo-reports.json');
 assert.equal(bundle.synthetic, true);
 assert.deepEqual(bundle.cases.map(s => s.id), ['pass', 'warning', 'fail']);
@@ -43,6 +43,10 @@ for (const sample of bundle.cases) {
   assert.deepEqual(counts, plan.totals);
   assert(Object.values(plan.boundary).every(v => v === true));
   const report = formatGuardReport(bundle, sample);
+  const okr = formatGuardOkrReport(bundle, sample);
+  for (const text of ['SYNTHETIC OKR IMPROVEMENT REPORT', scan.revision.sha, sample.label, sample.nextAction, bundle.boundary, bundle.scope, 'AUTHORITY BOUNDARY']) assert(okr.includes(text));
+  if (sample.id === 'pass') assert.match(okr, /No candidate remediation work/);
+  else for (const text of ['Objective O1', 'Key result KR1', 'baseline 1 → target 0', 'Epic EP1', 'Feature F1', 'Candidate story US1', 'Acceptance evidence:', 'Candidate task T2', scan.findings[0].ruleId, scan.findings[0].evidence]) assert(okr.includes(text));
   for (const text of ['SYNTHETIC', scan.revision.sha, sample.label, sample.nextAction, bundle.boundary, bundle.scope]) assert(report.includes(text));
   if (sample.id === 'pass') {
     assert.equal(plan.objectives.length, 0);

@@ -12,7 +12,8 @@ Use this guide to install Guard for selected repositories, obtain an architectur
 2. Choose PASS, WARNING, or FAIL from **Sample scenario**. The proposal, result, continuity summary, and report change together.
 3. Read the **Sample assessment report**. Check the fictional revision, evaluated scope, rule findings, and next action.
 4. For WARNING and FAIL, follow the advisory objective and key result into its Epic, Feature, User Story, acceptance evidence, and candidate tasks. PASS has no current finding and no invented remediation backlog.
-5. Expand **Inspect structured sample output** to inspect the scan and planning examples. Select **Download this report (.txt)** to retain exactly the readable report currently displayed.
+5. Expand **Inspect structured sample output** to inspect the scan and planning examples. Select **Download assessment report (.txt)** to retain exactly the readable assessment currently displayed.
+6. Under **OKR improvement report**, select **Download OKR report (.txt)** for a separate report containing the objective, measurable key result, Epic, Feature, candidate story and tasks, acceptance evidence, and source finding. Its content follows the selected scenario. Choose WARNING or FAIL for a populated plan; PASS explicitly reports no current findings instead of inventing OKRs.
 
 All demo reports are authored synthetic examples, not live engine results. The three-rule scope is intentionally illustrative. The continuity summary is presentation data, not an exported evidence manifest. NOT ESTABLISHED means no trusted comparison is available. A PASS, a score, or supported continuity never grants merge or deployment authority.
 

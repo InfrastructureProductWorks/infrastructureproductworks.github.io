@@ -1,7 +1,7 @@
 'use strict';
 
 function formatGuardReport(bundle, sample) {
-  const scan = sample.scan, plan = sample.planning, continuity = sample.continuitySummary;
+  const scan = sample.scan, continuity = sample.continuitySummary;
   const lines = [
     'IAAP GUARD — SYNTHETIC SAMPLE REPORT',
     bundle.boundary, '', bundle.scope, '',
@@ -30,9 +30,17 @@ function formatGuardReport(bundle, sample) {
     'Recommendation: ' + finding.recommendation
   ));
   lines.push('', 'EVIDENCE CONTINUITY (ADVISORY)', continuity.status.toUpperCase().replaceAll('_', ' '), continuity.explanation,
-    'This authored summary is not a native evidence manifest. Evidence continuity is not authorization continuity.',
-    '', 'ADVISORY IMPROVEMENT PLAN', 'Planning schema: ' + plan.schemaVersion,
-    'Planning catalog: ' + plan.planningCatalogVersion, 'Status: ' + plan.status);
+    'This authored summary is not a native evidence manifest. Evidence continuity is not authorization continuity.');
+  lines.push('', ...formatGuardPlanning(sample));
+  lines.push('', 'NEXT ACTION', sample.nextAction, '', 'AUTHORITY BOUNDARY',
+    'Guard supplies evidence and candidate work only. It does not approve, merge, assign, remediate, or deploy. Existing repository protections and accountable decisions still apply.');
+  return lines.join('\n') + '\n';
+}
+
+function formatGuardPlanning(sample) {
+  const plan = sample.planning;
+  const lines = ['ADVISORY IMPROVEMENT PLAN', 'Planning schema: ' + plan.schemaVersion,
+    'Planning catalog: ' + plan.planningCatalogVersion, 'Status: ' + plan.status];
   if (!plan.objectives.length) lines.push('No candidate remediation work is proposed for this sample. Continue accountable human review.');
   plan.objectives.forEach(objective => {
     lines.push('Objective ' + objective.id + ': ' + objective.title);
@@ -50,18 +58,32 @@ function formatGuardReport(bundle, sample) {
       });
     });
   });
-  lines.push('', 'NEXT ACTION', sample.nextAction, '', 'AUTHORITY BOUNDARY',
-    'Guard supplies evidence and candidate work only. It does not approve, merge, assign, remediate, or deploy. Existing repository protections and accountable decisions still apply.');
-  return lines.join('\n') + '\n';
+  return lines;
 }
 
-if (typeof module !== 'undefined') module.exports = { formatGuardReport };
+function formatGuardOkrReport(bundle, sample) {
+  return [
+    'IAAP GUARD — SYNTHETIC OKR IMPROVEMENT REPORT',
+    bundle.boundary, '', bundle.scope, '',
+    'SCENARIO: ' + sample.title,
+    'Fictional repository: ' + sample.scan.repository.name,
+    'Fictional head revision: ' + sample.scan.revision.sha,
+    'Architecture result: ' + sample.label,
+    'Source findings: ' + (sample.scan.findings.map(f => f.ruleId + ': ' + f.evidence).join('\n') || 'No current findings in this sample scope.'),
+    '', ...formatGuardPlanning(sample), '', 'NEXT ACTION', sample.nextAction, '',
+    'AUTHORITY BOUNDARY',
+    'Guard supplies evidence and candidate work only. It does not approve, merge, assign, remediate, or deploy. Existing repository protections and accountable decisions still apply.', ''
+  ].join('\n');
+}
+
+if (typeof module !== 'undefined') module.exports = { formatGuardReport, formatGuardOkrReport };
 
 if (typeof document !== 'undefined') {
   const select = document.getElementById('guard-scenario');
   const output = document.getElementById('guard-output');
   const status = document.getElementById('demo-status');
   const download = document.getElementById('download-report');
+  const downloadOkr = document.getElementById('download-okr-report');
   let bundle, selected;
   const setText = (id, value) => { document.getElementById(id).textContent = value; };
   function unavailable() {
@@ -69,6 +91,7 @@ if (typeof document !== 'undefined') {
     output.hidden = true;
     select.disabled = true;
     download.disabled = true;
+    downloadOkr.disabled = true;
     status.textContent = 'Sample reports are unavailable. Reload to try again, or use the Guard user guide above. No assessment has been performed.';
   }
   function render() {
@@ -76,6 +99,7 @@ if (typeof document !== 'undefined') {
       const sample = bundle.cases.find(item => item.id === select.value);
       if (!sample) throw new Error('Unknown scenario');
       const report = formatGuardReport(bundle, sample);
+      const okrReport = formatGuardOkrReport(bundle, sample);
       setText('scenario-title', sample.title);
       setText('sample-request', 'Sample proposal: ' + sample.request);
       setText('architecture-result', sample.label);
@@ -84,25 +108,30 @@ if (typeof document !== 'undefined') {
       setText('continuity-explanation', sample.continuitySummary.explanation);
       setText('next-action', sample.nextAction);
       setText('sample-report', report);
+      setText('sample-okr-report', okrReport);
       setText('sample-json', JSON.stringify({ schemaVersion: bundle.schemaVersion, synthetic: true, boundary: bundle.boundary, scope: bundle.scope, sample }, null, 2));
-      selected = { id: sample.id, report };
+      selected = { id: sample.id, report, okrReport };
       output.hidden = false;
       download.disabled = false;
+      downloadOkr.disabled = false;
       status.textContent = 'Showing the synthetic ' + sample.label + ' report. No live evaluation has run.';
     } catch { unavailable(); }
   }
   select.addEventListener('change', render);
-  download.addEventListener('click', () => {
+  function downloadSelected(kind) {
     if (!selected) return;
-    const url = URL.createObjectURL(new Blob([selected.report], { type: 'text/plain;charset=utf-8' }));
+    const text = kind === 'okr' ? selected.okrReport : selected.report;
+    const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'iaap-guard-synthetic-' + selected.id + '-report.txt';
+    link.download = 'iaap-guard-synthetic-' + selected.id + (kind === 'okr' ? '-okr-report.txt' : '-report.txt');
     document.body.append(link);
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-  });
+  }
+  download.addEventListener('click', () => downloadSelected('assessment'));
+  downloadOkr.addEventListener('click', () => downloadSelected('okr'));
   fetch('/assets/guard-demo-reports.json').then(response => {
     if (!response.ok) throw new Error('Sample unavailable');
     return response.json();
