@@ -32,6 +32,7 @@ jobs:
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/contrast-server.log 2>&1 &
           node scripts/audit_site_contrast.cjs
+          node scripts/test_guard_demo_browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
