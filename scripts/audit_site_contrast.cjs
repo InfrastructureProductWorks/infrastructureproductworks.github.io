@@ -101,6 +101,16 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
       if(process.env.CONTRAST_ROUTES&&!process.env.CONTRAST_ROUTES.split(',').includes(route))continue;
       await page.goto(base+route,{waitUntil:'networkidle'});
       await audit(route,'default');
+      if(route==='/guard/demo/'){
+        await page.waitForSelector('#guard-output:not([hidden])');
+        for(const id of ['pass','warning','fail']){
+          await page.selectOption('#guard-scenario',id);
+          await audit(route,'Guard '+id+' report');
+          await page.locator('main details').evaluate(el=>el.open=true);
+          await audit(route,'Guard '+id+' structured report');
+          await page.locator('main details').evaluate(el=>el.open=false);
+        }
+      }
       // Expose navigation text that is hidden at the initial viewport.
       const menu=page.locator(mode==='mobile'?'.mobile-nav':'.nav-products');
       if(await menu.count()&&await menu.isVisible()){
@@ -645,4 +655,3 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
     if(unique.size)process.exitCode=1;
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
-

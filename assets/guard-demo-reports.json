@@ -1,0 +1,495 @@
+{
+  "schemaVersion": "ipw-guard-demo/v1",
+  "synthetic": true,
+  "boundary": "Authored synthetic examples, not output from a live Guard evaluation. Repositories and revisions are fictional. The demo evaluates no repository and grants no approval, merge, remediation, or deployment authority.",
+  "scope": "Three illustrative applicable rules only. Scores describe this sample scope, not complete repository coverage, security, compliance, or production readiness. Continuity summaries are illustrative presentation data, not native evidence-manifest exports.",
+  "cases": [
+    {
+      "id": "pass",
+      "title": "A product change ready for human review",
+      "label": "PASS",
+      "request": "Keep required ownership and accountable approval in the product contract.",
+      "observation": "Required team ownership and human approval are present in the sample proposal.",
+      "nextAction": "Complete the ordinary repository review. A passing assessment does not authorize merge or deployment.",
+      "scan": {
+        "schemaVersion": "scan-result/v1",
+        "ruleCatalogVersion": "iaap-guard/v0.1.2",
+        "scoringModelVersion": "coverage/v1",
+        "repository": {
+          "name": "synthetic-example/cloud-foundation"
+        },
+        "revision": {
+          "sha": "d6a73fecd5b3888bf83d5351b7a91a0e4132346a",
+          "ref": "refs/heads/synthetic-pass"
+        },
+        "detectedComponents": [
+          "consumer-contract",
+          "ai-authority"
+        ],
+        "findings": [],
+        "ruleResults": [
+          {
+            "ruleId": "IAP-P001",
+            "result": "PASS",
+            "dimension": "Consumer Boundary",
+            "scoring": true,
+            "experimental": false
+          },
+          {
+            "ruleId": "IAP-A002",
+            "result": "PASS",
+            "dimension": "Governance",
+            "scoring": true,
+            "experimental": false
+          },
+          {
+            "ruleId": "IAP-P004",
+            "result": "PASS",
+            "dimension": "Product Abstraction",
+            "scoring": true,
+            "experimental": false
+          }
+        ],
+        "dimensionScores": [
+          {
+            "dimension": "Consumer Boundary",
+            "passed": 1,
+            "applicable": 1,
+            "score": 100
+          },
+          {
+            "dimension": "Governance",
+            "passed": 1,
+            "applicable": 1,
+            "score": 100
+          },
+          {
+            "dimension": "Product Abstraction",
+            "passed": 1,
+            "applicable": 1,
+            "score": 100
+          }
+        ],
+        "overallScore": 100,
+        "conclusion": "success"
+      },
+      "planning": {
+        "schemaVersion": "planning-report/v1",
+        "planningCatalogVersion": "iaap-planning/v0.1.0",
+        "status": "no-current-findings",
+        "source": {
+          "scanSchemaVersion": "scan-result/v1",
+          "ruleCatalogVersion": "iaap-guard/v0.1.2",
+          "scoringModelVersion": "coverage/v1",
+          "repository": {
+            "name": "synthetic-example/cloud-foundation"
+          },
+          "revision": {
+            "sha": "d6a73fecd5b3888bf83d5351b7a91a0e4132346a",
+            "ref": "refs/heads/synthetic-pass"
+          },
+          "conclusion": "success",
+          "overallScore": 100,
+          "findingCount": 0
+        },
+        "totals": {
+          "objectives": 0,
+          "keyResults": 0,
+          "epics": 0,
+          "features": 0,
+          "userStories": 0,
+          "candidateTasks": 0
+        },
+        "objectives": [],
+        "boundary": {
+          "advisory": true,
+          "candidateBacklogOnly": true,
+          "doesNotExecuteWork": true,
+          "doesNotManageSprints": true
+        }
+      },
+      "continuitySummary": {
+        "status": "supported",
+        "baselineRevision": "8e74829faf97ba4165459e57ad11cdce82a33b1d",
+        "currentRevision": "d6a73fecd5b3888bf83d5351b7a91a0e4132346a",
+        "explanation": "No material rule or finding change in this authored comparison."
+      }
+    },
+    {
+      "id": "warning",
+      "title": "Ownership evidence needs attention",
+      "label": "WARNING",
+      "request": "Make the team field optional in the sample product request.",
+      "observation": "The sample product contract no longer requires team or owner metadata.",
+      "nextAction": "Restore required owner or team metadata and validate that requests without ownership are rejected.",
+      "scan": {
+        "schemaVersion": "scan-result/v1",
+        "ruleCatalogVersion": "iaap-guard/v0.1.2",
+        "scoringModelVersion": "coverage/v1",
+        "repository": {
+          "name": "synthetic-example/cloud-foundation"
+        },
+        "revision": {
+          "sha": "ee323aa3a1d0d56fee5c17e8717aed7a5615bef6",
+          "ref": "refs/heads/synthetic-warning"
+        },
+        "detectedComponents": [
+          "consumer-contract",
+          "ai-authority"
+        ],
+        "findings": [
+          {
+            "ruleId": "IAP-P004",
+            "result": "WARNING",
+            "dimension": "Product Abstraction",
+            "componentContext": "consumer-contract",
+            "path": "contracts/product.schema.json",
+            "evidence": "The sample product contract no longer requires team or owner metadata.",
+            "recommendation": "Restore required owner or team metadata and validate that requests without ownership are rejected.",
+            "scoring": true,
+            "experimental": false
+          }
+        ],
+        "ruleResults": [
+          {
+            "ruleId": "IAP-P001",
+            "result": "PASS",
+            "dimension": "Consumer Boundary",
+            "scoring": true,
+            "experimental": false
+          },
+          {
+            "ruleId": "IAP-A002",
+            "result": "PASS",
+            "dimension": "Governance",
+            "scoring": true,
+            "experimental": false
+          },
+          {
+            "ruleId": "IAP-P004",
+            "result": "WARNING",
+            "dimension": "Product Abstraction",
+            "scoring": true,
+            "experimental": false
+          }
+        ],
+        "dimensionScores": [
+          {
+            "dimension": "Consumer Boundary",
+            "passed": 1,
+            "applicable": 1,
+            "score": 100
+          },
+          {
+            "dimension": "Governance",
+            "passed": 1,
+            "applicable": 1,
+            "score": 100
+          },
+          {
+            "dimension": "Product Abstraction",
+            "passed": 0,
+            "applicable": 1,
+            "score": 0
+          }
+        ],
+        "overallScore": 67,
+        "conclusion": "neutral"
+      },
+      "planning": {
+        "schemaVersion": "planning-report/v1",
+        "planningCatalogVersion": "iaap-planning/v0.1.0",
+        "status": "improvement-required",
+        "source": {
+          "scanSchemaVersion": "scan-result/v1",
+          "ruleCatalogVersion": "iaap-guard/v0.1.2",
+          "scoringModelVersion": "coverage/v1",
+          "repository": {
+            "name": "synthetic-example/cloud-foundation"
+          },
+          "revision": {
+            "sha": "ee323aa3a1d0d56fee5c17e8717aed7a5615bef6",
+            "ref": "refs/heads/synthetic-warning"
+          },
+          "conclusion": "neutral",
+          "overallScore": 67,
+          "findingCount": 1
+        },
+        "totals": {
+          "objectives": 1,
+          "keyResults": 1,
+          "epics": 1,
+          "features": 1,
+          "userStories": 1,
+          "candidateTasks": 2
+        },
+        "objectives": [
+          {
+            "id": "O1",
+            "dimension": "Product Abstraction",
+            "title": "Make product ownership explicit",
+            "baselineScore": 0,
+            "targetScore": 100,
+            "keyResults": [
+              {
+                "id": "KR1",
+                "statement": "Resolve the demonstrated finding and retain a passing assessment on the corrected revision.",
+                "metric": "Unresolved findings for IAP-P004",
+                "baseline": 1,
+                "target": 0
+              }
+            ],
+            "epics": [
+              {
+                "id": "EP1",
+                "ruleId": "IAP-P004",
+                "title": "Require accountable product ownership",
+                "outcome": "Every product request identifies an accountable team.",
+                "keyResultIds": [
+                  "KR1"
+                ],
+                "findingCount": 1,
+                "experimental": false,
+                "evidence": [
+                  {
+                    "path": "contracts/product.schema.json",
+                    "observation": "The sample product contract no longer requires team or owner metadata."
+                  }
+                ],
+                "features": [
+                  {
+                    "id": "F1",
+                    "title": "Required ownership contract",
+                    "userStories": [
+                      {
+                        "id": "US1",
+                        "statement": "As a platform operator, I need an accountable owner on every request.",
+                        "candidate": true,
+                        "acceptanceEvidence": [
+                          "Requests without owner or team metadata are rejected.",
+                          "Retain a fresh Guard result for the corrected head revision."
+                        ],
+                        "candidateTasks": [
+                          {
+                            "id": "T1",
+                            "title": "Restore required owner or team metadata and validate that requests without ownership are rejected.",
+                            "candidate": true
+                          },
+                          {
+                            "id": "T2",
+                            "title": "Add a negative test for the reported defect and reassess the new revision.",
+                            "candidate": true
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "boundary": {
+          "advisory": true,
+          "candidateBacklogOnly": true,
+          "doesNotExecuteWork": true,
+          "doesNotManageSprints": true
+        }
+      },
+      "continuitySummary": {
+        "status": "review_required",
+        "baselineRevision": "8e74829faf97ba4165459e57ad11cdce82a33b1d",
+        "currentRevision": "ee323aa3a1d0d56fee5c17e8717aed7a5615bef6",
+        "explanation": "Required ownership evidence changed; prior evidence needs accountable review."
+      }
+    },
+    {
+      "id": "fail",
+      "title": "Automation bypasses accountable approval",
+      "label": "FAIL",
+      "request": "Allow the sample automation to approve its own material proposal.",
+      "observation": "The sample automation policy enables self-approval of its own proposal.",
+      "nextAction": "Remove self-approval and require accountable human authorization before execution.",
+      "scan": {
+        "schemaVersion": "scan-result/v1",
+        "ruleCatalogVersion": "iaap-guard/v0.1.2",
+        "scoringModelVersion": "coverage/v1",
+        "repository": {
+          "name": "synthetic-example/cloud-foundation"
+        },
+        "revision": {
+          "sha": "f5357059d6655b42401d746d239276ab09d049ab",
+          "ref": "refs/heads/synthetic-fail"
+        },
+        "detectedComponents": [
+          "consumer-contract",
+          "ai-authority"
+        ],
+        "findings": [
+          {
+            "ruleId": "IAP-A002",
+            "result": "FAIL",
+            "dimension": "Governance",
+            "componentContext": "ai-authority",
+            "path": "policies/automation.json",
+            "evidence": "The sample automation policy enables self-approval of its own proposal.",
+            "recommendation": "Remove self-approval and require accountable human authorization before execution.",
+            "scoring": true,
+            "experimental": false
+          }
+        ],
+        "ruleResults": [
+          {
+            "ruleId": "IAP-P001",
+            "result": "PASS",
+            "dimension": "Consumer Boundary",
+            "scoring": true,
+            "experimental": false
+          },
+          {
+            "ruleId": "IAP-A002",
+            "result": "FAIL",
+            "dimension": "Governance",
+            "scoring": true,
+            "experimental": false
+          },
+          {
+            "ruleId": "IAP-P004",
+            "result": "PASS",
+            "dimension": "Product Abstraction",
+            "scoring": true,
+            "experimental": false
+          }
+        ],
+        "dimensionScores": [
+          {
+            "dimension": "Consumer Boundary",
+            "passed": 1,
+            "applicable": 1,
+            "score": 100
+          },
+          {
+            "dimension": "Governance",
+            "passed": 0,
+            "applicable": 1,
+            "score": 0
+          },
+          {
+            "dimension": "Product Abstraction",
+            "passed": 1,
+            "applicable": 1,
+            "score": 100
+          }
+        ],
+        "overallScore": 67,
+        "conclusion": "failure"
+      },
+      "planning": {
+        "schemaVersion": "planning-report/v1",
+        "planningCatalogVersion": "iaap-planning/v0.1.0",
+        "status": "improvement-required",
+        "source": {
+          "scanSchemaVersion": "scan-result/v1",
+          "ruleCatalogVersion": "iaap-guard/v0.1.2",
+          "scoringModelVersion": "coverage/v1",
+          "repository": {
+            "name": "synthetic-example/cloud-foundation"
+          },
+          "revision": {
+            "sha": "f5357059d6655b42401d746d239276ab09d049ab",
+            "ref": "refs/heads/synthetic-fail"
+          },
+          "conclusion": "failure",
+          "overallScore": 67,
+          "findingCount": 1
+        },
+        "totals": {
+          "objectives": 1,
+          "keyResults": 1,
+          "epics": 1,
+          "features": 1,
+          "userStories": 1,
+          "candidateTasks": 2
+        },
+        "objectives": [
+          {
+            "id": "O1",
+            "dimension": "Governance",
+            "title": "Restore accountable human authorization",
+            "baselineScore": 0,
+            "targetScore": 100,
+            "keyResults": [
+              {
+                "id": "KR1",
+                "statement": "Resolve the demonstrated finding and retain a passing assessment on the corrected revision.",
+                "metric": "Unresolved findings for IAP-A002",
+                "baseline": 1,
+                "target": 0
+              }
+            ],
+            "epics": [
+              {
+                "id": "EP1",
+                "ruleId": "IAP-A002",
+                "title": "Remove approval bypass",
+                "outcome": "Material proposals require an accountable human decision.",
+                "keyResultIds": [
+                  "KR1"
+                ],
+                "findingCount": 1,
+                "experimental": false,
+                "evidence": [
+                  {
+                    "path": "policies/automation.json",
+                    "observation": "The sample automation policy enables self-approval of its own proposal."
+                  }
+                ],
+                "features": [
+                  {
+                    "id": "F1",
+                    "title": "Human approval boundary",
+                    "userStories": [
+                      {
+                        "id": "US1",
+                        "statement": "As an accountable approver, I need material proposals to require my authorization.",
+                        "candidate": true,
+                        "acceptanceEvidence": [
+                          "Self-approval is disabled and approval-bypass tests pass.",
+                          "Retain a fresh Guard result for the corrected head revision."
+                        ],
+                        "candidateTasks": [
+                          {
+                            "id": "T1",
+                            "title": "Remove self-approval and require accountable human authorization before execution.",
+                            "candidate": true
+                          },
+                          {
+                            "id": "T2",
+                            "title": "Add a negative test for the reported defect and reassess the new revision.",
+                            "candidate": true
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "boundary": {
+          "advisory": true,
+          "candidateBacklogOnly": true,
+          "doesNotExecuteWork": true,
+          "doesNotManageSprints": true
+        }
+      },
+      "continuitySummary": {
+        "status": "not_established",
+        "baselineRevision": null,
+        "currentRevision": "f5357059d6655b42401d746d239276ab09d049ab",
+        "explanation": "No trusted baseline is supplied in this example. Continuity cannot be established."
+      }
+    }
+  ]
+}

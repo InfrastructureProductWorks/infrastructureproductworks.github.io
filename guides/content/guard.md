@@ -6,6 +6,18 @@ Infrastructure Product Works | Version 1.0 | September 24, 2026
 
 Use this guide to install Guard for selected repositories, obtain an architecture assessment on a pull request, investigate findings, and verify the result after a correction. Guard's supported user interface is the **IaaP Guard / Architecture** GitHub Check.
 
+## Explore the sample report first
+
+1. Open the [Guard demo](/guard/demo/). No GitHub installation or credentials are needed.
+2. Choose PASS, WARNING, or FAIL from **Sample scenario**. The proposal, result, continuity summary, and report change together.
+3. Read the **Sample assessment report**. Check the fictional revision, evaluated scope, rule findings, and next action.
+4. For WARNING and FAIL, follow the advisory objective and key result into its Epic, Feature, User Story, acceptance evidence, and candidate tasks. PASS has no current finding and no invented remediation backlog.
+5. Expand **Inspect structured sample output** to inspect the scan and planning examples. Select **Download this report (.txt)** to retain exactly the readable report currently displayed.
+
+All demo reports are authored synthetic examples, not live engine results. The three-rule scope is intentionally illustrative. The continuity summary is presentation data, not an exported evidence manifest. NOT ESTABLISHED means no trusted comparison is available. A PASS, a score, or supported continuity never grants merge or deployment authority.
+
+Demo procedure updated October 4, 2026. For a real assessment, continue with the hosted App steps below.
+
 ## 1 Prepare the repository
 
 You need a GitHub account with access to the repository and someone authorized to install the App for the relevant owner or organization. Follow your organization's installation policy if installation requires an administrator.

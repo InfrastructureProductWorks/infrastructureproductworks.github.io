@@ -22,6 +22,7 @@ jobs:
           python3 scripts/validate_guides.py
           python3 scripts/audit_navigation.py
           python3 scripts/audit_public_language.py
+          node scripts/test_guard_demo.cjs
 
   validate-ethics-boundary:
     name: validate-ethics-boundary

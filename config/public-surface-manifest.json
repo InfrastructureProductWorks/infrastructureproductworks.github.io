@@ -13,6 +13,7 @@
     "crossplane/index.html",
     "docs/guard/index.html",
     "forge/index.html",
+    "guard/demo/index.html",
     "guard/index.html",
     "guides/assurance/index.html",
     "guides/console/index.html",
@@ -48,6 +49,11 @@
       "path": "data/roadmap-relationships.json",
       "gitBlobSha": "6e63e8936b912be5fa9d717304f9afcb27655b4d",
       "classification": "public roadmap projection"
+    },
+    {
+      "path": "assets/guard-demo-reports.json",
+      "gitBlobSha": "523cdb373ad9974d8882b7222e18b44506446bc6",
+      "classification": "authored synthetic Guard scan and advisory planning examples; not live evidence"
     }
   ],
   "downloads": [
