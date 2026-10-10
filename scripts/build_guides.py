@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 GUIDE_UPDATED = {
-    'northstar-signal': 'September 27, 2026',
+    'northstar-signal': 'October 10, 2026',
 }
 
 APPS = {

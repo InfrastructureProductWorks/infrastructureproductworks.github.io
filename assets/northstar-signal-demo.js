@@ -479,29 +479,36 @@
     }).join('');
 
     return '<div class="ns-dashboard-head">'+
-      '<div><p class="eyebrow">'+esc(model.division)+' · '+esc(model.period)+'</p><h2>Cloud Platform OKRs</h2><p>Leadership starts with outcomes, not tickets. Delivery status is visible, but it never substitutes for the named evidence source that proves a Key Result.</p><div class="ns-dashboard-actions"><button type="button" class="ns-okr-open primary" data-open-composer>Create OKR with Composite AI</button><span>AI proposes · Northstar validates · you decide</span></div></div>'+
-      '<div class="ns-dashboard-status"><span class="pulse"></span><div><small>PORTFOLIO SIGNAL</small><strong>'+(state.composerAccepted?'Synthetic OKR draft accepted for review':benefitUnproven?'1 downstream benefit still unproven':'All highlighted benefit signals measured')+'</strong></div></div>'+
+      '<div><p class="eyebrow">'+esc(model.division)+' · '+esc(model.period)+'</p><h2>Cloud Platform Outcomes</h2><p>Leadership starts with outcomes, not tickets. Delivery status is visible, but it never substitutes for the named evidence source that proves a Key Result.</p><button class="ns-okr-open primary" type="button" data-open-composer>Create OKR with Composite AI</button> <small>AI proposes · Northstar validates · you decide</small></div>'+
     '</div>'+
     (state.composerAccepted?'<div class="ns-composer-accepted"><strong>Accepted synthetic draft</strong><span>The structurally sound draft is ready for accountable review. The demo does not create an authoritative Strategic Outcome Record or write to an external system.</span><button type="button" data-open-composer>Review draft</button></div>':'')+
+    '<section class="ns-executive-priority ns-attention-card" aria-labelledby="ns-priority-title">'+
+      '<div class="ns-priority-copy">'+
+        '<div class="ns-priority-heading"><small>LEADERSHIP ATTENTION</small>'+badge(primary.decision,decisionPending?'blue':primary.authorized?'green':'amber')+'</div>'+
+        '<h3 id="ns-priority-title">'+esc(model.proposedOutcome)+'</h3>'+
+        '<p>'+(decisionPending?esc(s.attention[0]):primary.authorized?'The decision authorizes bounded product intent. Northstar keeps the exact CAR visible while attention shifts downstream.':primary.decision==='REUSE EXISTING'?'The decision resolved to reuse an existing governed product, so no new CAR or build handoff is emitted.':'The decision is deferred. No CAR or authorized downstream handoff exists until leadership revisits it.')+'</p>'+
+        '<div class="ns-priority-meta"><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span><span>'+(primary.authorized?'CURRENT SOURCE CAR':'NO CURRENT SOURCE CAR')+'</span></div>'+
+      '</div>'+
+      '<div class="ns-priority-actions"><span class="ns-priority-benefit '+(benefitUnproven?'warning':'good')+'">'+(benefitUnproven?'1 downstream benefit still unproven':'Benefit evidence measured')+'</span>'+
+        '<button class="ns-okr-open primary" data-review-decision="'+esc(model.krId)+'" type="button">'+(decisionPending?'Review decision':'View decision record')+' <span aria-hidden="true">→</span></button>'+
+      '</div>'+
+    '</section>'+
+    '<details class="ns-priority-lineage"><summary>Why this matters and traceability</summary>'+
+      '<p>Closing '+esc(model.epic)+' will not close '+esc(model.krId)+'. '+(decisionPending?'No authorized backlog handoff exists. ':'')+'Delivery and authorization evidence do not establish downstream benefit.</p>'+
+      '<ol aria-label="Decision lineage"><li>Objective</li><li>Key Result</li><li>Decision</li><li>CAR</li><li>Epic</li><li>Delivery evidence</li><li>Measured benefit</li></ol>'+
+      '<div class="ns-boundary-box"><strong>Leadership rule:</strong> a completed Epic can change the delivery signal. It cannot change authorization status, which comes from decision/CAR evidence. Downstream benefit is measured separately. <strong>Fail closed:</strong> no current source CAR means no authorized backlog handoff, Epic proposal, or BHP.</div>'+
+    '</details>'+
     '<div class="ns-exec-metrics">'+
       '<article><div class="metric-icon">◎</div><div><small>OBJECTIVES</small><strong>3</strong><span>Division priorities</span></div></article>'+
       '<article><div class="metric-icon">▥</div><div><small>KEY RESULTS</small><strong>5</strong><span>Owned, measurable outcomes</span></div></article>'+
       '<article class="'+(decisionPending?'attention':'good')+'"><div class="metric-icon">!</div><div><small>NEEDS DECISION</small><strong>'+(decisionPending?'1':'0')+'</strong><span>'+(decisionPending?esc(model.decisionId)+' requires review':'No decision pending')+'</span></div></article>'+
-      '<article class="'+(benefitUnproven?'attention':'good')+'"><div class="metric-icon">◌</div><div><small>BENEFIT UNPROVEN</small><strong>'+benefitUnproven+'</strong><span>'+(benefitUnproven?'Benefit evidence pending':'Benefit evidence received')+'</span></div></article>'+
     '</div>'+
     '<div class="ns-leadership-grid">'+
       '<div class="ns-leadership-main">'+
         '<div class="ns-section-title"><div><small>OUTCOME PORTFOLIO</small><h3>Division objectives and Key Results</h3></div><span>Delivery ≠ outcome</span></div>'+
         '<div class="ns-okr-board">'+objectiveCards+'</div>'+
       '</div>'+
-      '<aside class="ns-attention-rail">'+
-        '<div class="ns-rail-head"><small>LEADERSHIP ATTENTION</small><h3>What needs you now</h3></div>'+
-        '<article class="ns-attention-card '+(decisionPending?'':'resolved')+'"><div class="ns-attention-top"><span class="priority">'+(decisionPending?'DECISION':'DECISION RESOLVED')+'</span>'+badge(primary.decision,decisionPending?'blue':primary.authorized?'green':'amber')+'</div><h4>'+esc(model.proposedOutcome)+'</h4><p>'+(decisionPending?esc(s.attention[0]):primary.authorized?'The decision authorizes bounded product intent. Northstar keeps the exact CAR visible while attention shifts downstream.':primary.decision==='REUSE EXISTING'?'The decision resolved to reuse an existing governed product, so no new CAR or build handoff is emitted.':'The decision is deferred. No CAR or authorized downstream handoff exists until leadership revisits it.')+'</p><div class="ns-attention-meta"><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span></div><button class="ns-okr-open primary" data-review-decision="'+esc(model.krId)+'" type="button">'+(decisionPending?'Review decision':'View decision record')+' <span aria-hidden="true">→</span></button></article>'+
-        '<article class="ns-rail-insight"><small>WHY THIS MATTERS</small><strong>Closing '+esc(model.epic)+' will not close '+esc(model.krId)+'.</strong><p>KR9.4 is assessed from decision/CAR evidence; downstream benefit is measured separately.</p></article>'+
-        '<article class="ns-rail-proof"><small>TRACEABILITY</small><div><b>Objective</b><span>→</span><b>KR</b><span>→</span><b>Decision</b><span>→</span><b>CAR</b><span>→</span><b>Epic</b></div></article>'+
-      '</aside>'+
-    '</div>'+
-    '<div class="ns-boundary-box"><strong>Leadership rule:</strong> a completed Epic can change the delivery signal. It cannot change KR9.4 authorization status, which comes from decision/CAR evidence. Downstream benefit is measured separately.</div>';
+    '</div>';
   }
 
   function leadership() {

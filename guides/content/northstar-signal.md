@@ -7,6 +7,8 @@ Open the [Northstar Signal synthetic demo](/northstar-signal/demo/). The default
 
 Use only fictional information. The public demo does not connect to enterprise systems, approve funding, provision cloud resources, accept risk, or create production work.
 
+Start with the Leadership attention card, which surfaces the current decision, why it needs review, and whether downstream benefit is proven. The **Review decision** control opens the decision record; it does not approve or authorize anything. Three compact measures summarize Objectives, Key Results, and items needing a decision. Benefit evidence remains visible in the attention card and the related Key Result.
+
 The dashboard can contain multiple approved Objectives. Select an Objective to focus its Key Results, then use the available lineage/drill actions to move into the selected KR, decision/CAR, Epic, evidence, or outcome context. At least one synthetic Objective exposes a current CAR so you can follow a complete golden path.
 
 Review the Objective, each Key Result, its evidence source, and the current status shown by the synthetic fixture. The current public demo does not expose numeric baseline, target, or observed-benefit values. Delivery progress and Key Result status are intentionally separate.
