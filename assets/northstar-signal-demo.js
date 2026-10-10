@@ -487,7 +487,7 @@
         '<div class="ns-priority-heading"><small>LEADERSHIP ATTENTION</small>'+badge(primary.decision,decisionPending?'blue':primary.authorized?'green':'amber')+'</div>'+
         '<h3 id="ns-priority-title">'+esc(model.proposedOutcome)+'</h3>'+
         '<p>'+(decisionPending?esc(s.attention[0]):primary.authorized?'The decision authorizes bounded product intent. Northstar keeps the exact CAR visible while attention shifts downstream.':primary.decision==='REUSE EXISTING'?'The decision resolved to reuse an existing governed product, so no new CAR or build handoff is emitted.':'The decision is deferred. No CAR or authorized downstream handoff exists until leadership revisits it.')+'</p>'+
-        '<div class="ns-priority-meta"><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span></div>'+
+        '<div class="ns-priority-meta"><span>'+esc(model.krId)+'</span><span>'+esc(model.decisionId)+'</span><span>'+(primary.authorized?'CURRENT SOURCE CAR':'NO CURRENT SOURCE CAR')+'</span></div>'+
       '</div>'+
       '<div class="ns-priority-actions"><span class="ns-priority-benefit '+(benefitUnproven?'warning':'good')+'">'+(benefitUnproven?'1 downstream benefit still unproven':'Benefit evidence measured')+'</span>'+
         '<button class="ns-okr-open primary" data-review-decision="'+esc(model.krId)+'" type="button">'+(decisionPending?'Review decision':'View decision record')+' <span aria-hidden="true">→</span></button>'+
@@ -496,7 +496,7 @@
     '<details class="ns-priority-lineage"><summary>Why this matters and traceability</summary>'+
       '<p>Closing '+esc(model.epic)+' will not close '+esc(model.krId)+'. '+(decisionPending?'No authorized backlog handoff exists. ':'')+'Delivery and authorization evidence do not establish downstream benefit.</p>'+
       '<ol aria-label="Decision lineage"><li>Objective</li><li>Key Result</li><li>Decision</li><li>CAR</li><li>Epic</li><li>Delivery evidence</li><li>Measured benefit</li></ol>'+
-      '<div class="ns-boundary-box"><strong>Leadership rule:</strong> a completed Epic can change the delivery signal. It cannot change authorization status, which comes from decision/CAR evidence. Downstream benefit is measured separately.</div>'+
+      '<div class="ns-boundary-box"><strong>Leadership rule:</strong> a completed Epic can change the delivery signal. It cannot change authorization status, which comes from decision/CAR evidence. Downstream benefit is measured separately. <strong>Fail closed:</strong> no current source CAR means no authorized backlog handoff, Epic proposal, or BHP.</div>'+
     '</details>'+
     '<div class="ns-exec-metrics">'+
       '<article><div class="metric-icon">◎</div><div><small>OBJECTIVES</small><strong>3</strong><span>Division priorities</span></div></article>'+
