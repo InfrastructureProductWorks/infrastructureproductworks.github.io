@@ -494,7 +494,7 @@
       '</div>'+
     '</section>'+
     '<details class="ns-priority-lineage"><summary>Why this matters and traceability</summary>'+
-      '<p>Closing '+esc(model.epic)+' will not close '+esc(model.krId)+'. Delivery and authorization evidence do not establish downstream benefit.</p>'+
+      '<p>Closing '+esc(model.epic)+' will not close '+esc(model.krId)+'. '+(decisionPending?'No authorized backlog handoff exists. ':'')+'Delivery and authorization evidence do not establish downstream benefit.</p>'+
       '<ol aria-label="Decision lineage"><li>Objective</li><li>Key Result</li><li>Decision</li><li>CAR</li><li>Epic</li><li>Delivery evidence</li><li>Measured benefit</li></ol>'+
       '<div class="ns-boundary-box"><strong>Leadership rule:</strong> a completed Epic can change the delivery signal. It cannot change authorization status, which comes from decision/CAR evidence. Downstream benefit is measured separately.</div>'+
     '</details>'+
