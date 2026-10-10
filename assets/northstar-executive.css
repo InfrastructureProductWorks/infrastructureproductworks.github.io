@@ -1,0 +1,191 @@
+/* Shared Northstar leadership presentation layer.
+   Keep this palette and hierarchy aligned with ui/northstar-signal/styles.css. */
+:root {
+  --northstar-ink: #071a2a;
+  --northstar-surface: #0a2031;
+  --northstar-surface-raised: #102b3d;
+  --northstar-line: #31546b;
+  --northstar-text: #edf6fb;
+  --northstar-muted: #b9d8eb;
+  --northstar-accent: #5bc7ff;
+  --northstar-accent-soft: #8ed5f5;
+  --northstar-warning: #f0c66b;
+  --northstar-good: #72c99a;
+}
+
+.ns-demo .ns-toolbar {
+  gap: 14px;
+  margin: 8px 0;
+}
+.ns-demo .ns-control-help summary {
+  color: #9bb8cb;
+  font-size: 10px;
+  font-weight: 850;
+}
+.ns-demo .ns-controls { gap: 6px; }
+.ns-demo .ns-controls button {
+  padding: 8px 10px;
+  font-size: 10px;
+}
+.ns-demo .ns-controls button.active {
+  background: #0f5f8f;
+  border-color: #2d8abd;
+  color: #fff;
+}
+.ns-demo .ns-dashboard-head {
+  margin-bottom: 18px;
+}
+.ns-demo .ns-dashboard-head h2 {
+  max-width: 880px;
+  color: var(--northstar-text);
+  font-size: clamp(30px, 3.8vw, 48px);
+  letter-spacing: -.035em;
+}
+.ns-demo .ns-executive-priority {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 230px);
+  gap: 22px;
+  align-items: center;
+  margin: 0 0 16px;
+  padding: 22px 24px;
+  border: 1px solid var(--northstar-line);
+  border-left: 4px solid var(--northstar-accent);
+  border-radius: 16px;
+  background: linear-gradient(110deg, #0c2b42, var(--northstar-surface) 72%);
+}
+.ns-demo .ns-priority-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 8px;
+}
+.ns-demo .ns-priority-heading small,
+.ns-demo .ns-priority-benefit {
+  color: var(--northstar-accent-soft);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.ns-demo .ns-priority-heading .ns-badge {
+  margin: 0;
+}
+.ns-demo .ns-executive-priority h3 {
+  max-width: 760px;
+  margin: 0 0 7px;
+  color: var(--northstar-text);
+  font-size: clamp(20px, 2.4vw, 30px);
+  line-height: 1.2;
+}
+.ns-demo .ns-executive-priority p {
+  max-width: 780px;
+  margin: 0;
+  color: var(--northstar-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.ns-demo .ns-priority-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+.ns-demo .ns-priority-meta span {
+  padding: 5px 8px;
+  border: 1px solid var(--northstar-line);
+  border-radius: 999px;
+  color: var(--northstar-accent-soft);
+  font-size: 10px;
+  font-weight: 800;
+}
+.ns-demo .ns-priority-actions {
+  display: grid;
+  justify-items: stretch;
+  gap: 12px;
+}
+.ns-demo .ns-priority-benefit {
+  display: inline-flex;
+  justify-content: center;
+  padding: 8px 10px;
+  border: 1px solid var(--northstar-line);
+  border-radius: 999px;
+  color: var(--northstar-muted);
+  letter-spacing: .02em;
+  text-align: center;
+}
+.ns-demo .ns-priority-benefit.warning {
+  border-color: #8c6b2e;
+  color: var(--northstar-warning);
+}
+.ns-demo .ns-priority-benefit.good {
+  border-color: #356d54;
+  color: var(--northstar-good);
+}
+.ns-demo .ns-priority-actions .ns-okr-open {
+  padding: 12px 14px;
+  font-size: 13px;
+}
+.ns-demo .ns-priority-lineage {
+  margin: 0 0 16px;
+  padding: 0 16px;
+  border: 1px solid var(--northstar-line);
+  border-radius: 13px;
+  background: rgba(10,32,49,.7);
+}
+.ns-demo .ns-priority-lineage summary {
+  padding: 12px 0;
+  color: var(--northstar-accent-soft);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.ns-demo .ns-priority-lineage > p {
+  margin: 0 0 10px;
+  font-size: 12px;
+}
+.ns-demo .ns-priority-lineage ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+.ns-demo .ns-priority-lineage li {
+  padding: 6px 9px;
+  border: 1px solid var(--northstar-line);
+  border-radius: 8px;
+  color: var(--northstar-muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+.ns-demo .ns-priority-lineage .ns-boundary-box {
+  margin: 0 0 12px;
+}
+.ns-demo .ns-exec-metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0 0 20px;
+}
+.ns-demo .ns-leadership-grid {
+  display: block;
+  margin-top: 0;
+}
+@media (max-width: 760px) {
+  .ns-demo .ns-toolbar { align-items: flex-start; }
+  .ns-demo .ns-executive-priority {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding: 18px;
+  }
+  .ns-demo .ns-priority-actions {
+    justify-items: stretch;
+  }
+  .ns-demo .ns-priority-actions .ns-okr-open {
+    width: 100%;
+  }
+}
+@media (max-width: 650px) {
+  .ns-demo .ns-exec-metrics {
+    grid-template-columns: 1fr;
+  }
+}
