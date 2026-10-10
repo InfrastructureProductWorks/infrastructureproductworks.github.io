@@ -479,7 +479,7 @@
     }).join('');
 
     return '<div class="ns-dashboard-head">'+
-      '<div><p class="eyebrow">'+esc(model.division)+' · '+esc(model.period)+'</p><h2>Cloud Platform Outcomes</h2><p>Leadership starts with outcomes, not tickets. Delivery status is visible, but it never substitutes for the named evidence source that proves a Key Result.</p></div>'+
+      '<div><p class="eyebrow">'+esc(model.division)+' · '+esc(model.period)+'</p><h2>Cloud Platform Outcomes</h2><p>Leadership starts with outcomes, not tickets. Delivery status is visible, but it never substitutes for the named evidence source that proves a Key Result.</p><button class="ns-okr-open primary" type="button" data-open-composer>Create OKR with Composite AI</button> <small>AI proposes · Northstar validates · you decide</small></div>'+
     '</div>'+
     (state.composerAccepted?'<div class="ns-composer-accepted"><strong>Accepted synthetic draft</strong><span>The structurally sound draft is ready for accountable review. The demo does not create an authoritative Strategic Outcome Record or write to an external system.</span><button type="button" data-open-composer>Review draft</button></div>':'')+
     '<section class="ns-executive-priority" aria-labelledby="ns-priority-title">'+
