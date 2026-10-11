@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 GUIDE_UPDATED = {
+    'storefront': 'October 11, 2026',
     'northstar-signal': 'October 11, 2026',
 }
 

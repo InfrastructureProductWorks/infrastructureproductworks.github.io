@@ -249,3 +249,29 @@ console.log('Role/capacity tests passed: funded but constrained, capacity fit bu
   console.log('Investment proposal tests passed: conserved cents, unavailable live provider, missing evidence, tamper/stale/scope rejection, roles, atomic import, retries and retained approvals.');
   console.log('Funding workflow semantics passed: cents, conserved shared costs, scoped role play, exact-version decisions, stale/source bindings, retries, active history and reconciliation.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
+
+// Product-cost arithmetic and import boundary: use the same implementation as every demo.
+(async()=>{
+ const cost=require(path.resolve(assetRoot,'funding-product-cost.js'));
+ const workflow=require(path.resolve(assetRoot,'funding-workflow.js'));
+ const input=cost.defaults(),q=cost.estimate(input);
+ assert.equal(q.perTeam,15200);assert.deepEqual(q.months.map(m=>m.total),[182000,258000,334000]);
+ assert.equal(q.cloud,774000);assert.equal(q.total,2274000);
+ assert.equal(cost.estimate({...input,teams:[20,20,20]}).total,2502000);
+ assert.equal(cost.estimate({...input,teams:[0,0,0]}).cloud,90000);
+ assert.equal(cost.estimate({...input,capacity:1.1}).input.capacity,1.1);
+ assert.throws(()=>cost.estimate({...input,egress:null}));assert.throws(()=>cost.estimate({...input,hours:745}));
+ assert.throws(()=>cost.estimate({...input,provider:'__proto__'}));assert.throws(()=>cost.estimate({...input,teams:[10,15]}));
+ assert.throws(()=>cost.decode({contract:cost.CONTRACT,fixture:'stale',input}));
+ let state=workflow.create();
+ const req={type:'productCost',actor:'manager',scope:workflow.SCOPE,expectedRevision:state.revision,key:'COST-1',input};
+ await assert.rejects(workflow.command(state,{...req,actor:'leader'}));
+ state=await workflow.command(state,req);
+ const epic=state.draft.epics.find(e=>e.id==='EP-DEMO-CLOUD-COST');assert.equal(epic.remaining,2274000);assert.equal(epic.allocation,2274000);assert.deepEqual(epic.shares,{O9:10000});
+ assert.equal(state.observations[epic.id].actual,null);assert.equal(state.observations[epic.id].commitments,null);
+ assert.equal(state.events.at(-1).productCost.fixture,cost.FIXTURE);
+ assert.deepEqual(await workflow.command(state,req),state);
+ await assert.rejects(workflow.command(state,{...req,key:'COST-2',expectedRevision:state.revision}));
+ assert.equal(state.draft.epics.filter(e=>e.id===epic.id).length,1);
+ console.log('Product cost tests passed: adoption, shared ownership, missing inputs, scope, role, retry and duplicate import.');
+})().catch(e=>{console.error(e);process.exitCode=1;});

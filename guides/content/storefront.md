@@ -124,3 +124,14 @@ The next accountable decision belongs to the appropriate reviewer outside this p
 - [Storefront application and documentation](https://infrastructureproductworks-storefront-44yf.onrender.com/docs)
 - [Storefront product overview](https://infrastructureproductworks.com/storefront/)
 
+
+## Explore product costs and carry an estimate into funding
+
+1. Open the [Storefront Product Cost Lab](https://infrastructureproductworks-storefront-44yf.onrender.com/#product-cost-lab), or in Northstar choose **Funding & Capacity → Product cost lab**. Backstage distribution 0.2.1 links to the same hosted lab from its product form.
+2. Compare fictional AWS, Azure and Google Cloud rates. Adjust monthly teams, instance hours, storage, egress, shared platform, support, one-time enablement and a separate management capacity assumption. Select **Calculate scenario** after changes. Azure is comparison-only, not an orderable product.
+3. The default 10/15/20-team ramp shows **$7,740 quarterly cloud cost** and **$22,740 total funding**. Shared platform is counted once per month. These are fictional USD assumptions for October–December 2026, not current provider prices or quotations.
+4. To move your inputs between demos, select **Download scenario**, then load that JSON file in Northstar's Product cost lab. The receiver validates the fixture version and recalculates amounts; the file grants no authority.
+5. In Northstar choose **Morgan**, then **Add estimate to Epic ledger**. One `EP-DEMO-CLOUD-COST` is created and initially assigned 100% to O9. Use the ledger to review allocation, remaining forecast, capacity and Objective shares. A second import is blocked to prevent double counting.
+6. Actual spending and commitments start unavailable. Casey can load the complete fictional finance sample; leadership must rebalance allocations where necessary before independent financial review. Adding an estimate does not approve funding or establish staffing feasibility.
+
+Missing quantities disable export/import until corrected. Changes require recalculation. Browser reload/reset clears this scenario and workflow history. No live price feeds, billing reconciliation, durable financial records, discounts, tax or provider-equivalence claim are demonstrated.
