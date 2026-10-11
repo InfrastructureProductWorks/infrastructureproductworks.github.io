@@ -2,11 +2,11 @@
   "contract": "northstar-funding-planning/v1",
   "syntheticOnly": true,
   "assets": {
-    "funding-dashboard.js": "579231489c7edaaf4ece1d8cb14491b50869a458470756b728f2cddeb1143faf",
+    "funding-dashboard.js": "1535e562415b575941b3e50dd6462cb01b58fa14f87b4775193e204a4fd100ae",
     "funding-dashboard.css": "d5e61a221a586bd0ee54923269742b126c58bb712b93cb9e832df716dd2bd67f",
     "funding-fixture.js": "e429b03a28bd7066bff441fd40c6baecd185ca7805bab92934714ed14fe79072",
-    "funding-workflow.js": "ab05183b6daf81aa5b5033966b5024bc1dde5d6d124f42bdd2ffc3dcbd3980f3"
+    "funding-workflow.js": "e72febddb1204eb4e9d71acdb522c40139f4ed0c8ab35ec4beb78ab55b78c095"
   },
-  "semanticTestSha256": "94e3e3876388f1441baba26d45768c8551be534acb36fa0294943fcd80cda3fc",
-  "browserTestSha256": "878be8c5909cb4c0205ceb1dd6fc14550eb4b05fc5926d829cb881b7150e1cfe"
+  "semanticTestSha256": "e71cb369a567a8502d3de9906ccdb4345181466cb3de22b5779fad505cd1789a",
+  "browserTestSha256": "e23ca45c95fc5101604c2b118cb773b72a13bd52318ea7c8a34f2f27af9470d1"
 }

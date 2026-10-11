@@ -199,7 +199,7 @@ Fictional actor switching, client-side digests and in-memory history do not prov
 
 ## Leadership investment and management capacity views
 
-Validated: October 11, 2026. These views illustrate planning responsibilities; choosing a view grants no access or approval rights. Composite AI investment advice remains planned.
+Validated: October 11, 2026. These views illustrate planning responsibilities; choosing a view grants no access or approval rights. Live Composite AI investment advice remains planned; the proposal workflow below uses an offline reference provider.
 
 1. Open **Funding & Capacity**. **Leadership investment view** is the default. Review funding, delivery constraints and the consequences for Objectives and KRs. Management owns the staffing details behind these conclusions.
 2. Select O9, then **Management capacity view**. Inspect aggregate required/available capacity and the planning queue. Select **Additional capacity proposal** to apply the fixed fictional option: $80,000 additional forecast cost and one FTE quarter available for the full period. Its skills and availability are assumptions, not verified facts.
@@ -208,3 +208,16 @@ Validated: October 11, 2026. These views illustrate planning responsibilities; c
 5. Compare **Approved plan**, **10% less funding**, and Epic deferral. Missing financial evidence stays unavailable. These scenarios do not alter the separate simulated funding workspace, CAR or management acceptance.
 
 The proposed real capability will use Composite AI to explain source-bound options after deterministic feasibility checks and evaluation. The current reference does not call a live model, verify shared-team capacity, authenticate roles or approve investment.
+
+## Draft an investment proposal into Funding & Capacity
+
+1. Open **Funding & Capacity**, then **Draft investment proposal**. Choose Alex, the simulated leader.
+2. Enter an outcome-oriented investment intent, a funding envelope and relative priorities from 1 to 5 for O9 investment decisions, O10 governed reuse and O11 evidence confidence. Use fictional information only.
+3. Select **Generate reference proposal**. This offline provider retains your intent but does not interpret it with a model. It preserves existing Epic allocations and known cost floors, then divides remaining funding by your explicit priorities. Changing your envelope or priorities changes the proposed allocation.
+4. Review proposed Objective amounts, known funding floor, shortfall, finance coverage, alternatives and the management capacity questions. A budget below known floors blocks import. Missing financial evidence stays unknown. Available people, skills, timing and dependencies require management validation; funding does not prove delivery capacity.
+5. Revise an input and regenerate, or select **Discard proposal**. Editing the inputs removes the old proposal so it cannot be imported.
+6. Select **Add proposal as draft** to update the envelope and Objective allocations together. Northstar independently evaluates the exact reference output and source binding first. Epic estimates, actuals, commitments and historical effective approvals are preserved. The resulting draft is explicitly incomplete and grants no spending or staffing authority.
+7. Review the amounts under **Funding entry**, the costs with management under **Epic ledger**, and the source-bound proposal under **Decision history**. Imported drafts cannot enter funding review while incomplete. Choose Casey and load the complete fictional finance sample; regenerate or rebalance allocations to cover the known forecasts. Choose Morgan under **Epic ledger**, enter available FTE quarters and evidence for people, skills, timing and dependencies, then select **Record simulated management validation**. This is a fictional attestation, not verified staffing data.
+8. Only then can the imported draft be submitted for independent financial review. Any later funding, Epic or finance-source change invalidates the management record and blocks review again. Adding a draft itself never approves it.
+
+**Provider status:** live Composite AI is not connected. The working reference demonstrates the draft-and-review journey; it does not provide model-generated leadership advice. A live deployment requires an approved server-side model provider and a separately reviewed evaluator. Browser credentials, finance integrations, authenticated authority and durable storage are not demonstrated. Reloading or resetting clears the fictional workspace.
