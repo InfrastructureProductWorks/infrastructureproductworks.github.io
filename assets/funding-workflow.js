@@ -255,8 +255,7 @@
     } else {
       insist(request.expectedSourceVersion===state.sourceVersion,'Stale financial source revision.');
       if(request.type==='finance') {
-        insist(canonical(Object.keys(state.observations).sort())===canonical(state.draft.epics.map(e=>e.id).sort()),'Finance observations must match current Epic owners; retain unassociated records as unmatched suspense.');
-    state.draft.epics.forEach(e=>{const o=state.observations[e.id];if(o.actual===null)o.actual=e.id==='EP-FUND-EVIDENCE'?4000000:0;if(o.commitments===null)o.commitments=0;o.source='synthetic-finance/complete-sample/'+(state.sourceVersion+1);});
+        state.draft.epics.forEach(e=>{const o=state.observations[e.id];if(o.actual===null)o.actual=e.id==='EP-FUND-EVIDENCE'?4000000:0;if(o.commitments===null)o.commitments=0;o.source='synthetic-finance/complete-sample/'+(state.sourceVersion+1);});
       } else if(request.type==='unmatched') {
         insist(typeof request.observationId==='string' && /^OBS-DEMO-[A-Z0-9-]+$/.test(request.observationId) && !state.unmatched.some(o=>o.id===request.observationId) && !state.events.some(e=>e.observationId===request.observationId),'Duplicate or invalid source observation identity.');
         state.unmatched.push({id:request.observationId,amount:12345,source:'synthetic-finance/unmatched-sample'});

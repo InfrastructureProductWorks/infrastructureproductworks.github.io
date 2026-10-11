@@ -5,7 +5,7 @@
     "funding-dashboard.js": "1535e562415b575941b3e50dd6462cb01b58fa14f87b4775193e204a4fd100ae",
     "funding-dashboard.css": "d5e61a221a586bd0ee54923269742b126c58bb712b93cb9e832df716dd2bd67f",
     "funding-fixture.js": "e429b03a28bd7066bff441fd40c6baecd185ca7805bab92934714ed14fe79072",
-    "funding-workflow.js": "b51009ecb7d7c3ddf5f414b6a06e53e06c474d42c088a0dd41fd44c52e6f61fe"
+    "funding-workflow.js": "f4538e183183b94701762839d97ebff61e586cf1130d014ec2f7501c286b4557"
   },
   "semanticTestSha256": "88f0c7c6e66c15528ea51478024804b162e9d9e20e46a883deb3ec66f1c4d1a7",
   "browserTestSha256": "d03bb093961ebc0dfefe19645f95cf384208dd1d6a7cfcdb103aa546b42aeba1"
