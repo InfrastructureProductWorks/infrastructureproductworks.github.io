@@ -30,6 +30,14 @@ module.exports=async function fundingWalkthrough(page,audit=async()=>{}) {
   assert(await page.locator('[data-cost-export]').isDisabled());
   await costForm.locator('button[type="submit"]').click();
   assert.match(await page.locator('[data-cost-result]').innerText(),/Azure/);
+  const downloadPromise=page.waitForEvent('download');await page.locator('[data-cost-export]').click();
+  const download=await downloadPromise;const exported=await require('node:fs/promises').readFile(await download.path());
+  assert.equal(JSON.parse(exported).input.provider,'azure');
+  await page.locator('[data-cost-file]').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{}')});
+  await page.waitForFunction(()=>document.querySelector('[data-cost-status]').textContent.includes('Unsupported'));
+  assert(await page.locator('[data-cost-export]').isDisabled());
+  await page.locator('[data-cost-file]').setInputFiles({name:'scenario.json',mimeType:'application/json',buffer:exported});
+  await page.waitForFunction(()=>document.querySelector('[data-cost-status]').textContent.includes('Scenario calculated'));
   await actor('manager');
   assert.equal(await costForm.locator('[name="provider"]').inputValue(),'azure');
   await audit('product cost lab provider comparison');
