@@ -59,7 +59,7 @@ const alternate=copy();
 alternate.investments[0].epics[1]='EP-ALTERNATE';
 alternate.investments[0].deferral={epic:'EP-ALTERNATE',kr:'KR9.6',cost:12345,capacity:0.5,consequence:'Benefit evidence moves later.'};
 alternate.investments[1].deferral={epic:'EP-FUND-REUSE',kr:'KR10.2',cost:120000,capacity:1.5,consequence:'Reuse onboarding moves later.'};
-const multiple=api.markup(alternate,'defer','O9');
+const multiple=api.markup(alternate,'defer','O9','management');
 assert.match(multiple,/Defer 2 Epics/);
 assert.match(multiple,/EP-ALTERNATE for KR9.6; remove \$123.45/);
 assert.match(multiple,/EP-FUND-REUSE for KR10.2; remove \$1,200/);
@@ -70,6 +70,33 @@ assert.match(api.markup(noDeferral,'defer'),/No deferral records are available/)
 assert.deepEqual(api.project(noDeferral,'defer').rows,api.project(noDeferral).rows);
 assert.match(api.markup(fixture),/data-funding-control="queue-O9"/);
 console.log('Funding variant tests passed: different/multiple/absent deferrals and cents.');
+
+const capacity = api.project(fixture,'capacity');
+assert.equal(capacity.rows[0].capacityGap,0);
+assert.equal(capacity.rows[0].forecast,61000000);
+assert.equal(capacity.rows[0].headroom,-16000000);
+for (const key of ['actual','commitments','allocation','requiredCapacity']) assert.equal(capacity.rows[0][key],baseline.rows[0][key]);
+assert.equal(JSON.stringify(fixture),before);
+const funded=copy(); funded.investments[0].allocation=60000000;
+assert.equal(api.project(funded).rows[0].headroom,7000000);
+assert.equal(api.project(funded).rows[0].capacityGap,1);
+const leaders=api.markup(fixture,'capacity','O9');
+assert.match(leaders,/Delivery constrained|Aggregate capacity fits/);
+assert.match(leaders,/add \$80,000 to uncommitted forecast/);
+assert.doesNotMatch(leaders,/Capacity: 5\.0|Capacity gap:|Add 1 FTE quarters|data-funding-scenario="capacity"/);
+const managers=api.markup(fixture,'capacity','O9','management');
+assert.match(managers,/Capacity: 5\.0 required \/ 5\.0 available/);
+assert.match(managers,/Additional capacity proposal/);
+assert.match(managers,/Capacity gap: 0\.0/);
+assert.equal(capacity.forecast,null);
+assert.throws(()=>api.markup(fixture,'baseline',null,'admin'));
+for (const mutate of [d=>d.investments[0].capacityOption.cost=-1,d=>d.investments[0].capacityOption.capacity=0,d=>d.investments[0].capacityOption.source='',d=>d.investments[0].capacityOption.assumption='']) { const d=copy(); mutate(d); assert.throws(()=>api.project(d,'capacity')); }
+const missingCost=copy();missingCost.investments[0].remaining=null;delete missingCost.investments[0].deferral;
+assert.equal(api.project(missingCost).rows[0].forecast,null);
+assert.throws(()=>api.project(missingCost,'capacity'),/unavailable/);
+const noOptions=copy();noOptions.investments.forEach(i=>delete i.capacityOption);
+assert.throws(()=>api.project(noOptions,'capacity'),/No additional-capacity/);
+console.log('Role/capacity tests passed: funded but constrained, capacity fit but funding gap, unknowns, scoped evidence and unchanged source.');
 
 (async function workflowTests(){
   const w=require(path.resolve(assetRoot,'funding-workflow.js'));
