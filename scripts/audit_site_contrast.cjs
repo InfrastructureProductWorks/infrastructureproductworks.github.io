@@ -150,6 +150,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await audit(route,'funding deferral detail');
         await page.locator('[data-funding-scenario="reduction"]').click();
         await audit(route,'funding reduction');
+        await require('../tests/funding/browser.cjs')(page, name=>audit(route,name));
         await page.locator('[data-view="okr"]').click();
 
         // Supporting copy remains reachable with a keyboard while the working

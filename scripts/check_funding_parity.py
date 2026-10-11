@@ -12,7 +12,7 @@ def check(peer=None):
     lock = json.loads((ASSETS / 'funding-contract.lock.json').read_text())
     if lock['contract'] != 'northstar-funding-planning/v1' or lock['syntheticOnly'] is not True:
         raise ValueError('Funding contract/authority changed')
-    expected = {'funding-dashboard.js', 'funding-dashboard.css', 'funding-fixture.js'}
+    expected = {'funding-dashboard.js', 'funding-dashboard.css', 'funding-fixture.js', 'funding-workflow.js'}
     if set(lock['assets']) != expected:
         raise ValueError('Missing/extra shared asset')
     for name, digest in lock['assets'].items():
@@ -21,13 +21,16 @@ def check(peer=None):
     test = ROOT / 'tests/funding/semantic.cjs'
     if hashlib.sha256(test.read_bytes()).hexdigest() != lock['semanticTestSha256']:
         raise ValueError('Funding semantic test drift')
+    browser = ROOT / 'tests/funding/browser.cjs'
+    if hashlib.sha256(browser.read_bytes()).hexdigest() != lock['browserTestSha256']:
+        raise ValueError('Funding browser test drift')
     if peer:
         peer = Path(peer)
         other = peer / ('ui/northstar-signal' if (peer / 'ui/northstar-signal').is_dir() else 'assets')
         for name in expected | {'funding-contract.lock.json'}:
             if (ASSETS / name).read_bytes() != (other / name).read_bytes():
                 raise ValueError('Cross-repository dashboard drift: ' + name)
-        for relative in ['tests/funding/semantic.cjs', 'scripts/check_funding_parity.py']:
+        for relative in ['tests/funding/semantic.cjs', 'tests/funding/browser.cjs', 'scripts/check_funding_parity.py']:
             if (ROOT / relative).read_bytes() != (peer / relative).read_bytes():
                 raise ValueError('Cross-repository validation drift: ' + relative)
     print('Funding planning contract and shared assets verified' + (' across repositories.' if peer else '.'))

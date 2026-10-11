@@ -57,7 +57,7 @@
     },
     {
       "path": "assets/funding-contract.lock.json",
-      "gitBlobSha": "fa115c36e83ad72bad9f719d17ad8cd70460f984",
+      "gitBlobSha": "40236a07e5453af466177b7a7654b76207dedda9",
       "classification": "synthetic funding reference asset integrity; no financial authority"
     }
   ],
