@@ -2,3 +2,13 @@
 
 /* Keep the embedded lab independent of page-wide dark headings and sticky headers. */
 .ipw-cost>header{display:block;position:static;min-height:0;padding:0;background:transparent;border:0;backdrop-filter:none;z-index:auto}.ipw-cost h3,.nfw .ipw-cost h3{color:#17324d}
+
+/* Isolate the embedded form from host grid/fieldset/button rules. */
+.ipw-cost form[data-cost-form]{display:block;grid-template-columns:none;margin-top:16px}
+.ipw-cost-submit{display:flex;justify-content:flex-start;align-items:flex-start}
+.ipw-cost .ipw-cost-submit button{flex:0 0 auto;width:auto;height:auto;min-height:44px;max-width:100%;align-self:flex-start}
+.ipw-cost [hidden]{display:none!important}
+.ipw-cost [data-cost-reuse]{display:grid;gap:14px}
+.ipw-cost details{padding:14px;background:#fff;border:1px solid #bccddd;border-radius:7px;margin:16px 0}
+.ipw-cost summary{font-weight:600;cursor:pointer}
+.ipw-cost th small{white-space:normal}
