@@ -31,6 +31,10 @@ module.exports=async function fundingWalkthrough(page,audit=async()=>{}) {
   await step('history');await page.locator('[data-fw-reset]').click();await message('workspace reset');
   await step('proposal');
   const proposalForm=page.locator('[data-fw-form="proposal"]');
+  await proposalForm.locator('[name="provider"]').selectOption('openai');
+  await proposalForm.locator('button[type="submit"]').click();await message('not configured');
+  assert(!await page.locator('[data-fw-import]').count());
+  await proposalForm.locator('[name="provider"]').selectOption('reference');
   await proposalForm.locator('[name="intent"]').fill('Improve investment decisions and protect delivery capacity.');
   await proposalForm.locator('[name="O9"]').selectOption('5');
   await proposalForm.locator('button[type="submit"]').click();await message('Reference proposal generated');
