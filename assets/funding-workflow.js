@@ -98,8 +98,8 @@
   async function command(input, request) {
     validate(input); insist(request && Object.hasOwn(ACTORS,request.actor) && canonical(request.scope)===canonical(SCOPE),'Wrong synthetic actor or organization/division/period/currency scope.');
     insist(typeof request.key==='string' && /^[a-zA-Z0-9-]{1,100}$/.test(request.key),'A retry key is required.');
-    const requestDigest=await digest(clone(request)); const previous=input.receipts.find(r=>r.key===request.key);
-    if(previous){insist(previous.digest===requestDigest,'Retry key reused with different content or actor.');return clone(input);}
+    const requestDigest=await digest(clone(request)); const receiptIndex=input.receipts.findIndex(r=>r.key===request.key);
+    if(receiptIndex>=0){const previous=input.receipts[receiptIndex];insist(previous.digest===requestDigest,'Retry key reused with different content or actor.');return {...clone(previous.result),receipts:clone(input.receipts.slice(0,receiptIndex+1))};}
     const grants={envelope:'plan',epic:'estimate',revise:'submit',submit:'submit',approve:'approve',reject:'approve',finance:'reconcile',unmatched:'reconcile',map:'reconcile'};
     insist(Object.hasOwn(grants,request.type) && ACTORS[request.actor].grants.includes(grants[request.type]),'The selected simulated actor cannot perform this action.');
     insist(request.expectedRevision===input.revision,'Stale proposal revision; reload the current package and review again.');
@@ -155,7 +155,10 @@
       event(state,'SOURCE_'+request.type.toUpperCase(),actor,'Synthetic finance sample only; no external data or writes.');
       if(request.observationId)state.events[state.events.length-1].observationId=request.observationId;
     }
-    validate(state); state.receipts.push({key:request.key,digest:requestDigest});return state;
+    validate(state);
+    // Snapshots omit receipt payloads to avoid recursive/exponential history copies.
+    const result=clone(state);delete result.receipts;
+    state.receipts.push({key:request.key,digest:requestDigest,result});return state;
   }
   const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const money=n=>n===null?'Unavailable':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2}).format(n/100);

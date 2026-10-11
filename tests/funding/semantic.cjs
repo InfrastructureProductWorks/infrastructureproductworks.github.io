@@ -109,6 +109,8 @@ console.log('Funding variant tests passed: different/multiple/absent deferrals a
   await expectFailure(approved,{...approval,actor:'leader'},/Retry key reused/);
   await expectFailure(approved,req(approved,'approve','reviewer',{submissionId:sub.id,reason:rationale}),/No current submitted/);
   let revised=await send(approved,'epic','manager',{mode:'update',epic:{...approved.draft.epics[0],remaining:18000000}});
+  const laterState=JSON.stringify(revised);assert.deepEqual(await w.command(revised,approval),approved);assert.equal(JSON.stringify(revised),laterState);
+  assert.deepEqual(await w.command(JSON.parse(JSON.stringify(revised)),approval),approved);
   assert.deepEqual(revised.active,approved.active);assert.equal(revised.decisions[0].digest,sub.digest);assert.equal(w.currentSubmission(revised),null);
   await expectFailure(revised,{...req(revised,'submit','leader',{reason:rationale}),expectedRevision:approved.revision},/Stale proposal/);
   revised=await submit(revised);assert.equal(w.currentSubmission(revised).body.expectedActiveRevision,approved.active.revision);
