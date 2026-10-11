@@ -196,3 +196,15 @@ To see renewed review, choose Alex or Morgan, return to **Funding review**, and 
 Select **Back to reference overview** to return to the fixed dashboard. Reopening the workspace retains saved page-memory state. In **Decision history**, **Reset funding workspace** restores the fictional baseline and clears every simulated decision. Reload does the same.
 
 Fictional actor switching, client-side digests and in-memory history do not prove real identity, financial authorization, atomic durable storage or restart recovery. Full itemized ledgers, real finance adapters, refunds/cancellations, multi-period changes, customer access and durable approval services remain planned. Funding review stays separate from CAR authorization and management acceptance throughout the demo.
+
+## Leadership investment and management capacity views
+
+Validated: October 11, 2026. These views illustrate planning responsibilities; choosing a view grants no access or approval rights. Composite AI investment advice remains planned.
+
+1. Open **Funding & Capacity**. **Leadership investment view** is the default. Review funding, delivery constraints and the consequences for Objectives and KRs. Management owns the staffing details behind these conclusions.
+2. Select O9, then **Management capacity view**. Inspect aggregate required/available capacity and the planning queue. Select **Additional capacity proposal** to apply the fixed fictional option: $80,000 additional forecast cost and one FTE quarter available for the full period. Its skills and availability are assumptions, not verified facts.
+3. Notice that O9's aggregate capacity gap closes while its forecast exceeds its allocation by $160,000. Actual spending, commitments and allocations are unchanged. More capacity does not mean sufficient funding or proven delivery confidence.
+4. Switch to **Leadership investment view**. The scenario and selected Objective remain selected. Leadership sees the additional investment, affordability and delivery consequence without staffing calculations. To change the capacity proposal, return to management; the fixture is illustrative and cannot hire or assign anyone.
+5. Compare **Approved plan**, **10% less funding**, and Epic deferral. Missing financial evidence stays unavailable. These scenarios do not alter the separate simulated funding workspace, CAR or management acceptance.
+
+The proposed real capability will use Composite AI to explain source-bound options after deterministic feasibility checks and evaluation. The current reference does not call a live model, verify shared-team capacity, authenticate roles or approve investment.

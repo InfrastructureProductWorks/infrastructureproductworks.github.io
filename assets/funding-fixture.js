@@ -36,6 +36,12 @@
       "basis": "Management estimate: foundation delivery plus an independently deferrable discovery Epic.",
       "source": "synthetic-estimate-O9",
       "outcome": "Unavailable",
+      "capacityOption": {
+        "cost": 8000000,
+        "capacity": 1,
+        "source": "synthetic-management-option-O9",
+        "assumption": "Management assumes suitable additional capacity is available for the full period. Skills and availability are illustrative, not verified."
+      },
       "deferral": {
         "epic": "EP-FUND-DISCOVERY",
         "kr": "KR9.3",
