@@ -145,7 +145,7 @@ Validated: October 11, 2026. This is a synthetic planning reference; live financ
 2. Review the funding envelope, allocations and unallocated balance. The forecast funding gap remains **Unavailable** when any investment lacks actual spending or a remaining forecast. The coverage count tells you how many forecasts are known.
 3. Select an Objective or **Review** in the decision queue to inspect its Key Results, Epics, estimate basis, source and aggregate capacity in FTE quarters. Spending does not establish a measured benefit.
 4. Select **10% less funding** to reduce only the envelope. Existing allocations, spending, commitments and delivery estimates stay the same.
-5. Select **Defer discovery Epic** to remove the named Epic’s $80,000 uncommitted estimate and one FTE quarter. Open O9 to see the consequence: KR9.3 discovery moves to the next period.
+5. Select **Defer EP-FUND-DISCOVERY** to remove the named Epic’s $80,000 uncommitted estimate and one FTE quarter. Open O9 to see the consequence: KR9.3 discovery moves to the next period.
 6. Return to **Approved plan** to compare the baseline. Reopening the view resets its temporary scenario. Financial scenarios do not change authorization, management acceptance, backlog handoff or benefit measurement.
 
 Forecast at completion adds actual spending, outstanding commitments not yet spent, and estimated uncommitted remaining costs. Missing amounts remain unavailable rather than zero. These are illustrative figures, not live financial records. A future funding decision will require separate financial authority and review of an exact proposal version.
