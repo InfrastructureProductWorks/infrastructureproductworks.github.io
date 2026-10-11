@@ -44,6 +44,24 @@ function harness() {
 }
 
 (async()=>{
+  const originalTimezone=process.env.TZ;
+  try{
+    for(const timezone of ['UTC','America/New_York','Europe/Budapest','Pacific/Kiritimati']){
+      process.env.TZ=timezone;
+      const dates=harness();
+      assert.equal(dates.run("normalizeRoadmapDate('October 11, 2026')"),'2026-10-11',timezone);
+      assert.equal(dates.run("normalizeRoadmapDate('2026-10-11')"),'2026-10-11',timezone);
+      assert.equal(dates.run("normalizeRoadmapDate('February 29, 2028')"),'2028-02-29',timezone);
+      for(const invalid of ['February 29, 2026','October 99, 2026','2026-02-30','2026-10-11T00:00:00Z','10/11/2026']){
+        dates.context.dateInput=invalid;
+        assert.equal(dates.run('normalizeRoadmapDate(dateInput)'),null,`${timezone}: ${invalid}`);
+      }
+      assert.equal(dates.run('validPortfolioBundle(bundle)'),true,timezone);
+    }
+  }finally{
+    if(originalTimezone===undefined)delete process.env.TZ;
+    else process.env.TZ=originalTimezone;
+  }
   const good = harness();
   assert.equal(good.run('validPortfolioBundle(bundle)'),true);
   await good.run('loadPortfolio()');
