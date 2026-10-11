@@ -47,6 +47,18 @@ module.exports=async function fundingWalkthrough(page,audit=async()=>{}) {
   await proposalForm.locator('button[type="submit"]').click();await message('Reference proposal generated');
   await page.locator('[data-fw-import]').click();await message('Reference proposal added');
   assert.match(await page.locator('.nfw-context').innerText(),/Draft revision 2 · DRAFT · Effective revision NONE/);
+  await step('review');assert(await page.locator('[data-fw-action="submit"]').isDisabled());
+  await actor('finance');await step('reconcile');await action('finance');
+  await actor('leader');await step('proposal');
+  await proposalForm.locator('button[type="submit"]').click();await message('Reference proposal generated');
+  await page.locator('[data-fw-import]').click();await message('Reference proposal added');
+  await actor('manager');await step('ledger');
+  const capacityReview=page.locator('[data-fw-form="capacityReview"]');
+  await capacityReview.locator('[name="availableCapacity"]').fill('10');
+  await capacityReview.locator('[name="reason"]').fill('Fictional team skills, period availability and dependencies cover the current plan.');
+  await capacityReview.locator('button[type="submit"]').click();await message('Synthetic workspace updated');
+  await step('review');assert(!(await page.locator('[data-fw-action="submit"]').isDisabled()));
+  await audit('imported investment ready for independent review');
   await step('history');assert.match(await page.locator('.nfw-panel:visible').innerText(),/INVESTMENT_PROPOSAL_IMPORTED/);
   await page.locator('[data-fw-reset]').click();await message('workspace reset');
   const envelope=page.locator('[data-fw-form="envelope"]');
