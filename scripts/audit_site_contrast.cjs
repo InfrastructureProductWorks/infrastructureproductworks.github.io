@@ -139,6 +139,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('#tamper-demo').click();await audit(route,'tampered evidence');
       }
       if(route==='/northstar-signal/demo/'){
+        const openDemoSettings=async()=>{if(!await page.locator('.ns-demo-settings').evaluate(n=>n.open))await page.locator('.ns-demo-settings summary').press('Enter');};
         if(await page.locator('.ns-demo-settings').evaluate(n=>n.open))throw new Error('Demo settings must start collapsed');
         const navBox=await page.locator('.ns-view-nav').boundingBox(),mainBox=await page.locator('#northstar-view').boundingBox();
         if(mode==='desktop'&&!(navBox.x+navBox.width<=mainBox.x+1&&navBox.y<mainBox.y+50))throw new Error('Desktop destinations must occupy a left sidebar');
@@ -174,9 +175,11 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         if(!await page.locator('.ns-boundary summary').isVisible())throw new Error('Synthetic-only boundary must stay visible when help is collapsed');
         await page.locator('.ns-demo-settings summary').click();
         for(const role of ['leader','manager','delivery']){
+          await openDemoSettings();
           await page.locator(`[data-role="${role}"]`).click();await audit(route,'role '+role);
         }
         for(const scenario of ['decision','delivered','measured']){
+          await openDemoSettings();
           await page.locator(`[data-scenario="${scenario}"]`).click();
           for(const view of ['okr','composer','leadership','management','decision','authorization','evidence','lineage','handoff','outcome']){
             await page.locator(`[data-view="${view}"]`).click();await audit(route,'scenario '+scenario+' / view '+view);
@@ -447,6 +450,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         // Legacy authorization and CAR-rebinding regressions require a pristine demo state.
         // Reload after the multi-persona journey so those tests prove their own invariants independently.
         await page.reload({waitUntil:'networkidle'});
+        await openDemoSettings();
         await page.locator('[data-scenario="decision"]').click();
         await page.locator('[data-view="okr"]').click();
         await page.locator('[data-compose-kr="KR9.4"]').click();
@@ -493,6 +497,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         if(!/NO CURRENT SOURCE CAR/.test(deferredHandoff)||!/BLOCKED/.test(deferredHandoff)||!/Fail closed/.test(deferredHandoff))throw new Error('Northstar execution handoff must fail closed after deferred CPD-0001');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-action="conditional"][data-auth-id="CPD-0001"]').click();
+        await openDemoSettings();
         await page.locator('[data-role="manager"]').click();
         const preCarComposer=page.locator('.ns-management-composer');
         const preCarText=await preCarComposer.innerText();
