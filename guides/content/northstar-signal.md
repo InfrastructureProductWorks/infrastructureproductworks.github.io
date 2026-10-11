@@ -148,4 +148,51 @@ Validated: October 11, 2026. This is a synthetic planning reference; live financ
 5. Select **Defer EP-FUND-DISCOVERY** to remove the named Epic’s $80,000 uncommitted estimate and one FTE quarter. Open O9 to see the consequence: KR9.3 discovery moves to the next period.
 6. Return to **Approved plan** to compare the baseline. Reopening the view resets its temporary scenario. Financial scenarios do not change authorization, management acceptance, backlog handoff or benefit measurement.
 
-Forecast at completion adds actual spending, outstanding commitments not yet spent, and estimated uncommitted remaining costs. Missing amounts remain unavailable rather than zero. These are illustrative figures, not live financial records. A future funding decision will require separate financial authority and review of an exact proposal version.
+Forecast at completion adds actual spending, outstanding commitments not yet spent, and estimated uncommitted remaining costs. Missing amounts remain unavailable rather than zero. These are illustrative figures, not live financial records. The separate funding workspace below simulates exact-version review. Real funding decisions still require authenticated financial authority and durable services.
+
+
+## Funding entry, Epic ledger, and simulated review
+
+Validated: October 11, 2026. Use fictional information only. This workspace uses browser memory and fictional actor switching; it does not authenticate financial roles, store a durable ledger, import finance data, approve real funding, or change CAR/Epic acceptance.
+
+### Enter a funding package
+
+1. Open **Funding & Capacity**, then **Open simulated funding workspace**. The reference overview keeps its fixed illustrative values; this workspace has separate rollups based on your saved input.
+2. Leave **Simulated funding actor** set to **Alex**, the fictional leader. In **1 · Funding entry**, enter a funding envelope and allocations for O9, O10 and O11 in USD. Use at most two decimal places; no dollar sign or commas. Select **Save funding draft**.
+3. Review the proposed Objective allocations and reserves. A negative envelope reserve means allocations exceed funding; a negative Objective reserve means Epic allocations exceed that Objective's allocation. You can save and inspect a deficit, but submission will reject it.
+4. The initial package has no effective allocation. Its proposed envelope and allocations become effective together only after independent simulated review.
+
+### Estimate and allocate Epic costs
+
+1. Choose **Morgan**, the fictional management estimator, and **2 · Epic ledger**.
+2. Select an existing Epic. Enter its allocation, uncommitted remaining estimate, aggregate capacity in FTE quarters, estimate basis, and Objective cost shares. Shares must total 100%; use zero for an Objective that receives no share. Select **Save Epic estimate**.
+3. The shared foundation starts with an 80% O9 / 20% O10 split. Its costs enter the portfolio once, and its Objective shares conserve each cent. KR references identify supported outcomes; they do not create extra copies of a cost.
+4. To add work, select **Add a new fictional Epic**. Use a unique ID starting **EP-DEMO-**, then supply the title, allocation, remaining estimate, capacity, shares and basis. Select **Add fictional Epic**.
+5. New Epics begin with unavailable actuals and commitments. A blank remaining estimate also means unavailable. The ledger keeps complete forecasts unknown until the required evidence exists; missing data never becomes zero.
+6. Actuals and commitments are read-only source examples. Each Epic has one aggregate synthetic cost record in this reference. Production itemized cost lines and financial feeds remain planned.
+
+Saved drafts persist while you navigate this page. Unsaved form values survive actor/step changes within the same revision; a successful mutation clears transient input buffers. Save before submitting a package. Reloading the page or resetting the workspace clears all funding state.
+
+### Submit and independently review
+
+1. Choose Alex or Morgan and **3 · Funding review**. Inspect allocations, coverage, reserves and any gaps. Enter a submission rationale of at least 10 characters, then select **Submit exact package**.
+2. Review the displayed package ID, revision, finance-source revision and SHA-256 digest. These identify this exact fictional package; they are not a production approval receipt.
+3. Choose **Jordan**, the fictional independent financial reviewer. Enter a decision reason and select **Simulate approval** or **Simulate rejection**. Every contributing author is excluded from independent review. Jordan's fictional envelope limit is $2 million.
+4. Approval activates the exact package in this workspace. Rejection retains a decision and activates no proposed allocations. Existing effective allocations remain visible separately from the draft.
+5. In **5 · Decision history**, inspect decisions and revision events. History records the exact digest and fictional actor/policy/source bindings, but exists only in this browser page's memory.
+
+To see renewed review, choose Alex or Morgan, return to **Funding review**, and select **Start new revision**, or save a material funding/Epic edit. The prior effective package and approval remain retained. Submit and independently approve the replacement before it supersedes the effective package. A changed pending package cannot reuse its old review.
+
+### Reconcile source examples
+
+1. Choose **Casey**, the fictional finance reconciler, and **4 · Reconciliation**.
+2. Select **Load complete finance sample** to supply fixed fictional observations. It fills the evidence Epic's missing actual with $40,000 and explicitly attests zero actuals/commitments for newly added Epics. This is a selected sample, not an inference from missing data or a live import.
+3. If a package was awaiting review, changing the source invalidates that review. Return to Alex or Morgan and submit the newly bound revision before Jordan can review it. Historical approved allocations stay effective while the projection reads the current synthetic sample.
+4. Select **Add unmatched sample cost** to create a fictional $123.45 suspense record. Complete Objective/portfolio forecasts remain unavailable while that record is unmatched.
+5. Choose its observation and an Epic with known actuals, then select **Map unmatched sample**. The cost enters the owning Epic once and leaves suspense. The same source identity cannot be ingested or assigned again.
+
+### Return, reset, and production limits
+
+Select **Back to reference overview** to return to the fixed dashboard. Reopening the workspace retains saved page-memory state. In **Decision history**, **Reset funding workspace** restores the fictional baseline and clears every simulated decision. Reload does the same.
+
+Fictional actor switching, client-side digests and in-memory history do not prove real identity, financial authorization, atomic durable storage or restart recovery. Full itemized ledgers, real finance adapters, refunds/cancellations, multi-period changes, customer access and durable approval services remain planned. Funding review stays separate from CAR authorization and management acceptance throughout the demo.

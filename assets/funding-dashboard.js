@@ -75,9 +75,18 @@
   }
   function mount(container, data) {
     let scenario = 'baseline', selected = null;
-    function draw() { container.innerHTML = markup(data, scenario, selected); }
+    function draw() {
+      container.innerHTML = markup(data, scenario, selected);
+      if (global.NorthstarFundingWorkflow) {
+        container.querySelector('.nfp-boundary').insertAdjacentHTML('afterend','<button type="button" data-funding-workspace-open>Open simulated funding workspace</button>');
+        const workspace = document.createElement('div'); workspace.hidden = true; workspace.setAttribute('data-funding-workspace',''); container.appendChild(workspace);
+        global.NorthstarFundingWorkflow.mount(workspace, {onBack:()=>{workspace.hidden=true;container.querySelector('.nfp').hidden=false;container.querySelector('[data-funding-workspace-open]').focus();}});
+      }
+    }
     draw();
     container.onclick = event => {
+      const open = event.target.closest('[data-funding-workspace-open]');
+      if (open && container.contains(open)) { container.querySelector('.nfp').hidden=true; const workspace=container.querySelector('[data-funding-workspace]'); workspace.hidden=false; workspace.querySelector('#funding-workspace-title').focus(); return; }
       const button = event.target.closest('[data-funding-scenario], [data-funding-objective]');
       if (!button || !container.contains(button)) return;
       const attribute = button.hasAttribute('data-funding-scenario') ? 'data-funding-scenario' : 'data-funding-objective';
