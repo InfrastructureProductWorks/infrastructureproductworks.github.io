@@ -139,6 +139,19 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('#tamper-demo').click();await audit(route,'tampered evidence');
       }
       if(route==='/northstar-signal/demo/'){
+        await page.locator('[data-view="funding"]').click();
+        if(!/2 of 3 forecasts available/.test(await page.locator('.nfp').innerText()))throw new Error('Incomplete funding forecasts must remain unavailable with coverage');
+        await audit(route,'funding baseline');
+        await page.locator('[data-funding-control="queue-O9"]').press('Enter');
+        if(!await page.locator('[data-funding-control="queue-O9"]').evaluate(n=>n===document.activeElement))throw new Error('Funding queue selection must retain focus on the activated queue entry');
+        await page.locator('[data-funding-scenario="defer"]').click();
+        if(!/KR9.3 option discovery moves/.test(await page.locator('.nfp-lower').innerText()))throw new Error('Funding deferral must expose its bound KR consequence');
+        if(!await page.locator('[data-funding-scenario="defer"]').evaluate(n=>n===document.activeElement))throw new Error('Funding scenario must retain keyboard focus');
+        await audit(route,'funding deferral detail');
+        await page.locator('[data-funding-scenario="reduction"]').click();
+        await audit(route,'funding reduction');
+        await page.locator('[data-view="okr"]').click();
+
         // Supporting copy remains reachable with a keyboard while the working
         // canvas no longer sits beneath an always-expanded introduction.
         for(const selector of ['.ns-demo-intro','.ns-boundary','.ns-control-help']){

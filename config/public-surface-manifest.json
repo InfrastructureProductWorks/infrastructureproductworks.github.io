@@ -54,6 +54,11 @@
       "path": "assets/guard-demo-reports.json",
       "gitBlobSha": "523cdb373ad9974d8882b7222e18b44506446bc6",
       "classification": "authored synthetic Guard scan and advisory planning examples; not live evidence"
+    },
+    {
+      "path": "assets/funding-contract.lock.json",
+      "gitBlobSha": "fa115c36e83ad72bad9f719d17ad8cd70460f984",
+      "classification": "synthetic funding reference asset integrity; no financial authority"
     }
   ],
   "downloads": [
