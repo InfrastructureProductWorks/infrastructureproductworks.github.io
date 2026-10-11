@@ -482,8 +482,12 @@ function validRoadmapRelationships(data){
 }
 function normalizeRoadmapDate(value){
   if(!boundedText(value))return null;
-  const parsed=new Date(value);
-  return Number.isNaN(parsed.valueOf())?null:parsed.toISOString().slice(0,10);
+  if(validDate(value))return value;
+  const match=/^(January|February|March|April|May|June|July|August|September|October|November|December) ([0-9]{1,2}), ([0-9]{4})$/.exec(value);
+  if(!match)return null;
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const date=`${match[3]}-${String(months.indexOf(match[1])+1).padStart(2,'0')}-${match[2].padStart(2,'0')}`;
+  return validDate(date)?date:null;
 }
 function roadmapMatchesDashboard(data,dashboard){
   if(!object(dashboard)||!object(dashboard.baseline)||!Array.isArray(dashboard.objectives))return false;
