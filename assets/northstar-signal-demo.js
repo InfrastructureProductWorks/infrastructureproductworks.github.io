@@ -1513,6 +1513,7 @@
 
   function render() {
     setPressed('[data-view]', b=>b.dataset.view===state.view);
+    document.querySelectorAll('.ns-view-nav [data-view]').forEach(b=>{if(b.dataset.view===state.view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
     setPressed('[data-role]', b=>b.dataset.role===state.role);
     setPressed('[data-scenario]', b=>b.dataset.scenario===state.scenario);
     const scoped = ['okr','composer','authorization','funding'].includes(state.view) ? '' : scopeBanner();

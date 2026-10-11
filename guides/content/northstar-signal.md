@@ -2,6 +2,15 @@
 
 Infrastructure Product Works | Synthetic evaluation experience
 
+## Find your way around
+
+On desktop, use the grouped left sidebar: **Strategy**, **Decisions**, and **Delivery & evidence**. The selected destination has a visible accent. On smaller screens the same destinations appear in one horizontally scrollable strip; keyboard users can Tab to every destination.
+
+Open **Demo settings** above the workspace to change the fictional **Leadership**, **Management Composer**, or **Delivery** perspective, or choose **Decision Review**, **Delivery Complete**, or **Benefit Measured**. These controls begin collapsed. Current perspective and scenario stay visible in the workspace header. Changing perspective grants no authority.
+
+In **Funding & Capacity**, the prominent **Open simulated funding workspace** action opens funding entry. **Draft investment proposal** and **Product cost lab** remain available as quieter actions alongside it. Open **Compare funding scenarios** for the approved plan, reduction, deferral and management capacity options. Funding workspace sections use understated navigation with an active underline. Under **Decision history**, open **Workspace options** to find **Reset funding workspace**.
+
+
 ## 1 Start with your cloud platform outcomes
 Open the [Northstar Signal synthetic demo](/northstar-signal/demo/). The default Leadership view opens on **Cloud Platform OKRs** so the accountable leader begins with outcomes rather than a product request.
 
@@ -193,7 +202,7 @@ To see renewed review, choose Alex or Morgan, return to **Funding review**, and 
 
 ### Return, reset, and production limits
 
-Select **Back to reference overview** to return to the fixed dashboard. Reopening the workspace retains saved page-memory state. In **Decision history**, **Reset funding workspace** restores the fictional baseline and clears every simulated decision. Reload does the same.
+Select **Back to reference overview** to return to the fixed dashboard. Reopening the workspace retains saved page-memory state. In **Decision history → Workspace options**, **Reset funding workspace** restores the fictional baseline and clears every simulated decision. Reload does the same.
 
 Fictional actor switching, client-side digests and in-memory history do not prove real identity, financial authorization, atomic durable storage or restart recovery. Full itemized ledgers, real finance adapters, refunds/cancellations, multi-period changes, customer access and durable approval services remain planned. Funding review stays separate from CAR authorization and management acceptance throughout the demo.
 

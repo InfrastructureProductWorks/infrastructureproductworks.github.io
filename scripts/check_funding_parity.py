@@ -39,7 +39,7 @@ def check(peer=None):
     lock = json.loads((ASSETS / 'funding-contract.lock.json').read_text())
     if lock['contract'] != 'northstar-funding-planning/v1' or lock['syntheticOnly'] is not True:
         raise ValueError('Funding contract/authority changed')
-    expected = {'funding-dashboard.js', 'funding-dashboard.css', 'funding-fixture.js', 'funding-workflow.js', 'funding-product-cost.js', 'funding-product-cost.css'}
+    expected = {'funding-dashboard.js', 'funding-dashboard.css', 'funding-fixture.js', 'funding-workflow.js', 'funding-product-cost.js', 'funding-product-cost.css', 'northstar-navigation.css'}
     if set(lock['assets']) != expected:
         raise ValueError('Missing/extra shared asset')
     for name, digest in lock['assets'].items():

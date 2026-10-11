@@ -5,7 +5,10 @@ module.exports=async function fundingWalkthrough(page,audit=async()=>{}) {
   const actor=async name=>page.locator('[data-fw-actor]').selectOption(name);
   const message=async text=>page.waitForFunction(text=>document.querySelector('.nfw-message')?.textContent.includes(text) && document.querySelector('[data-funding-workspace]')?.getAttribute('aria-busy')!=='true',text);
   const action=async(name,text='Synthetic workspace updated')=>{await page.locator('[data-fw-action="'+name+'"]').click();await message(text);if(await page.locator('[data-fw-action="'+name+'"]').isDisabled())assert(await page.locator('.nfw-message').evaluate(n=>n===document.activeElement));};
+  if(!await page.locator('.nfp-comparison').evaluate(n=>n.open))await page.locator('.nfp-comparison summary').press('Enter');
   await page.locator('[data-funding-scenario="baseline"]').click();
+  assert(await page.locator('.nfp-comparison').evaluate(n=>n.open),'Scenario comparison must retain open state through redraw');
+  assert(await page.locator('[data-funding-scenario="baseline"]').evaluate(n=>n===document.activeElement),'Scenario selection must retain focus');
   await page.locator('[data-funding-control="queue-O9"]').click();
   assert.match(await page.locator('.nfp-lower').innerText(),/Delivery constrained/);
   assert(!await page.locator('[data-funding-scenario="capacity"]').count());
@@ -71,14 +74,14 @@ module.exports=async function fundingWalkthrough(page,audit=async()=>{}) {
   assert.match(await page.locator('[data-fw-cost-evidence]').innerText(),/Data ingestion/);
   assert.match(await page.locator('[data-fw-cost-evidence]').innerText(),/Existing Infrastructure Landing Zone/);
   await step('cost');await page.locator('[data-cost-import]').click();await message('already has an owning Epic');
-  await step('history');await page.locator('[data-fw-reset]').click();await message('workspace reset');
+  await step('history');await page.locator('.nfw-utilities summary').press('Enter');await page.locator('[data-fw-reset]').click();await message('workspace reset');
   await page.locator('[data-fw-back]').click();
   await page.locator('[data-funding-proposal-open]').click();
   assert(await page.locator('[data-fw-form="proposal"]').isVisible());
   await page.locator('[data-fw-back]').click();
   assert(await page.locator('[data-funding-proposal-open]').evaluate(n=>n===document.activeElement));
   await page.locator('[data-funding-workspace-open]').click();
-  await step('history');await page.locator('[data-fw-reset]').click();await message('workspace reset');
+  await step('history');await page.locator('.nfw-utilities summary').press('Enter');await page.locator('[data-fw-reset]').click();await message('workspace reset');
   await step('proposal');
   const proposalForm=page.locator('[data-fw-form="proposal"]');
   await proposalForm.locator('[name="provider"]').selectOption('openai');
@@ -114,7 +117,7 @@ module.exports=async function fundingWalkthrough(page,audit=async()=>{}) {
   await step('review');assert(!(await page.locator('[data-fw-action="submit"]').isDisabled()));
   await audit('imported investment ready for independent review');
   await step('history');assert.match(await page.locator('.nfw-panel:visible').innerText(),/INVESTMENT_PROPOSAL_IMPORTED/);
-  await page.locator('[data-fw-reset]').click();await message('workspace reset');
+  await page.locator('.nfw-utilities summary').press('Enter');await page.locator('[data-fw-reset]').click();await message('workspace reset');
   const envelope=page.locator('[data-fw-form="envelope"]');
   await envelope.locator('[name="envelope"]').fill('1000000.00');
   await envelope.locator('[name="O9"]').fill('450000.00');

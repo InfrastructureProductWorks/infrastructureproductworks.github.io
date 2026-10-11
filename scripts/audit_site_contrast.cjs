@@ -38,9 +38,12 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const measured=checks.every(c=>['elmPartiallyObscured','bgOverlap'].includes(c.data?.messageKey))&&await page.evaluate(({target})=>{
           if(target.length!==1)return null;
           const el=document.querySelector(target[0]);if(!el)return null;
-          const old=[scrollX,scrollY];el.scrollIntoView({block:'center',inline:'center',behavior:'instant'});
+          const old=[scrollX,scrollY],ancestors=[];
+          for(let n=el.parentElement;n;n=n.parentElement)ancestors.push([n,n.scrollLeft,n.scrollTop]);
+          el.scrollIntoView({block:'center',inline:'center',behavior:'instant'});
           const rect=el.getBoundingClientRect();
           const hit=document.elementFromPoint(Math.max(0,Math.min(innerWidth-1,rect.x+rect.width/2)),Math.max(0,Math.min(innerHeight-1,rect.y+rect.height/2)));
+          for(const [n,left,top]of ancestors)n.scrollTo({left,top,behavior:'instant'});
           scrollTo({left:old[0],top:old[1],behavior:'instant'});
           if(hit!==el&&!el.contains(hit)){
             // Transparent arrow boxes and clipped timing pills do not change the text colors.
@@ -139,11 +142,20 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('#tamper-demo').click();await audit(route,'tampered evidence');
       }
       if(route==='/northstar-signal/demo/'){
+        const openDemoSettings=async()=>{if(!await page.locator('.ns-demo-settings').evaluate(n=>n.open))await page.locator('.ns-demo-settings summary').press('Enter');};
+        if(await page.locator('.ns-demo-settings').evaluate(n=>n.open))throw new Error('Demo settings must start collapsed');
+        const navBox=await page.locator('.ns-view-nav').boundingBox(),mainBox=await page.locator('#northstar-view').boundingBox();
+        if(mode==='desktop'&&!(navBox.x+navBox.width<=mainBox.x+1&&navBox.y<mainBox.y+50))throw new Error('Desktop destinations must occupy a left sidebar');
+        if(mode==='mobile'&&!(navBox.height<90))throw new Error('Mobile navigation must remain one compact strip');
+        if(await page.locator('.ns-view-nav [aria-current="page"]').count()!==1)throw new Error('Exactly one destination must be current');
+        await page.screenshot({path:`${output}/northstar-navigation-${mode}.png`,fullPage:true});
+
         await page.locator('[data-view="funding"]').click();
         if(!/2 of 3 forecasts available/.test(await page.locator('.nfp').innerText()))throw new Error('Incomplete funding forecasts must remain unavailable with coverage');
         await audit(route,'funding baseline');
         await page.locator('[data-funding-control="queue-O9"]').press('Enter');
         if(!await page.locator('[data-funding-control="queue-O9"]').evaluate(n=>n===document.activeElement))throw new Error('Funding queue selection must retain focus on the activated queue entry');
+        await page.locator('.nfp-comparison summary').press('Enter');
         await page.locator('[data-funding-scenario="defer"]').click();
         if(!/KR9.3 option discovery moves/.test(await page.locator('.nfp-lower').innerText()))throw new Error('Funding deferral must expose its bound KR consequence');
         if(!await page.locator('[data-funding-scenario="defer"]').evaluate(n=>n===document.activeElement))throw new Error('Funding scenario must retain keyboard focus');
@@ -164,10 +176,13 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           if(await disclosure.evaluate(el=>el.open))throw new Error('Demo help disclosure must close with the keyboard');
         }
         if(!await page.locator('.ns-boundary summary').isVisible())throw new Error('Synthetic-only boundary must stay visible when help is collapsed');
+        await page.locator('.ns-demo-settings summary').click();
         for(const role of ['leader','manager','delivery']){
+          await openDemoSettings();
           await page.locator(`[data-role="${role}"]`).click();await audit(route,'role '+role);
         }
         for(const scenario of ['decision','delivered','measured']){
+          await openDemoSettings();
           await page.locator(`[data-scenario="${scenario}"]`).click();
           for(const view of ['okr','composer','leadership','management','decision','authorization','evidence','lineage','handoff','outcome']){
             await page.locator(`[data-view="${view}"]`).click();await audit(route,'scenario '+scenario+' / view '+view);
@@ -438,6 +453,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         // Legacy authorization and CAR-rebinding regressions require a pristine demo state.
         // Reload after the multi-persona journey so those tests prove their own invariants independently.
         await page.reload({waitUntil:'networkidle'});
+        await openDemoSettings();
         await page.locator('[data-scenario="decision"]').click();
         await page.locator('[data-view="okr"]').click();
         await page.locator('[data-compose-kr="KR9.4"]').click();
@@ -484,6 +500,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         if(!/NO CURRENT SOURCE CAR/.test(deferredHandoff)||!/BLOCKED/.test(deferredHandoff)||!/Fail closed/.test(deferredHandoff))throw new Error('Northstar execution handoff must fail closed after deferred CPD-0001');
         await page.locator('[data-view="authorization"]').click();
         await page.locator('[data-auth-action="conditional"][data-auth-id="CPD-0001"]').click();
+        await openDemoSettings();
         await page.locator('[data-role="manager"]').click();
         const preCarComposer=page.locator('.ns-management-composer');
         const preCarText=await preCarComposer.innerText();

@@ -2,13 +2,14 @@
   "contract": "northstar-funding-planning/v1",
   "syntheticOnly": true,
   "assets": {
-    "funding-dashboard.js": "75174ce3c73e1e7adcc389b5c044bbd43e77b2b38948482499eb484da6f4d81f",
+    "funding-dashboard.js": "39e0c612f3ea59598ef8541b2a777447f961b655ded7ec8b92cf82116853968d",
     "funding-dashboard.css": "d5e61a221a586bd0ee54923269742b126c58bb712b93cb9e832df716dd2bd67f",
     "funding-fixture.js": "e429b03a28bd7066bff441fd40c6baecd185ca7805bab92934714ed14fe79072",
-    "funding-workflow.js": "55ed79bc769028f612a857bf35c8899ceafae54b6bf6e7030275cc323c279e6d",
+    "funding-workflow.js": "793f4ae0ca9358ef6a87ad2f7707b810aec573798ed68636b6913fb555865d16",
     "funding-product-cost.js": "1803b31c9c5861f20863f71fa491d90a33f81d3c2bd12b8631bfeded58298348",
-    "funding-product-cost.css": "0c91543e6ed18b6807d7996c39997ac6a94f59f9d73da9313e39dcb234c68145"
+    "funding-product-cost.css": "0c91543e6ed18b6807d7996c39997ac6a94f59f9d73da9313e39dcb234c68145",
+    "northstar-navigation.css": "b223ca474b0f5e5eec4bddc50788c0c4b77b50beb6969629c1c8b6d30feafc1f"
   },
   "semanticTestSha256": "c09b70b72b26c6d4a5812cb7b7b7df201fb1ccb64020b50b09e53a544051c950",
-  "browserTestSha256": "f3aa31b90071a22edf5ee3b8df441997ea6af223a2eada8f18404155f90c0c97"
+  "browserTestSha256": "9ecfd20195ab8f12a7a9ead8c9d32f1365da6c4724be32489d6a36be4cc3b983"
 }
