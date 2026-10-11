@@ -4,7 +4,7 @@ module.exports=async function fundingWalkthrough(page,audit=async()=>{}) {
   const step=async name=>{await page.locator('[data-fw-step="'+name+'"]').click();assert(await page.locator('[data-fw-step="'+name+'"]').evaluate(n=>n===document.activeElement));};
   const actor=async name=>page.locator('[data-fw-actor]').selectOption(name);
   const message=async text=>page.waitForFunction(text=>document.querySelector('.nfw-message')?.textContent.includes(text) && document.querySelector('[data-funding-workspace]')?.getAttribute('aria-busy')!=='true',text);
-  const action=async(name,text='Synthetic workspace updated')=>{await page.locator('[data-fw-action="'+name+'"]').click();await message(text);};
+  const action=async(name,text='Synthetic workspace updated')=>{await page.locator('[data-fw-action="'+name+'"]').click();await message(text);if(await page.locator('[data-fw-action="'+name+'"]').isDisabled())assert(await page.locator('.nfw-message').evaluate(n=>n===document.activeElement));};
   await page.locator('[data-funding-workspace-open]').click();
   await step('history');await page.locator('[data-fw-reset]').click();await message('workspace reset');
   const envelope=page.locator('[data-fw-form="envelope"]');

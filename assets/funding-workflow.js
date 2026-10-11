@@ -189,7 +189,7 @@
     const draw=(focus=null)=>{
       container.innerHTML=markup(memory.state,memory.actor,memory.step,memory.epic,memory.message,memory.error);
       for(const [kind,buffer] of Object.entries(memory.forms)){if(buffer.revision!==memory.state.revision || (kind==='epic' && buffer.epic!==memory.epic))continue;const form=container.querySelector('[data-fw-form="'+kind+'"]');if(form)for(const [name,value] of Object.entries(buffer.values)){const field=form.elements.namedItem(name);if(field)field.value=value;}}
-      if(focus){const target=container.querySelector(focus);if(target)target.focus();}
+      if(focus){let target=container.querySelector(focus);if(target?.matches(':disabled'))target=container.querySelector('.nfw-message');if(target){if(target.matches('.nfw-message'))target.setAttribute('tabindex','-1');target.focus();}}
     };
     const execute=async (type, extra={}, focus=null)=>{
       if(busy)return;busy=true;
@@ -199,7 +199,7 @@
         memory.state=await command(memory.state,request);memory.error=false;memory.forms={};
         memory.message=type==='approve'?'SIMULATED APPROVED: the exact package is now effective in this fictional workspace.':type==='reject'?'SIMULATED REJECTED: no proposed allocations became effective.':type==='submit'?'Exact synthetic package submitted. Switch to Jordan for independent review.':'Synthetic workspace updated. Material changes require a new exact-version review.';
       } catch(error) {memory.error=true;memory.message=error.message;}
-      finally {busy=false;container.removeAttribute('aria-busy');draw(focus);}
+      finally {busy=false;container.removeAttribute('aria-busy');draw(focus || '.nfw-message');}
     };
     container.oninput=event=>{const form=event.target.closest('form[data-fw-form]');if(form)memory.forms[form.dataset.fwForm]={revision:memory.state.revision,epic:memory.epic,values:Object.fromEntries(new FormData(form))};if(event.target.matches('[data-fw-reason]'))memory.reason=event.target.value;};
     container.onchange=event=>{
