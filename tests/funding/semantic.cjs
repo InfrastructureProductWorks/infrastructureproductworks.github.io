@@ -227,10 +227,12 @@ console.log('Role/capacity tests passed: funded but constrained, capacity fit bu
   const liveOrigin='https://composite-ai.infrastructureproductworks.com';let liveCalls=0,evaluations=0;
   w.configureOpenAIProvider({origin:liveOrigin,generate:async request=>{liveCalls++;assert.equal(request.sourceDigest,live.sourceDigest);return JSON.parse(JSON.stringify(live));},evaluate:async ({request,proposal})=>{evaluations++;assert.equal(request.sourceDigest,live.sourceDigest);assert.equal(proposal.receipt.signature,live.receipt.signature);return {status:'PASS',provider:'openai',sourceDigest:request.sourceDigest,proposalDigest:await w.digest(proposal)};}});
   for(const invalid of [{...investmentInput,intent:'          '},{...investmentInput,envelope:1},{...investmentInput,priorities:{O9:0,O10:3,O11:1}}])await assert.rejects(w.generateInvestmentProposal(original,invalid,'openai'));assert.equal(liveCalls,0);assert.equal(evaluations,0);
+  const orphanFinance=JSON.parse(JSON.stringify(original));orphanFinance.observations['EP-ORPHAN']={actual:90000000,commitments:10000000,source:'synthetic-finance/orphan'};await assert.rejects(w.generateInvestmentProposal(orphanFinance,investmentInput),/match current Epic owners/);await assert.rejects(w.generateInvestmentProposal(orphanFinance,investmentInput,'openai'),/match current Epic owners/);assert.equal(liveCalls,0);
   const generatedLive=await w.generateInvestmentProposal(original,investmentInput,'openai');assert.equal(liveCalls,1);assert.equal(evaluations,1);
   const importedLive=await send(original,'investment','leader',{proposal:generatedLive});assert.equal(evaluations,2);
   assert.deepEqual(importedLive.draft.epics,original.draft.epics);assert.deepEqual(importedLive.observations,original.observations);assert.equal(importedLive.active,original.active);
   await expectFailure(importedLive,req(importedLive,'submit','leader',{reason:rationale}),/draft is incomplete/);
+  const missingMethod=JSON.parse(JSON.stringify(live));delete missingMethod.method;await assert.rejects(w.validateOpenAIProposal(original,missingMethod),/explanation/);
   const unsignedLive=JSON.parse(JSON.stringify(live));delete unsignedLive.receipt;await assert.rejects(w.evaluateInvestmentProposal(original,unsignedLive),/receipt/);
   await assert.rejects(w.evaluateInvestmentProposal(stale,live),/Stale/);
   const changedLive=JSON.parse(JSON.stringify(live));changedLive.recommendation='Modified investment recommendation.';await assert.rejects(w.evaluateInvestmentProposal(original,changedLive),/output changed/);

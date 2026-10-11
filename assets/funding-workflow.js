@@ -63,6 +63,7 @@
     insist(Number.isInteger(state.revision) && state.revision>0 && Number.isInteger(state.sourceVersion) && state.sourceVersion>0,'Invalid workflow/source revision.');
     validatePlan(state.draft);
     insist(state.authors.every(id=>Object.hasOwn(ACTORS,id)) && new Set(state.authors).size===state.authors.length,'Invalid author binding.');
+    insist(canonical(Object.keys(state.observations).sort())===canonical(state.draft.epics.map(e=>e.id).sort()),'Finance observations must match current Epic owners; retain unassociated records as unmatched suspense.');
     state.draft.epics.forEach(e=>{const o=state.observations[e.id]; insist(o && amount(o.actual,true) && amount(o.commitments,true) && typeof o.source==='string' && o.source,'Missing or invalid finance observation.'); total([o.actual,o.commitments,e.remaining]);});
     insist(new Set(state.unmatched.map(o=>o.id)).size===state.unmatched.length && state.unmatched.every(o=>amount(o.amount) && o.source==='synthetic-finance/unmatched-sample'),'Invalid unmatched observations.');
     if(state.events.some(e=>e.type==='INVESTMENT_PROPOSAL_IMPORTED'))insist(state.draft.investmentReview && /^[0-9a-f]{64}$/.test(state.draft.investmentReview.proposalDigest),'Imported investment provenance cannot be removed from the draft.');
@@ -135,7 +136,7 @@
     for(const key of ['minimumKnownFunding','shortfall','financeCoverage','missingFinance','unmatched','capacityStatus'])insist(canonical(proposal[key])===canonical(expected[key]),'Live proposal evidence changed.');
     insist(canonical(proposal.allocationFloors)===canonical(floors) && proposal.requiredCapacity===state.draft.epics.reduce((n,e)=>n+Math.round(e.capacity*100),0)/100,'Live proposal capacity or cost evidence changed.');
     const text=value=>typeof value==='string'&&value.trim().length>=1&&value.length<=2000;
-    insist(text(proposal.recommendation) && proposal.rationaleByObjective && canonical(Object.keys(proposal.rationaleByObjective).sort())===canonical(Object.keys(OBJECTIVES).sort()) && Object.values(proposal.rationaleByObjective).every(text) && Array.isArray(proposal.alternatives) && proposal.alternatives.length>=2 && proposal.alternatives.length<=3 && proposal.alternatives.every(text),'Live proposal explanation is incomplete.');
+    insist(text(proposal.method) && text(proposal.recommendation) && proposal.rationaleByObjective && canonical(Object.keys(proposal.rationaleByObjective).sort())===canonical(Object.keys(OBJECTIVES).sort()) && Object.values(proposal.rationaleByObjective).every(text) && Array.isArray(proposal.alternatives) && proposal.alternatives.length>=2 && proposal.alternatives.length<=3 && proposal.alternatives.every(text),'Live proposal explanation is incomplete.');
     insist(proposal.providerEvidence && typeof proposal.providerEvidence.model==='string' && typeof proposal.providerEvidence.responseId==='string' && proposal.receipt && /^[0-9a-f]{64}$/.test(proposal.receipt.signature) && Number.isSafeInteger(proposal.receipt.expiresAt) && proposal.receipt.expiresAt*1000>Date.now(),'Signed live proposal receipt is missing or expired.');
     const body=clone(proposal);delete body.receipt;insist(proposal.receipt.digest===await digest(body),'Live proposal output changed.');
   }
@@ -254,7 +255,8 @@
     } else {
       insist(request.expectedSourceVersion===state.sourceVersion,'Stale financial source revision.');
       if(request.type==='finance') {
-        state.draft.epics.forEach(e=>{const o=state.observations[e.id];if(o.actual===null)o.actual=e.id==='EP-FUND-EVIDENCE'?4000000:0;if(o.commitments===null)o.commitments=0;o.source='synthetic-finance/complete-sample/'+(state.sourceVersion+1);});
+        insist(canonical(Object.keys(state.observations).sort())===canonical(state.draft.epics.map(e=>e.id).sort()),'Finance observations must match current Epic owners; retain unassociated records as unmatched suspense.');
+    state.draft.epics.forEach(e=>{const o=state.observations[e.id];if(o.actual===null)o.actual=e.id==='EP-FUND-EVIDENCE'?4000000:0;if(o.commitments===null)o.commitments=0;o.source='synthetic-finance/complete-sample/'+(state.sourceVersion+1);});
       } else if(request.type==='unmatched') {
         insist(typeof request.observationId==='string' && /^OBS-DEMO-[A-Z0-9-]+$/.test(request.observationId) && !state.unmatched.some(o=>o.id===request.observationId) && !state.events.some(e=>e.observationId===request.observationId),'Duplicate or invalid source observation identity.');
         state.unmatched.push({id:request.observationId,amount:12345,source:'synthetic-finance/unmatched-sample'});
