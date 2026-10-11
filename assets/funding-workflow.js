@@ -148,10 +148,10 @@
   }
   async function generateInvestmentProposal(state, input, provider='reference') {
     validate(state);
-    if(provider==='openai'){insist(openAIConnection,'Live Composite AI is not configured. No reference fallback was used.');const proposal=await openAIConnection.generate(await liveRequest(state,input));await evaluateOpenAIProposal(state,proposal);insist(canonical(proposal.input)===canonical(input),'Live proposal changed leadership input.');return proposal;}
-    insist(provider==='reference','Live Composite AI is not configured for this provider. No reference fallback was used.');
     insist(input && typeof input.intent==='string' && input.intent.trim().length>=10 && input.intent.length<=2000 && amount(input.envelope),'Enter an investment intent of 10–2000 characters and a valid funding envelope.');
     insist(input.priorities && canonical(Object.keys(input.priorities).sort())===canonical(Object.keys(OBJECTIVES).sort()) && Object.values(input.priorities).every(v=>Number.isInteger(v)&&v>=1&&v<=5),'Choose a priority from 1 to 5 for every Objective.');
+    if(provider==='openai'){const preview=await generateInvestmentProposal(state,input,'reference');insist(preview.status!=='BLOCKED','Funding envelope is below known allocation and forecast floors; revise the proposal.');insist(openAIConnection,'Live Composite AI is not configured. No reference fallback was used.');const proposal=await openAIConnection.generate(await liveRequest(state,input));await evaluateOpenAIProposal(state,proposal);insist(canonical(proposal.input)===canonical(input),'Live proposal changed leadership input.');return proposal;}
+    insist(provider==='reference','Live Composite AI is not configured for this provider. No reference fallback was used.');
     const p=ledger(state), floors=Object.fromEntries(p.objectives.map(o=>{const known=total(p.rows.filter(r=>Object.hasOwn(r.shares,o.id)).map(r=>total(['actual','commitments','remaining'].map(k=>r.costShares[k][o.id]===null?0:r.costShares[k][o.id]))));return [o.id,Math.max(o.epicAllocation,known)];}));
     const required=total(Object.values(floors)), blocked=required>input.envelope, remaining=Math.max(0,input.envelope-required);
     const weights=Object.values(input.priorities).reduce((a,b)=>a+b,0);

@@ -226,6 +226,7 @@ console.log('Role/capacity tests passed: funded but constrained, capacity fit bu
   live.receipt={digest:await w.digest(live),expiresAt:Math.floor(Date.now()/1000)+900,signature:'a'.repeat(64)};
   const liveOrigin='https://composite-ai.infrastructureproductworks.com';let liveCalls=0,evaluations=0;
   w.configureOpenAIProvider({origin:liveOrigin,generate:async request=>{liveCalls++;assert.equal(request.sourceDigest,live.sourceDigest);return JSON.parse(JSON.stringify(live));},evaluate:async ({request,proposal})=>{evaluations++;assert.equal(request.sourceDigest,live.sourceDigest);assert.equal(proposal.receipt.signature,live.receipt.signature);return {status:'PASS',provider:'openai',sourceDigest:request.sourceDigest,proposalDigest:await w.digest(proposal)};}});
+  for(const invalid of [{...investmentInput,intent:'          '},{...investmentInput,envelope:1},{...investmentInput,priorities:{O9:0,O10:3,O11:1}}])await assert.rejects(w.generateInvestmentProposal(original,invalid,'openai'));assert.equal(liveCalls,0);assert.equal(evaluations,0);
   const generatedLive=await w.generateInvestmentProposal(original,investmentInput,'openai');assert.equal(liveCalls,1);assert.equal(evaluations,1);
   const importedLive=await send(original,'investment','leader',{proposal:generatedLive});assert.equal(evaluations,2);
   assert.deepEqual(importedLive.draft.epics,original.draft.epics);assert.deepEqual(importedLive.observations,original.observations);assert.equal(importedLive.active,original.active);
