@@ -38,9 +38,12 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         const measured=checks.every(c=>['elmPartiallyObscured','bgOverlap'].includes(c.data?.messageKey))&&await page.evaluate(({target})=>{
           if(target.length!==1)return null;
           const el=document.querySelector(target[0]);if(!el)return null;
-          const old=[scrollX,scrollY];el.scrollIntoView({block:'center',inline:'center',behavior:'instant'});
+          const old=[scrollX,scrollY],ancestors=[];
+          for(let n=el.parentElement;n;n=n.parentElement)ancestors.push([n,n.scrollLeft,n.scrollTop]);
+          el.scrollIntoView({block:'center',inline:'center',behavior:'instant'});
           const rect=el.getBoundingClientRect();
           const hit=document.elementFromPoint(Math.max(0,Math.min(innerWidth-1,rect.x+rect.width/2)),Math.max(0,Math.min(innerHeight-1,rect.y+rect.height/2)));
+          for(const [n,left,top]of ancestors)n.scrollTo({left,top,behavior:'instant'});
           scrollTo({left:old[0],top:old[1],behavior:'instant'});
           if(hit!==el&&!el.contains(hit)){
             // Transparent arrow boxes and clipped timing pills do not change the text colors.
