@@ -35,6 +35,6 @@
 .ipw-cost details{padding:10px 12px;background:#fff;border:1px solid #bccddd;border-radius:7px;margin:12px 0}
 .ipw-cost summary{font-weight:600;cursor:pointer}
 .ipw-cost th small{white-space:normal}
-@container(min-width:960px){.ipw-cost-workspace{grid-template-columns:minmax(300px,340px) minmax(0,1fr);gap:22px}}
+@container(min-width:760px){.ipw-cost-workspace{grid-template-columns:300px minmax(0,1fr);gap:22px}}
 @container(max-width:440px){.ipw-cost-fields,.ipw-cost [data-cost-reuse]{grid-template-columns:minmax(0,1fr)}.ipw-cost-metrics{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:600px){.ipw-cost{padding:12px}.ipw-cost h3{font-size:22px}}

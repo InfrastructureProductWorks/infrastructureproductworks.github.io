@@ -7,8 +7,8 @@
     "funding-fixture.js": "e429b03a28bd7066bff441fd40c6baecd185ca7805bab92934714ed14fe79072",
     "funding-workflow.js": "55ed79bc769028f612a857bf35c8899ceafae54b6bf6e7030275cc323c279e6d",
     "funding-product-cost.js": "1803b31c9c5861f20863f71fa491d90a33f81d3c2bd12b8631bfeded58298348",
-    "funding-product-cost.css": "40a1a117554b721b3ab45f218c3031627c77a5711def5a9fbe4d6798cc878cf1"
+    "funding-product-cost.css": "0c91543e6ed18b6807d7996c39997ac6a94f59f9d73da9313e39dcb234c68145"
   },
   "semanticTestSha256": "c09b70b72b26c6d4a5812cb7b7b7df201fb1ccb64020b50b09e53a544051c950",
-  "browserTestSha256": "def2d212d4b1c88d468ec63f7696b2b4431b8ad47a2b9941e54edb2b54bdf2ae"
+  "browserTestSha256": "f3aa31b90071a22edf5ee3b8df441997ea6af223a2eada8f18404155f90c0c97"
 }

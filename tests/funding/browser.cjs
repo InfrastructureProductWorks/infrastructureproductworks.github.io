@@ -40,7 +40,8 @@ module.exports=async function fundingWalkthrough(page,audit=async()=>{}) {
   assert(heights.every(h=>h>=36&&h<=44),'Scenario controls must stay compact when reuse settings appear');
   const formBox=await costForm.boundingBox(),resultBox=await page.locator('.ipw-cost-estimate').boundingBox();
   const labWidth=await page.locator('.ipw-cost').evaluate(n=>n.clientWidth-parseFloat(getComputedStyle(n).paddingLeft)-parseFloat(getComputedStyle(n).paddingRight));
-  if(labWidth>=960)assert(resultBox.x>=formBox.x+formBox.width,'Wide estimator must put results beside configuration');
+  if(page.viewportSize().width>=1280){assert(labWidth>=760,'Desktop app shell must accommodate the side-by-side estimator');assert(resultBox.x>=formBox.x+formBox.width,'Desktop app shell must show results beside configuration');}
+  if(labWidth>=760)assert(resultBox.x>=formBox.x+formBox.width,'Wide estimator must put results beside configuration');
   else assert(resultBox.y>=formBox.y+formBox.height,'Narrow estimator must stack results below configuration');
 
   await costForm.locator('[name="recovery"]').selectOption('true');await calculate();
