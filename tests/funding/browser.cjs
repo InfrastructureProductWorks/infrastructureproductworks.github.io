@@ -23,6 +23,10 @@ module.exports=async function fundingWalkthrough(page,audit=async()=>{}) {
   assert.match(await page.locator('.nfp-lower').innerText(),/\$160,000/);
   assert.match(await page.locator('.nfp-lower').innerText(),/Aggregate capacity fits/);
   await audit('leadership investment consequence');
+  await page.locator('[data-funding-proposal-open]').click();
+  assert(await page.locator('[data-fw-form="proposal"]').isVisible());
+  await page.locator('[data-fw-back]').click();
+  assert(await page.locator('[data-funding-proposal-open]').evaluate(n=>n===document.activeElement));
   await page.locator('[data-funding-workspace-open]').click();
   await step('history');await page.locator('[data-fw-reset]').click();await message('workspace reset');
   await step('proposal');
