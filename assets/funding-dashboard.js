@@ -91,15 +91,15 @@
     function draw() {
       container.innerHTML = markup(data, scenario, selected, view);
       if (global.NorthstarFundingWorkflow) {
-        container.querySelector('.nfp-boundary').insertAdjacentHTML('afterend','<button type="button" data-funding-workspace-open>Open simulated funding workspace</button><button type="button" data-funding-proposal-open>Draft investment proposal</button>');
+        container.querySelector('.nfp-boundary').insertAdjacentHTML('afterend','<button type="button" data-funding-workspace-open>Open simulated funding workspace</button><button type="button" data-funding-proposal-open>Draft investment proposal</button><button type="button" data-funding-cost-open>Product cost lab</button>');
         const workspace = document.createElement('div'); workspace.hidden = true; workspace.setAttribute('data-funding-workspace',''); container.appendChild(workspace);
         global.NorthstarFundingWorkflow.mount(workspace, {onBack:()=>{workspace.hidden=true;container.querySelector('.nfp').hidden=false;container.querySelector(launcherSelector).focus();}});
       }
     }
     draw();
     container.onclick = event => {
-      const open = event.target.closest('[data-funding-workspace-open], [data-funding-proposal-open]');
-      if (open && container.contains(open)) { launcherSelector=open.hasAttribute('data-funding-proposal-open')?'[data-funding-proposal-open]':'[data-funding-workspace-open]'; container.querySelector('.nfp').hidden=true; const workspace=container.querySelector('[data-funding-workspace]'); workspace.hidden=false; if(open.hasAttribute('data-funding-proposal-open'))workspace.querySelector('[data-fw-step="proposal"]').click(); workspace.querySelector('#funding-workspace-title').focus(); return; }
+      const open = event.target.closest('[data-funding-workspace-open], [data-funding-proposal-open], [data-funding-cost-open]');
+      if (open && container.contains(open)) { launcherSelector=open.hasAttribute('data-funding-cost-open')?'[data-funding-cost-open]':open.hasAttribute('data-funding-proposal-open')?'[data-funding-proposal-open]':'[data-funding-workspace-open]'; container.querySelector('.nfp').hidden=true; const workspace=container.querySelector('[data-funding-workspace]'); workspace.hidden=false; if(open.hasAttribute('data-funding-cost-open'))workspace.querySelector('[data-fw-step="cost"]').click(); if(open.hasAttribute('data-funding-proposal-open'))workspace.querySelector('[data-fw-step="proposal"]').click(); workspace.querySelector('#funding-workspace-title').focus(); return; }
       const button = event.target.closest('[data-funding-scenario], [data-funding-objective], [data-funding-view]');
       if (!button || !container.contains(button)) return;
       const attribute = button.hasAttribute('data-funding-view') ? 'data-funding-view' : button.hasAttribute('data-funding-scenario') ? 'data-funding-scenario' : 'data-funding-objective';

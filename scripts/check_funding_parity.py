@@ -31,7 +31,7 @@ def check_page(root, assets, lock):
         positions[name] = html.index(matches[0])
     boot = 'app.js' if application else 'northstar-signal-demo.js'
     boot_urls = [url for url in urls if Path(urlparse(url).path).name == boot]
-    if len(boot_urls) != 1 or not (positions['funding-fixture.js'] < positions['funding-workflow.js'] < positions['funding-dashboard.js'] < html.index(boot_urls[0])):
+    if len(boot_urls) != 1 or not (positions['funding-fixture.js'] < positions['funding-product-cost.js'] < positions['funding-workflow.js'] < positions['funding-dashboard.js'] < html.index(boot_urls[0])):
         raise ValueError('Funding HTML bundles must load before dashboard/bootstrap')
 
 
@@ -39,7 +39,7 @@ def check(peer=None):
     lock = json.loads((ASSETS / 'funding-contract.lock.json').read_text())
     if lock['contract'] != 'northstar-funding-planning/v1' or lock['syntheticOnly'] is not True:
         raise ValueError('Funding contract/authority changed')
-    expected = {'funding-dashboard.js', 'funding-dashboard.css', 'funding-fixture.js', 'funding-workflow.js'}
+    expected = {'funding-dashboard.js', 'funding-dashboard.css', 'funding-fixture.js', 'funding-workflow.js', 'funding-product-cost.js', 'funding-product-cost.css'}
     if set(lock['assets']) != expected:
         raise ValueError('Missing/extra shared asset')
     for name, digest in lock['assets'].items():
