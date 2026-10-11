@@ -1,0 +1,51 @@
+/* Executive navigation contract: shared by the public demo and application reference. */
+.ns-demo .ns-shell-body,.app-shell .ns-reference-layout{display:grid;grid-template-columns:190px minmax(0,1fr);align-items:stretch}
+.ns-demo .ns-view-nav,.app-shell .primary-nav{position:static;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:24px;min-width:0;margin:0;padding:20px 10px;background:#071b2b;border:0;border-right:1px solid #26465c;border-radius:0;box-shadow:none}
+.ns-nav-group{display:grid;align-content:start;gap:3px;min-width:0}
+.ns-demo .ns-view-nav strong,.app-shell .primary-nav strong{display:block;padding:0 10px 8px;color:#9cb6c9;font:700 10px/1.5 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.1em}
+.ns-demo .ns-view-nav button,.app-shell .primary-nav button{display:block;appearance:none;width:100%;min-width:0;min-height:40px;margin:0;padding:10px 12px;text-align:left;white-space:normal;font:500 13px/1.4 system-ui,sans-serif;color:#bed1df;background:transparent;border:0;border-left:2px solid transparent;border-radius:0;box-shadow:none;cursor:pointer}
+.ns-demo .ns-view-nav button:hover,.app-shell .primary-nav button:hover{color:#fff;background:#102b3d}
+.ns-demo .ns-view-nav button.active,.app-shell .primary-nav button.active{color:#edf6fb;background:#102b3d;border-left-color:#5bc7ff;box-shadow:none;font-weight:650}
+.ns-demo .ns-view-nav button:focus-visible,.app-shell .primary-nav button:focus-visible,.ns-demo-settings summary:focus-visible{outline:2px solid #8ed5f5;outline-offset:-2px}
+.ns-reference-layout>main{min-width:0;padding:0 0 0 24px}
+.ns-demo .ns-demo-settings{max-width:none;margin:6px 0 10px;color:#b9d8eb;font:13px/1.5 system-ui,sans-serif}
+.ns-demo .ns-demo-settings>summary{width:fit-content;padding:6px 0;cursor:pointer;letter-spacing:0;font-size:13px;font-weight:500;color:#b9d8eb}
+.ns-settings-content{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:16px;border:1px solid #26465c;background:#071b2b;margin-top:4px;border-radius:8px}
+.ns-settings-content h2{font-size:14px;margin:0 0 4px;color:#edf6fb}
+.ns-settings-content p{font-size:12px;margin:0 0 10px;color:#b9d8eb}
+.ns-demo .ns-settings-content .ns-controls{justify-content:flex-start}
+.ns-demo .ns-settings-content .ns-controls button{font:500 12px/1.4 system-ui,sans-serif;background:transparent;border:0;border-bottom:2px solid transparent;border-radius:0;padding:9px 10px;color:#bed1df;min-height:40px}
+.ns-demo .ns-settings-content .ns-controls button.active{background:transparent;color:#edf6fb;border-bottom-color:#5bc7ff}
+.nfp .nfp-workspace-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin:18px 0}
+.nfp .nfp-workspace-actions button{background:transparent;border-color:transparent;padding:8px 0;color:#bde7ff;min-height:44px;border-radius:4px}
+.nfp .nfp-workspace-actions [data-funding-workspace-open]{padding:10px 14px;background:#174b6b;border-color:#628da6;color:#fff;border-radius:6px}
+.nfp .nfp-scenarios[aria-label="Planning views"]{gap:16px;border-bottom:1px solid #31546b}
+.nfp .nfp-scenarios[aria-label="Planning views"] button,.nfw .nfw-steps button{background:transparent;color:#bed1df;border:0;border-bottom:2px solid transparent;border-radius:0;padding:10px 2px;min-height:44px;font-size:13px;white-space:nowrap}
+.nfp .nfp-scenarios[aria-label="Planning views"] button[aria-pressed=true],.nfw .nfw-steps button[aria-pressed=true]{background:transparent;color:#fff;border-bottom-color:#5bc7ff}
+.nfw .nfw-steps{flex-wrap:nowrap;gap:18px;overflow:auto;max-width:100%;border-bottom:1px solid #31546b;padding:4px 0;margin:14px 0 20px}
+.nfw .nfw-steps button{flex:0 0 auto}
+.nfp .nfp-comparison,.nfw .nfw-utilities{border:0;border-radius:0;padding:8px 0;margin:4px 0}
+.nfp .nfp-comparison summary,.nfw .nfw-utilities summary{cursor:pointer;color:#b9d8eb;font-weight:500;min-height:32px;line-height:32px}
+.nfp .nfp-comparison summary:focus-visible,.nfw .nfw-utilities summary:focus-visible{outline:2px solid #8ed5f5;outline-offset:2px}
+.nfp .nfp-comparison .nfp-scenarios{margin:8px 0;gap:8px}
+.nfp .nfp-comparison button{background:#0c2234;font-size:13px;padding:8px 12px;min-height:40px}
+.nfp .nfp-comparison button[aria-pressed=true]{background:#144b68;border-color:#9bdbf8}
+.nfp .nfp-table button,.nfp .nfp-queue-item button{padding:4px 0;min-height:32px;background:transparent;border:0;border-bottom:1px solid transparent;border-radius:0;color:#bde7ff}
+.nfp .nfp-table button[aria-pressed=true]{background:transparent;border-bottom-color:#5bc7ff;color:#fff}
+.nfw [data-fw-back],.nfw [data-fw-discard],.nfw [data-fw-action=revise]{background:transparent;border-color:transparent;color:#bde7ff;padding-left:0}
+.nfw .nfw-actions button,.nfw .nfw-panel button[type=submit]{min-height:44px}
+.nfw .nfw-actions button:not(:disabled):is([data-fw-action=submit],[data-fw-action=approve],[data-fw-import]),.nfw .nfw-panel button[type=submit]:not(:disabled){background:#174b6b;border-color:#628da6;color:#fff}
+@media(max-width:1099px){
+ .ns-demo .ns-shell-body,.app-shell .ns-reference-layout{grid-template-columns:minmax(0,1fr)}
+ .ns-demo .ns-view-nav,.app-shell .primary-nav{flex-direction:row;flex-wrap:nowrap;gap:18px;overflow-x:auto;border-right:0;border-bottom:1px solid #26465c;padding:6px 12px}
+ .ns-demo .ns-nav-group,.app-shell .ns-nav-group{display:contents}
+ .ns-demo .ns-view-nav strong,.app-shell .primary-nav strong{display:none}
+ .ns-demo .ns-view-nav button,.app-shell .primary-nav button{flex:0 0 auto;width:auto;white-space:nowrap;border-left:0;border-bottom:2px solid transparent;padding:10px 2px}
+ .ns-demo .ns-view-nav button.active,.app-shell .primary-nav button.active{background:transparent;border-bottom-color:#5bc7ff}
+ .ns-reference-layout>main{padding:18px 0 0}
+}
+@media(max-width:650px){
+ .ns-settings-content{grid-template-columns:1fr;gap:16px;padding:12px}
+ .nfp .nfp-scenarios[aria-label="Planning views"]{flex-wrap:nowrap;overflow:auto;gap:18px}
+ .nfp .nfp-scenarios[aria-label="Planning views"] button{width:auto;flex:0 0 auto}
+}

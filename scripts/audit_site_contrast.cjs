@@ -139,11 +139,19 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
         await page.locator('#tamper-demo').click();await audit(route,'tampered evidence');
       }
       if(route==='/northstar-signal/demo/'){
+        if(await page.locator('.ns-demo-settings').evaluate(n=>n.open))throw new Error('Demo settings must start collapsed');
+        const navBox=await page.locator('.ns-view-nav').boundingBox(),mainBox=await page.locator('#northstar-view').boundingBox();
+        if(mode==='desktop'&&!(navBox.x+navBox.width<=mainBox.x+1&&navBox.y<mainBox.y+50))throw new Error('Desktop destinations must occupy a left sidebar');
+        if(mode==='mobile'&&!(navBox.height<90))throw new Error('Mobile navigation must remain one compact strip');
+        if(await page.locator('.ns-view-nav [aria-current="page"]').count()!==1)throw new Error('Exactly one destination must be current');
+        await page.screenshot({path:`${output}/northstar-navigation-${mode}.png`,fullPage:true});
+
         await page.locator('[data-view="funding"]').click();
         if(!/2 of 3 forecasts available/.test(await page.locator('.nfp').innerText()))throw new Error('Incomplete funding forecasts must remain unavailable with coverage');
         await audit(route,'funding baseline');
         await page.locator('[data-funding-control="queue-O9"]').press('Enter');
         if(!await page.locator('[data-funding-control="queue-O9"]').evaluate(n=>n===document.activeElement))throw new Error('Funding queue selection must retain focus on the activated queue entry');
+        await page.locator('.nfp-comparison summary').press('Enter');
         await page.locator('[data-funding-scenario="defer"]').click();
         if(!/KR9.3 option discovery moves/.test(await page.locator('.nfp-lower').innerText()))throw new Error('Funding deferral must expose its bound KR consequence');
         if(!await page.locator('[data-funding-scenario="defer"]').evaluate(n=>n===document.activeElement))throw new Error('Funding scenario must retain keyboard focus');
@@ -164,6 +172,7 @@ function pages(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(item
           if(await disclosure.evaluate(el=>el.open))throw new Error('Demo help disclosure must close with the keyboard');
         }
         if(!await page.locator('.ns-boundary summary').isVisible())throw new Error('Synthetic-only boundary must stay visible when help is collapsed');
+        await page.locator('.ns-demo-settings summary').click();
         for(const role of ['leader','manager','delivery']){
           await page.locator(`[data-role="${role}"]`).click();await audit(route,'role '+role);
         }
