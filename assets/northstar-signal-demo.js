@@ -1501,7 +1501,7 @@
       (evaluation.result==='REJECTED'?'<div class="ns-lineage-rejection" role="status"><strong>Fail closed.</strong> '+esc(evaluation.reason)+'</div>':evaluation.result==='VERIFIED'?'<div class="ns-lineage-success" role="status"><strong>Verified path.</strong> The selected strategy, authorization, contribution, accepted Epic and evidence remain attributable to one bounded lineage.</div>':evaluation.result==='READY FOR ASSURANCE'?'<div class="ns-lineage-pending" role="status"><strong>Ready for Assurance evaluation.</strong> The upstream lineage is exact, but no Assurance evidence record is bound yet.</div>':evaluation.result==='EPIC ACCEPTANCE PENDING'?'<div class="ns-lineage-pending" role="status"><strong>Epic acceptance pending.</strong> Product intent remains authorized; no downstream Assurance evidence is claimed until accepted work is bound to this exact authorization.</div>':'<div class="ns-lineage-pending" role="status"><strong>Authorization required.</strong> No downstream Assurance evidence is claimed for this selected path.</div>');
   }
 
-  const renderers={okr:okrOverview,composer:composerView,leadership,management,decision,authorization,evidence,lineage:traceability,handoff,outcome};
+  const renderers={funding:()=>NorthstarFunding.markup(NorthstarFundingFixture),okr:okrOverview,composer:composerView,leadership,management,decision,authorization,evidence,lineage:traceability,handoff,outcome};
 
   function setPressed(selector, selected) {
     document.querySelectorAll(selector).forEach(button => {
@@ -1515,8 +1515,9 @@
     setPressed('[data-view]', b=>b.dataset.view===state.view);
     setPressed('[data-role]', b=>b.dataset.role===state.role);
     setPressed('[data-scenario]', b=>b.dataset.scenario===state.scenario);
-    const scoped = ['okr','composer','authorization'].includes(state.view) ? '' : scopeBanner();
+    const scoped = ['okr','composer','authorization','funding'].includes(state.view) ? '' : scopeBanner();
     $('northstar-view').innerHTML=scoped+renderers[state.view]();
+    if(state.view==='funding')NorthstarFunding.mount($('northstar-view'),NorthstarFundingFixture);
     $('scenario-state').textContent=current().label.toUpperCase();
     $('role-state').textContent=state.role==='leader'?'LEADERSHIP':state.role==='manager'?'MANAGEMENT':'DELIVERY';
   }
