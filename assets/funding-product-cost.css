@@ -1,14 +1,40 @@
-.ipw-cost{font:16px/1.5 system-ui,sans-serif;color:#17324d;background:#f5f8fc;border:1px solid #bccddd;border-radius:16px;padding:24px;margin:24px 0;text-align:left}.ipw-cost *{box-sizing:border-box}.ipw-cost h3{font-size:28px;margin:8px 0}.ipw-cost small{display:block;color:#3f536c}.ipw-cost p{color:#334b64;font-size:14px}.ipw-cost-note{border-left:4px solid #92590d;background:#fff5df;padding:14px}.ipw-cost-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}.ipw-cost label{display:grid;gap:6px;color:#17324d;font-size:14px;font-weight:600}.ipw-cost input,.ipw-cost select{font:inherit;color:#17324d;background:#fff;border:1px solid #697e94;border-radius:6px;padding:10px;min-width:0;width:100%}.ipw-cost button,.ipw-cost-actions>a{display:inline-block;font:600 14px/1.4 system-ui;background:#174d89;color:white;border:0;border-radius:7px;padding:12px 18px;cursor:pointer;text-decoration:none;margin-top:12px}.ipw-cost button:disabled{background:#53667a;cursor:not-allowed}.ipw-cost :focus-visible{outline:3px solid #995000;outline-offset:3px}.ipw-cost-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}.ipw-cost-metrics article{background:white;border:1px solid #bccddd;padding:20px;border-radius:10px}.ipw-cost-metrics strong{display:block;font-size:30px;color:#17324d}.ipw-cost-scroll{overflow:auto;margin:20px 0}.ipw-cost table{width:100%;border-collapse:collapse;font-size:14px;white-space:nowrap}.ipw-cost th,.ipw-cost td{padding:12px;text-align:left;border-bottom:1px solid #bccddd;color:#17324d;background:#fff}.ipw-cost caption{text-align:left;font-weight:700;margin-bottom:8px;color:#17324d}.ipw-cost-actions{display:flex;align-items:end;gap:14px;flex-wrap:wrap}.ipw-cost [role=alert]{color:#912020;font-weight:700}@media(max-width:600px){.ipw-cost{padding:16px}.ipw-cost-fields{grid-template-columns:1fr}.ipw-cost h3{font-size:24px}}
-
-/* Keep the embedded lab independent of page-wide dark headings and sticky headers. */
-.ipw-cost>header{display:block;position:static;min-height:0;padding:0;background:transparent;border:0;backdrop-filter:none;z-index:auto}.ipw-cost h3,.nfw .ipw-cost h3{color:#17324d}
-
-/* Isolate the embedded form from host grid/fieldset/button rules. */
-.ipw-cost form[data-cost-form]{display:block;grid-template-columns:none;margin-top:16px}
-.ipw-cost-submit{display:flex;justify-content:flex-start;align-items:flex-start}
+/* Shared compact product estimator; scoped to avoid host form/grid styles. */
+.ipw-cost{font:14px/1.5 system-ui,sans-serif;color:#17324d;background:#f5f8fc;border:1px solid #bccddd;border-radius:12px;padding:18px;margin:20px 0;text-align:left;container-type:inline-size}
+.ipw-cost *{box-sizing:border-box}
+.ipw-cost h3{font-size:24px;margin:4px 0}
+.ipw-cost small{display:block;color:#3f536c}
+.ipw-cost p{color:#334b64;font-size:14px;margin:8px 0}
+.ipw-cost-note{border-left:4px solid #92590d;background:#fff5df;padding:10px 12px}
+.ipw-cost-workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start;margin-top:16px}
+.ipw-cost form[data-cost-form]{display:block;grid-template-columns:none;margin:0;min-width:0;padding:0}
+.ipw-cost-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;align-items:start}
+.ipw-cost label{display:flex;flex-direction:column;align-self:start;gap:4px;color:#17324d;font-size:13px;font-weight:600;min-width:0}
+.ipw-cost-fields>label:has(select){grid-column:1/-1}
+.ipw-cost input,.ipw-cost select{flex:none;font:inherit;line-height:1.3;color:#17324d;background:#fff;border:1px solid #697e94;border-radius:6px;padding:8px;min-width:0;width:100%;height:40px;min-height:40px;max-height:40px}
+.ipw-cost input[type=file]{height:auto;max-height:none;max-width:320px}
+.ipw-cost button,.ipw-cost-actions>a{display:inline-block;font:600 14px/1.4 system-ui;background:#174d89;color:white;border:0;border-radius:7px;padding:10px 14px;cursor:pointer;text-decoration:none;margin:0;min-height:44px}
+.ipw-cost button:disabled{background:#53667a;cursor:not-allowed}
+.ipw-cost :focus-visible{outline:3px solid #995000;outline-offset:3px}
+.ipw-cost-estimate{min-width:0}
+.ipw-cost-estimate>[role=status],.ipw-cost-estimate>[role=alert]{margin:0 0 10px}
+.ipw-cost-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.ipw-cost-metrics article{background:white;border:1px solid #bccddd;padding:12px;border-radius:8px;min-width:0}
+.ipw-cost-metrics strong{display:block;font-size:24px;color:#17324d;overflow-wrap:anywhere}
+.ipw-cost-scroll{overflow:auto;max-width:100%;margin:14px 0}
+.ipw-cost table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}
+.ipw-cost th,.ipw-cost td{padding:8px 10px;text-align:left;border-bottom:1px solid #bccddd;color:#17324d;background:#fff}
+.ipw-cost caption{text-align:left;font-weight:700;margin-bottom:6px;color:#17324d}
+.ipw-cost-actions{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #bccddd}
+.ipw-cost [role=alert]{color:#912020;font-weight:700}
+.ipw-cost>header{display:block;position:static;min-height:0;padding:0;background:transparent;border:0;backdrop-filter:none;z-index:auto}
+.ipw-cost h3,.nfw .ipw-cost h3{color:#17324d}
+.ipw-cost-submit{display:flex;justify-content:flex-start;align-items:flex-start;margin-top:12px}
 .ipw-cost .ipw-cost-submit button{flex:0 0 auto;width:auto;height:auto;min-height:44px;max-width:100%;align-self:flex-start}
 .ipw-cost [hidden]{display:none!important}
-.ipw-cost [data-cost-reuse]{display:grid;gap:14px}
-.ipw-cost details{padding:14px;background:#fff;border:1px solid #bccddd;border-radius:7px;margin:16px 0}
+.ipw-cost [data-cost-reuse]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;grid-column:1/-1;align-items:start;padding:10px;background:#eaf0f7;border-radius:6px}
+.ipw-cost details{padding:10px 12px;background:#fff;border:1px solid #bccddd;border-radius:7px;margin:12px 0}
 .ipw-cost summary{font-weight:600;cursor:pointer}
 .ipw-cost th small{white-space:normal}
+@container(min-width:960px){.ipw-cost-workspace{grid-template-columns:minmax(300px,340px) minmax(0,1fr);gap:22px}}
+@container(max-width:440px){.ipw-cost-fields,.ipw-cost [data-cost-reuse]{grid-template-columns:minmax(0,1fr)}.ipw-cost-metrics{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.ipw-cost{padding:12px}.ipw-cost h3{font-size:22px}}

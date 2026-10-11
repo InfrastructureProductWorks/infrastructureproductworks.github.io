@@ -36,6 +36,13 @@ module.exports=async function fundingWalkthrough(page,audit=async()=>{}) {
   await costForm.locator('[name="foundation"]').selectOption('reuse');await calculate();
   assert.match(await page.locator('[data-cost-result]').innerText(),/\$22,335\.00/);
   assert.match(await page.locator('[data-cost-result]').innerText(),/Remaining with other owners/);
+  const heights=await costForm.locator('input:not([type="file"]),select').evaluateAll(nodes=>nodes.filter(n=>!n.disabled).map(n=>n.getBoundingClientRect().height));
+  assert(heights.every(h=>h>=36&&h<=44),'Scenario controls must stay compact when reuse settings appear');
+  const formBox=await costForm.boundingBox(),resultBox=await page.locator('.ipw-cost-estimate').boundingBox();
+  const labWidth=await page.locator('.ipw-cost').evaluate(n=>n.clientWidth-parseFloat(getComputedStyle(n).paddingLeft)-parseFloat(getComputedStyle(n).paddingRight));
+  if(labWidth>=960)assert(resultBox.x>=formBox.x+formBox.width,'Wide estimator must put results beside configuration');
+  else assert(resultBox.y>=formBox.y+formBox.height,'Narrow estimator must stack results below configuration');
+
   await costForm.locator('[name="recovery"]').selectOption('true');await calculate();
   assert(await page.locator('[data-cost-import]').isDisabled());
   assert.match(await page.locator('[data-cost-result]').innerText(),/Unknown price/);
