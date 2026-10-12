@@ -122,7 +122,7 @@ class PublicSecurityGates(unittest.TestCase):
                 self.assertNotIn(token,result.stdout+result.stderr)
 
     def test_private_references_in_published_paths_including_binary(self):
-        name="iaap-"+"guard-core"
+        name="".join(("iaap-","guard-core"))
         percent="".join("%%%02X"%ord(c) for c in name)
         for filename in (name+"/index.html",name+".html",percent+"/image.png"):
             result=self.gate("audit_private_references.py",body=b"\x00",filename=filename,ci=True)
