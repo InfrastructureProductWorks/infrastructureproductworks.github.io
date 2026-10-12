@@ -87,13 +87,29 @@ module.exports=async function fundingWalkthrough(page,audit=async()=>{}) {
   await proposalForm.locator('[name="provider"]').selectOption('openai');
   assert.match(await proposalForm.locator('[name="provider"] option[value="openai"]').textContent(),/acceptance pending/);
   assert.equal(await page.getByRole('link',{name:'Sign in to the investment service',exact:true}).getAttribute('href'),'https://composite-ai.infrastructureproductworks.com/login');
-  let deniedCalls=0;
-  const denyUnsigned=async route=>{assert.equal(route.request().method(),'POST');assert.equal(route.request().url(),'https://composite-ai.infrastructureproductworks.com/v1/investment/generate');deniedCalls++;await route.fulfill({status:401,contentType:'application/json',headers:{'Access-Control-Allow-Origin':new URL(page.url()).origin,'Access-Control-Allow-Credentials':'true'},body:JSON.stringify({error:'Sign in required.'})});};
-  await page.route('https://composite-ai.infrastructureproductworks.com/**',denyUnsigned);
-  await proposalForm.locator('button[type="submit"]').click();await message('Sign in');
-  assert.equal(deniedCalls,1,'Configured walkthrough must use the approved service and stop at its authentication error');
-  await page.unroute('https://composite-ai.infrastructureproductworks.com/**',denyUnsigned);
-  assert(!await page.locator('[data-fw-import]').count());
+  // Isolate the intentional HTTP failure from the normal walkthrough's zero-error gate.
+  const deniedPage=await page.context().newPage();let deniedCalls=0;const deniedErrors=[],deniedPageErrors=[];
+  deniedPage.on('console',message=>{if(message.type()==='error')deniedErrors.push({text:message.text(),url:message.location().url});});
+  deniedPage.on('pageerror',error=>deniedPageErrors.push(error.message));
+  try {
+    await deniedPage.route('https://composite-ai.infrastructureproductworks.com/**',async route=>{
+      assert.equal(route.request().method(),'POST');
+      assert.equal(route.request().url(),'https://composite-ai.infrastructureproductworks.com/v1/investment/generate');
+      deniedCalls++;
+      await route.fulfill({status:401,contentType:'application/json',headers:{'Access-Control-Allow-Origin':new URL(deniedPage.url()).origin,'Access-Control-Allow-Credentials':'true'},body:JSON.stringify({error:'Sign in required.'})});
+    });
+    await deniedPage.goto(page.url());
+    await deniedPage.locator('[data-view="funding"]').click();
+    await deniedPage.locator('[data-funding-proposal-open]').click();
+    const deniedForm=deniedPage.locator('[data-fw-form="proposal"]');
+    await deniedForm.locator('[name="provider"]').selectOption('openai');
+    await deniedForm.locator('button[type="submit"]').click();
+    await deniedPage.waitForFunction(()=>document.querySelector('.nfw-message')?.textContent.includes('Sign in')&&document.querySelector('[data-funding-workspace]')?.getAttribute('aria-busy')!=='true');
+    assert.equal(deniedCalls,1,'Configured walkthrough must use the approved service and stop at its authentication error');
+    assert(!await deniedPage.locator('[data-fw-import]').count(),'No reference fallback or import after missing-session rejection');
+    assert.deepEqual(deniedPageErrors,[],'Authentication rejection must not cause an uncaught application error');
+    for(const error of deniedErrors){assert.match(error.text,/401|Unauthorized/);assert(!error.url||error.url==='https://composite-ai.infrastructureproductworks.com/v1/investment/generate','Only the deliberately rejected endpoint may log its HTTP resource error');}
+  } finally {await deniedPage.close();}
   await proposalForm.locator('[name="provider"]').selectOption('reference');
   await proposalForm.locator('[name="intent"]').fill('Improve investment decisions and protect delivery capacity.');
   await proposalForm.locator('[name="O9"]').selectOption('5');
