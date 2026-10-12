@@ -85,7 +85,7 @@ module.exports=async function fundingWalkthrough(page,audit=async()=>{}) {
   await step('proposal');
   const proposalForm=page.locator('[data-fw-form="proposal"]');
   await proposalForm.locator('[name="provider"]').selectOption('openai');
-  assert.match(await proposalForm.locator('[name="provider"]').innerText(),/acceptance pending/);
+  assert.match(await proposalForm.locator('[name="provider"] option[value="openai"]').textContent(),/acceptance pending/);
   assert.equal(await page.getByRole('link',{name:'Sign in to the investment service',exact:true}).getAttribute('href'),'https://composite-ai.infrastructureproductworks.com/login');
   let deniedCalls=0;
   const denyUnsigned=async route=>{assert.equal(route.request().method(),'POST');assert.equal(route.request().url(),'https://composite-ai.infrastructureproductworks.com/v1/investment/generate');deniedCalls++;await route.fulfill({status:401,contentType:'application/json',headers:{'Access-Control-Allow-Origin':new URL(page.url()).origin,'Access-Control-Allow-Credentials':'true'},body:JSON.stringify({error:'Sign in required.'})});};
