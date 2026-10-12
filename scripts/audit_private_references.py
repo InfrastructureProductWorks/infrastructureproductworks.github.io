@@ -15,6 +15,9 @@ PRIVATE_FRAGMENTS=(
     ("iaap-","forge"),
     ("iaap-","console"),
     ("iaap-","assurance"),
+    ("iaap-","guard-core"),
+    ("composite-ai-infrastructure-","product-poc"),
+    ("multicloud-","foundation-product-poc"),
     ("crossplane-multicloud-seed-","poc"),
     ("multicloud-foundation-poc-","integration"),
 )
@@ -76,6 +79,14 @@ def read_text_file(path):
     except UnicodeDecodeError:
         return None
 
+PRIVATE_PATH_REF=re.compile("|".join(re.escape(name) for name in PRIVATE_NAMES),re.I)
+
+def path_reference_counts(path):
+    # Public paths expose identifiers even with prefixes, compound extensions,
+    # or archive-like suffixes. Match known names throughout the normalized path.
+    normalized=normalize_browser_text(path)
+    return Counter(m.group(0).lower() for m in PRIVATE_PATH_REF.finditer(normalized))
+
 def reference_counts(body):
     normalized=normalize_browser_text(body)
     return Counter(m.group(0).lower() for m in PRIVATE_REF.finditer(normalized))
@@ -93,6 +104,12 @@ for p in ROOT.rglob("*"):
     if not p.is_file() or any(part in SKIP for part in p.parts):
         continue
     rel=p.relative_to(ROOT).as_posix()
+    # Public pathnames are exposed independently of the file body or format.
+    path_current=path_reference_counts(rel)
+    path_prior=path_reference_counts(rel) if rel in base_files else Counter()
+    for identifier,count in (path_current-path_prior).items():
+        for _ in range(count):
+            errors.append(f"{rel}: new private/internal implementation reference in published path: {identifier}")
     if p.suffix.lower() in PDF_SUFFIXES and rel in base_files:
         try:
             current_blob=subprocess.check_output(["git","hash-object",str(p)],cwd=ROOT,text=True).strip()
