@@ -235,7 +235,7 @@ The proposed real capability will use Composite AI to explain source-bound optio
 2. Use **Sign in to the investment service** to open the same-site HTTPS login in a new tab. Enter the access password configured in Render there; never enter an API key in Northstar.
 3. After **Signed in** appears, return to Northstar. Use fictional intent and leave the sample envelope unchanged for the first test.
 4. Choose **Generate investment proposal**. Confirm the result identifies OpenAI, gives a recommendation, Objective rationale and alternatives, and remains **INCOMPLETE** where finance or capacity evidence is missing.
-5. Choose **Import into draft**. Northstar independently reevaluates the signed proposal before importing only the envelope and Objective allocations. Epic estimates, financial observations and historical decisions must remain unchanged.
+5. Choose **Add proposal as draft**. Northstar independently reevaluates the signed proposal before importing only the envelope and Objective allocations. Epic estimates, financial observations and historical decisions must remain unchanged.
 6. Confirm submission stays blocked until the separate finance-reconciliation and management-capacity steps are complete. This walkthrough grants no real spending or staffing authority.
 
 If sign-in is requested, the session is absent or expired. If the service is unavailable or a proposal fails validation, stop and retain the error message; no reference proposal should appear.
