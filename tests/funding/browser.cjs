@@ -85,7 +85,14 @@ module.exports=async function fundingWalkthrough(page,audit=async()=>{}) {
   await step('proposal');
   const proposalForm=page.locator('[data-fw-form="proposal"]');
   await proposalForm.locator('[name="provider"]').selectOption('openai');
-  await proposalForm.locator('button[type="submit"]').click();await message('not configured');
+  assert.match(await proposalForm.locator('[name="provider"]').innerText(),/acceptance pending/);
+  assert.equal(await page.getByRole('link',{name:'Sign in to the investment service',exact:true}).getAttribute('href'),'https://composite-ai.infrastructureproductworks.com/login');
+  let deniedCalls=0;
+  const denyUnsigned=async route=>{assert.equal(route.request().method(),'POST');assert.equal(route.request().url(),'https://composite-ai.infrastructureproductworks.com/v1/investment/generate');deniedCalls++;await route.fulfill({status:401,contentType:'application/json',headers:{'Access-Control-Allow-Origin':new URL(page.url()).origin,'Access-Control-Allow-Credentials':'true'},body:JSON.stringify({error:'Sign in required.'})});};
+  await page.route('https://composite-ai.infrastructureproductworks.com/**',denyUnsigned);
+  await proposalForm.locator('button[type="submit"]').click();await message('Sign in');
+  assert.equal(deniedCalls,1,'Configured walkthrough must use the approved service and stop at its authentication error');
+  await page.unroute('https://composite-ai.infrastructureproductworks.com/**',denyUnsigned);
   assert(!await page.locator('[data-fw-import]').count());
   await proposalForm.locator('[name="provider"]').selectOption('reference');
   await proposalForm.locator('[name="intent"]').fill('Improve investment decisions and protect delivery capacity.');
