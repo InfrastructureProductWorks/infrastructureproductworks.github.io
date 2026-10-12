@@ -5,11 +5,11 @@
     "funding-dashboard.js": "39e0c612f3ea59598ef8541b2a777447f961b655ded7ec8b92cf82116853968d",
     "funding-dashboard.css": "d5e61a221a586bd0ee54923269742b126c58bb712b93cb9e832df716dd2bd67f",
     "funding-fixture.js": "e429b03a28bd7066bff441fd40c6baecd185ca7805bab92934714ed14fe79072",
-    "funding-workflow.js": "793f4ae0ca9358ef6a87ad2f7707b810aec573798ed68636b6913fb555865d16",
+    "funding-workflow.js": "d7173231a31b5af5112376f6058cebebf14f8b1940fbebd782a932101a054b6a",
     "funding-product-cost.js": "1803b31c9c5861f20863f71fa491d90a33f81d3c2bd12b8631bfeded58298348",
     "funding-product-cost.css": "0c91543e6ed18b6807d7996c39997ac6a94f59f9d73da9313e39dcb234c68145",
     "northstar-navigation.css": "b223ca474b0f5e5eec4bddc50788c0c4b77b50beb6969629c1c8b6d30feafc1f"
   },
   "semanticTestSha256": "c09b70b72b26c6d4a5812cb7b7b7df201fb1ccb64020b50b09e53a544051c950",
-  "browserTestSha256": "9ecfd20195ab8f12a7a9ead8c9d32f1365da6c4724be32489d6a36be4cc3b983"
+  "browserTestSha256": "0dd641d5a98911566e5c4967a9c91d00881a6cc7a96e085ea03fa5a27a74b6ea"
 }

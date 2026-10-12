@@ -125,7 +125,7 @@ A separate Strategic Outcomes workspace is not part of the current demo journey.
 ## 14 Know where the demo stops
 The public Northstar Signal experience is documentation-first and synthetic.
 
-It does not use live enterprise data, live Composite AI providers, production credentials, personnel decisions, funding authority, procurement authority, risk acceptance, external-system writeback, cloud execution, or provisioning.
+The funding-proposal walkthrough can use the explicitly selected OpenAI service with fictional planning data. Other composers use synthetic fixtures. The demo does not use live enterprise finance data, make personnel decisions, grant funding or procurement authority, accept risk, write to external delivery systems, execute cloud changes, or provision resources.
 
 The demo proves the interaction model and bounded contracts. Any future live adapter or execution path must preserve those authority boundaries rather than bypass them.
 
@@ -229,7 +229,16 @@ The proposed real capability will use Composite AI to explain source-bound optio
 7. Review the amounts under **Funding entry**, the costs with management under **Epic ledger**, and the source-bound proposal under **Decision history**. Imported drafts cannot enter funding review while incomplete. Choose Casey and load the complete fictional finance sample; regenerate or rebalance allocations to cover the known forecasts. Choose Morgan under **Epic ledger**, enter available FTE quarters and evidence for people, skills, timing and dependencies, then select **Record simulated management validation**. This is a fictional attestation, not verified staffing data.
 8. Only then can the imported draft be submitted for independent financial review. Any later funding, Epic or finance-source change invalidates the management record and blocks review again. Adding a draft itself never approves it.
 
-**Provider status:** OpenAI is the selected model provider. The server adapter and client connection are implemented and tested offline, with hosting and real model acceptance pending. Choose **OpenAI** in the provider selector to see its configuration status; it currently reports not configured and supplies no simulated fallback. The working reference demonstrates the draft-and-review journey; it does not provide model-generated leadership advice. A live deployment requires an approved server-side model provider and a separately reviewed evaluator. Browser credentials, finance integrations, authenticated authority and durable storage are not demonstrated. Reloading or resetting clears the fictional workspace.
+**Provider status:** OpenAI is available for a controlled fictional walkthrough and is labeled **acceptance pending**. The deployed provider has passed real generation and independent API evaluation; browser session and draft-import acceptance remain open. The offline reference remains a separate deterministic option, and failed OpenAI requests never use a reference fallback. Service credentials stay on the server. Reloading or resetting clears the fictional workspace.
+
+1. Open **Funding & Capacity → Draft investment proposal** and select **OpenAI · walkthrough · acceptance pending**.
+2. Use **Sign in to the investment service** to open the same-site HTTPS login in a new tab. Enter the access password configured in Render there; never enter an API key in Northstar.
+3. After **Signed in** appears, return to Northstar. Use fictional intent and leave the sample envelope unchanged for the first test.
+4. Choose **Generate investment proposal**. Confirm the result identifies OpenAI, gives a recommendation, Objective rationale and alternatives, and remains **INCOMPLETE** where finance or capacity evidence is missing.
+5. Choose **Add proposal as draft**. Northstar independently reevaluates the signed proposal before importing only the envelope and Objective allocations. Epic estimates, financial observations and historical decisions must remain unchanged.
+6. Confirm submission stays blocked until the separate finance-reconciliation and management-capacity steps are complete. This walkthrough grants no real spending or staffing authority.
+
+If sign-in is requested, the session is absent or expired. If the service is unavailable or a proposal fails validation, stop and retain the error message; no reference proposal should appear.
 
 ## Explore composed product costs and carry an estimate into funding
 
