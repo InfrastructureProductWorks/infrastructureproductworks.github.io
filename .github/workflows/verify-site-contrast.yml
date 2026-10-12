@@ -17,7 +17,7 @@ jobs:
         viewport: [desktop, mobile]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
       - name: Install audit browser
@@ -33,7 +33,7 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/contrast-server.log 2>&1 &
           node scripts/audit_site_contrast.cjs
           node scripts/test_guard_demo_browser.cjs
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
           name: contrast-${{ matrix.viewport }}
