@@ -67,6 +67,19 @@ class PublicSecurityGates(unittest.TestCase):
         result=self.gate("audit_public_exposure.py",b"Unrelated escaped text: \\ud800")
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
 
+    def test_deeply_encoded_fixed_length_key_across_boundary(self):
+        token=self.tokens()[3][1]
+        encoded="".join("\\u%04x"%ord(c) for c in token)
+        for _ in range(7):
+            encoded=json.dumps(encoded)
+        # Split near the end, retaining a prefix larger than the former overlap.
+        cut=len(encoded)-600
+        self.assertGreater(cut,4096)
+        body=b" "*(1024*1024-cut)+encoded.encode()
+        result=self.gate("audit_public_exposure.py",body)
+        self.assertNotEqual(result.returncode,0)
+        self.assertIn("Google API key",result.stdout)
+
     def test_binary_asset_appended_credential(self):
         token=self.tokens()[1][1]
         result=self.gate("audit_public_exposure.py",b"\x89PNG\r\n\x1a\n"+b" "+token.encode(),"image.png")

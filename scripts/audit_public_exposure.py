@@ -177,7 +177,6 @@ for p in ROOT.rglob("*"):
     ):
         errors.append(f"{rel}: forbidden credential/implementation artifact")
 
-    overlap=b""
     first_chunk=b""
     with p.open("rb") as fh:
         first_chunk=fh.read(1024*1024)
@@ -205,14 +204,13 @@ for p in ROOT.rglob("*"):
                 errors.append(f"{rel}: non-UTF-8 content masquerading as an allowed text/source type")
             except Exception as exc:
                 errors.append(f"{rel}: unable to validate structured text content: {exc}")
-        chunk=first_chunk
-        while chunk:
-            scan=overlap+chunk
+        # Full-file views preserve encoded credential prefixes across arbitrary
+        # read boundaries. Text and binary validation already materializes files.
+        raw_for_credentials=p.read_bytes()
+        for view in credential_views(raw_for_credentials):
             for label,rx in SECRET_PATTERNS:
-                if any(rx.search(view) for view in credential_views(scan)):
+                if rx.search(view):
                     errors.append(f"{rel}: possible {label}")
-            overlap=scan[-4096:]
-            chunk=fh.read(1024*1024)
 
 if errors:
     print("Public Credential & Artifact Gate: FAIL")
