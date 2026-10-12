@@ -36,11 +36,11 @@ KEY_SUFFIXES={".pem",".key",".p12",".pfx",".ppk",".jks",".keystore"}
 SECRET_PATTERNS=[
     ("private key",re.compile(rb"-----BEGIN (?:(?:RSA|EC|OPENSSH|DSA) |ENCRYPTED )?PRIVATE KEY-----")),
     ("OpenPGP private key",re.compile(rb"-----BEGIN PGP " + rb"PRIVATE KEY BLOCK-----")),
-    ("GitHub token",re.compile(rb"\bgh[pousr]_[A-Za-z0-9_]{30,}\b")),
-    ("GitHub fine-grained token",re.compile(rb"\bgithub_pat_[A-Za-z0-9_]{30,}\b")),
-    ("OpenAI API key",re.compile(rb"(?<![A-Za-z0-9_-])sk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{20,}(?![A-Za-z0-9_-])")),
-    ("Google API key",re.compile(rb"(?<![A-Za-z0-9_-])AIza[A-Za-z0-9_-]{35}(?![A-Za-z0-9_-])")),
-    ("AWS access key",re.compile(rb"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b")),
+    ("GitHub token",re.compile(rb"gh[pousr]_[A-Za-z0-9_]{30,}")),
+    ("GitHub fine-grained token",re.compile(rb"github_pat_[A-Za-z0-9_]{30,}")),
+    ("OpenAI API key",re.compile(rb"sk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{20,}")),
+    ("Google API key",re.compile(rb"AIza[A-Za-z0-9_-]{35}")),
+    ("AWS access key",re.compile(rb"(?:AKIA|ASIA)[0-9A-Z]{16}")),
     ("PuTTY private key",re.compile(rb"(?im)^PuTTY-User-Key-File-[0-9]+:")),
     ("inline source map",re.compile(rb"sourceMappingURL\s*=\s*data:application/json(?:;charset=[^;,\s]+)?(?:;base64)?,",re.I)),
 ]

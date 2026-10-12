@@ -79,13 +79,13 @@ def read_text_file(path):
     except UnicodeDecodeError:
         return None
 
+PRIVATE_PATH_REF=re.compile("|".join(re.escape(name) for name in PRIVATE_NAMES),re.I)
+
 def path_reference_counts(path):
+    # Public paths expose identifiers even with prefixes, compound extensions,
+    # or archive-like suffixes. Match known names throughout the normalized path.
     normalized=normalize_browser_text(path)
-    counts=reference_counts(normalized)
-    # A file extension is a publication format, not part of a repository name.
-    stems="/".join(Path(part).stem for part in normalized.split("/"))
-    counts |= reference_counts(stems)
-    return counts
+    return Counter(m.group(0).lower() for m in PRIVATE_PATH_REF.finditer(normalized))
 
 def reference_counts(body):
     normalized=normalize_browser_text(body)

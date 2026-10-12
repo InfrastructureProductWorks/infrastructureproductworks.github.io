@@ -115,7 +115,7 @@ class PublicSecurityGates(unittest.TestCase):
         for label,token in self.tokens():
             escaped="".join("\\u%04x"%ord(c) for c in token[:8])+token[8:]
             percent="".join("%%%02X"%ord(c) for c in token)
-            for name in (token+".html",token+"/index.html",escaped+".html",percent+".html"):
+            for name in (token+".html",token+"/index.html",escaped+".html",percent+".html","backup-"+token+".html","backup-"+token+"-copy.html"):
                 result=self.gate("audit_public_exposure.py",filename=name)
                 self.assertNotEqual(result.returncode,0)
                 self.assertIn(label,result.stdout)
@@ -124,10 +124,17 @@ class PublicSecurityGates(unittest.TestCase):
     def test_private_references_in_published_paths_including_binary(self):
         name="".join(("iaap-","guard-core"))
         percent="".join("%%%02X"%ord(c) for c in name)
-        for filename in (name+"/index.html",name+".html",percent+"/image.png"):
+        for filename in (name+"/index.html",name+".html",percent+"/image.png",name+".min.html","backup-"+name+".min.html",name+"-copy/image.png"):
             result=self.gate("audit_private_references.py",body=b"\x00",filename=filename,ci=True)
             self.assertNotEqual(result.returncode,0)
             self.assertIn("published path",result.stdout)
+
+    def test_credential_families_with_content_affixes(self):
+        for label,token in self.tokens():
+            result=self.gate("audit_public_exposure.py",("backup-"+token+"-copy").encode())
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn(label,result.stdout)
+            self.assertNotIn(token,result.stdout+result.stderr)
 
     def test_public_product_names_still_allowed(self):
         result=self.gate("audit_private_references.py",b"Forge, Guard, Console, Assurance, Composite AI, Northstar Signal",ci=True)
