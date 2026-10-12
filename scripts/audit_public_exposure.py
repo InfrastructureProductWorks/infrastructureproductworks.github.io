@@ -37,10 +37,30 @@ SECRET_PATTERNS=[
     ("OpenPGP private key",re.compile(rb"-----BEGIN PGP " + rb"PRIVATE KEY BLOCK-----")),
     ("GitHub token",re.compile(rb"\bgh[pousr]_[A-Za-z0-9_]{30,}\b")),
     ("GitHub fine-grained token",re.compile(rb"\bgithub_pat_[A-Za-z0-9_]{30,}\b")),
+    ("OpenAI API key",re.compile(rb"(?<![A-Za-z0-9_-])sk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{20,}(?![A-Za-z0-9_-])")),
+    ("Google API key",re.compile(rb"(?<![A-Za-z0-9_-])AIza[A-Za-z0-9_-]{35}(?![A-Za-z0-9_-])")),
     ("AWS access key",re.compile(rb"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b")),
     ("PuTTY private key",re.compile(rb"(?im)^PuTTY-User-Key-File-[0-9]+:")),
     ("inline source map",re.compile(rb"sourceMappingURL\s*=\s*data:application/json(?:;charset=[^;,\s]+)?(?:;base64)?,",re.I)),
 ]
+
+JSON_ESCAPE=re.compile(rb'\\(?:u([0-9a-fA-F]{4})|(["\\/bfnrt]))')
+ESCAPE_VALUES={b'"':b'"',b"\\":b"\\",b"/":b"/",b"b":b"\b",b"f":b"\f",b"n":b"\n",b"r":b"\r",b"t":b"\t"}
+
+def credential_views(raw):
+    """Scan raw and bounded JSON-escaped representations without printing values."""
+    yield raw
+    current=raw
+    for _ in range(8):
+        def decode(match):
+            if match.group(1):
+                return chr(int(match.group(1),16)).encode("utf-8",errors="replace")
+            return ESCAPE_VALUES[match.group(2)]
+        decoded=JSON_ESCAPE.sub(decode,current)
+        if decoded==current:
+            return
+        yield decoded
+        current=decoded
 
 def baseline_paths():
     ref=os.environ.get("EXTRACTION_BASE_SHA","").strip()
@@ -189,9 +209,9 @@ for p in ROOT.rglob("*"):
         while chunk:
             scan=overlap+chunk
             for label,rx in SECRET_PATTERNS:
-                if rx.search(scan):
+                if any(rx.search(view) for view in credential_views(scan)):
                     errors.append(f"{rel}: possible {label}")
-            overlap=scan[-512:]
+            overlap=scan[-4096:]
             chunk=fh.read(1024*1024)
 
 if errors:

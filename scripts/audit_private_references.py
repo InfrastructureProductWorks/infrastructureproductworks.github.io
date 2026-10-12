@@ -15,6 +15,9 @@ PRIVATE_FRAGMENTS=(
     ("iaap-","forge"),
     ("iaap-","console"),
     ("iaap-","assurance"),
+    ("iaap-","guard-core"),
+    ("composite-ai-infrastructure-","product-poc"),
+    ("multicloud-","foundation-product-poc"),
     ("crossplane-multicloud-seed-","poc"),
     ("multicloud-foundation-poc-","integration"),
 )

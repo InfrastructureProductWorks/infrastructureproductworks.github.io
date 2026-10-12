@@ -14,9 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
+      - name: Exercise synthetic public security regression cases
+        run: python3 scripts/test_public_security_gates.py -v
       - name: Audit public exposure without removing portfolio content
         env:
           EXTRACTION_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
