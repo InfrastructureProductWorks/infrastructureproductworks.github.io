@@ -27,6 +27,7 @@ class PublicSecurityGates(unittest.TestCase):
                 subprocess.run(["git","-c","user.name=Gate fixture","-c","user.email=fixture@example.invalid","commit","-qm","baseline"],cwd=root,check=True)
                 sha=subprocess.check_output(["git","rev-parse","HEAD"],cwd=root,text=True).strip()
                 env.update(GITHUB_ACTIONS="true",EXTRACTION_BASE_SHA=sha,PRIVATE_REF_BASE_SHA=sha)
+            (root/filename).parent.mkdir(parents=True,exist_ok=True)
             (root/filename).write_bytes(body)
             return subprocess.run([sys.executable,str(root/"scripts"/script)],cwd=root,env=env,capture_output=True,text=True)
 
@@ -109,6 +110,24 @@ class PublicSecurityGates(unittest.TestCase):
                 result=self.gate("audit_private_references.py",representation.encode(),ci=True)
                 self.assertNotEqual(result.returncode,0)
                 self.assertIn("new private/internal implementation reference",result.stdout)
+
+    def test_credentials_in_published_paths(self):
+        for label,token in self.tokens():
+            escaped="".join("\\u%04x"%ord(c) for c in token[:8])+token[8:]
+            percent="".join("%%%02X"%ord(c) for c in token)
+            for name in (token+".html",token+"/index.html",escaped+".html",percent+".html"):
+                result=self.gate("audit_public_exposure.py",filename=name)
+                self.assertNotEqual(result.returncode,0)
+                self.assertIn(label,result.stdout)
+                self.assertNotIn(token,result.stdout+result.stderr)
+
+    def test_private_references_in_published_paths_including_binary(self):
+        name="iaap-"+"guard-core"
+        percent="".join("%%%02X"%ord(c) for c in name)
+        for filename in (name+"/index.html",name+".html",percent+"/image.png"):
+            result=self.gate("audit_private_references.py",body=b"\x00",filename=filename,ci=True)
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn("published path",result.stdout)
 
     def test_public_product_names_still_allowed(self):
         result=self.gate("audit_private_references.py",b"Forge, Guard, Console, Assurance, Composite AI, Northstar Signal",ci=True)

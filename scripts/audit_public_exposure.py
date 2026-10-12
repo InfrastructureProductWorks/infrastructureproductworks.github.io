@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Fail closed on credentials and non-site artifacts in the public repository."""
 from pathlib import Path
-import io, json, os, re, subprocess, sys, zipfile
+import io, json, os, re, subprocess, sys, zipfile, html
+from urllib.parse import unquote
 
 ROOT=Path(__file__).resolve().parents[1]
 SKIP={".git"}
@@ -156,61 +157,72 @@ for p in ROOT.rglob("*"):
     if any(part in SKIP for part in p.parts):
         continue
     if p.is_symlink():
-        errors.append(f"{p.relative_to(ROOT).as_posix()}: symbolic links are not publishable")
+        errors.append("Symbolic-link path: symbolic links are not publishable")
         continue
     if not p.is_file():
         continue
 
     rel=p.relative_to(ROOT).as_posix()
+    normalized_path=rel
+    for _ in range(8):
+        decoded_path=unquote(html.unescape(normalized_path))
+        if decoded_path==normalized_path:
+            break
+        normalized_path=decoded_path
+    path_labels={label for view in credential_views(normalized_path.encode("utf-8"))
+                 for label,rx in SECRET_PATTERNS if rx.search(view)}
+    display_rel="<credential-bearing path>" if path_labels else rel
+    for label in path_labels:
+        errors.append(f"{display_rel}: possible {label} in published path")
     low=p.name.lower()
     suffix=p.suffix.lower()
 
     # The key simplification: a newly introduced artifact must look like a site/source
     # file. Unknown binary/package formats do not get published and then analyzed.
     if rel not in BASELINE and suffix not in ALLOWED_NEW_SUFFIXES and p.name not in ALLOWED_NEW_NAMES:
-        errors.append(f"{rel}: new non-site artifact type is not publishable")
+        errors.append(f"{display_rel}: new non-site artifact type is not publishable")
 
     if (
         low in FORBIDDEN_NAMES or low in {".env",".envrc"} or low.startswith(".env.")
         or low in KEY_NAMES or any(low.endswith(sfx) for sfx in FORBIDDEN_SUFFIXES)
         or suffix in KEY_SUFFIXES
     ):
-        errors.append(f"{rel}: forbidden credential/implementation artifact")
+        errors.append(f"{display_rel}: forbidden credential/implementation artifact")
 
     first_chunk=b""
     with p.open("rb") as fh:
         first_chunk=fh.read(1024*1024)
         if recognized_container(first_chunk[:1024]):
-            errors.append(f"{rel}: archive/container content is not publishable regardless of filename")
+            errors.append(f"{display_rel}: archive/container content is not publishable regardless of filename")
         if suffix in {".pdf",".png",".jpg",".jpeg",".gif",".webp",".ico"}:
             raw_binary=p.read_bytes()
             if not valid_allowed_binary(suffix,raw_binary[:32]):
-                errors.append(f"{rel}: invalid or empty binary content for allowed site asset type")
+                errors.append(f"{display_rel}: invalid or empty binary content for allowed site asset type")
             if embedded_container(raw_binary):
-                errors.append(f"{rel}: embedded archive/container content is not publishable in a binary site asset")
+                errors.append(f"{display_rel}: embedded archive/container content is not publishable in a binary site asset")
         is_text_source=(suffix in TEXT_SUFFIXES or p.name in TEXT_NAMES)
         if is_text_source:
             try:
                 raw=p.read_bytes()
                 if b"\x00" in raw:
-                    errors.append(f"{rel}: binary content masquerading as an allowed text/source type")
+                    errors.append(f"{display_rel}: binary content masquerading as an allowed text/source type")
                 else:
                     raw.decode("utf-8")
                 if looks_like_source_map_json(raw):
-                    errors.append(f"{rel}: standalone source-map document is not publishable")
+                    errors.append(f"{display_rel}: standalone source-map document is not publishable")
                 if looks_like_terraform_state_json(raw):
-                    errors.append(f"{rel}: Terraform state content is not publishable")
+                    errors.append(f"{display_rel}: Terraform state content is not publishable")
             except UnicodeDecodeError:
-                errors.append(f"{rel}: non-UTF-8 content masquerading as an allowed text/source type")
+                errors.append(f"{display_rel}: non-UTF-8 content masquerading as an allowed text/source type")
             except Exception as exc:
-                errors.append(f"{rel}: unable to validate structured text content: {exc}")
+                errors.append(f"{display_rel}: unable to validate structured text content: {exc}")
         # Full-file views preserve encoded credential prefixes across arbitrary
         # read boundaries. Text and binary validation already materializes files.
         raw_for_credentials=p.read_bytes()
         for view in credential_views(raw_for_credentials):
             for label,rx in SECRET_PATTERNS:
                 if rx.search(view):
-                    errors.append(f"{rel}: possible {label}")
+                    errors.append(f"{display_rel}: possible {label}")
 
 if errors:
     print("Public Credential & Artifact Gate: FAIL")
