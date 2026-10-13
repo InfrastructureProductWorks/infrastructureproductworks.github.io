@@ -95,7 +95,7 @@ def path_reference_counts(path):
 def reference_counts(body):
     normalized=normalize_browser_text(body)
     matches=Counter(m.group(0).lower() for m in PRIVATE_REF.finditer(normalized))
-    matches.update(m.group(0).lower() for m in OWNED_COORDINATE.finditer(normalized) if posixpath.normpath(m.group(1)).split("/")[0].lower().rstrip(".").removesuffix(".git") not in PUBLIC_SLUGS)
+    matches.update(m.group(0).lower() for m in OWNED_COORDINATE.finditer(normalized) if posixpath.normpath(m.group(1)).split("/")[0].lower().removesuffix(".git") not in PUBLIC_SLUGS)
     return matches
 
 base=baseline_ref()
