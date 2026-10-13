@@ -12,7 +12,7 @@ import unittest
 SOURCE = Path(__file__).resolve().parent
 
 class PublicSecurityGates(unittest.TestCase):
-    def gate(self, script, body=b"Public portfolio", filename="index.html", ci=False):
+    def gate(self, script, body=b"Public portfolio", filename="index.html", ci=False, symlink=False):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory)
             (root/"scripts").mkdir()
@@ -28,7 +28,8 @@ class PublicSecurityGates(unittest.TestCase):
                 sha=subprocess.check_output(["git","rev-parse","HEAD"],cwd=root,text=True).strip()
                 env.update(GITHUB_ACTIONS="true",EXTRACTION_BASE_SHA=sha,PRIVATE_REF_BASE_SHA=sha)
             (root/filename).parent.mkdir(parents=True,exist_ok=True)
-            (root/filename).write_bytes(body)
+            if symlink:(root/filename).symlink_to(body.decode())
+            else:(root/filename).write_bytes(body)
             return subprocess.run([sys.executable,str(root/"scripts"/script)],cwd=root,env=env,capture_output=True,text=True)
 
     def tokens(self):
@@ -135,6 +136,12 @@ class PublicSecurityGates(unittest.TestCase):
             self.assertNotEqual(result.returncode,0)
             self.assertIn(label,result.stdout)
             self.assertNotIn(token,result.stdout+result.stderr)
+
+    def test_symlink_target_does_not_bypass_either_gate(self):
+        for script in ["audit_private_references.py","audit_public_exposure.py"]:
+            result=self.gate(script,b"unavailable-target",ci=True,symlink=True)
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn("Symbolic-link",result.stdout)
 
     def test_public_product_names_still_allowed(self):
         result=self.gate("audit_private_references.py",b"Forge, Guard, Console, Assurance, Composite AI, Northstar Signal",ci=True)

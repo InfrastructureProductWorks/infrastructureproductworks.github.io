@@ -101,8 +101,12 @@ base_files=baseline_files(base) if base else set()
 errors=[]
 
 for p in ROOT.rglob("*"):
-    if not p.is_file() or any(part in SKIP for part in p.parts):
+    if any(part in SKIP for part in p.parts):
         continue
+    if p.is_symlink():
+        errors.append("Symbolic-link path: symbolic links are not publishable")
+        continue
+    if not p.is_file():continue
     rel=p.relative_to(ROOT).as_posix()
     # Public pathnames are exposed independently of the file body or format.
     path_current=path_reference_counts(rel)
