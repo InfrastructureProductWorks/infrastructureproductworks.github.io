@@ -176,7 +176,11 @@ for p in ROOT.rglob("*"):
             errors.append(f"{rel}: unable to verify baseline PDF immutability: {exc}")
         continue
 
-    current_text=read_text_file(p)
+    try:
+        current_text=read_text_file(p)
+    except (ValueError, UnicodeError) as exc:
+        errors.append(f"{rel}: {exc}")
+        continue
     if current_text is None:
         continue
 
