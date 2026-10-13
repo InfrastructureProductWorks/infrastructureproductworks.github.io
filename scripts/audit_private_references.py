@@ -112,10 +112,14 @@ def path_reference_counts(path):
     matches.update(reference_counts(normalized))
     return matches
 
+MARKDOWN_ESCAPE=re.compile(r'\\([!-/:-@\[-`{-~])')
+
 def reference_counts(body):
-    normalized=normalize_browser_text(body)
-    matches=Counter(m.group(0).lower() for m in PRIVATE_REF.finditer(normalized))
-    matches.update(m.group(0).lower() for m in coordinate_matches(normalized) if not coordinate_allowed(m, PUBLIC_REPOSITORIES))
+    matches=Counter()
+    for view in (body,MARKDOWN_ESCAPE.sub(lambda m:m.group(1),body)):
+        normalized=normalize_browser_text(view)
+        matches.update(m.group(0).lower() for m in PRIVATE_REF.finditer(normalized))
+        matches.update(m.group(0).lower() for m in coordinate_matches(normalized) if not coordinate_allowed(m, PUBLIC_REPOSITORIES))
     return matches
 
 base=baseline_ref()
