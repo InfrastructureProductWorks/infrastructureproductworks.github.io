@@ -164,6 +164,13 @@ class PublicSecurityGates(unittest.TestCase):
             result=self.gate('audit_private_references.py',body=body,filename=name,ci=True)
             self.assertNotEqual(result.returncode,0)
 
+    def test_over_encoded_coordinates_fail_closed(self):
+        from urllib.parse import quote
+        text='https://github.com/'+''.join(('PrivatePartner/','secret-repo'))
+        for _ in range(9):text=quote(text,safe='')
+        result=self.gate('audit_private_references.py',text.encode(),ci=True)
+        self.assertNotEqual(result.returncode,0)
+
     def test_public_product_names_still_allowed(self):
         result=self.gate("audit_private_references.py",b"Forge, Guard, Console, Assurance, Composite AI, Northstar Signal",ci=True)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)

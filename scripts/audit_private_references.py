@@ -53,7 +53,7 @@ JS_CONCAT=re.compile(r"""(["'])([^"'\\\r\n]*)\1\s*\+\s*(["'])([^"'\\\r\n]*)\3"""
 
 def normalize_browser_text(body):
     current=body
-    for _ in range(8):
+    for normalization_step in range(9):
         prior=current
         current=html.unescape(current)
         current=unquote(current)
@@ -64,6 +64,7 @@ def normalize_browser_text(body):
         current=re.sub(r"/+", "/", current)
         if current==prior:
             break
+        if normalization_step==8:raise ValueError("Publication text exceeds the bounded normalization limit")
     return current
 
 def baseline_ref():
