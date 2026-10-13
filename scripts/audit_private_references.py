@@ -22,8 +22,20 @@ PRIVATE_FRAGMENTS=(
     ("crossplane-multicloud-seed-","poc"),
     ("multicloud-foundation-poc-","integration"),
 )
-PUBLIC_SLUGS={"infrastructureproductworks.github.io","ai-powered-infrastructure-as-a-product","iaap-guard","enterprise-azure-governance",".github"}
-OWNED_COORDINATE=re.compile(r"(?:InfrastructureProductWorks|SAABOLImpactVenture)/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)",re.I)
+PUBLIC_REPOSITORIES={'infrastructureproductworks/ai-powered-infrastructure-as-a-product', 'infrastructureproductworks/iaap-guard', 'infrastructureproductworks/infrastructureproductworks.github.io'}
+OWNED_COORDINATE=re.compile('(InfrastructureProductWorks|SAABOLImpactVenture)/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)',re.I)
+GITHUB_COORDINATE=re.compile(r'(?<![A-Za-z0-9_.-])(?:www\.github\.com(?::[0-9]+)?/|github\.com(?::[0-9]+)?/|raw\.githubusercontent\.com(?::[0-9]+)?/|codeload\.github\.com(?::[0-9]+)?/|gist\.github\.com(?::[0-9]+)?/|api\.github\.com(?::[0-9]+)?/repos/|git@github\.com(?::[0-9]+)?[:/])([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)',re.I)
+NON_REPO_ROUTES={'apps','marketplace','orgs','settings','features','topics','search','sponsors','users','collections','about','enterprise','security'}
+
+def coordinate_matches(text):
+    for match in OWNED_COORDINATE.finditer(text):yield match
+    for match in GITHUB_COORDINATE.finditer(text):
+        if match.group(0).lower().startswith(('github.com','www.github.com')) and match.group(1).lower() in NON_REPO_ROUTES:continue
+        yield match
+
+def coordinate_key(match):
+    return match.group(1).lower()+'/'+posixpath.normpath(match.group(2)).split('/')[0].lower().removesuffix('.git')
+
 PRIVATE_NAMES=tuple("".join(parts) for parts in PRIVATE_FRAGMENTS)
 PRIVATE_REF=re.compile(
     r"(?<![A-Za-z0-9_.-])(?:InfrastructureProductWorks/)?(?:"
@@ -90,12 +102,14 @@ def path_reference_counts(path):
     # Public paths expose identifiers even with prefixes, compound extensions,
     # or archive-like suffixes. Match known names throughout the normalized path.
     normalized=normalize_browser_text(path)
-    return Counter(m.group(0).lower() for m in PRIVATE_PATH_REF.finditer(normalized))
+    matches=Counter(m.group(0).lower() for m in PRIVATE_PATH_REF.finditer(normalized))
+    matches.update(reference_counts(normalized))
+    return matches
 
 def reference_counts(body):
     normalized=normalize_browser_text(body)
     matches=Counter(m.group(0).lower() for m in PRIVATE_REF.finditer(normalized))
-    matches.update(m.group(0).lower() for m in OWNED_COORDINATE.finditer(normalized) if posixpath.normpath(m.group(1)).split("/")[0].lower().removesuffix(".git") not in PUBLIC_SLUGS)
+    matches.update(m.group(0).lower() for m in coordinate_matches(normalized) if coordinate_key(m) not in PUBLIC_REPOSITORIES)
     return matches
 
 base=baseline_ref()

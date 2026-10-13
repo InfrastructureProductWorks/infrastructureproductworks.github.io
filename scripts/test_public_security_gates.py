@@ -143,6 +143,14 @@ class PublicSecurityGates(unittest.TestCase):
             result=self.gate("audit_private_references.py",value.encode(),ci=True)
             self.assertNotEqual(result.returncode,0)
 
+    def test_unknown_coordinates_in_paths_and_other_namespaces(self):
+        name="".join(("InfrastructureProductWorks/","private-producer/","index.html"))
+        result=self.gate("audit_private_references.py",filename=name,ci=True)
+        self.assertNotEqual(result.returncode,0)
+        for coordinate in ("".join(("SAABOLImpactVenture/","iaap-guard")), "https://github.com/"+"".join(("PrivatePartner/","secret-repo"))):
+            result=self.gate("audit_private_references.py",coordinate.encode(),ci=True)
+            self.assertNotEqual(result.returncode,0)
+
     def test_symlink_target_does_not_bypass_either_gate(self):
         for script in ["audit_private_references.py","audit_public_exposure.py"]:
             result=self.gate(script,b"unavailable-target",ci=True,symlink=True)
