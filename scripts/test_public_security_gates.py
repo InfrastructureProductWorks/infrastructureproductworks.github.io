@@ -147,7 +147,7 @@ class PublicSecurityGates(unittest.TestCase):
         name="".join(("InfrastructureProductWorks/","private-producer/","index.html"))
         result=self.gate("audit_private_references.py",filename=name,ci=True)
         self.assertNotEqual(result.returncode,0)
-        for coordinate in ("".join(("SAABOLImpactVenture/","iaap-guard")), "https://github.com/"+"".join(("PrivatePartner/","secret-repo")), "ssh://git@ssh.github.com:443/"+"".join(("PrivatePartner/","secret-repo.git")), "".join(("https://github.com/","apps/../","PrivatePartner/","secret-repo"))):
+        for coordinate in ("".join(("SAABOLImpactVenture/","iaap-guard")), "https://github.com/"+"".join(("PrivatePartner/","secret-repo")), "https://github.com./"+"".join(("PrivatePartner/","secret-repo")), "ssh://git@ssh.github.com:443/"+"".join(("PrivatePartner/","secret-repo.git")), "".join(("https://github.com/","apps/../","PrivatePartner/","secret-repo"))):
             result=self.gate("audit_private_references.py",coordinate.encode(),ci=True)
             self.assertNotEqual(result.returncode,0)
 
@@ -170,6 +170,12 @@ class PublicSecurityGates(unittest.TestCase):
         for _ in range(9):text=quote(text,safe='')
         result=self.gate('audit_private_references.py',text.encode(),ci=True)
         self.assertNotEqual(result.returncode,0)
+
+    def test_bom_marked_coordinates_are_scanned(self):
+        text='https://github.com/'+''.join(('PrivatePartner/','secret-repo'))
+        for encoding in ['utf-16','utf-32','utf-8-sig']:
+            result=self.gate('audit_private_references.py',text.encode(encoding),ci=True)
+            self.assertNotEqual(result.returncode,0)
 
     def test_public_product_names_still_allowed(self):
         result=self.gate("audit_private_references.py",b"Forge, Guard, Console, Assurance, Composite AI, Northstar Signal",ci=True)

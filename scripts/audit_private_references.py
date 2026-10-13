@@ -24,7 +24,7 @@ PRIVATE_FRAGMENTS=(
 )
 PUBLIC_REPOSITORIES={'infrastructureproductworks/ai-powered-infrastructure-as-a-product', 'infrastructureproductworks/iaap-guard', 'infrastructureproductworks/infrastructureproductworks.github.io'}
 OWNED_COORDINATE=re.compile('(InfrastructureProductWorks|SAABOLImpactVenture)/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)',re.I)
-GITHUB_COORDINATE=re.compile(r'(?<![A-Za-z0-9_.-])(?:api\.github\.com(?::[0-9]+)?/repos/|(?!docs\.github\.com)(?:[A-Za-z0-9-]+\.)*github\.com(?::[0-9]+)?/|raw\.githubusercontent\.com(?::[0-9]+)?/|git@(?:ssh\.)?github\.com(?::[0-9]+)?[:/])([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)',re.I)
+GITHUB_COORDINATE=re.compile(r'(?<![A-Za-z0-9_.-])(?:api\.github\.com\.?(?::[0-9]*)?/repos/|(?!docs\.github\.com)(?:[A-Za-z0-9-]+\.)*github\.com\.?(?::[0-9]*)?/|raw\.githubusercontent\.com\.?(?::[0-9]*)?/|git@(?:ssh\.)?github\.com\.?(?::[0-9]*)?[:/])([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)',re.I)
 PUBLIC_UI_COORDINATES={'apps/iaap-guard'}
 
 def coordinate_matches(text):
@@ -93,6 +93,8 @@ def read_baseline(ref,rel):
 
 def read_text_file(path):
     raw=path.read_bytes()
+    if raw.startswith((b'\xff\xfe\x00\x00',b'\x00\x00\xfe\xff')):return raw.decode('utf-32')
+    if raw.startswith((b'\xff\xfe',b'\xfe\xff')):return raw.decode('utf-16')
     if b"\x00" in raw:
         return None
     try:
