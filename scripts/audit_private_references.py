@@ -25,16 +25,19 @@ PRIVATE_FRAGMENTS=(
 PUBLIC_REPOSITORIES={'infrastructureproductworks/ai-powered-infrastructure-as-a-product', 'infrastructureproductworks/iaap-guard', 'infrastructureproductworks/infrastructureproductworks.github.io'}
 OWNED_COORDINATE=re.compile('(InfrastructureProductWorks|SAABOLImpactVenture)/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)',re.I)
 GITHUB_COORDINATE=re.compile(r'(?<![A-Za-z0-9_.-])(?:www\.github\.com(?::[0-9]+)?/|github\.com(?::[0-9]+)?/|raw\.githubusercontent\.com(?::[0-9]+)?/|codeload\.github\.com(?::[0-9]+)?/|gist\.github\.com(?::[0-9]+)?/|api\.github\.com(?::[0-9]+)?/repos/|git@github\.com(?::[0-9]+)?[:/])([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)',re.I)
-NON_REPO_ROUTES={'apps','marketplace','orgs','settings','features','topics','search','sponsors','users','collections','about','enterprise','security'}
+PUBLIC_UI_COORDINATES={'apps/iaap-guard'}
 
 def coordinate_matches(text):
     for match in OWNED_COORDINATE.finditer(text):yield match
     for match in GITHUB_COORDINATE.finditer(text):
-        if match.group(0).lower().startswith(('github.com','www.github.com')) and match.group(1).lower() in NON_REPO_ROUTES:continue
         yield match
 
 def coordinate_key(match):
-    return match.group(1).lower()+'/'+posixpath.normpath(match.group(2)).split('/')[0].lower().removesuffix('.git')
+    return '/'.join(posixpath.normpath(match.group(1)+'/'+match.group(2)).lower().split('/')[:2]).removesuffix('.git')
+
+def coordinate_allowed(match, approved):
+    key=coordinate_key(match)
+    return key in approved or match.group(0).lower().startswith(('github.com','www.github.com')) and key in PUBLIC_UI_COORDINATES
 
 PRIVATE_NAMES=tuple("".join(parts) for parts in PRIVATE_FRAGMENTS)
 PRIVATE_REF=re.compile(
@@ -109,7 +112,7 @@ def path_reference_counts(path):
 def reference_counts(body):
     normalized=normalize_browser_text(body)
     matches=Counter(m.group(0).lower() for m in PRIVATE_REF.finditer(normalized))
-    matches.update(m.group(0).lower() for m in coordinate_matches(normalized) if coordinate_key(m) not in PUBLIC_REPOSITORIES)
+    matches.update(m.group(0).lower() for m in coordinate_matches(normalized) if not coordinate_allowed(m, PUBLIC_REPOSITORIES))
     return matches
 
 base=baseline_ref()
