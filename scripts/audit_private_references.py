@@ -21,6 +21,8 @@ PRIVATE_FRAGMENTS=(
     ("crossplane-multicloud-seed-","poc"),
     ("multicloud-foundation-poc-","integration"),
 )
+PUBLIC_SLUGS={"infrastructureproductworks.github.io","ai-powered-infrastructure-as-a-product","iaap-guard","enterprise-azure-governance",".github"}
+OWNED_COORDINATE=re.compile(r"(?:InfrastructureProductWorks|SAABOLImpactVenture)/([A-Za-z0-9_.-]+)",re.I)
 PRIVATE_NAMES=tuple("".join(parts) for parts in PRIVATE_FRAGMENTS)
 PRIVATE_REF=re.compile(
     r"(?<![A-Za-z0-9_.-])(?:InfrastructureProductWorks/)?(?:"
@@ -89,7 +91,9 @@ def path_reference_counts(path):
 
 def reference_counts(body):
     normalized=normalize_browser_text(body)
-    return Counter(m.group(0).lower() for m in PRIVATE_REF.finditer(normalized))
+    matches=Counter(m.group(0).lower() for m in PRIVATE_REF.finditer(normalized))
+    matches.update(m.group(0).lower() for m in OWNED_COORDINATE.finditer(normalized) if m.group(1).lower().removesuffix(".git") not in PUBLIC_SLUGS)
+    return matches
 
 base=baseline_ref()
 if os.environ.get("GITHUB_ACTIONS","").lower()=="true" and not base:

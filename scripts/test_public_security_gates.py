@@ -137,6 +137,11 @@ class PublicSecurityGates(unittest.TestCase):
             self.assertIn(label,result.stdout)
             self.assertNotIn(token,result.stdout+result.stderr)
 
+    def test_new_repository_name_requires_public_allowlist(self):
+        coordinate="".join(("InfrastructureProductWorks/","private-producer"))
+        result=self.gate("audit_private_references.py",coordinate.encode(),ci=True)
+        self.assertNotEqual(result.returncode,0)
+
     def test_symlink_target_does_not_bypass_either_gate(self):
         for script in ["audit_private_references.py","audit_public_exposure.py"]:
             result=self.gate(script,b"unavailable-target",ci=True,symlink=True)
