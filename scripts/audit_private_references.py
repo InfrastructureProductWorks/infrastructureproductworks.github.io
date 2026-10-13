@@ -51,6 +51,15 @@ JS_UNICODE=re.compile(r"\\u([0-9a-fA-F]{4})")
 PDF_SUFFIXES={".pdf"}
 JS_CONCAT=re.compile(r"""(["'])([^"'\\\r\n]*)\1\s*\+\s*(["'])([^"'\\\r\n]*)\3""")
 
+
+def normalize_hostnames(text):
+    text=text.translate(str.maketrans({'。':'.','．':'.','｡':'.'}))
+    def host(match):
+        try:normalized=match.group(2).encode('idna').decode('ascii')
+        except UnicodeError:return match.group(0)
+        return match.group(1)+normalized
+    return re.sub(r"((?:[A-Za-z][A-Za-z0-9+.-]*:/+|git@))([^/\s:?#\"'()<>\[\]]+)",host,text)
+
 def normalize_browser_text(body):
     current=body
     for normalization_step in range(9):
@@ -62,6 +71,7 @@ def normalize_browser_text(body):
         current=JS_CONCAT.sub(lambda m: m.group(1)+m.group(2)+m.group(4)+m.group(1),current)
         current=current.replace("\\", "/")
         current=re.sub(r"/+", "/", current)
+        current=normalize_hostnames(current)
         if current==prior:
             break
         if normalization_step==8:raise ValueError("Publication text exceeds the bounded normalization limit")

@@ -182,6 +182,12 @@ class PublicSecurityGates(unittest.TestCase):
         result=self.gate('audit_private_references.py',text.encode(),ci=True)
         self.assertNotEqual(result.returncode,0)
 
+    def test_idna_host_separators_are_scanned(self):
+        for separator in ['。','．','｡']:
+            text='https://github'+separator+'com/'+''.join(('PrivatePartner/','secret-repo'))
+            result=self.gate('audit_private_references.py',text.encode(),ci=True)
+            self.assertNotEqual(result.returncode,0)
+
     def test_public_product_names_still_allowed(self):
         result=self.gate("audit_private_references.py",b"Forge, Guard, Console, Assurance, Composite AI, Northstar Signal",ci=True)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
