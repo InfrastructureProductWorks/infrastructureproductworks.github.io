@@ -16,18 +16,18 @@ function harness() {
   const roadmap = JSON.parse(fs.readFileSync('data/roadmap-relationships.json', 'utf8'));
   context.roadmapFixture = roadmap;
   const bundle = vm.runInContext(`({
-    schemaVersion:'portfolio-bundle/v1',
+    schemaVersion:'portfolio-bundle/v2',
     roadmap:roadmapFixture,
     presentation:{schemaVersion:'portfolio-presentation/v1',deliveryFocus:DELIVERY_FOCUS,milestones:DELIVERY_OUTLOOK_MILESTONES},
     dashboard:{...FALLBACK,generatedAt:roadmapFixture.generatedAt+'T12:00:00Z',authorityNotice:AUTHORITY_NOTICE,
-      source:{roadmap:'config/portfolio-roadmap.json',roadmapBaseline:normalizeRoadmapDate(roadmapFixture.planning.baseline),
-        scope:LIVE_SCOPE,aggregation:LIVE_AGGREGATION,repository:INTEGRATION_REPOSITORY,
-        revision:roadmapFixture.sourceRevision,roadmapBlobSha:roadmapFixture.roadmapBlobSha},
+      source:{roadmap:'public-portfolio-roadmap',roadmapBaseline:normalizeRoadmapDate(roadmapFixture.planning.baseline),
+        scope:LIVE_SCOPE,aggregation:LIVE_AGGREGATION,repository:PUBLIC_EVIDENCE_REPOSITORY,
+        commitment:roadmapFixture.sourceCommitment,roadmapCommitment:roadmapFixture.roadmapCommitment},
       objectives:roadmapFixture.objectives.map(o=>({id:o.id,definition:o.definition,keyResultCount:o.keyResults.length,
         epics:[...new Set(roadmapFixture.keyResults.filter(k=>k.objective===o.id).flatMap(k=>k.epics))]})),
       products:PRODUCT_CONTRACT.map(p=>({id:p.id,name:p.name,role:p.role,stageIndex:1,state:'Defined',status:'DEFINING',
         evidence:'Synthetic fixture',nextMilestone:'Bounded test',href:'/'+p.id+'/',versions:{},
-        source:{repository:p.repository,revision:'a'.repeat(40),mode:'product-owned-main'}}))}
+        source:{product:p.id,commitment:'a'.repeat(64),mode:'product-owned-main'}}))}
   })`, context);
   context.bundle = JSON.parse(JSON.stringify(bundle));
   context.renderLog = renders;
@@ -70,8 +70,8 @@ function harness() {
   assert.equal(good.errors.length,0);
   assert.ok(good.renders.some(([kind])=>kind==='roadmap'));
   for(const mutate of [
-    b=>b.roadmap.sourceRevision='b'.repeat(40),
-    b=>b.roadmap.roadmapBlobSha='b'.repeat(40),
+    b=>b.roadmap.sourceCommitment='b'.repeat(64),
+    b=>b.roadmap.roadmapCommitment='b'.repeat(64),
     b=>b.dashboard.baseline.features++,
     b=>b.roadmap.generatedAt='2099-01-01',
     b=>b.roadmap.headlineKeyResults[0].epicContributions=[],

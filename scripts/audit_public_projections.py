@@ -26,9 +26,9 @@ ASSURANCE_RECORD={
     "notice","recordDigest"
 }
 ROADMAP_TOP={
-    "schemaVersion","generatedAt","sourceRevision","planning","objectives","keyResults",
+    "schemaVersion","generatedAt","sourceCommitment","planning","objectives","keyResults",
     "epics","relationshipModel","headlineKeyResults","progressHistory","forecastModel",
-    "progressModel","roadmapBlobSha","contributionSource","contributionBlobSha"
+    "progressModel","roadmapCommitment","contributionSource","contributionCommitment"
 }
 ROADMAP_PLANNING={"baseline","evidenceQuarter","horizon","timingNote"}
 ROADMAP_OBJECTIVE={"definition","group","headlineKeyResults","id","keyResults","progress","status","time"}
@@ -138,7 +138,7 @@ for i,item in enumerate(roadmap.get("progressHistory") or []):
         errors.append(f"roadmap.progressHistory[{i}].epics: expected object")
 exact_keys(roadmap.get("forecastModel"),ROADMAP_FORECAST_MODEL,"roadmap.forecastModel")
 exact_keys(roadmap.get("progressModel"),ROADMAP_PROGRESS_MODEL,"roadmap.progressModel")
-if roadmap.get("schemaVersion")!="roadmap-relationship-view/v5":
+if roadmap.get("schemaVersion")!="roadmap-relationship-view/v6":
     errors.append("roadmap.schemaVersion: unexpected public roadmap schema version")
 planning=roadmap.get("planning")
 if not isinstance(planning,dict) or "timingNote" not in planning:

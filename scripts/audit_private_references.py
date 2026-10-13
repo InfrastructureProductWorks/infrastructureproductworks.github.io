@@ -107,7 +107,7 @@ for p in ROOT.rglob("*"):
     # Public pathnames are exposed independently of the file body or format.
     path_current=path_reference_counts(rel)
     path_prior=path_reference_counts(rel) if rel in base_files else Counter()
-    for identifier,count in (path_current-path_prior).items():
+    for identifier,count in (path_current).items():
         for _ in range(count):
             errors.append(f"{rel}: new private/internal implementation reference in published path: {identifier}")
     if p.suffix.lower() in PDF_SUFFIXES and rel in base_files:
@@ -137,7 +137,7 @@ for p in ROOT.rglob("*"):
         if old is not None:
             prior=reference_counts(old)
 
-    extra=current-prior
+    extra=current
     for identifier,count in extra.items():
         for _ in range(count):
             errors.append(

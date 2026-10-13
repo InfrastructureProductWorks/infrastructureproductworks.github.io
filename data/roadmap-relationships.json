@@ -1,7 +1,6 @@
 {
-  "schemaVersion": "roadmap-relationship-view/v5",
+  "schemaVersion": "roadmap-relationship-view/v6",
   "generatedAt": "2026-09-23",
-  "sourceRevision": "5635fc5857019e737604b3507bfabd9d27d714b9",
   "planning": {
     "baseline": "September 22, 2026",
     "evidenceQuarter": "Q3 2026",
@@ -32,7 +31,7 @@
       "status": "In progress",
       "group": "active",
       "progress": "Trusted evidence intake has bounded accepted slices while broader evaluator work remains planned",
-      "time": "Q3 2026 evidence · horizon through Aug 2027",
+      "time": "Q3 2026 evidence \u00b7 horizon through Aug 2027",
       "keyResults": [
         "KR2.1",
         "KR2.2",
@@ -49,7 +48,7 @@
       "status": "Conditional / gated",
       "group": "gated",
       "progress": "Foundation product contracts are defined across network, security, identity, hierarchy, observability, resilience and cost; live proof remains gated",
-      "time": "Q3 2026 design · later authorized live gates",
+      "time": "Q3 2026 design \u00b7 later authorized live gates",
       "keyResults": [
         "KR3.1",
         "KR3.2",
@@ -95,7 +94,7 @@
       "status": "Mixed / gated",
       "group": "gated",
       "progress": "Planning, readiness, evidence and change-readiness work advance in bounded/documentation-first slices; operational decisions remain customer-evidence dependent",
-      "time": "Q3 2026 evidence/design · horizon through Aug 2027",
+      "time": "Q3 2026 evidence/design \u00b7 horizon through Aug 2027",
       "keyResults": [
         "KR4.1",
         "KR4.2",
@@ -121,8 +120,8 @@
       "definition": "Make the portfolio installable and portable in customer-controlled enterprise environments",
       "status": "Active",
       "group": "active",
-      "progress": "EP-07 bounded closed · EP-08 active with GHE-07 externally blocked",
-      "time": "Q3 2026 · live portability timing customer-dependent",
+      "progress": "EP-07 bounded closed \u00b7 EP-08 active with GHE-07 externally blocked",
+      "time": "Q3 2026 \u00b7 live portability timing customer-dependent",
       "keyResults": [
         "KR5.1",
         "KR5.2",
@@ -141,7 +140,7 @@
       "definition": "Connect the product experience without widening execution authority",
       "status": "Active",
       "group": "active",
-      "progress": "EDA-01 through EDA-05 accepted · EDA-06 current",
+      "progress": "EDA-01 through EDA-05 accepted \u00b7 EDA-06 current",
       "time": "Q3 2026 active delivery",
       "keyResults": [
         "KR6.1",
@@ -160,7 +159,7 @@
       "status": "Future / evidence-gated",
       "group": "future",
       "progress": "AI-assisted and agent-operated evolution remains downstream of accepted connected and operational foundations",
-      "time": "Future · evidence-gated",
+      "time": "Future \u00b7 evidence-gated",
       "keyResults": [
         "KR7.1",
         "KR7.2",
@@ -241,7 +240,7 @@
       ],
       "status": "Planned",
       "group": "planned",
-      "time": "Planning horizon: Sep 2026–Aug 2027"
+      "time": "Planning horizon: Sep 2026\u2013Aug 2027"
     },
     {
       "id": "KR2.2",
@@ -255,7 +254,7 @@
       ],
       "status": "Active",
       "group": "active",
-      "time": "Planning horizon: Sep 2026–Aug 2027"
+      "time": "Planning horizon: Sep 2026\u2013Aug 2027"
     },
     {
       "id": "KR2.3",
@@ -268,7 +267,7 @@
       ],
       "status": "Planned",
       "group": "planned",
-      "time": "Planning horizon: Sep 2026–Aug 2027"
+      "time": "Planning horizon: Sep 2026\u2013Aug 2027"
     },
     {
       "id": "KR3.1",
@@ -333,7 +332,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Planning horizon: Sep 2026–Aug 2027"
+      "time": "Planning horizon: Sep 2026\u2013Aug 2027"
     },
     {
       "id": "KR4.2",
@@ -413,7 +412,7 @@
       ],
       "status": "Active",
       "group": "active",
-      "time": "Q3 2026 evidence · live timing customer-dependent"
+      "time": "Q3 2026 evidence \u00b7 live timing customer-dependent"
     },
     {
       "id": "KR5.5",
@@ -426,7 +425,7 @@
       ],
       "status": "Active",
       "group": "active",
-      "time": "Q3 2026 evidence · live timing customer-dependent"
+      "time": "Q3 2026 evidence \u00b7 live timing customer-dependent"
     },
     {
       "id": "KR5.6",
@@ -439,7 +438,7 @@
       ],
       "status": "Active",
       "group": "active",
-      "time": "Q3 2026 evidence · live timing customer-dependent"
+      "time": "Q3 2026 evidence \u00b7 live timing customer-dependent"
     },
     {
       "id": "KR3.5",
@@ -452,7 +451,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.6",
@@ -465,7 +464,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.7",
@@ -478,7 +477,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.8",
@@ -491,7 +490,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.9",
@@ -504,7 +503,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.10",
@@ -517,7 +516,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.11",
@@ -530,7 +529,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR4.4",
@@ -543,7 +542,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.12",
@@ -556,7 +555,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.13",
@@ -569,7 +568,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.14",
@@ -582,7 +581,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR4.5",
@@ -595,7 +594,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.15",
@@ -608,7 +607,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.25",
@@ -621,7 +620,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.26",
@@ -634,7 +633,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.27",
@@ -647,7 +646,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.16",
@@ -661,7 +660,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.17",
@@ -675,7 +674,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.18",
@@ -689,7 +688,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR4.8",
@@ -703,7 +702,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.19",
@@ -716,7 +715,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.20",
@@ -729,7 +728,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.21",
@@ -742,7 +741,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR4.6",
@@ -755,7 +754,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.22",
@@ -768,7 +767,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.23",
@@ -781,7 +780,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR3.24",
@@ -794,7 +793,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR4.7",
@@ -807,7 +806,7 @@
       ],
       "status": "Conditional / gated",
       "group": "gated",
-      "time": "Q3 2026 design · later live gate"
+      "time": "Q3 2026 design \u00b7 later live gate"
     },
     {
       "id": "KR6.1",
@@ -825,7 +824,7 @@
     {
       "id": "KR6.2",
       "objective": "O6",
-      "definition": "One authenticated, integrity-bound Storefront → Forge transport preserves the accepted handoff semantics and human-review stop",
+      "definition": "One authenticated, integrity-bound Storefront \u2192 Forge transport preserves the accepted handoff semantics and human-review stop",
       "sharedRange": null,
       "source": "docs/PORTFOLIO_ROADMAP-AMENDMENT-CONNECTED-APPLICATIONS-2026-09-17.md",
       "epics": [
@@ -873,7 +872,7 @@
       ],
       "status": "Future / evidence-gated",
       "group": "future",
-      "time": "Future · evidence-gated"
+      "time": "Future \u00b7 evidence-gated"
     },
     {
       "id": "KR7.2",
@@ -886,7 +885,7 @@
       ],
       "status": "Future / evidence-gated",
       "group": "future",
-      "time": "Future · evidence-gated"
+      "time": "Future \u00b7 evidence-gated"
     },
     {
       "id": "KR7.3",
@@ -899,7 +898,7 @@
       ],
       "status": "Future / evidence-gated",
       "group": "future",
-      "time": "Future · evidence-gated"
+      "time": "Future \u00b7 evidence-gated"
     },
     {
       "id": "KR8.1",
@@ -1093,7 +1092,7 @@
       "status": "Planned",
       "group": "planned",
       "progress": "Planned evaluation/scorecard work remains bounded by evidence requirements",
-      "time": "Planning horizon: Sep 2026–Aug 2027",
+      "time": "Planning horizon: Sep 2026\u2013Aug 2027",
       "featureCount": 3,
       "features": [
         "F-03",
@@ -1153,7 +1152,7 @@
       "status": "Conditional",
       "group": "gated",
       "progress": "Planning and outcomes capability remains conditional on accepted producer evidence",
-      "time": "Planning horizon: Sep 2026–Aug 2027",
+      "time": "Planning horizon: Sep 2026\u2013Aug 2027",
       "featureCount": 5,
       "features": [
         "PLO-01",
@@ -1209,8 +1208,8 @@
       "title": "GitHub Enterprise Server and restricted-network portability",
       "status": "Active / externally blocked",
       "group": "active",
-      "progress": "GHE-06 bounded accepted · GHE-07 ready but externally blocked · GHE-08 gated on live evidence",
-      "time": "Q3 2026 evidence · live timing customer-dependent",
+      "progress": "GHE-06 bounded accepted \u00b7 GHE-07 ready but externally blocked \u00b7 GHE-08 gated on live evidence",
+      "time": "Q3 2026 evidence \u00b7 live timing customer-dependent",
       "featureCount": 8,
       "features": [
         "GHE-01",
@@ -1231,7 +1230,7 @@
       "status": "Conditional",
       "group": "gated",
       "progress": "Contract and simulation work may proceed; live network integration remains separately gated",
-      "time": "Q3 2026 design · later live gate",
+      "time": "Q3 2026 design \u00b7 later live gate",
       "featureCount": 8,
       "features": [
         "NET-01",
@@ -1252,7 +1251,7 @@
       "status": "Conditional",
       "group": "gated",
       "progress": "Documentation and bounded profile work may proceed; live security integration remains separately gated",
-      "time": "Q3 2026 design · later live gate",
+      "time": "Q3 2026 design \u00b7 later live gate",
       "featureCount": 10,
       "features": [
         "SEC-01",
@@ -1275,7 +1274,7 @@
       "status": "Conditional",
       "group": "gated",
       "progress": "Bounded identity contracts exist; live identity-provider operation remains separately gated",
-      "time": "Q3 2026 design · later live gate",
+      "time": "Q3 2026 design \u00b7 later live gate",
       "featureCount": 10,
       "features": [
         "IDN-01",
@@ -1298,7 +1297,7 @@
       "status": "Conditional",
       "group": "gated",
       "progress": "Contract and simulation work may proceed; live vending remains gated by authorized targets and approvals",
-      "time": "Q3 2026 design · later live gate",
+      "time": "Q3 2026 design \u00b7 later live gate",
       "featureCount": 8,
       "features": [
         "HIE-01",
@@ -1319,7 +1318,7 @@
       "status": "Conditional",
       "group": "gated",
       "progress": "Contract and simulation work may proceed; live telemetry requires authorized destinations and data handling",
-      "time": "Q3 2026 design · later live gate",
+      "time": "Q3 2026 design \u00b7 later live gate",
       "featureCount": 8,
       "features": [
         "OBS-01",
@@ -1340,7 +1339,7 @@
       "status": "Conditional",
       "group": "gated",
       "progress": "Resilience contracts are defined; live backup/recovery and observed recovery evidence remain gated",
-      "time": "Q3 2026 design · later live gate",
+      "time": "Q3 2026 design \u00b7 later live gate",
       "featureCount": 8,
       "features": [
         "RES-01",
@@ -1361,7 +1360,7 @@
       "status": "Conditional",
       "group": "gated",
       "progress": "Bounded cost-admission evidence exists; authoritative cost and spending paths remain separately gated",
-      "time": "Q3 2026 design · later live gate",
+      "time": "Q3 2026 design \u00b7 later live gate",
       "featureCount": 8,
       "features": [
         "FIN-01",
@@ -1381,7 +1380,7 @@
       "title": "Connected Application Experience",
       "status": "Active",
       "group": "active",
-      "progress": "EDA-01 through EDA-05 accepted · EDA-06 evidence/artifact adapter current · EDA-07 later",
+      "progress": "EDA-01 through EDA-05 accepted \u00b7 EDA-06 evidence/artifact adapter current \u00b7 EDA-07 later",
       "time": "Q3 2026 active delivery",
       "featureCount": 8,
       "features": [
@@ -1403,7 +1402,7 @@
       "status": "Future / evidence-gated",
       "group": "future",
       "progress": "AI and agent operation remain downstream of trusted connected and customer-operational foundations",
-      "time": "Future · evidence-gated",
+      "time": "Future \u00b7 evidence-gated",
       "featureCount": 5,
       "features": [
         "AIO-01",
@@ -2022,12 +2021,13 @@
   },
   "progressModel": {
     "method": "evidence-backed-epic-rollup/v1",
-    "scale": "0 planned/future · 25 defined or gated · 50 in progress · 75 bounded validation/integration · 100 accepted or closed",
+    "scale": "0 planned/future \u00b7 25 defined or gated \u00b7 50 in progress \u00b7 75 bounded validation/integration \u00b7 100 accepted or closed",
     "strategicKeyResult": "rounded mean of unique contributing Epic completion percentages",
     "objective": "rounded mean of unique contributing Epic completion percentages across all strategic Key Results",
     "note": "Percentages describe current bounded roadmap completion, not production readiness, authorization, or deployment readiness."
   },
-  "roadmapBlobSha": "ae8d276d43e84c0422da0e232aefe2b0d3b2862e",
-  "contributionSource": "config/portfolio-strategic-kr-contributions.json",
-  "contributionBlobSha": "5c16940a8d106c2602bb3aaf848c3fa9a12af7b2"
+  "contributionSource": "public-strategic-contributions",
+  "sourceCommitment": "247e70c741280098b381a73c7708d54ebcf7656d1acf6537c119ae6af09a2b90",
+  "roadmapCommitment": "10b1e9249d35cf5959c4ffa551ddb32ef8d04a133f96be22e86537a49c1177e1",
+  "contributionCommitment": "2551c7584347b054e77367480135321c9523cb869565ffab8d7f9444aef993d5"
 }
