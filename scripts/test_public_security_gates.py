@@ -147,7 +147,7 @@ class PublicSecurityGates(unittest.TestCase):
         name="".join(("InfrastructureProductWorks/","private-producer/","index.html"))
         result=self.gate("audit_private_references.py",filename=name,ci=True)
         self.assertNotEqual(result.returncode,0)
-        for coordinate in ("".join(("SAABOLImpactVenture/","iaap-guard")), "https://github.com/"+"".join(("PrivatePartner/","secret-repo")), "".join(("https://github.com/","apps/../","PrivatePartner/","secret-repo"))):
+        for coordinate in ("".join(("SAABOLImpactVenture/","iaap-guard")), "https://github.com/"+"".join(("PrivatePartner/","secret-repo")), "ssh://git@ssh.github.com:443/"+"".join(("PrivatePartner/","secret-repo.git")), "".join(("https://github.com/","apps/../","PrivatePartner/","secret-repo"))):
             result=self.gate("audit_private_references.py",coordinate.encode(),ci=True)
             self.assertNotEqual(result.returncode,0)
 
