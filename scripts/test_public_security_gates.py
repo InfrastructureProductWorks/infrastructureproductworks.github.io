@@ -157,6 +157,13 @@ class PublicSecurityGates(unittest.TestCase):
             self.assertNotEqual(result.returncode,0)
             self.assertIn("Symbolic-link",result.stdout)
 
+    def test_opaque_publication_formats_are_rejected(self):
+        module=b'[submodule "engine"]\n url = ../private-source\n'
+        pointer=b'version https://'+b'git-lfs.github.com'+b'/spec/v1\noid sha256:'+b'a'*64+b'\nsize 100\n'
+        for name,body in [('.gitmodules',module),('hidden.md',pointer)]:
+            result=self.gate('audit_private_references.py',body=body,filename=name,ci=True)
+            self.assertNotEqual(result.returncode,0)
+
     def test_public_product_names_still_allowed(self):
         result=self.gate("audit_private_references.py",b"Forge, Guard, Console, Assurance, Composite AI, Northstar Signal",ci=True)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)

@@ -132,6 +132,12 @@ for p in ROOT.rglob("*"):
         continue
     if not p.is_file():continue
     rel=p.relative_to(ROOT).as_posix()
+    if p.name=='.gitmodules':
+        errors.append('Submodule coordinates are not publishable')
+        continue
+    if p.read_bytes().startswith(b'version https://' + b'git-lfs.github.com' + b'/spec/v1'):
+        errors.append('Opaque Git LFS pointer is not publishable')
+        continue
     # Public pathnames are exposed independently of the file body or format.
     path_current=path_reference_counts(rel)
     path_prior=path_reference_counts(rel) if rel in base_files else Counter()
