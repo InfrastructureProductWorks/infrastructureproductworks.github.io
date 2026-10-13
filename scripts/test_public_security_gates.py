@@ -12,6 +12,11 @@ import unittest
 SOURCE = Path(__file__).resolve().parent
 
 class PublicSecurityGates(unittest.TestCase):
+    def test_optional_ssh_username(self):
+        for prefix in ['github.com:','alice@github.com:']:
+            result=self.gate('audit_private_references.py',(prefix+''.join(('PrivatePartner/','secret-repo.git'))).encode(),ci=True)
+            self.assertNotEqual(result.returncode,0)
+
     def gate(self, script, body=b"Public portfolio", filename="index.html", ci=False, symlink=False):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory)
