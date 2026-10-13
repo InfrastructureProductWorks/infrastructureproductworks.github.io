@@ -2,6 +2,7 @@
 """Block new browser-facing exposure of private/internal implementation repositories."""
 from collections import Counter
 from pathlib import Path
+import posixpath
 from urllib.parse import unquote
 import html, os, re, subprocess, sys
 
@@ -22,7 +23,7 @@ PRIVATE_FRAGMENTS=(
     ("multicloud-foundation-poc-","integration"),
 )
 PUBLIC_SLUGS={"infrastructureproductworks.github.io","ai-powered-infrastructure-as-a-product","iaap-guard","enterprise-azure-governance",".github"}
-OWNED_COORDINATE=re.compile(r"(?:InfrastructureProductWorks|SAABOLImpactVenture)/([A-Za-z0-9_.-]+)",re.I)
+OWNED_COORDINATE=re.compile(r"(?:InfrastructureProductWorks|SAABOLImpactVenture)/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)",re.I)
 PRIVATE_NAMES=tuple("".join(parts) for parts in PRIVATE_FRAGMENTS)
 PRIVATE_REF=re.compile(
     r"(?<![A-Za-z0-9_.-])(?:InfrastructureProductWorks/)?(?:"
@@ -44,6 +45,8 @@ def normalize_browser_text(body):
         current=JS_HEX.sub(lambda m: chr(int(m.group(1),16)),current)
         current=JS_UNICODE.sub(lambda m: chr(int(m.group(1),16)),current)
         current=JS_CONCAT.sub(lambda m: m.group(1)+m.group(2)+m.group(4)+m.group(1),current)
+        current=current.replace("\\", "/")
+        current=re.sub(r"/+", "/", current)
         if current==prior:
             break
     return current
@@ -92,7 +95,7 @@ def path_reference_counts(path):
 def reference_counts(body):
     normalized=normalize_browser_text(body)
     matches=Counter(m.group(0).lower() for m in PRIVATE_REF.finditer(normalized))
-    matches.update(m.group(0).lower() for m in OWNED_COORDINATE.finditer(normalized) if m.group(1).lower().removesuffix(".git") not in PUBLIC_SLUGS)
+    matches.update(m.group(0).lower() for m in OWNED_COORDINATE.finditer(normalized) if posixpath.normpath(m.group(1)).split("/")[0].lower().rstrip(".").removesuffix(".git") not in PUBLIC_SLUGS)
     return matches
 
 base=baseline_ref()

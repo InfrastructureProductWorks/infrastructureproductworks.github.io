@@ -139,8 +139,9 @@ class PublicSecurityGates(unittest.TestCase):
 
     def test_new_repository_name_requires_public_allowlist(self):
         coordinate="".join(("InfrastructureProductWorks/","private-producer"))
-        result=self.gate("audit_private_references.py",coordinate.encode(),ci=True)
-        self.assertNotEqual(result.returncode,0)
+        for value in (coordinate, "https://github.com/"+coordinate.replace("/","\\"), "https://github.com/"+"".join(("InfrastructureProductWorks/","iaap-guard/../","private-","producer"))):
+            result=self.gate("audit_private_references.py",value.encode(),ci=True)
+            self.assertNotEqual(result.returncode,0)
 
     def test_symlink_target_does_not_bypass_either_gate(self):
         for script in ["audit_private_references.py","audit_public_exposure.py"]:
