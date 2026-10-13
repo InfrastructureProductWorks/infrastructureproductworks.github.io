@@ -106,7 +106,7 @@ class PublicSecurityGates(unittest.TestCase):
         fragments=(("iaap-","guard-core"),("composite-ai-infrastructure-","product-poc"),("multicloud-","foundation-product-poc"))
         for pieces in fragments:
             name="".join(pieces)
-            for representation in (name,"".join("\\u%04x"%ord(c) for c in name)):
+            for representation in (name, name+".git", "git@github.com:InfrastructureProductWorks/"+name+".git", "".join("\\u%04x"%ord(c) for c in name)):
                 result=self.gate("audit_private_references.py",representation.encode(),ci=True)
                 self.assertNotEqual(result.returncode,0)
                 self.assertIn("new private/internal implementation reference",result.stdout)

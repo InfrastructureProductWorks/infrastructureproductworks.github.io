@@ -25,7 +25,7 @@ PRIVATE_NAMES=tuple("".join(parts) for parts in PRIVATE_FRAGMENTS)
 PRIVATE_REF=re.compile(
     r"(?<![A-Za-z0-9_.-])(?:InfrastructureProductWorks/)?(?:"
     +"|".join(re.escape(x) for x in PRIVATE_NAMES)
-    +r")(?![A-Za-z0-9_.-])",
+    +r")(?![A-Za-z0-9_-])",
     re.I,
 )
 JS_HEX=re.compile(r"\\x([0-9a-fA-F]{2})")
