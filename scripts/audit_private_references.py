@@ -53,12 +53,15 @@ JS_CONCAT=re.compile(r"""(["'])([^"'\\\r\n]*)\1\s*\+\s*(["'])([^"'\\\r\n]*)\3"""
 
 
 def normalize_hostnames(text):
+    controls=str.maketrans({'\t':None,'\n':None,'\r':None})
+    text=re.sub(r'(?is)(\b(?:href|src|action)\s*=\s*)(["\'])(.*?)\2',lambda m:m.group(1)+m.group(2)+m.group(3).translate(controls)+m.group(2),text)
+    text=re.sub(r'\]\(([^)]+)\)',lambda m:']('+m.group(1).translate(controls)+')',text)
     text=text.translate(str.maketrans({'。':'.','．':'.','｡':'.'}))
     def host(match):
-        try:normalized=match.group(2).encode('idna').decode('ascii')
+        try:normalized=match.group(2).translate(controls).encode('idna').decode('ascii')
         except UnicodeError:return match.group(0)
         return match.group(1)+normalized
-    return re.sub(r"((?:[A-Za-z][A-Za-z0-9+.-]*:/+|git@))([^/\s:?#\"'()<>\[\]]+)",host,text)
+    return re.sub(r"((?:[A-Za-z][A-Za-z0-9+.-]*:/+|git@))([^/ :?#\"'()<>\[\]]+)",host,text)
 
 def normalize_browser_text(body):
     current=body
@@ -105,7 +108,9 @@ def read_text_file(path):
     raw=path.read_bytes()
     if raw.startswith((b'\xff\xfe\x00\x00',b'\x00\x00\xfe\xff')):return raw.decode('utf-32')
     if raw.startswith((b'\xff\xfe',b'\xfe\xff')):return raw.decode('utf-16')
-    if b"\x00" in raw:
+    if b'\x00' in raw:
+        if path.suffix.lower() not in {'.png','.jpg','.jpeg','.webp','.gif','.ico','.pdf'}:
+            raise ValueError('NUL-bearing text without a supported BOM is not publishable')
         return None
     try:
         return raw.decode("utf-8")

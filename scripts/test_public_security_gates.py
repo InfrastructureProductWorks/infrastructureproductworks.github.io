@@ -173,7 +173,7 @@ class PublicSecurityGates(unittest.TestCase):
 
     def test_bom_marked_coordinates_are_scanned(self):
         text='https://github.com/'+''.join(('PrivatePartner/','secret-repo'))
-        for encoding in ['utf-16','utf-32','utf-8-sig']:
+        for encoding in ['utf-16','utf-32','utf-8-sig','utf-16-le','utf-16-be','utf-32-le','utf-32-be']:
             result=self.gate('audit_private_references.py',text.encode(encoding),ci=True)
             self.assertNotEqual(result.returncode,0)
 
@@ -193,6 +193,11 @@ class PublicSecurityGates(unittest.TestCase):
             text=prefix+''.join(('PrivatePartner/','secret-repo'))
             result=self.gate('audit_private_references.py',text.encode(),ci=True)
             self.assertNotEqual(result.returncode,0)
+
+    def test_url_ignored_controls_are_scanned(self):
+        text='<a href="https://git&#x0A;hub.com/'+''.join(('PrivatePartner/','secret-repo'))+'">link</a>'
+        result=self.gate('audit_private_references.py',text.encode(),ci=True)
+        self.assertNotEqual(result.returncode,0)
 
     def test_public_product_names_still_allowed(self):
         result=self.gate("audit_private_references.py",b"Forge, Guard, Console, Assurance, Composite AI, Northstar Signal",ci=True)
