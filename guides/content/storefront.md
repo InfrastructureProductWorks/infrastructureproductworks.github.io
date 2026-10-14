@@ -137,3 +137,9 @@ The next accountable decision belongs to the appropriate reviewer outside this p
 8. Actuals and commitments begin unavailable. Casey can load the fictional finance sample; leadership can rebalance allocations before independent review. Changes invalidate pending review. An estimate grants no financial approval, staffing feasibility, ordering or provisioning authority.
 
 Data Platform is estimate-only; Azure is comparison-only. The released order contract is unchanged. These fixtures are illustrative compositions, not complete bills of services for real deployments. Tax, discounts, reservations and live billing are excluded. Reload/reset clears scenario and workflow history. Shared assets and validation fixtures keep the public demos and application reference aligned; real application product-definition and pricing adoption remain planned.
+
+## Product lifecycle context
+
+**Publish the experience and capture orders.** Storefront provides the customer ordering experience for approved offerings. A catalog entry or admitted request does not establish delivery, operational readiness, or destructive authority.
+
+See the [Infrastructure Product Lifecycle](/operating-model/#product-lifecycle) for the target responsibilities across IPW and the [lifecycle roadmap requirements](/portfolio/#lifecycle-roadmap) for the remaining acceptance evidence. This context does not add actions or permissions to the current application procedure. Lifecycle context updated October 13, 2026; existing demonstration validation dates remain unchanged.
