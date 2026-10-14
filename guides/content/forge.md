@@ -8,6 +8,8 @@ Use this guide to inspect the Cloud Foundation Environment product, enter bounde
 
 Forge's product model also gives domain teams ownership of reusable capabilities. Section 9 explains the responsibilities of Security, Network, FinOps, Identity, Data, SRE, Compliance, and Platform teams and how to prepare their contributions. Domain-profile authoring and release are not available as actions in the current preview.
 
+**Hosted availability:** this guide describes the reviewed workbench interface. The hosted preview may remain on an older deployment while a build is blocked. If **Proposals in this tab** or **Where workflow time goes** is absent, those controls are not available in that deployment. Use only visible controls; no timing should be inferred from an older page.
+
 ## 1 Open the workbench
 
 Open the [Forge preview](https://iaap-forge-preview.onrender.com/). Allow the hosting service to finish starting if a startup screen appears. The page should show Cloud Foundation Environment, six workbench tabs, and the **Build a bounded proposal** drawer.
