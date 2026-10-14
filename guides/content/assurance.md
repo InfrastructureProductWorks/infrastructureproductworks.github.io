@@ -228,3 +228,9 @@ An operational Console-to-human-to-Assurance path still requires an authenticate
 - [Assurance demo](https://infrastructureproductworks.com/assurance/demo/)
 - [Assurance Portal](https://infrastructureproductworks.com/assurance/portal/)
 - [Assurance product overview](https://infrastructureproductworks.com/assurance/)
+
+## Product lifecycle context
+
+**Connect authority and lifecycle evidence.** Assurance contributes bounded authority and custody context. Its synthetic demonstrations do not establish live service operations, customer migrations, or retirement capability.
+
+See the [Infrastructure Product Lifecycle](/operating-model/#product-lifecycle) for the target responsibilities across IPW and the [lifecycle roadmap requirements](/portfolio/#lifecycle-roadmap) for the remaining acceptance evidence. This context does not add actions or permissions to the current application procedure. Lifecycle context updated October 13, 2026; existing demonstration validation dates remain unchanged.

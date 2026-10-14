@@ -145,3 +145,9 @@ The Guard workflow is complete when a result exists for the exact current PR hea
 ## References
 
 Published guidance: [hosted App](https://github.com/InfrastructureProductWorks/iaap-guard/blob/main/docs/GITHUB-APP-BETA.md), [adoption prerequisites](https://github.com/InfrastructureProductWorks/iaap-guard/blob/main/docs/ADOPTION-PREREQUISITES.md), [known limits](https://github.com/InfrastructureProductWorks/iaap-guard/blob/main/docs/KNOWN-LIMITS.md), [multi-repository products](https://github.com/InfrastructureProductWorks/iaap-guard/blob/main/docs/MULTI-REPOSITORY-PRODUCTS.md), and [updates and support](https://github.com/InfrastructureProductWorks/iaap-guard).
+
+## Product lifecycle context
+
+**Validate proposed product changes.** Guard supplies bounded assessments and findings for product review. A passing assessment does not authorize product release or deployment.
+
+See the [Infrastructure Product Lifecycle](/operating-model/#product-lifecycle) for the target responsibilities across IPW and the [lifecycle roadmap requirements](/portfolio/#lifecycle-roadmap) for the remaining acceptance evidence. This context does not add actions or permissions to the current application procedure. Lifecycle context updated October 13, 2026; existing demonstration validation dates remain unchanged.

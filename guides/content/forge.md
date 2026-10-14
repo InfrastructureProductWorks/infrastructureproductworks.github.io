@@ -166,3 +166,9 @@ Retain the external decision with the exact product and evidence subject to whic
 
 - [Forge workbench](https://iaap-forge-preview.onrender.com/)
 - [Forge product overview](https://infrastructureproductworks.com/forge/)
+
+## Product lifecycle context
+
+**Define, develop, and evolve.** Forge prepares versioned product contracts, compositions, and change proposals. The current preview ends at human review; it does not publish, upgrade, or retire live infrastructure.
+
+See the [Infrastructure Product Lifecycle](/operating-model/#product-lifecycle) for the target responsibilities across IPW and the [lifecycle roadmap requirements](/portfolio/#lifecycle-roadmap) for the remaining acceptance evidence. This context does not add actions or permissions to the current application procedure. Lifecycle context updated October 13, 2026; existing demonstration validation dates remain unchanged.
