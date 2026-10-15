@@ -2,7 +2,6 @@
 """Block new browser-facing exposure of private/internal implementation repositories."""
 from collections import Counter
 from pathlib import Path
-import posixpath
 from urllib.parse import unquote
 import html, os, re, subprocess, sys
 
@@ -33,11 +32,18 @@ def coordinate_matches(text):
         yield match
 
 def coordinate_key(match):
-    return '/'.join(posixpath.normpath(match.group(1)+'/'+match.group(2)).lower().split('/')[:2]).removesuffix('.git')
+    return (match.group(1)+'/'+match.group(2).split('/')[0]).lower().removesuffix('.git')
 
 def coordinate_allowed(match, approved):
+    path=match.group(1)+'/'+match.group(2)
+    if any(part in {'.','..'} for part in path.split('/')):
+        return False
     key=coordinate_key(match)
-    return key in approved or match.group(0).lower().startswith(('github.com','www.github.com')) and key in PUBLIC_UI_COORDINATES
+    return key in approved or (
+        match.group(0).lower().startswith(('github.com/','www.github.com/'))
+        and path.lower() in PUBLIC_UI_COORDINATES
+        and (match.end()==len(match.string) or match.string[match.end()] in " \t\r\n\"'<>()[ ]")
+    )
 
 PRIVATE_NAMES=tuple("".join(parts) for parts in PRIVATE_FRAGMENTS)
 PRIVATE_REF=re.compile(
@@ -73,6 +79,7 @@ def normalize_browser_text(body):
         current=JS_UNICODE.sub(lambda m: chr(int(m.group(1),16)),current)
         current=JS_CONCAT.sub(lambda m: m.group(1)+m.group(2)+m.group(4)+m.group(1),current)
         current=current.replace("\\", "/")
+        current=re.sub(r"[\x00-\x1f\x7f]", "", current)
         current=re.sub(r"/+", "/", current)
         current=normalize_hostnames(current)
         if current==prior:
@@ -132,6 +139,17 @@ MARKDOWN_ESCAPE=re.compile(r'\\([!-/:-@\[-`{-~])')
 def reference_counts(body):
     matches=Counter()
     for view in (body,MARKDOWN_ESCAPE.sub(lambda m:m.group(1),body)):
+        # Preserve source lexical boundaries before decoding: a percent-encoded
+        # quote or parenthesis belongs to the URL and cannot become a free closer.
+        tokens=re.findall(r"[^\s\"'<>()[\]]+",view)
+        tokens.extend(m.group(2).strip() for m in re.finditer(r"(?is)\b(?:href|src|action)\s*=\s*([\"'])(.*?)\1",view))
+        for token in tokens:
+            normalized_token=normalize_browser_text(token)
+            for match in coordinate_matches(normalized_token):
+                if (match.group(0).lower().startswith(('github.com/','www.github.com/'))
+                    and (match.group(1)+'/'+match.group(2)).lower() in PUBLIC_UI_COORDINATES
+                    and match.end()!=len(normalized_token)):
+                    matches.update([match.group(0).lower()+': noncanonical App URL suffix'])
         normalized=normalize_browser_text(view)
         matches.update(m.group(0).lower() for m in PRIVATE_REF.finditer(normalized))
         matches.update(m.group(0).lower() for m in coordinate_matches(normalized) if not coordinate_allowed(m, PUBLIC_REPOSITORIES))

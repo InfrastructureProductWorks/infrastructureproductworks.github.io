@@ -20,6 +20,9 @@ function harness() {
     roadmap:roadmapFixture,
     presentation:{schemaVersion:'portfolio-presentation/v1',deliveryFocus:DELIVERY_FOCUS,milestones:DELIVERY_OUTLOOK_MILESTONES},
     dashboard:{...FALLBACK,generatedAt:roadmapFixture.generatedAt+'T12:00:00Z',authorityNotice:AUTHORITY_NOTICE,
+      baseline:{objectives:roadmapFixture.objectives.length,keyResults:roadmapFixture.keyResults.length,
+        epics:Object.keys(roadmapFixture.epics).length,features:Object.values(roadmapFixture.epics).reduce((sum,epic)=>sum+epic.features.length,0)},
+      portfolioFocus:{...FALLBACK.portfolioFocus,next:['Synthetic bounded test fixture']},
       source:{roadmap:'public-portfolio-roadmap',roadmapBaseline:normalizeRoadmapDate(roadmapFixture.planning.baseline),
         scope:LIVE_SCOPE,aggregation:LIVE_AGGREGATION,repository:PUBLIC_EVIDENCE_REPOSITORY,
         commitment:roadmapFixture.sourceCommitment,roadmapCommitment:roadmapFixture.roadmapCommitment},
@@ -78,6 +81,10 @@ function harness() {
     b=>b.presentation.milestones[0].critical=['EP-99'],
     b=>b.presentation.deliveryFocus.epic='EP-99',
     b=>b.roadmap.epics['EP-01'].completionPercent=101,
+    b=>b.dashboard.products[0].evidence=['PrivatePartner','secret-repo'].join('/'),
+    b=>b.dashboard.products[0].versions={[['PrivatePartner','secret-repo'].join('/') ]:'v1'},
+    b=>b.roadmap.epics['EP-01'].progressBasis='//s.internal',
+    b=>b.presentation.deliveryFocus.copy='a'.repeat(40),
   ]) {
     const h=harness();mutate(h.context.bundle);
     await h.run('loadPortfolio()');

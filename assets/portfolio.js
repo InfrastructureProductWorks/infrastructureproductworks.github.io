@@ -24,7 +24,7 @@ const NORTHSTAR_PRODUCT={
 };
 const FOCUS_CONTRACT={closedEpic:'EP-07',activeEpic:'EP-08',activeLabel:'GitHub Enterprise Server and restricted-network portability'};
 let DELIVERY_FOCUS={epic:'EP-16',title:'Connected Application Experience',increment:'EDA-06 — Immutable Evidence & Artifact Adapter',copy:'Separate immutable evidence and artifacts from the event store while preserving exact digest, provenance, tenant scope and zero-authority boundaries.'};
-const BASELINE={objectives:8,keyResults:66,epics:22,features:173};
+const BASELINE={objectives:9,keyResults:72,epics:23,features:221};
 let DELIVERY_OUTLOOK_MILESTONES=[
   {
     id:'core-v1',
@@ -67,9 +67,9 @@ const FALLBACK={
     activeLabel:'GitHub Enterprise Server and restricted-network portability',
     next:[
       'EP-08 remains the active portability track: GHE-06 bounded accepted; GHE-07 ready but externally blocked on an authorized live target; GHE-08 gated on GHE-07 live evidence',
-      'EP-16 is the active delivery focus; EDA-06 separates immutable evidence/artifacts from event and projection state',
+      'EP-16 is the active delivery focus; EDA-06 separates immutable evidence and artifacts from event and projection state',
       'Connected Storefront and Forge preserve authenticated, integrity-bound handoff and the human-review boundary while durable evidence storage advances',
-      'Customer identity, persistence, audit, Guard operational profiles, Crossplane and cloud/provider integrations remain separately gated',
+      'Customer identity, persistence, audit, Guard operational profiles, Crossplane and cloud provider integrations remain separately gated',
       'EP-18 multi-customer isolation defines customer-bound identity, policy, evidence, secrets and cross-customer fail-closed testing before any tenant-isolation claim',
       'EP-20 Enterprise Workflow Integration (ServiceNow first) is documentation-first and reuses existing strategic outcomes',
       'EP-21 Enterprise Telemetry Adapter (Splunk first) is documentation-first and reuses existing observability outcomes',
@@ -534,7 +534,87 @@ function validPresentation(p,roadmap){
     &&['epics','critical'].every(k=>Array.isArray(m[k])&&m[k].length>0&&new Set(m[k]).size===m[k].length&&m[k].every(id=>Object.hasOwn(roadmap.epics,id)))
     &&m.critical.every(id=>m.epics.includes(id)));
 }
+// Match the producer's bounded public text projection before rendering any feed.
+const PUBLIC_PORTFOLIO_REPOSITORIES=new Set([
+  'infrastructureproductworks/ai-powered-infrastructure-as-a-product',
+  'infrastructureproductworks/iaap-guard',
+  'infrastructureproductworks/infrastructureproductworks.github.io'
+]);
+const PUBLIC_PORTFOLIO_SCHEMAS=new Map([
+  [[ 'schemaVersion' ],'portfolio-bundle/v2'],
+  [[ 'dashboard','schemaVersion' ],'portfolio-dashboard/v2'],
+  [[ 'roadmap','schemaVersion' ],'roadmap-relationship-view/v6'],
+  [[ 'presentation','schemaVersion' ],'portfolio-presentation/v1'],
+  [[ 'roadmap','progressModel','method' ],'evidence-backed-epic-rollup/v1'],
+  [[ 'roadmap','forecastModel','method' ],'linear-evidence-trend/v1']
+].map(([path,value])=>[JSON.stringify(path),value]));
+const PORTFOLIO_GITHUB_COORDINATE=/(?<![A-Za-z0-9_./-])(?:(?:www\.)?github\.dev\.?(?::[0-9]*)?\/|vscode\.dev\.?(?::[0-9]*)?\/github\/|api\.github\.com\.?(?::[0-9]*)?\/repos\/|(?!docs\.github\.com)(?:[A-Za-z0-9-]+\.)*github\.com\.?(?::[0-9]*)?\/|raw\.githubusercontent\.com\.?(?::[0-9]*)?\/|(?:[A-Za-z0-9_.-]+@)?(?:ssh\.)?github\.com\.?(?::[0-9]*)?[:/])([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*)/gi;
+const PORTFOLIO_BARE_COORDINATE=/(?<![A-Za-z0-9_.-])([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*)/gi;
+function publicPortfolioCoordinate(match){
+  const parts=(match[1]+'/'+match[2]).toLowerCase().split('/');
+  if(parts.some(part=>part==='.'||part==='..'))return false;
+  const key=(parts[0]+'/'+parts[1]).replace(/\.git$/,'');
+  return PUBLIC_PORTFOLIO_REPOSITORIES.has(key)
+    ||/^(?:www\.)?github\.com\//i.test(match[0])&&parts.join('/')==='apps/iaap-guard'
+      &&/^(?:\s|$)/.test(match.input.slice(match.index+match[0].length));
+}
+function decodePortfolioEntities(value){
+  const named={amp:'&',AMP:'&',lt:'<',LT:'<',gt:'>',GT:'>',quot:'"',QUOT:'"',apos:"'",sol:'/',bsol:'\\',colon:':',period:'.',commat:'@',percnt:'%',Tab:'\t',NewLine:'\n'};
+  // Unknown named entities fail closed instead of depending on a DOM parser.
+  return value.replace(/&(#x[0-9a-f]+|#[0-9]+|[A-Za-z][A-Za-z0-9]+);?/gi,(all,entity)=>{
+    if(entity[0]==='#'){
+      const hex=entity[1].toLowerCase()==='x';
+      return String.fromCodePoint(parseInt(entity.slice(hex?2:1),hex?16:10));
+    }
+    if(!Object.hasOwn(named,entity)||!all.endsWith(';')&&!['amp','AMP','lt','LT','gt','GT','quot','QUOT'].includes(entity))throw new Error('Unsupported public text entity');
+    return named[entity];
+  });
+}
+function normalizedPublicPortfolioText(value){
+  for(let step=0;step<9;step++){
+    const previous=value;
+    value=decodePortfolioEntities(value.replace(/(?:%[0-9a-f]{2})+/gi,part=>decodeURIComponent(part)))
+      .replace(/\\\//g,'/')
+      .replace(/\\u([0-9a-f]{4})/gi,(_,hex)=>String.fromCharCode(parseInt(hex,16)))
+      .replace(/\\/g,'/');
+    if(value.includes('//'))return null;
+    value=value.replace(/[\x00-\x1f\x7f]/g,'').replace(/[。．｡]/g,'.');
+    if(value===previous)return value;
+    if(step===8)return null;
+  }
+  return null;
+}
+function publicPortfolioString(value){
+  const markdown=value.replace(/\\([!-/:-@\[-`{-~])/g,'$1');
+  for(const view of [value,markdown]){
+    const normalized=normalizedPublicPortfolioText(view);
+    if(normalized===null||/\b[A-Za-z][A-Za-z0-9+.-]*:\/|git@/i.test(normalized)
+      ||/(?<![0-9a-f])[0-9a-f]{40}(?![0-9a-f])/i.test(normalized))return false;
+    let start=0;
+    for(const match of normalized.matchAll(PORTFOLIO_GITHUB_COORDINATE)){
+      if(!publicPortfolioCoordinate(match))return false;
+      for(const bare of normalized.slice(start,match.index).matchAll(PORTFOLIO_BARE_COORDINATE)){
+        if(!publicPortfolioCoordinate(bare))return false;
+      }
+      start=match.index+match[0].length;
+    }
+    for(const bare of normalized.slice(start).matchAll(PORTFOLIO_BARE_COORDINATE)){
+      if(!publicPortfolioCoordinate(bare))return false;
+    }
+  }
+  return true;
+}
+function validPublicPortfolioText(value,path=[]){
+  try{
+    if(typeof value==='string')return PUBLIC_PORTFOLIO_SCHEMAS.get(JSON.stringify(path))===value||publicPortfolioString(value);
+    if(Array.isArray(value))return value.every((child,index)=>validPublicPortfolioText(child,[...path,index]));
+    if(object(value))return Object.entries(value).every(([key,child])=>publicPortfolioString(key)&&validPublicPortfolioText(child,[...path,key]));
+    return true;
+  }catch{return false;}
+}
+
 function validPortfolioBundle(bundle){
+  if(!validPublicPortfolioText(bundle))return false;
   if(!exactKeys(bundle,['schemaVersion','dashboard','roadmap','presentation'])||bundle.schemaVersion!=='portfolio-bundle/v2')return false;
   const {dashboard,roadmap,presentation}=bundle;
   return validDashboard(dashboard)&&validRoadmapRelationships(roadmap)

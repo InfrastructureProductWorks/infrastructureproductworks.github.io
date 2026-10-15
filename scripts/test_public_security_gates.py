@@ -12,6 +12,20 @@ import unittest
 SOURCE = Path(__file__).resolve().parent
 
 class PublicSecurityGates(unittest.TestCase):
+    def test_app_url_suffixes_and_markup_boundaries(self):
+        app='https://github.com/'+'apps/'+'iaap-guard'
+        for body in [app, '<a href="'+app+'">App</a>', '[App]('+app+')']:
+            result=self.gate('audit_private_references.py',body.encode(),ci=True)
+            self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        for suffix in [';private','@private','!private',':private','%3Bprivate','/','?q=private','#private','%22private','%29private','%3Eprivate']:
+            for body in [app+suffix, '<a href="'+app+suffix+'">App</a>']:
+                with self.subTest(body=body):
+                    result=self.gate('audit_private_references.py',body.encode(),ci=True)
+                    self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+        for suffix in [')private','>private',']private',' private']:
+            result=self.gate('audit_private_references.py',('<a href="'+app+suffix+'">App</a>').encode(),ci=True)
+            self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+
     def test_optional_ssh_username(self):
         for prefix in ['github.com:','alice@github.com:']:
             result=self.gate('audit_private_references.py',(prefix+''.join(('PrivatePartner/','secret-repo.git'))).encode(),ci=True)
@@ -203,6 +217,39 @@ class PublicSecurityGates(unittest.TestCase):
         text='<a href="https://git&#x0A;hub.com/'+''.join(('PrivatePartner/','secret-repo'))+'">link</a>'
         result=self.gate('audit_private_references.py',text.encode(),ci=True)
         self.assertNotEqual(result.returncode,0)
+
+    def test_private_prefix_cannot_traverse_into_approved_repository(self):
+        public='/'.join(('InfrastructureProductWorks','iaap-guard'))
+        private='/'.join(('PrivatePartner','secret-repo'))
+        host='.'.join(('github','com'))+'/'
+        values=[host+private+'/../../'+public,
+                private+'/../../'+public,
+                host+public+'/../private-repo/../iaap-guard',
+                public+'/./file']
+        # Unknown unqualified owners remain outside the legacy whole-file gate;
+        # the bounded portfolio consumer separately enforces owner-agnostic text.
+        for value in (values[0],values[2],values[3]):
+            with self.subTest(value=value):
+                result=self.gate('audit_private_references.py',value.encode(),ci=True)
+                self.assertNotEqual(result.returncode,0)
+
+    def test_app_ui_allowance_is_exact(self):
+        app='.'.join(('github','com'))+'/'+ '/'.join(('apps','iaap-guard'))
+        for suffix in ['/extra','.git','/PrivatePartner/secret-repo','/../private-app/../iaap-guard']:
+            result=self.gate('audit_private_references.py',(app+suffix).encode(),ci=True)
+            self.assertNotEqual(result.returncode,0)
+        result=self.gate('audit_private_references.py',app.replace('com/','com:').encode(),ci=True)
+        self.assertNotEqual(result.returncode,0)
+        for value in (app,'www.'+app):
+            result=self.gate('audit_private_references.py',value.encode(),ci=True)
+            self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+
+    def test_network_github_host_controls_are_scanned(self):
+        private='/'.join(('PrivatePartner','secret-repo'))
+        for control in ['\t','\n','\r','&#10;','%09',r'\u000a']:
+            value='//git'+control+'hub.com/'+private
+            result=self.gate('audit_private_references.py',value.encode(),ci=True)
+            self.assertNotEqual(result.returncode,0)
 
     def test_public_product_names_still_allowed(self):
         result=self.gate("audit_private_references.py",b"Forge, Guard, Console, Assurance, Composite AI, Northstar Signal",ci=True)

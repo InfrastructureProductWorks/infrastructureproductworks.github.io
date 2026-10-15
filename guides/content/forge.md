@@ -2,11 +2,13 @@
 
 End to end instructions for the product proposal workbench
 
-Infrastructure Product Works | Version 1.1 | September 24, 2026
+Infrastructure Product Works | Version 1.2 | October 13, 2026
 
 Use this guide to inspect the Cloud Foundation Environment product, enter bounded intent, generate a deterministic proposal, and retain its review evidence. The current published workbench ends at **Awaiting human review**.
 
 Forge's product model also gives domain teams ownership of reusable capabilities. Section 9 explains the responsibilities of Security, Network, FinOps, Identity, Data, SRE, Compliance, and Platform teams and how to prepare their contributions. Domain-profile authoring and release are not available as actions in the current preview.
+
+**Hosted availability:** this guide describes the reviewed workbench interface. The hosted preview may remain on an older deployment while a build is blocked. If **Proposals in this tab** or **Where workflow time goes** is absent, those controls are not available in that deployment. Use only visible controls; no timing should be inferred from an older page.
 
 ## 1 Open the workbench
 
@@ -70,7 +72,7 @@ The input contract is `forge-api-order/v1`. The generated result is a proposal r
 4. Generate proposal evidence and wait for the successful response.
 5. Associate the newly displayed digest with the second set of inputs.
 
-The published preview inspected on September 24 shows one active result and does not expose a proposal queue or history selector. A later successful submission replaces the visible evidence result. Queue enhancements under review are not part of these published-screen instructions.
+Use **Proposals in this tab** to select a previously generated session proposal and inspect its exact input/evidence binding. This browser-tab list is not durable history; reset, reload or closing the page clears it. The fixed timing examples below it are separate from every proposal.
 
 If a subsequent request fails, an earlier evidence result may remain visible. Read the latest status message and match evidence to the successful submission you retained. Do not treat a previous result as acceptance of an unsuccessful request.
 
@@ -85,7 +87,7 @@ For each retained record, include:
 - the displayed all-false authority record; and
 - date and the preview URL used for the exercise.
 
-Use **Reset view** when ready to start over. It restores the form defaults, clears the displayed proposal evidence, cancels a pending request, and returns to Overview. Reloading or closing the page also means you should not rely on session evidence being retained.
+Use **Reset view** when ready to start over. It restores the form defaults, clears all proposals in this tab and the displayed evidence, cancels a pending request, and returns to Overview. The independent fictional timing examples remain available in Evidence. Reloading or closing the page also means you should not rely on session evidence being retained.
 
 Resetting the view does not withdraw, roll back, or delete real infrastructure. No infrastructure was created by this workflow.
 
@@ -162,7 +164,25 @@ The accountable product owner coordinates the domain contributions around the co
 
 Retain the external decision with the exact product and evidence subject to which it applies. The **Releases** tab explains the boundary; it does not perform the release. Approved catalog publication and any subsequent Storefront ordering require their own accepted connected workflow.
 
+## 10 Read the timing illustration
+
+Open **Evidence** and find **Where workflow time goes**. Choose one of four fixed fictional histories: synthetic evidence packaged, returned and resubmitted, open review, or clock regression. These examples are independent of your proposal and any Connected request; generating or resetting a proposal does not turn them into measured results.
+
+The panel shows Forge intake, the last retained event, event count, observed Forge elapsed time, review waiting and work, changes waiting and work, and returns for changes. In the returned example, the original intake start survives resubmission. Review and changes intervals include both queue time and work; they do not measure hands-on effort.
+
+An open review has no completed review interval. Its elapsed time ends at the last retained event, without adding time from your browser clock. A clock regression leaves the fictional record visible and suppresses every duration. **Not measured** is never zero.
+
+Full request-to-ready delivery, hands-on effort, and comparative speedup remain **Not measured** in every example. Synthetic evidence packaged does not mean infrastructure is ready or deployed. The implemented retained-timing component measures a bounded Forge segment; authenticated interface retrieval, cross-app delivery capture, and equivalent-product baseline comparisons remain separate work.
+
+Use the illustration to understand measurement boundaries. Do not use its numbers as a delivery estimate, benchmark, customer result, or evidence that IPW is faster.
+
 ## References
 
 - [Forge workbench](https://iaap-forge-preview.onrender.com/)
 - [Forge product overview](https://infrastructureproductworks.com/forge/)
+
+## Product lifecycle context
+
+**Define, develop, and evolve.** Forge prepares versioned product contracts, compositions, and change proposals. The current preview ends at human review; it does not publish, upgrade, or retire live infrastructure.
+
+See the [Infrastructure Product Lifecycle](/operating-model/#product-lifecycle) for the target responsibilities across IPW and the [lifecycle roadmap requirements](/portfolio/#lifecycle-roadmap) for the remaining acceptance evidence. This context does not add actions or permissions to the current application procedure. Lifecycle context updated October 13, 2026; existing demonstration validation dates remain unchanged.

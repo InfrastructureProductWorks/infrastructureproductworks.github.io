@@ -183,3 +183,9 @@ When evaluating that distribution, verify the selected runtime profile, inspect 
 
 - [Console workbench](https://infrastructureproductworks.com/console/demo/)
 - [Console product overview](https://infrastructureproductworks.com/console/)
+
+## Product lifecycle context
+
+**Review lifecycle evidence.** Console presents evidence and review context. The public demonstration uses synthetic orders and does not create live approvals or service-operation authority.
+
+See the [Infrastructure Product Lifecycle](/operating-model/#product-lifecycle) for the target responsibilities across IPW and the [lifecycle roadmap requirements](/portfolio/#lifecycle-roadmap) for the remaining acceptance evidence. This context does not add actions or permissions to the current application procedure. Lifecycle context updated October 13, 2026; existing demonstration validation dates remain unchanged.
