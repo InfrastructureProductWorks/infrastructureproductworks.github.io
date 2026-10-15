@@ -49,6 +49,31 @@ for(const code of [...Array(32).keys(),...Array.from({length:33},(_,i)=>127+i),.
     }
   }
 }
+for(const markup of ['<wbr>','<!-- -->','<span></span>','<b>','</b>']){
+  for(const value of ['PrivatePartner/'+markup+'secret-repo',guard+markup,app+markup]){
+    negatives.push(value,encodeURIComponent(value),encodeURIComponent(encodeURIComponent(value)),value.replaceAll('<','&lt;').replaceAll('>','&gt;'));
+  }
+}
+for(const marker of ['*','**','~','~~','[',']','`']){
+  for(const value of ['PrivatePartner/'+marker+'secret-repo',guard+marker])negatives.push(value,encodeURIComponent(value),encodeURIComponent(encodeURIComponent(value)));
+}
+let ignorableCount=0;
+for(let code=0;code<=0x10ffff;code++){
+  const char=String.fromCodePoint(code);
+  if(/\p{Default_Ignorable_Code_Point}/u.test(char)){
+    ignorableCount++;
+    negatives.push('PrivatePartner/'+char+'secret-repo');
+    if(code>0xffff){
+      const pair='\\u'+(0xd800+((code-0x10000)>>10)).toString(16)+'\\u'+(0xdc00+((code-0x10000)&1023)).toString(16);
+      negatives.push('PrivatePartner/'+pair+'secret-repo',encodeURIComponent('PrivatePartner/'+pair+'secret-repo'));
+    }
+  }
+}
+assert.equal(ignorableCount,4174,'Complete default-ignorable class must be covered');
+for(const char of ['\u034f','\u180b','\u200b','\u3164','\u{e0100}']){
+  for(const value of ['PrivatePartner/'+char+'secret-repo',guard+char,app+char])negatives.push(encodeURIComponent(value),encodeURIComponent(encodeURIComponent(value)));
+}
+negatives.push('Public \\ud800 text','Public \\udfff text');
 let encoded=unknown;
 for(let i=0;i<10;i++){encoded=encodeURIComponent(encoded);negatives.push(encoded);}
 for(const first of 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.'){
@@ -64,7 +89,7 @@ for(const text of negatives){
     assert.equal(valid(input),false,JSON.stringify(input));
   }
 }
-const positives=['Public evidence','100% bounded validation','/forge/','/storefront/',app,
+const positives=['Public emoji 😀','Public emoji \\ud83d\\ude00','Public evidence','100% bounded validation','/forge/','/storefront/',app,
   'www.'+app,app+' public app','a'.repeat(64),'b'.repeat(64)];
 for(const slug of ['iaap-guard','ai-powered-infrastructure-as-a-product','infrastructureproductworks.github.io']){
   const repo=['InfrastructureProductWorks',slug].join('/');

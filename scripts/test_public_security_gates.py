@@ -77,6 +77,37 @@ class PublicSecurityGates(unittest.TestCase):
                             altered=route[:position]+encoding+route[position:]
                             self.assertTrue(count(altered),altered)
 
+    def test_rendered_markup_and_invisible_coordinates(self):
+        script=SOURCE/'audit_private_references.py'
+        namespace={'__file__':str(script)}
+        exec(script.read_text().split('base=baseline_ref()')[0],namespace)
+        count=namespace['reference_counts']
+        for marker in ['<wbr>','<!-- -->','<span></span>','**','~~','`']:
+            value='https://github.com/'+'PrivatePartner/'+marker+'secret-repo'
+            self.assertTrue(count(value),value)
+            self.assertTrue(count('<p>'+value+'</p>'),value)
+        for encoded in ['&lt;wbr&gt;','%3Cwbr%3E','%253Cwbr%253E']:
+            self.assertTrue(count('https://github.com/'+'PrivatePartner/'+encoded+'secret-repo'),encoded)
+        chars=namespace['DEFAULT_IGNORABLE'].findall(''.join(map(chr,range(0x110000))))
+        self.assertEqual(len(chars),4174)
+        for char in chars:
+            value='https://github.com/'+'PrivatePartner/'+char+'secret-repo'
+            self.assertTrue(count(value),repr(value))
+        host='https://'+'.'.join(('github','com'))+'/'
+        for value in [
+            host+'[PrivatePartner](https://example.com)/secret-repo',
+            host+'Private[Partner](https://example.com)/secret-repo',
+            ''.join(('iaap-','__forge__')),''.join(('iaap-','_forge_')),
+            host+r'PrivatePartner/\udb40\udc00secret-repo',
+            host+r'PrivatePartner/\udb40\udd00secret-repo',
+            host+'[PrivatePartner][link]/secret-repo\n\n[link]: https://example.com',
+            host+'[PrivatePartner][]/secret-repo\n\n[PrivatePartner]: https://example.com',
+            host+'[PrivatePartner]/secret-repo\n\n[PrivatePartner]: https://example.com',
+        ]:self.assertTrue(count(value),value)
+        public='https://github.com/'+'/'.join(('InfrastructureProductWorks','iaap-guard'))
+        for value in ['<b>Public</b> documentation', '[Public]('+public+')', '<a href="'+public+'">Public</a>', '**Public** documentation',public]:
+            self.assertFalse(count(value),value)
+
     def test_optional_ssh_username(self):
         for prefix in ['github.com:','alice@github.com:']:
             result=self.gate('audit_private_references.py',(prefix+''.join(('PrivatePartner/','secret-repo.git'))).encode(),ci=True)

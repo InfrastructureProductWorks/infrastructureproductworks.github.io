@@ -23,7 +23,9 @@ const NORTHSTAR_PRODUCT={
   source:{repository:'InfrastructureProductWorks/infrastructureproductworks.github.io',revision:null,mode:'website-owned-main'}
 };
 const FOCUS_CONTRACT={closedEpic:'EP-07',activeEpic:'EP-08',activeLabel:'GitHub Enterprise Server and restricted-network portability'};
-let DELIVERY_FOCUS={epic:'EP-16',title:'Connected Application Experience',increment:'EDA-06 — Immutable Evidence & Artifact Adapter',copy:'Separate immutable evidence and artifacts from the event store while preserving exact digest, provenance, tenant scope and zero-authority boundaries.'};
+const OFFLINE_DELIVERY_FOCUS={epic:'EP-16',title:'Live delivery focus unavailable',increment:'Live telemetry unavailable',copy:'The dated roadmap summary is retained below. Current delivery focus and next actions require a valid live bundle.'};
+let DELIVERY_FOCUS={...OFFLINE_DELIVERY_FOCUS};
+const FALLBACK_SNAPSHOT={"date":"2026-10-14","headlineKeyResultCount":21,"planning":{"baseline":"October 11, 2026","evidenceQuarter":"Q4 2026","horizon":"September 2026 through August 2027","timingNote":"Quarter labels show when planning or evidence was recorded. They are not delivery commitments unless the roadmap explicitly says so."}};
 const BASELINE={objectives:9,keyResults:72,epics:23,features:221};
 let DELIVERY_OUTLOOK_MILESTONES=[
   {
@@ -65,29 +67,10 @@ const FALLBACK={
     closedEpic:'EP-07',
     activeEpic:'EP-08',
     activeLabel:'GitHub Enterprise Server and restricted-network portability',
-    next:[
-      'EP-08 remains the active portability track: GHE-06 bounded accepted; GHE-07 ready but externally blocked on an authorized live target; GHE-08 gated on GHE-07 live evidence',
-      'EP-16 is the active delivery focus; EDA-06 separates immutable evidence and artifacts from event and projection state',
-      'Connected Storefront and Forge preserve authenticated, integrity-bound handoff and the human-review boundary while durable evidence storage advances',
-      'Customer identity, persistence, audit, Guard operational profiles, Crossplane and cloud provider integrations remain separately gated',
-      'EP-18 multi-customer isolation defines customer-bound identity, policy, evidence, secrets and cross-customer fail-closed testing before any tenant-isolation claim',
-      'EP-20 Enterprise Workflow Integration (ServiceNow first) is documentation-first and reuses existing strategic outcomes',
-      'EP-21 Enterprise Telemetry Adapter (Splunk first) is documentation-first and reuses existing observability outcomes',
-      'EP-22 Domain Capability Provider Contracts makes Networking the first reference domain for a reusable authority-to-product contract without transferring execution authority',
-      'EP-17 AI-assisted and agent-operated evolution remains evidence-gated after trusted connected and customer-operational foundations'
-    ]
+    next:['Current next actions are unavailable while live telemetry is unavailable or invalid.']
   },
   stageModel:STAGE_NAMES,
-  objectives:[
-    {id:'O1',definition:'Preserve trustworthy evidence and release integrity',keyResultCount:3,epics:['EP-01']},
-    {id:'O2',definition:'Validate evaluator value without widening authority',keyResultCount:3,epics:['EP-02','EP-03']},
-    {id:'O3',definition:'Prove one minimum multi-cloud foundation safely and reversibly',keyResultCount:31,epics:['EP-04','EP-09','EP-10','EP-11','EP-12','EP-13','EP-14','EP-15','EP-21','EP-22']},
-    {id:'O4',definition:'Prepare organization-hosted planning and operational decisions',keyResultCount:12,epics:['EP-03','EP-05','EP-06','EP-10','EP-11','EP-13','EP-14','EP-15','EP-19','EP-20','EP-21']},
-    {id:'O5',definition:'Make the portfolio installable and portable in organization-controlled enterprise environments',keyResultCount:6,epics:['EP-07','EP-08']},
-    {id:'O6',definition:'Connect the product experience without widening execution authority',keyResultCount:4,epics:['EP-16','EP-20']},
-    {id:'O7',definition:'Prepare evidence-gated AI-assisted and agent-operated evolution',keyResultCount:3,epics:['EP-17']},
-    {id:'O8',definition:'Establish verifiable multi-customer isolation',keyResultCount:4,epics:['EP-18']}
-  ],
+  objectives:[{"id":"O1","definition":"Preserve trustworthy evidence and release integrity","keyResultCount":3,"epics":["EP-01"]},{"id":"O2","definition":"Validate evaluator value without widening authority","keyResultCount":3,"epics":["EP-02","EP-03"]},{"id":"O3","definition":"Prove one minimum multi-cloud foundation safely and reversibly","keyResultCount":31,"epics":["EP-04","EP-09","EP-10","EP-11","EP-12","EP-13","EP-21","EP-14","EP-15","EP-22"]},{"id":"O4","definition":"Prepare customer-hosted planning and operational decisions","keyResultCount":12,"epics":["EP-05","EP-03","EP-06","EP-10","EP-11","EP-13","EP-21","EP-14","EP-15","EP-19","EP-20"]},{"id":"O5","definition":"Make the portfolio installable and portable in customer-controlled enterprise environments","keyResultCount":6,"epics":["EP-07","EP-08"]},{"id":"O6","definition":"Connect the product experience without widening execution authority","keyResultCount":4,"epics":["EP-16","EP-20"]},{"id":"O7","definition":"Prepare evidence-gated AI-assisted and agent-operated evolution","keyResultCount":3,"epics":["EP-17"]},{"id":"O8","definition":"Establish verifiable multi-customer isolation","keyResultCount":4,"epics":["EP-18"]},{"id":"O9","definition":"Align cloud-product investment and execution to evidence-backed division outcomes","keyResultCount":6,"epics":["EP-23"]}],
   products:[]
 };
 function text(id,value){const target=document.getElementById(id);if(target)target.textContent=String(value??'')}
@@ -178,7 +161,7 @@ function fmtDate(value){
   return d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
 }
 function shortSha(value){return typeof value==='string'&&value.length>=7?value.slice(0,7):'snapshot'}
-function renderBaseline(data){text('metric-objectives',data.baseline.objectives);text('metric-krs',data.baseline.keyResults);text('metric-epics',data.baseline.epics);text('metric-features',data.baseline.features);text('live-posture',String(data.posture||'').replaceAll('_',' '));text('live-updated',fmtDate(data.generatedAt));text('focus-id',DELIVERY_FOCUS.epic);text('focus-title',DELIVERY_FOCUS.title);text('focus-increment',DELIVERY_FOCUS.increment);text('focus-copy',DELIVERY_FOCUS.copy);text('portability-id',data.portfolioFocus.activeEpic);text('portability-title',data.portfolioFocus.activeLabel);text('portability-accepted','GHE-06 bounded accepted');const blocked=(data.portfolioFocus.next||[]).some(item=>item.toLowerCase().includes('ghe-07')&&item.toLowerCase().includes('externally blocked'));text('portability-state',blocked?'EXTERNALLY BLOCKED':'ACTIVE TRACK');text('portability-copy',blocked?'Waiting on an authorized live GHES/organization-controlled GitHub target.':'Live customer-runner and GHES acceptance remains gated on authorized target evidence.');text('portability-note',blocked?'Not an unfinished synthetic engineering issue.':'Live target evidence remains required before support can be claimed.');}
+function renderBaseline(data){text('metric-objectives',data.baseline.objectives);text('metric-krs',data.baseline.keyResults);text('roadmap-retained-measures',data.baseline.keyResults);text('metric-epics',data.baseline.epics);text('metric-features',data.baseline.features);text('live-posture',String(data.posture||'').replaceAll('_',' '));text('live-updated',fmtDate(data.generatedAt));text('focus-id',DELIVERY_FOCUS.epic);text('focus-title',DELIVERY_FOCUS.title);text('focus-increment',DELIVERY_FOCUS.increment);text('focus-copy',DELIVERY_FOCUS.copy);text('focus-state','ACTIVE');text('focus-state-detail','Current engineering increment');text('focus-caption-text',`${DELIVERY_FOCUS.epic} is the live delivery focus. ${data.portfolioFocus.activeEpic} is the live portability track; acceptance remains evidence-gated.`);text('portability-id',data.portfolioFocus.activeEpic);text('portability-title',data.portfolioFocus.activeLabel);text('portability-accepted','GHE-06 bounded accepted');const blocked=(data.portfolioFocus.next||[]).some(item=>item.toLowerCase().includes('ghe-07')&&item.toLowerCase().includes('externally blocked'));text('portability-state',blocked?'EXTERNALLY BLOCKED':'ACTIVE TRACK');text('portability-copy',blocked?'Waiting on an authorized live GHES/organization-controlled GitHub target.':'Live customer-runner and GHES acceptance remains gated on authorized target evidence.');text('portability-note',blocked?'Not an unfinished synthetic engineering issue.':'Live target evidence remains required before support can be claimed.');}
 function roadmapStatusClass(group){return ['active','accepted','gated','documentation','future','planned'].includes(group)?` status-${group}`:' status-planned'}
 function metaPill(value,group){const span=node('span',`roadmap-meta-pill${roadmapStatusClass(group)}`,value);return span}
 function bindRoadmapControls(host,{filtersEnabled=true}={}){
@@ -234,12 +217,11 @@ function bindRoadmapControls(host,{filtersEnabled=true}={}){
 }
 function renderRoadmapFallback(data){
   const host=document.getElementById('roadmap-relationship-list');if(!host)return;host.replaceChildren();
-  const fallbackBaseline=object(data?.source)&&boundedText(data.source.roadmapBaseline)?data.source.roadmapBaseline:'Unavailable';
-  text('roadmap-baseline',fallbackBaseline);
-  text('roadmap-quarter','Unavailable');
-  text('roadmap-horizon','Unavailable');
-  text('roadmap-time-note','Relationship timing is unavailable while the roadmap relationship dataset is unavailable or out of sync.');
-  text('metric-headline-krs','18');
+  text('roadmap-baseline',FALLBACK_SNAPSHOT.planning.baseline);
+  text('roadmap-quarter',FALLBACK_SNAPSHOT.planning.evidenceQuarter);
+  text('roadmap-horizon',FALLBACK_SNAPSHOT.planning.horizon);
+  text('roadmap-time-note',`Committed roadmap snapshot dated ${FALLBACK_SNAPSHOT.date}. Live relationship details are unavailable; no current relationship is inferred.`);
+  text('metric-headline-krs',FALLBACK_SNAPSHOT.headlineKeyResultCount);
   (data.objectives||[]).forEach(o=>{
     const details=node('details','roadmap-objective fallback-objective');
     const summary=node('summary','roadmap-objective-summary');
@@ -588,6 +570,8 @@ function normalizedPublicPortfolioText(value,tokenScope=false){
       .replace(/\\\//g,'/')
       .replace(/\\u([0-9a-f]{4})/gi,(_,hex)=>String.fromCharCode(parseInt(hex,16)))
       .replace(/\\/g,'/');
+    if(/[<>*~\[\]`]/.test(value))return null;
+    if(/[\p{Default_Ignorable_Code_Point}\p{Cf}\p{Cs}]/u.test(value))return null;
     if(/[\x00-\x1f\x7f-\x9f]/.test(value))return null;
     if(value.includes('//'))return null;
     if(tokenScope)for(const pattern of [PORTFOLIO_GITHUB_COORDINATE,PORTFOLIO_BARE_COORDINATE]){
@@ -656,6 +640,8 @@ async function loadPortfolio(){
     const bundle=await fetchJson(PORTFOLIO_BUNDLE_URL,{timeoutMs:5000});
     if(!validPortfolioBundle(bundle))throw new Error('inconsistent portfolio bundle');
     dashboardState=bundle.dashboard;
+    document.getElementById('sync-error')?.classList.remove('show');
+    document.getElementById('roadmap-map-error')?.classList.remove('show');
     DELIVERY_FOCUS=bundle.presentation.deliveryFocus;
     DELIVERY_OUTLOOK_MILESTONES=bundle.presentation.milestones;
     renderBaseline(dashboardState);renderProducts(dashboardState);renderNext(dashboardState);
@@ -663,10 +649,18 @@ async function loadPortfolio(){
   }catch(err){
     // Never mix an older committed roadmap with a newer live product feed.
     dashboardState=FALLBACK;
+    DELIVERY_FOCUS={...OFFLINE_DELIVERY_FOCUS};
     document.getElementById('sync-error')?.classList.add('show');
     document.getElementById('roadmap-map-error')?.classList.add('show');
     renderBaseline(FALLBACK);renderProducts(FALLBACK);renderNext(FALLBACK);
     text('live-posture','SNAPSHOT · LIVE TELEMETRY UNAVAILABLE');
+    text('focus-state','UNAVAILABLE');
+    text('focus-state-detail','Valid live bundle required');
+    text('focus-caption-text','Current delivery focus and portability status require a valid live bundle.');
+    text('portability-state','UNAVAILABLE');
+    text('portability-accepted','Acceptance status unavailable');
+    text('portability-copy','Current portability status requires a valid live bundle.');
+    text('portability-note','No current acceptance claim is inferred.');
     renderRoadmapFallback(FALLBACK);renderDeliveryOutlook(null);
     console.warn('Portfolio bundle unavailable, invalid, or timed out; using bounded fallback.',err);
   }

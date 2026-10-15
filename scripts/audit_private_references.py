@@ -3,7 +3,8 @@
 from collections import Counter
 from pathlib import Path
 from urllib.parse import unquote
-import html, os, re, subprocess, sys
+import html, os, re, subprocess, sys, unicodedata
+from html.parser import HTMLParser
 
 ROOT=Path(__file__).resolve().parents[1]
 SKIP={".git"}
@@ -25,6 +26,11 @@ PUBLIC_REPOSITORIES={'infrastructureproductworks/ai-powered-infrastructure-as-a-
 OWNED_COORDINATE=re.compile('(InfrastructureProductWorks|SAABOLImpactVenture)/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)',re.I)
 GITHUB_COORDINATE=re.compile(r'(?<![A-Za-z0-9_.-])(?:(?:www\.)?github\.dev\.?(?::[0-9]*)?/|vscode\.dev\.?(?::[0-9]*)?/github/|api\.github\.com\.?(?::[0-9]*)?/repos/|(?!docs\.github\.com)(?:[A-Za-z0-9-]+\.)*github\.com\.?(?::[0-9]*)?/|raw\.githubusercontent\.com\.?(?::[0-9]*)?/|(?:[A-Za-z0-9_.-]+@)?(?:ssh\.)?github\.com\.?(?::[0-9]*)?[:/])([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)',re.I)
 PUBLIC_UI_COORDINATES={'apps/iaap-guard'}
+DEFAULT_IGNORABLE = re.compile(
+    r'[\u00ad\u034f\u061c\u115f-\u1160\u17b4-\u17b5\u180b-\u180f'
+    r'\u200b-\u200f\u202a-\u202e\u2060-\u206f\u3164\ufe00-\ufe0f'
+    r'\ufeff\uffa0\ufff0-\ufff8\U0001bca0-\U0001bca3\U0001d173-\U0001d17a'
+    r'\U000e0000-\U000e0fff]')
 # Existing browser-source links are exact exceptions, never feed-text routes.
 PUBLIC_SOURCE_WEB_PATHS={
     'infrastructureproductworks/ai-powered-infrastructure-as-a-product/blob/main/docs/infrastructure-product-lifecycle.md',
@@ -123,6 +129,7 @@ def normalize_browser_text(body, token_scope=False):
         current=unquote(current)
         current=JS_HEX.sub(lambda m: chr(int(m.group(1),16)),current)
         current=JS_UNICODE.sub(lambda m: chr(int(m.group(1),16)),current)
+        current=re.sub(r'[\ud800-\udbff][\udc00-\udfff]',lambda m:chr(0x10000+((ord(m.group(0)[0])-0xd800)<<10)+ord(m.group(0)[1])-0xdc00),current)
         current=JS_CONCAT.sub(lambda m: m.group(1)+m.group(2)+m.group(4)+m.group(1),current)
         current=re.sub(r"\\(?!u[0-9a-f]{4}|x[0-9a-f]{2})", "/", current, flags=re.I)
         if token_scope and re.search(r'[\x00-\x1f\x7f-\x9f]',current) and any(coordinate_matches(re.sub(r'[\x00-\x1f\x7f-\x9f]','',current))):
@@ -186,6 +193,33 @@ def path_reference_counts(path):
 
 MARKDOWN_ESCAPE=re.compile(r'\\([!-/:-@\[-`{-~])')
 
+def rendered_reference_text(value, labels_only=False):
+    # Scan visible source text as well as original URLs: inline tags, comments,
+    # Markdown emphasis and invisible formatting cannot split a coordinate.
+    class VisibleText(HTMLParser):
+        def __init__(self):
+            super().__init__(convert_charrefs=False)
+            self.parts=[]
+        def handle_data(self,data):self.parts.append(data)
+        def handle_entityref(self,name):self.parts.append('&'+name+';')
+        def handle_charref(self,name):self.parts.append('&#'+name+';')
+    parser=VisibleText()
+    parser.feed(value)
+    parser.close()
+    text=''.join(parser.parts)
+    for _ in range(9):
+        before=text
+        text=re.sub(r'\[([^\[\]]*)\]\(([^)]*)\)',lambda m:m.group(1) if labels_only else ' '+m.group(2)+' ',text)
+        if labels_only:
+            text=re.sub(r'\[([^\[\]]*)\]\[[^\[\]]*\]',lambda m:m.group(1),text)
+        if text==before:break
+    if labels_only:text=text.replace('[','').replace(']','')
+    text=re.sub(r'(?<![A-Za-z0-9_])(__?)(?=\S)(.+?)(?<=\S)\1(?![A-Za-z0-9_])',lambda m:m.group(2),text)
+    text=re.sub(r'[*~`]', '', text)
+    text=DEFAULT_IGNORABLE.sub('',text)
+    return ''.join(char for char in text if unicodedata.category(char)!='Cf')
+
+
 def reference_counts(body):
     matches=Counter()
     for view in (body,MARKDOWN_ESCAPE.sub(lambda m:m.group(1),body)):
@@ -204,6 +238,10 @@ def reference_counts(body):
         normalized=normalize_browser_text(view)
         matches.update(m.group(0).lower() for m in PRIVATE_REF.finditer(normalized))
         matches.update(m.group(0).lower() for m in coordinate_matches(normalized) if not coordinate_allowed(m, PUBLIC_REPOSITORIES))
+        for labels_only in (False,True):
+            rendered=rendered_reference_text(normalized,labels_only=labels_only)
+            matches.update(m.group(0).lower() for m in PRIVATE_REF.finditer(rendered))
+            matches.update(m.group(0).lower() for m in coordinate_matches(rendered) if not coordinate_allowed(m,PUBLIC_REPOSITORIES))
     return matches
 
 base=baseline_ref()
