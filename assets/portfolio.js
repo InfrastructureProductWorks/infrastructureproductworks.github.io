@@ -563,13 +563,15 @@ function decodePortfolioEntities(value){
     return named[entity];
   });
 }
+const PRIVATE_PORTFOLIO_NAMES=[["backstage-infrastructure-product-", "storefront-poc"], ["iaap-", "forge"], ["iaap-", "console"], ["iaap-", "assurance"], ["iaap-", "guard-core"], ["composite-ai-infrastructure-", "product-poc"], ["multicloud-", "foundation-product-poc"], ["crossplane-multicloud-seed-", "poc"], ["multicloud-foundation-poc-", "integration"]].map(parts=>parts.join(''));
 function normalizedPublicPortfolioText(value,tokenScope=false){
   for(let step=0;step<9;step++){
     const previous=value;
     value=decodePortfolioEntities(value.replace(/(?:%[0-9a-f]{2})+/gi,part=>decodeURIComponent(part)))
       .replace(/\\\//g,'/')
-      .replace(/\\u([0-9a-f]{4})/gi,(_,hex)=>String.fromCharCode(parseInt(hex,16)))
-      .replace(/\\/g,'/');
+      .replace(/\\u([0-9a-f]{4})/gi,(_,hex)=>String.fromCharCode(parseInt(hex,16)));
+    if(/\\(?!u[0-9a-f]{4})/i.test(value))return null;
+    if(PRIVATE_PORTFOLIO_NAMES.some(name=>value.toLowerCase().includes(name)))return null;
     if(/[<>*~\[\]`]/.test(value))return null;
     if(/[\p{Default_Ignorable_Code_Point}\p{Cf}\p{Cs}]/u.test(value))return null;
     if(/[\x00-\x1f\x7f-\x9f]/.test(value))return null;

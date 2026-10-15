@@ -104,6 +104,11 @@ class PublicSecurityGates(unittest.TestCase):
             host+'[PrivatePartner][]/secret-repo\n\n[PrivatePartner]: https://example.com',
             host+'[PrivatePartner]/secret-repo\n\n[PrivatePartner]: https://example.com',
         ]:self.assertTrue(count(value),value)
+        for depth in range(1,19):
+            value=''.join(('iaap-','_'*depth,'forge','_'*depth))
+            try:found=count(value)
+            except ValueError:found=True
+            self.assertTrue(found,value)
         public='https://github.com/'+'/'.join(('InfrastructureProductWorks','iaap-guard'))
         for value in ['<b>Public</b> documentation', '[Public]('+public+')', '<a href="'+public+'">Public</a>', '**Public** documentation',public]:
             self.assertFalse(count(value),value)

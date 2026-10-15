@@ -214,7 +214,12 @@ def rendered_reference_text(value, labels_only=False):
             text=re.sub(r'\[([^\[\]]*)\]\[[^\[\]]*\]',lambda m:m.group(1),text)
         if text==before:break
     if labels_only:text=text.replace('[','').replace(']','')
-    text=re.sub(r'(?<![A-Za-z0-9_])(__?)(?=\S)(.+?)(?<=\S)\1(?![A-Za-z0-9_])',lambda m:m.group(2),text)
+    for _ in range(9):
+        before=text
+        text=re.sub(r'(?<![A-Za-z0-9_])(__?)(?=\S)(.+?)(?<=\S)\1(?![A-Za-z0-9_])',lambda m:m.group(2),text)
+        if text==before:break
+    else:
+        raise ValueError('Unstable nested Markdown emphasis')
     text=re.sub(r'[*~`]', '', text)
     text=DEFAULT_IGNORABLE.sub('',text)
     return ''.join(char for char in text if unicodedata.category(char)!='Cf')

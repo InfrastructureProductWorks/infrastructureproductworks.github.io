@@ -10,6 +10,7 @@ const guard=['InfrastructureProductWorks','iaap-guard'].join('/');
 const host=['github','com'].join('.')+'/';
 const app=host+['apps','iaap-guard'].join('/');
 const negatives=[
+  ...['%80','%C0%AF','%C3%28','%ED%A0%80','%F4%90%80%80','%E2%82'].flatMap(value=>[value,encodeURIComponent(value)]),
   ...['Tab','NewLine','commat'].map(entity=>'InfrastructureProductWorks&'+entity+'/iaap-guard'),
   unknown,unknown.toUpperCase(),'x/y','crash/restart','`'+unknown+'`','('+unknown+')',
   'before '+unknown+' after',unknown.replace('/','%2F'),unknown.replace('/','&#47;'),
@@ -23,6 +24,20 @@ const negatives=[
   'a'.repeat(40),'evidence '+ 'B'.repeat(40)+' suffix',
   ['portfolio-bundle','v2'].join('/'),['portfolio-presentation','v1'].join('/')
 ];
+// Known restricted slugs must not leak as bare text, including encoded forms.
+const privateNames=vm.runInContext('PRIVATE_PORTFOLIO_NAMES',context);
+for(const name of privateNames){
+  negatives.push('\\x'+name.charCodeAt(0).toString(16)+name.slice(1),'\\u{'+name.charCodeAt(0).toString(16)+'}'+name.slice(1));
+  for(let depth=1;depth<=10;depth++){
+    const escaped='\\u'+name.charCodeAt(0).toString(16).padStart(4,'0')+name.slice(1);
+    const nested=escaped.replace('\\','\\u005c'+'u005c'.repeat(depth-1));
+    negatives.push(nested,encodeURIComponent(nested));
+  }
+  for(const value of [name,name.toUpperCase(),'prefix-'+name+'-suffix','Evidence '+name+'.git',
+    [...name].map(c=>'%'+c.charCodeAt(0).toString(16)).join(''),
+    [...name].map(c=>'&#'+c.charCodeAt(0)+';').join(''),
+    [...name].map(c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')).join('')])negatives.push(value);
+}
 // Query/search paths must not turn a declared public repository into a carrier
 // for a second, undeclared repository coordinate.
 for(const prefix of [host+'search?q=',host+guard+'/search?q=',host+guard+'?q=']){
