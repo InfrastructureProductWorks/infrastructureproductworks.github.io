@@ -2,12 +2,12 @@ const PORTFOLIO_BUNDLE_URL='https://raw.githubusercontent.com/InfrastructureProd
 let dashboardState=null;
 const STAGE_NAMES=['Define','Build','Validate','Integrate','Operationalize'];
 const PRODUCT_CONTRACT=[
-  {id:'storefront',name:'Storefront',role:'Experience',repository:'InfrastructureProductWorks/backstage-infrastructure-product-storefront-poc'},
-  {id:'guard',name:'IaaP Guard',role:'Validate',repository:'InfrastructureProductWorks/iaap-guard'},
-  {id:'forge',name:'IaaP Forge',role:'Construct',repository:'InfrastructureProductWorks/iaap-forge'},
-  {id:'console',name:'IaaP Console',role:'Review',repository:'InfrastructureProductWorks/iaap-console'},
-  {id:'assurance',name:'IaaP Assurance',role:'Assure',repository:'InfrastructureProductWorks/iaap-assurance'},
-  {id:'crossplane',name:'Crossplane Control Plane',role:'Reconcile',repository:'InfrastructureProductWorks/crossplane-multicloud-seed-poc'}
+  {id:'storefront',name:'Storefront',role:'Experience'},
+  {id:'guard',name:'IaaP Guard',role:'Validate'},
+  {id:'forge',name:'IaaP Forge',role:'Construct'},
+  {id:'console',name:'IaaP Console',role:'Review'},
+  {id:'assurance',name:'IaaP Assurance',role:'Assure'},
+  {id:'crossplane',name:'Crossplane Control Plane',role:'Reconcile'}
 ];
 const NORTHSTAR_PRODUCT={
   id:'northstar-signal',
@@ -23,8 +23,10 @@ const NORTHSTAR_PRODUCT={
   source:{repository:'InfrastructureProductWorks/infrastructureproductworks.github.io',revision:null,mode:'website-owned-main'}
 };
 const FOCUS_CONTRACT={closedEpic:'EP-07',activeEpic:'EP-08',activeLabel:'GitHub Enterprise Server and restricted-network portability'};
-let DELIVERY_FOCUS={epic:'EP-16',title:'Connected Application Experience',increment:'EDA-06 — Immutable Evidence & Artifact Adapter',copy:'Separate immutable evidence and artifacts from the event store while preserving exact digest, provenance, tenant scope and zero-authority boundaries.'};
-const BASELINE={objectives:8,keyResults:66,epics:22,features:173};
+const OFFLINE_DELIVERY_FOCUS={epic:'EP-16',title:'Live delivery focus unavailable',increment:'Live telemetry unavailable',copy:'The dated roadmap summary is retained below. Current delivery focus and next actions require a valid live bundle.'};
+let DELIVERY_FOCUS={...OFFLINE_DELIVERY_FOCUS};
+const FALLBACK_SNAPSHOT={"date":"2026-10-14","headlineKeyResultCount":21,"planning":{"baseline":"October 11, 2026","evidenceQuarter":"Q4 2026","horizon":"September 2026 through August 2027","timingNote":"Quarter labels show when planning or evidence was recorded. They are not delivery commitments unless the roadmap explicitly says so."}};
+const BASELINE={objectives:9,keyResults:72,epics:23,features:221};
 let DELIVERY_OUTLOOK_MILESTONES=[
   {
     id:'core-v1',
@@ -55,9 +57,9 @@ const STATUS_BY_STAGE={1:'DEFINING',2:'BUILDING',3:'VALIDATING',4:'INTEGRATING',
 const AUTHORITY_NOTICE='Engineering and roadmap telemetry only. No production, pilot, deployment, approval, commercialization, cloud, or risk-acceptance authority is implied.';
 const LIVE_SCOPE='sanitized-product-owned-live-portfolio-telemetry';
 const LIVE_AGGREGATION='scheduled-protected-main-product-status-contracts';
-const INTEGRATION_REPOSITORY='InfrastructureProductWorks/multicloud-foundation-poc-integration';
+const PUBLIC_EVIDENCE_REPOSITORY='InfrastructureProductWorks/infrastructureproductworks.github.io';
 const FALLBACK={
-  schemaVersion:'portfolio-dashboard/v1',
+  schemaVersion:'portfolio-dashboard/v2',
   generatedAt:null,
   posture:'CONTINUE_VALIDATION',
   baseline:BASELINE,
@@ -65,29 +67,10 @@ const FALLBACK={
     closedEpic:'EP-07',
     activeEpic:'EP-08',
     activeLabel:'GitHub Enterprise Server and restricted-network portability',
-    next:[
-      'EP-08 remains the active portability track: GHE-06 bounded accepted; GHE-07 ready but externally blocked on an authorized live target; GHE-08 gated on GHE-07 live evidence',
-      'EP-16 is the active delivery focus; EDA-06 separates immutable evidence/artifacts from event and projection state',
-      'Connected Storefront and Forge preserve authenticated, integrity-bound handoff and the human-review boundary while durable evidence storage advances',
-      'Customer identity, persistence, audit, Guard operational profiles, Crossplane and cloud/provider integrations remain separately gated',
-      'EP-18 multi-customer isolation defines customer-bound identity, policy, evidence, secrets and cross-customer fail-closed testing before any tenant-isolation claim',
-      'EP-20 Enterprise Workflow Integration (ServiceNow first) is documentation-first and reuses existing strategic outcomes',
-      'EP-21 Enterprise Telemetry Adapter (Splunk first) is documentation-first and reuses existing observability outcomes',
-      'EP-22 Domain Capability Provider Contracts makes Networking the first reference domain for a reusable authority-to-product contract without transferring execution authority',
-      'EP-17 AI-assisted and agent-operated evolution remains evidence-gated after trusted connected and customer-operational foundations'
-    ]
+    next:['Current next actions are unavailable while live telemetry is unavailable or invalid.']
   },
   stageModel:STAGE_NAMES,
-  objectives:[
-    {id:'O1',definition:'Preserve trustworthy evidence and release integrity',keyResultCount:3,epics:['EP-01']},
-    {id:'O2',definition:'Validate evaluator value without widening authority',keyResultCount:3,epics:['EP-02','EP-03']},
-    {id:'O3',definition:'Prove one minimum multi-cloud foundation safely and reversibly',keyResultCount:31,epics:['EP-04','EP-09','EP-10','EP-11','EP-12','EP-13','EP-14','EP-15','EP-21','EP-22']},
-    {id:'O4',definition:'Prepare organization-hosted planning and operational decisions',keyResultCount:12,epics:['EP-03','EP-05','EP-06','EP-10','EP-11','EP-13','EP-14','EP-15','EP-19','EP-20','EP-21']},
-    {id:'O5',definition:'Make the portfolio installable and portable in organization-controlled enterprise environments',keyResultCount:6,epics:['EP-07','EP-08']},
-    {id:'O6',definition:'Connect the product experience without widening execution authority',keyResultCount:4,epics:['EP-16','EP-20']},
-    {id:'O7',definition:'Prepare evidence-gated AI-assisted and agent-operated evolution',keyResultCount:3,epics:['EP-17']},
-    {id:'O8',definition:'Establish verifiable multi-customer isolation',keyResultCount:4,epics:['EP-18']}
-  ],
+  objectives:[{"id":"O1","definition":"Preserve trustworthy evidence and release integrity","keyResultCount":3,"epics":["EP-01"]},{"id":"O2","definition":"Validate evaluator value without widening authority","keyResultCount":3,"epics":["EP-02","EP-03"]},{"id":"O3","definition":"Prove one minimum multi-cloud foundation safely and reversibly","keyResultCount":31,"epics":["EP-04","EP-09","EP-10","EP-11","EP-12","EP-13","EP-21","EP-14","EP-15","EP-22"]},{"id":"O4","definition":"Prepare customer-hosted planning and operational decisions","keyResultCount":12,"epics":["EP-05","EP-03","EP-06","EP-10","EP-11","EP-13","EP-21","EP-14","EP-15","EP-19","EP-20"]},{"id":"O5","definition":"Make the portfolio installable and portable in customer-controlled enterprise environments","keyResultCount":6,"epics":["EP-07","EP-08"]},{"id":"O6","definition":"Connect the product experience without widening execution authority","keyResultCount":4,"epics":["EP-16","EP-20"]},{"id":"O7","definition":"Prepare evidence-gated AI-assisted and agent-operated evolution","keyResultCount":3,"epics":["EP-17"]},{"id":"O8","definition":"Establish verifiable multi-customer isolation","keyResultCount":4,"epics":["EP-18"]},{"id":"O9","definition":"Align cloud-product investment and execution to evidence-backed division outcomes","keyResultCount":6,"epics":["EP-23"]}],
   products:[]
 };
 function text(id,value){const target=document.getElementById(id);if(target)target.textContent=String(value??'')}
@@ -117,20 +100,20 @@ function validDashboard(data){
   const objectiveIds=objectives.map(item=>item?.id);
   const epicIds=objectives.flatMap(item=>Array.isArray(item?.epics)?item.epics:[]);
   return exactKeys(data,topKeys)
-    &&data.schemaVersion==='portfolio-dashboard/v1'
+    &&data.schemaVersion==='portfolio-dashboard/v2'
     &&validTimestamp(data.generatedAt)
     &&data.posture==='CONTINUE_VALIDATION'&&data.authorityNotice===AUTHORITY_NOTICE
     &&(
-      exactKeys(source,['roadmap','roadmapBaseline','scope','aggregation','repository','revision'])
-      ||exactKeys(source,['roadmap','roadmapBaseline','scope','aggregation','repository','revision','roadmapBlobSha'])
+      exactKeys(source,['roadmap','roadmapBaseline','scope','aggregation','repository','commitment'])
+      ||exactKeys(source,['roadmap','roadmapBaseline','scope','aggregation','repository','commitment','roadmapCommitment'])
     )
-    &&source.roadmap==='config/portfolio-roadmap.json'
+    &&source.roadmap==='public-portfolio-roadmap'
     &&validDate(source.roadmapBaseline)
     &&source.scope===LIVE_SCOPE
     &&source.aggregation===LIVE_AGGREGATION
-    &&source.repository===INTEGRATION_REPOSITORY
-    &&/^[0-9a-f]{40}$/.test(source.revision)
-    &&(!Object.hasOwn(source,'roadmapBlobSha')||/^[0-9a-f]{40}$/.test(source.roadmapBlobSha))
+    &&source.repository===PUBLIC_EVIDENCE_REPOSITORY
+    &&/^[0-9a-f]{64}$/.test(source.commitment)
+    &&(!Object.hasOwn(source,'roadmapCommitment')||/^[0-9a-f]{64}$/.test(source.roadmapCommitment))
     &&exactKeys(baseline,metrics)
     &&metrics.every(key=>validPositiveInteger(baseline[key]))
     &&baseline.features>=baseline.epics
@@ -160,11 +143,11 @@ function validDashboard(data){
       &&item.stageIndex>=1&&item.stageIndex<=STAGE_NAMES.length
       &&item.status===STATUS_BY_STAGE[item.stageIndex]&&item.href===`/${item.id}/`
       &&validVersions(item.versions)
-      &&exactKeys(productSource,['repository','revision','mode'])
-      &&productSource.repository===expected.repository
+      &&exactKeys(productSource,['product','commitment','mode'])
+      &&productSource.product===expected.id
       &&(
-        productSource.mode==='product-owned-main'&&typeof productSource.revision==='string'&&/^[0-9a-f]{40}$/.test(productSource.revision)
-        ||(isAssurance&&productSource.mode==='bounded-snapshot'&&productSource.revision===null)
+        productSource.mode==='product-owned-main'&&typeof productSource.commitment==='string'&&/^[0-9a-f]{64}$/.test(productSource.commitment)
+        ||(isAssurance&&productSource.mode==='bounded-snapshot'&&productSource.commitment===null)
       );
     });
 }
@@ -178,7 +161,7 @@ function fmtDate(value){
   return d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
 }
 function shortSha(value){return typeof value==='string'&&value.length>=7?value.slice(0,7):'snapshot'}
-function renderBaseline(data){text('metric-objectives',data.baseline.objectives);text('metric-krs',data.baseline.keyResults);text('metric-epics',data.baseline.epics);text('metric-features',data.baseline.features);text('live-posture',String(data.posture||'').replaceAll('_',' '));text('live-updated',fmtDate(data.generatedAt));text('focus-id',DELIVERY_FOCUS.epic);text('focus-title',DELIVERY_FOCUS.title);text('focus-increment',DELIVERY_FOCUS.increment);text('focus-copy',DELIVERY_FOCUS.copy);text('portability-id',data.portfolioFocus.activeEpic);text('portability-title',data.portfolioFocus.activeLabel);text('portability-accepted','GHE-06 bounded accepted');const blocked=(data.portfolioFocus.next||[]).some(item=>item.toLowerCase().includes('ghe-07')&&item.toLowerCase().includes('externally blocked'));text('portability-state',blocked?'EXTERNALLY BLOCKED':'ACTIVE TRACK');text('portability-copy',blocked?'Waiting on an authorized live GHES/organization-controlled GitHub target.':'Live customer-runner and GHES acceptance remains gated on authorized target evidence.');text('portability-note',blocked?'Not an unfinished synthetic engineering issue.':'Live target evidence remains required before support can be claimed.');}
+function renderBaseline(data){text('metric-objectives',data.baseline.objectives);text('metric-krs',data.baseline.keyResults);text('roadmap-retained-measures',data.baseline.keyResults);text('metric-epics',data.baseline.epics);text('metric-features',data.baseline.features);text('live-posture',String(data.posture||'').replaceAll('_',' '));text('live-updated',fmtDate(data.generatedAt));text('focus-id',DELIVERY_FOCUS.epic);text('focus-title',DELIVERY_FOCUS.title);text('focus-increment',DELIVERY_FOCUS.increment);text('focus-copy',DELIVERY_FOCUS.copy);text('focus-state','ACTIVE');text('focus-state-detail','Current engineering increment');text('focus-caption-text',`${DELIVERY_FOCUS.epic} is the live delivery focus. ${data.portfolioFocus.activeEpic} is the live portability track; acceptance remains evidence-gated.`);text('portability-id',data.portfolioFocus.activeEpic);text('portability-title',data.portfolioFocus.activeLabel);text('portability-accepted','GHE-06 bounded accepted');const blocked=(data.portfolioFocus.next||[]).some(item=>item.toLowerCase().includes('ghe-07')&&item.toLowerCase().includes('externally blocked'));text('portability-state',blocked?'EXTERNALLY BLOCKED':'ACTIVE TRACK');text('portability-copy',blocked?'Waiting on an authorized live GHES/organization-controlled GitHub target.':'Live customer-runner and GHES acceptance remains gated on authorized target evidence.');text('portability-note',blocked?'Not an unfinished synthetic engineering issue.':'Live target evidence remains required before support can be claimed.');}
 function roadmapStatusClass(group){return ['active','accepted','gated','documentation','future','planned'].includes(group)?` status-${group}`:' status-planned'}
 function metaPill(value,group){const span=node('span',`roadmap-meta-pill${roadmapStatusClass(group)}`,value);return span}
 function bindRoadmapControls(host,{filtersEnabled=true}={}){
@@ -234,12 +217,11 @@ function bindRoadmapControls(host,{filtersEnabled=true}={}){
 }
 function renderRoadmapFallback(data){
   const host=document.getElementById('roadmap-relationship-list');if(!host)return;host.replaceChildren();
-  const fallbackBaseline=object(data?.source)&&boundedText(data.source.roadmapBaseline)?data.source.roadmapBaseline:'Unavailable';
-  text('roadmap-baseline',fallbackBaseline);
-  text('roadmap-quarter','Unavailable');
-  text('roadmap-horizon','Unavailable');
-  text('roadmap-time-note','Relationship timing is unavailable while the roadmap relationship dataset is unavailable or out of sync.');
-  text('metric-headline-krs','18');
+  text('roadmap-baseline',FALLBACK_SNAPSHOT.planning.baseline);
+  text('roadmap-quarter',FALLBACK_SNAPSHOT.planning.evidenceQuarter);
+  text('roadmap-horizon',FALLBACK_SNAPSHOT.planning.horizon);
+  text('roadmap-time-note',`Committed roadmap snapshot dated ${FALLBACK_SNAPSHOT.date}. Live relationship details are unavailable; no current relationship is inferred.`);
+  text('metric-headline-krs',FALLBACK_SNAPSHOT.headlineKeyResultCount);
   (data.objectives||[]).forEach(o=>{
     const details=node('details','roadmap-objective fallback-objective');
     const summary=node('summary','roadmap-objective-summary');
@@ -419,15 +401,15 @@ function renderDeliveryOutlook(data){
   text('delivery-outlook-updated',fmtDate(data.generatedAt||dashboardState?.generatedAt));
 }
 function validRoadmapRelationships(data){
-  if(!object(data)||data.schemaVersion!=='roadmap-relationship-view/v5')return false;
+  if(!object(data)||data.schemaVersion!=='roadmap-relationship-view/v6')return false;
   if(!object(data.relationshipModel)||data.relationshipModel.objectiveToHeadlineKeyResults!=='one-to-many'||data.relationshipModel.headlineKeyResultToEpics!=='derived-through-registered-measures-with-explicit-contributions'||data.relationshipModel.epicContributionSemantics!=='relationship-specific-description-required'||data.relationshipModel.registeredMeasures!=='traceability-only-hidden-from-executive-view'||data.relationshipModel.objectiveToEpics!=='derived-through-registered-measures')return false;
   if(!object(data.progressModel)||data.progressModel.method!=='evidence-backed-epic-rollup/v1'||!boundedText(data.progressModel.scale)||!boundedText(data.progressModel.strategicKeyResult)||!boundedText(data.progressModel.objective)||!boundedText(data.progressModel.note))return false;
   if(!object(data.forecastModel)||data.forecastModel.method!=='linear-evidence-trend/v1'||data.forecastModel.minimumSnapshots!==2||data.forecastModel.minimumSpanDays!==7||data.forecastModel.blockedBehavior!=='no-date-inferred'||data.forecastModel.planningWindows!=='explicit-roadmap-assumptions')return false;
   if(!boundedText(data.generatedAt)||!/^\d{4}-\d{2}-\d{2}$/.test(data.generatedAt))return false;
-  if(!boundedText(data.sourceRevision)||!/^[0-9a-f]{40}$/.test(data.sourceRevision))return false;
-  if(!boundedText(data.roadmapBlobSha)||!/^[0-9a-f]{40}$/.test(data.roadmapBlobSha))return false;
-  if(data.contributionSource!=='config/portfolio-strategic-kr-contributions.json')return false;
-  if(!boundedText(data.contributionBlobSha)||!/^[0-9a-f]{40}$/.test(data.contributionBlobSha))return false;
+  if(!boundedText(data.sourceCommitment)||!/^[0-9a-f]{64}$/.test(data.sourceCommitment))return false;
+  if(!boundedText(data.roadmapCommitment)||!/^[0-9a-f]{64}$/.test(data.roadmapCommitment))return false;
+  if(data.contributionSource!=='public-strategic-contributions')return false;
+  if(!boundedText(data.contributionCommitment)||!/^[0-9a-f]{64}$/.test(data.contributionCommitment))return false;
   if(!object(data.planning)||!boundedText(data.planning.baseline)||!normalizeRoadmapDate(data.planning.baseline)||!boundedText(data.planning.evidenceQuarter)||!/^Q[1-4]\s+\d{4}$/.test(data.planning.evidenceQuarter)||!boundedText(data.planning.horizon)||!boundedText(data.planning.timingNote))return false;
   if(!Array.isArray(data.objectives)||data.objectives.length<1||!Array.isArray(data.headlineKeyResults)||data.headlineKeyResults.length<1||!Array.isArray(data.keyResults)||data.keyResults.length<1||!object(data.epics)||Object.keys(data.epics).length<1)return false;
   const objectiveIds=data.objectives.map(o=>o?.id),headlineIds=data.headlineKeyResults.map(h=>h?.id),krIds=data.keyResults.map(k=>k?.id),epicIds=Object.keys(data.epics);
@@ -493,7 +475,7 @@ function roadmapMatchesDashboard(data,dashboard){
   if(!object(dashboard)||!object(dashboard.baseline)||!Array.isArray(dashboard.objectives))return false;
   const relationshipFeatureCount=Object.values(data.epics||{}).reduce((total,ep)=>total+(Number.isInteger(ep.featureCount)?ep.featureCount:0),0);
   if(data.objectives.length!==dashboard.baseline.objectives||data.keyResults.length!==dashboard.baseline.keyResults||Object.keys(data.epics).length!==dashboard.baseline.epics||relationshipFeatureCount!==dashboard.baseline.features)return false;
-  if(object(dashboard.source)&&boundedText(dashboard.source.roadmapBlobSha)&&data.roadmapBlobSha!==dashboard.source.roadmapBlobSha)return false;
+  if(object(dashboard.source)&&boundedText(dashboard.source.roadmapCommitment)&&data.roadmapCommitment!==dashboard.source.roadmapCommitment)return false;
   if(object(dashboard.source)&&boundedText(dashboard.source.roadmapBaseline)){
     const relationshipBaseline=normalizeRoadmapDate(data.planning.baseline);
     const dashboardBaseline=normalizeRoadmapDate(dashboard.source.roadmapBaseline);
@@ -510,7 +492,7 @@ function roadmapMatchesDashboard(data,dashboard){
     return derivedEpics.size===dashboardEpics.size&&[...derivedEpics].every(id=>dashboardEpics.has(id));
   });
 }
-function renderProductCard(host,p){const link=node('a','product-card');link.href=safePath(p.href);const top=node('div','product-top');const titleWrap=node('div');titleWrap.append(node('div','product-role',String(p.role||'').toUpperCase()),node('h3','',p.name));const status=String(p.status||'');top.append(titleWrap,node('span',`status-pill ${status.toLowerCase()}`,status));link.append(top,node('div','product-state',p.state),node('p','product-evidence',p.evidence));const proof=node('div','proof-pattern');[['BUILD',p.state],['VALIDATE',p.status],['EVIDENCE',p.evidence]].forEach(([label,value])=>{const step=node('div','proof-step');step.append(node('small','',label),node('strong','',value));proof.append(step);});link.append(proof);const labels=node('div','stage-labels');STAGE_NAMES.forEach(s=>labels.append(node('span','',s)));link.append(labels);const track=node('div','stage-track');const stageIndex=Number.isInteger(p.stageIndex)?Math.max(0,Math.min(STAGE_NAMES.length,p.stageIndex)):0;STAGE_NAMES.forEach((_,i)=>track.append(node('span',`stage-segment${i<stageIndex?' done':''}`)));link.append(track);const current=node('div','stage-current');current.append(node('span','','Current engineering maturity'),node('strong','',STAGE_NAMES[Math.max(0,stageIndex-1)]||'Define'));link.append(current);const source=p.source||{};const sourceLine=node('div','product-source');if(source.mode==='website-owned-main'){sourceLine.append(node('span','','website-owned main'),node('span','','current site'));}else{const mode=source.mode==='bounded-snapshot'?'bounded snapshot':'product-owned main';sourceLine.append(node('span','',mode),node('span','',shortSha(source.revision)));}link.append(sourceLine);const next=node('div','next-block');next.append(node('small','','NEXT MILESTONE'),node('p','',p.nextMilestone));link.append(next,node('span','product-link','Open product →'));host.append(link);}
+function renderProductCard(host,p){const link=node('a','product-card');link.href=safePath(p.href);const top=node('div','product-top');const titleWrap=node('div');titleWrap.append(node('div','product-role',String(p.role||'').toUpperCase()),node('h3','',p.name));const status=String(p.status||'');top.append(titleWrap,node('span',`status-pill ${status.toLowerCase()}`,status));link.append(top,node('div','product-state',p.state),node('p','product-evidence',p.evidence));const proof=node('div','proof-pattern');[['BUILD',p.state],['VALIDATE',p.status],['EVIDENCE',p.evidence]].forEach(([label,value])=>{const step=node('div','proof-step');step.append(node('small','',label),node('strong','',value));proof.append(step);});link.append(proof);const labels=node('div','stage-labels');STAGE_NAMES.forEach(s=>labels.append(node('span','',s)));link.append(labels);const track=node('div','stage-track');const stageIndex=Number.isInteger(p.stageIndex)?Math.max(0,Math.min(STAGE_NAMES.length,p.stageIndex)):0;STAGE_NAMES.forEach((_,i)=>track.append(node('span',`stage-segment${i<stageIndex?' done':''}`)));link.append(track);const current=node('div','stage-current');current.append(node('span','','Current engineering maturity'),node('strong','',STAGE_NAMES[Math.max(0,stageIndex-1)]||'Define'));link.append(current);const source=p.source||{};const sourceLine=node('div','product-source');if(source.mode==='website-owned-main'){sourceLine.append(node('span','','website-owned main'),node('span','','current site'));}else{const mode=source.mode==='bounded-snapshot'?'bounded snapshot':'product-owned main';sourceLine.append(node('span','',mode),node('span','',shortSha(source.commitment)));}link.append(sourceLine);const next=node('div','next-block');next.append(node('small','','NEXT MILESTONE'),node('p','',p.nextMilestone));link.append(next,node('span','product-link','Open product →'));host.append(link);}
 function renderProducts(data){const host=document.getElementById('product-grid');if(!host)return;host.replaceChildren();renderProductCard(host,NORTHSTAR_PRODUCT);(data.products||[]).forEach(p=>renderProductCard(host,p));}
 function renderNext(data){const host=document.getElementById('next-list');if(!host)return;host.replaceChildren();(data.portfolioFocus.next||[]).forEach((item,i)=>{if(i)host.append(node('i','','→'));host.append(node('span','',item));});}
 async function fetchJson(url,{timeoutMs=0}={}){
@@ -534,12 +516,124 @@ function validPresentation(p,roadmap){
     &&['epics','critical'].every(k=>Array.isArray(m[k])&&m[k].length>0&&new Set(m[k]).size===m[k].length&&m[k].every(id=>Object.hasOwn(roadmap.epics,id)))
     &&m.critical.every(id=>m.epics.includes(id)));
 }
+// Match the producer's bounded public text projection before rendering any feed.
+const PUBLIC_PORTFOLIO_REPOSITORIES=new Set([
+  'infrastructureproductworks/ai-powered-infrastructure-as-a-product',
+  'infrastructureproductworks/iaap-guard',
+  'infrastructureproductworks/infrastructureproductworks.github.io'
+]);
+const PUBLIC_PORTFOLIO_SCHEMAS=new Map([
+  [[ 'schemaVersion' ],'portfolio-bundle/v2'],
+  [[ 'dashboard','schemaVersion' ],'portfolio-dashboard/v2'],
+  [[ 'roadmap','schemaVersion' ],'roadmap-relationship-view/v6'],
+  [[ 'presentation','schemaVersion' ],'portfolio-presentation/v1'],
+  [[ 'roadmap','progressModel','method' ],'evidence-backed-epic-rollup/v1'],
+  [[ 'roadmap','forecastModel','method' ],'linear-evidence-trend/v1']
+].map(([path,value])=>[JSON.stringify(path),value]));
+const PORTFOLIO_GITHUB_COORDINATE=/(?<![A-Za-z0-9_./-])(?:(?:www\.)?github\.dev\.?(?::[0-9]*)?\/|vscode\.dev\.?(?::[0-9]*)?\/github\/|api\.github\.com\.?(?::[0-9]*)?\/repos\/|(?!docs\.github\.com)(?:[A-Za-z0-9-]+\.)*github\.com\.?(?::[0-9]*)?\/|raw\.githubusercontent\.com\.?(?::[0-9]*)?\/|(?:[A-Za-z0-9_.-]+@)?(?:ssh\.)?github\.com\.?(?::[0-9]*)?[:/])([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*)/gi;
+const PORTFOLIO_BARE_COORDINATE=/(?<![A-Za-z0-9_.-])([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*)/gi;
+function publicPortfolioCoordinate(match){
+  const parts=(match[1]+'/'+match[2]).toLowerCase().split('/');
+  if(parts.some(part=>part==='.'||part==='..'))return false;
+  const key=(parts[0]+'/'+parts[1]).replace(/\.git$/,'');
+  if(PUBLIC_PORTFOLIO_REPOSITORIES.has(key)){
+    if(!/^(?:\s|$)/.test(match.input.slice(match.index+match[0].length)))return false;
+    const suffix=parts.slice(2);
+    if(!suffix.length)return true;
+    // Bounded public routes, not an exemption for arbitrary nested coordinates.
+    if(/^raw\.githubusercontent\.com[.:/]/i.test(match[0]))
+      return suffix.length===2&&suffix[0]==='main'&&/^[a-z0-9_-][a-z0-9_.-]*$/.test(suffix[1]);
+    return suffix.length===2&&['issues','pull'].includes(suffix[0])&&/^[0-9]+$/.test(suffix[1])
+      ||suffix.length===3&&suffix[0]==='blob'&&suffix[1]==='main'&&/^[a-z0-9_-][a-z0-9_.-]*$/.test(suffix[2]);
+  }
+  return /^(?:www\.)?github\.com\//i.test(match[0])&&parts.join('/')==='apps/iaap-guard'
+    &&/^(?:\s|$)/.test(match.input.slice(match.index+match[0].length));
+}
+function decodePortfolioEntities(value){
+  const named={amp:'&',AMP:'&',lt:'<',LT:'<',gt:'>',GT:'>',quot:'"',QUOT:'"',apos:"'",sol:'/',bsol:'\\',colon:':',period:'.',commat:'@',percnt:'%',Tab:'\t',NewLine:'\n'};
+  // Unknown named entities fail closed instead of depending on a DOM parser.
+  return value.replace(/&(#x[0-9a-f]+|#[0-9]+|[A-Za-z][A-Za-z0-9]+);?/gi,(all,entity)=>{
+    if(entity[0]==='#'){
+      const hex=entity[1].toLowerCase()==='x';
+      const code=parseInt(entity.slice(hex?2:1),hex?16:10);
+      if(code<32||code>=127&&code<=159||code>=0xfdd0&&code<=0xfdef||(code&0xffff)>=0xfffe)throw new Error('Control entity is not public text');
+      return String.fromCodePoint(code);
+    }
+    if(!Object.hasOwn(named,entity)||!all.endsWith(';')&&!['amp','AMP','lt','LT','gt','GT','quot','QUOT'].includes(entity))throw new Error('Unsupported public text entity');
+    return named[entity];
+  });
+}
+const PRIVATE_PORTFOLIO_NAMES=[["backstage-infrastructure-product-", "storefront-poc"], ["iaap-", "forge"], ["iaap-", "console"], ["iaap-", "assurance"], ["iaap-", "guard-core"], ["composite-ai-infrastructure-", "product-poc"], ["multicloud-", "foundation-product-poc"], ["crossplane-multicloud-seed-", "poc"], ["multicloud-foundation-poc-", "integration"]].map(parts=>parts.join(''));
+function normalizedPublicPortfolioText(value,tokenScope=false){
+  for(let step=0;step<9;step++){
+    const previous=value;
+    value=decodePortfolioEntities(value.replace(/(?:%[0-9a-f]{2})+/gi,part=>decodeURIComponent(part)))
+      .replace(/\\\//g,'/')
+      .replace(/\\u([0-9a-f]{4})/gi,(_,hex)=>String.fromCharCode(parseInt(hex,16)));
+    if(/\\(?!u[0-9a-f]{4})/i.test(value))return null;
+    if(PRIVATE_PORTFOLIO_NAMES.some(name=>value.toLowerCase().includes(name)))return null;
+    if(/[<>*~\[\]`]/.test(value))return null;
+    if(/[\p{Default_Ignorable_Code_Point}\p{Cf}\p{Cs}]/u.test(value))return null;
+    if(/[\x00-\x1f\x7f-\x9f]/.test(value))return null;
+    if(value.includes('//'))return null;
+    if(tokenScope)for(const pattern of [PORTFOLIO_GITHUB_COORDINATE,PORTFOLIO_BARE_COORDINATE]){
+      for(const match of value.matchAll(pattern)){
+        const tail=value.slice(match.index+match[0].length);
+        if(tail&&/^\s/u.test(tail))return null;
+      }
+    }
+    value=value.replace(/[\x00-\x1f\x7f]/g,'').replace(/[。．｡]/g,'.');
+    if(value===previous)return value;
+    if(step===8)return null;
+  }
+  return null;
+}
+function publicPortfolioString(value){
+  const markdown=value.replace(/\\([!-/:-@\[-`{-~])/g,'$1');
+  for(const view of [value,markdown]){
+    // Decoding must not manufacture a route terminator inside an original token.
+    for(const token of view.match(/\S+/gu)||[]){
+      const decoded=normalizedPublicPortfolioText(token,true);
+      if(decoded===null)return false;
+      for(const pattern of [PORTFOLIO_GITHUB_COORDINATE,PORTFOLIO_BARE_COORDINATE]){
+        for(const match of decoded.matchAll(pattern)){
+          if(match.index+match[0].length!==decoded.length)return false;
+        }
+      }
+    }
+    const normalized=normalizedPublicPortfolioText(view);
+    if(normalized===null||/\b[A-Za-z][A-Za-z0-9+.-]*:\/|git@/i.test(normalized)
+      ||/(?<![0-9a-f])[0-9a-f]{40}(?![0-9a-f])/i.test(normalized))return false;
+    let start=0;
+    for(const match of normalized.matchAll(PORTFOLIO_GITHUB_COORDINATE)){
+      if(!publicPortfolioCoordinate(match))return false;
+      for(const bare of normalized.slice(start,match.index).matchAll(PORTFOLIO_BARE_COORDINATE)){
+        if(!publicPortfolioCoordinate(bare))return false;
+      }
+      start=match.index+match[0].length;
+    }
+    for(const bare of normalized.slice(start).matchAll(PORTFOLIO_BARE_COORDINATE)){
+      if(!publicPortfolioCoordinate(bare))return false;
+    }
+  }
+  return true;
+}
+function validPublicPortfolioText(value,path=[]){
+  try{
+    if(typeof value==='string')return PUBLIC_PORTFOLIO_SCHEMAS.get(JSON.stringify(path))===value||publicPortfolioString(value);
+    if(Array.isArray(value))return value.every((child,index)=>validPublicPortfolioText(child,[...path,index]));
+    if(object(value))return Object.entries(value).every(([key,child])=>publicPortfolioString(key)&&validPublicPortfolioText(child,[...path,key]));
+    return true;
+  }catch{return false;}
+}
+
 function validPortfolioBundle(bundle){
-  if(!exactKeys(bundle,['schemaVersion','dashboard','roadmap','presentation'])||bundle.schemaVersion!=='portfolio-bundle/v1')return false;
+  if(!validPublicPortfolioText(bundle))return false;
+  if(!exactKeys(bundle,['schemaVersion','dashboard','roadmap','presentation'])||bundle.schemaVersion!=='portfolio-bundle/v2')return false;
   const {dashboard,roadmap,presentation}=bundle;
   return validDashboard(dashboard)&&validRoadmapRelationships(roadmap)
-    &&dashboard.source.revision===roadmap.sourceRevision
-    &&dashboard.source.roadmapBlobSha===roadmap.roadmapBlobSha
+    &&dashboard.source.commitment===roadmap.sourceCommitment
+    &&dashboard.source.roadmapCommitment===roadmap.roadmapCommitment
     &&roadmap.generatedAt<=dashboard.generatedAt.slice(0,10)
     &&roadmapMatchesDashboard(roadmap,dashboard)&&validPresentation(presentation,roadmap);
 }
@@ -548,6 +642,8 @@ async function loadPortfolio(){
     const bundle=await fetchJson(PORTFOLIO_BUNDLE_URL,{timeoutMs:5000});
     if(!validPortfolioBundle(bundle))throw new Error('inconsistent portfolio bundle');
     dashboardState=bundle.dashboard;
+    document.getElementById('sync-error')?.classList.remove('show');
+    document.getElementById('roadmap-map-error')?.classList.remove('show');
     DELIVERY_FOCUS=bundle.presentation.deliveryFocus;
     DELIVERY_OUTLOOK_MILESTONES=bundle.presentation.milestones;
     renderBaseline(dashboardState);renderProducts(dashboardState);renderNext(dashboardState);
@@ -555,9 +651,18 @@ async function loadPortfolio(){
   }catch(err){
     // Never mix an older committed roadmap with a newer live product feed.
     dashboardState=FALLBACK;
+    DELIVERY_FOCUS={...OFFLINE_DELIVERY_FOCUS};
     document.getElementById('sync-error')?.classList.add('show');
     document.getElementById('roadmap-map-error')?.classList.add('show');
     renderBaseline(FALLBACK);renderProducts(FALLBACK);renderNext(FALLBACK);
+    text('live-posture','SNAPSHOT · LIVE TELEMETRY UNAVAILABLE');
+    text('focus-state','UNAVAILABLE');
+    text('focus-state-detail','Valid live bundle required');
+    text('focus-caption-text','Current delivery focus and portability status require a valid live bundle.');
+    text('portability-state','UNAVAILABLE');
+    text('portability-accepted','Acceptance status unavailable');
+    text('portability-copy','Current portability status requires a valid live bundle.');
+    text('portability-note','No current acceptance claim is inferred.');
     renderRoadmapFallback(FALLBACK);renderDeliveryOutlook(null);
     console.warn('Portfolio bundle unavailable, invalid, or timed out; using bounded fallback.',err);
   }
