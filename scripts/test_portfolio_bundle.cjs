@@ -3,12 +3,12 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 function harness() {
-  const errors = [], renders = [], requests = [];
+  const errors = [], renders = [], requests = [], elements = new Map();
   const context = {
     console: {warn() {}}, AbortController, setTimeout, clearTimeout,
     document: {
       addEventListener() {},
-      getElementById(id) { return {classList: {add() { errors.push(id); }}}; }
+      getElementById(id) { if(!elements.has(id))elements.set(id,{classList: {add() { errors.push(id); }}}); return elements.get(id); }
     }
   };
   vm.createContext(context);
@@ -43,7 +43,7 @@ function harness() {
     renderDeliveryOutlook=()=>{};
   `, context);
   context.fetch = async url => { requests.push(url); return {ok:true,json:async()=>context.bundle}; };
-  return {context, errors, renders, requests, run:code=>vm.runInContext(code,context)};
+  return {context, errors, renders, requests, elements, run:code=>vm.runInContext(code,context)};
 }
 
 (async()=>{

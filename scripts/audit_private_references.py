@@ -39,11 +39,18 @@ def coordinate_allowed(match, approved):
     if any(part in {'.','..'} for part in path.split('/')):
         return False
     key=coordinate_key(match)
-    return key in approved or (
-        match.group(0).lower().startswith(('github.com/','www.github.com/'))
-        and path.lower() in PUBLIC_UI_COORDINATES
-        and (match.end()==len(match.string) or match.string[match.end()] in " \t\r\n\"'<>()[ ]")
-    )
+    if key in approved:return True
+    if not (match.group(0).lower().startswith(('github.com/','www.github.com/'))
+            and path.lower() in PUBLIC_UI_COORDINATES):return False
+    tail=match.string[match.end():]
+    if not tail or tail[0].isspace():return True
+    before=match.string[:match.start()]
+    # A delimiter is valid only when it closes an actual source construct.
+    if tail.startswith(')') and re.search(r'\]\((?:https?:/)?$',before,re.I):return True
+    if tail.startswith('>') and re.search(r'<(?:https?:/)?$',before,re.I):return True
+    quoted=re.search(r"([\"'])(?:https?:/)?$",before,re.I)
+    return bool(quoted and tail.startswith(quoted.group(1)))
+
 
 PRIVATE_NAMES=tuple("".join(parts) for parts in PRIVATE_FRAGMENTS)
 PRIVATE_REF=re.compile(

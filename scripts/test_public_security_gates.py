@@ -14,7 +14,7 @@ SOURCE = Path(__file__).resolve().parent
 class PublicSecurityGates(unittest.TestCase):
     def test_app_url_suffixes_and_markup_boundaries(self):
         app='https://github.com/'+'apps/'+'iaap-guard'
-        for body in [app, '<a href="'+app+'">App</a>', '[App]('+app+')']:
+        for body in [app, '<a href="'+app+'">App</a>', '[App]('+app+')', '<'+app+'>', json.dumps({'app':app})]:
             result=self.gate('audit_private_references.py',body.encode(),ci=True)
             self.assertEqual(result.returncode,0,result.stdout+result.stderr)
         for suffix in [';private','@private','!private',':private','%3Bprivate','/','?q=private','#private','%22private','%29private','%3Eprivate']:
@@ -22,6 +22,9 @@ class PublicSecurityGates(unittest.TestCase):
                 with self.subTest(body=body):
                     result=self.gate('audit_private_references.py',body.encode(),ci=True)
                     self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+        for suffix in ['\"private',"'private",')private','>private',']private']:
+            result=self.gate('audit_private_references.py',(app+suffix).encode(),ci=True)
+            self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
         for suffix in [')private','>private',']private',' private']:
             result=self.gate('audit_private_references.py',('<a href="'+app+suffix+'">App</a>').encode(),ci=True)
             self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)

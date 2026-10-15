@@ -638,6 +638,7 @@ async function loadPortfolio(){
     document.getElementById('sync-error')?.classList.add('show');
     document.getElementById('roadmap-map-error')?.classList.add('show');
     renderBaseline(FALLBACK);renderProducts(FALLBACK);renderNext(FALLBACK);
+    text('live-posture','SNAPSHOT · LIVE TELEMETRY UNAVAILABLE');
     renderRoadmapFallback(FALLBACK);renderDeliveryOutlook(null);
     console.warn('Portfolio bundle unavailable, invalid, or timed out; using bounded fallback.',err);
   }
