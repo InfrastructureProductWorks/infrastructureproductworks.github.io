@@ -84,12 +84,8 @@ def source_coordinate_terminated(match):
 
 
 PRIVATE_NAMES=tuple("".join(parts) for parts in PRIVATE_FRAGMENTS)
-PRIVATE_REF=re.compile(
-    r"(?<![A-Za-z0-9_.-])(?:InfrastructureProductWorks/)?(?:"
-    +"|".join(re.escape(x) for x in PRIVATE_NAMES)
-    +r")(?![A-Za-z0-9_-])",
-    re.I,
-)
+PRIVATE_REF=re.compile("|".join(re.escape(name) for name in PRIVATE_NAMES),re.I)
+
 JS_HEX=re.compile(r"\\x([0-9a-fA-F]{2})")
 JS_UNICODE=re.compile(r"\\u([0-9a-fA-F]{4})")
 PDF_SUFFIXES={".pdf"}
@@ -181,7 +177,7 @@ def read_text_file(path):
     except UnicodeDecodeError:
         return None
 
-PRIVATE_PATH_REF=re.compile("|".join(re.escape(name) for name in PRIVATE_NAMES),re.I)
+PRIVATE_PATH_REF=PRIVATE_REF
 
 def path_reference_counts(path):
     # Public paths expose identifiers even with prefixes, compound extensions,
@@ -225,6 +221,65 @@ def rendered_reference_text(value, labels_only=False):
     return ''.join(char for char in text if unicodedata.category(char)!='Cf')
 
 
+# Existing public protocol/download names are not repository coordinates.
+# Match complete values only in their actual public syntax, never arbitrary prose.
+PUBLIC_SCHEMA_VALUES=tuple(''.join(parts) for parts in (
+    ('iaap-','assurance-browser-record/v1'), ('iaap-','assurance-portal-fixture/v1'),
+    ('iaap-','assurance-portal-package/v1'), ('iaap-','assurance-record-catalog/v1'),
+    ('iaap-','console-demo-package/v2'),
+))
+PUBLIC_DOWNLOAD_VALUES=tuple(''.join(parts) for parts in (
+    ('iaap-','assurance-request-set.json'), ('iaap-','assurance-synthetic-decision-record.json'),
+    ('iaap-','assurance-verified-request-set.json'), ('iaap-','console-order-482-synthetic-review.json'),
+))
+PUBLIC_DOWNLOAD_TEMPLATE=''.join(('iaap-','console-${activeOrder.id.toLowerCase()}-synthetic-review.json'))
+PUBLIC_PREVIEW_URL='https://'+''.join(('iaap-','forge-preview.onrender.com/'))
+
+def public_name_scan_text(text):
+    spans=[]
+    tags=[match.span() for match in re.finditer(r"""<[A-Za-z/!](?:[^<>"']|"[^"]*"|'[^']*')*>""",text)]
+    def collect(pattern, visible=False, attribute=False):
+        for match in re.finditer(pattern,text,re.M):
+            start,end=match.span('public')
+            prefix=normalize_browser_text(text[:match.start()])
+            if re.search(r'[+/]\s*$',prefix):continue
+            # A protocol-looking string inside another URL or HTML attribute
+            # is not the public schema/download contract.
+            if not attribute and any(a<=start<b for a,b in tags):continue
+            token_prefix=re.split(r'\s',text[:start])[-1]
+            if not attribute and re.search(r'[A-Za-z][A-Za-z0-9+.-]*:/',token_prefix):continue
+            if visible:
+                # Preserve whitespace while checking browser-visible neighbors.
+                def edge(value):
+                    value=normalize_browser_text(value.replace('\n',' ').replace('\r',' ').replace('\t',' '))
+                    return rendered_reference_text(value,labels_only=True)
+                before=edge(text[:match.start()]);after=edge(text[match.end():])
+                if re.search(r'''[+=({/\"']\s*$''',before):continue
+                if re.match(r'''\s*(?:[+\[\"']|/\*|/|\.[A-Za-z_$])''',after):continue
+                if before and re.search(r'[A-Za-z0-9_.+={(/-]$',before):continue
+                if re.match(r'(?:[A-Za-z0-9_+\[(/-]|\.[A-Za-z0-9_.-])',after):continue
+            spans.append((start,end))
+    schemas='(?:'+'|'.join(map(re.escape,PUBLIC_SCHEMA_VALUES))+')'
+    downloads='(?:'+'|'.join(map(re.escape,PUBLIC_DOWNLOAD_VALUES))+')'
+    end_value=r'(?=\s*(?:[,;)}?:]|&&|\Z))'
+    # Property values must occur in an object, not schema-shaped arbitrary prose.
+    collect(r"""[{,]\s*(?:schemaVersion|["']schemaVersion["'])[ \t]*:[ \t]*(?P<quote>["'])(?P<public>"""+schemas+r""")(?P=quote)"""+end_value)
+    # Existing consumers compare schemas in JS expressions or Python if tests.
+    collect(r"""(?:\bconst[ \t]+records[ \t]*=[ \t]*data\?\.schemaVersion|^[ \t]*data\?\.schemaVersion|^[ \t]*if[ \t]+(?:record|assurance)\.get\(["']schemaVersion["']\))[ \t]*(?:===|!=)[ \t]*(?P<quote>["'])(?P<public>"""+schemas+r""")(?P=quote)"""+end_value)
+    collect(r"""\blink\.download[ \t]*=[ \t]*(?P<quote>["'])(?P<public>"""+downloads+r""")(?P=quote)(?=\s*(?:;|\Z))""")
+    collect(r'\blink\.download[ \t]*=[ \t]*`(?P<public>'+re.escape(PUBLIC_DOWNLOAD_TEMPLATE)+r')`(?=\s*(?:;|\Z))')
+    for allowed in (schemas,downloads):
+        collect(r'`(?P<public>'+allowed+r')`',visible=True)
+        collect(r'<code>(?P<public>'+allowed+r')</code>',visible=True)
+    preview=re.escape(PUBLIC_PREVIEW_URL)
+    collect(r"""\bhref=(?P<quote>["'])(?P<public>"""+preview+r""")(?P=quote)(?=[ \t]*(?:[A-Za-z-]+[ \t]*=|/?>))""",attribute=True)
+    collect(r"""(?P<quote>["'])(?P<public>"""+preview+r""")(?P=quote)(?=\s*(?:[,;)}]|\Z))""",attribute=True)
+    collect(r'\]\((?P<public>'+preview+r')\)',attribute=True)
+    chars=list(text)
+    for start,end in spans:chars[start:end]=' '*(end-start)
+    return ''.join(chars)
+
+
 def reference_counts(body):
     matches=Counter()
     for view in (body,MARKDOWN_ESCAPE.sub(lambda m:m.group(1),body)):
@@ -241,11 +296,13 @@ def reference_counts(body):
                 if match.end()!=len(normalized_token):
                     matches.update([match.group(0).lower()+': noncanonical URL suffix'])
         normalized=normalize_browser_text(view)
-        matches.update(m.group(0).lower() for m in PRIVATE_REF.finditer(normalized))
+        name_normalized=normalize_browser_text(public_name_scan_text(view))
+        matches.update(m.group(0).lower() for m in PRIVATE_REF.finditer(name_normalized))
         matches.update(m.group(0).lower() for m in coordinate_matches(normalized) if not coordinate_allowed(m, PUBLIC_REPOSITORIES))
         for labels_only in (False,True):
             rendered=rendered_reference_text(normalized,labels_only=labels_only)
-            matches.update(m.group(0).lower() for m in PRIVATE_REF.finditer(rendered))
+            name_rendered=rendered_reference_text(name_normalized,labels_only=labels_only)
+            matches.update(m.group(0).lower() for m in PRIVATE_REF.finditer(name_rendered))
             matches.update(m.group(0).lower() for m in coordinate_matches(rendered) if not coordinate_allowed(m,PUBLIC_REPOSITORIES))
     return matches
 

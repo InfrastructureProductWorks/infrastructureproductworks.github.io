@@ -104,6 +104,15 @@ class PublicSecurityGates(unittest.TestCase):
             host+'[PrivatePartner][]/secret-repo\n\n[PrivatePartner]: https://example.com',
             host+'[PrivatePartner]/secret-repo\n\n[PrivatePartner]: https://example.com',
         ]:self.assertTrue(count(value),value)
+        for name in namespace['PRIVATE_NAMES']:
+            for prefix in ['', 'prefix-', 'before_', 'alpha.']:
+                for suffix in ['', '-suffix', '_after', '.git']:
+                    value=prefix+name+suffix
+                    for encoded in [value,value.upper(),''.join('&#'+str(ord(c))+';' for c in value),''.join('%'+format(ord(c),'02x') for c in value)]:
+                        self.assertTrue(count(encoded),encoded)
+                        self.assertTrue(namespace['path_reference_counts'](encoded+'/index.html'),encoded)
+                        for wrapped in ['<div data-evidence="'+encoded+'">Public</div>', '{"'+encoded+'":"Public"}']:
+                            self.assertTrue(count(wrapped),wrapped)
         for depth in range(1,19):
             value=''.join(('iaap-','_'*depth,'forge','_'*depth))
             try:found=count(value)
@@ -112,6 +121,51 @@ class PublicSecurityGates(unittest.TestCase):
         public='https://github.com/'+'/'.join(('InfrastructureProductWorks','iaap-guard'))
         for value in ['<b>Public</b> documentation', '[Public]('+public+')', '<a href="'+public+'">Public</a>', '**Public** documentation',public]:
             self.assertFalse(count(value),value)
+
+    def test_exact_public_protocol_contexts(self):
+        script=SOURCE/'audit_private_references.py'
+        namespace={'__file__':str(script)}
+        exec(script.read_text().split('base=baseline_ref()')[0],namespace)
+        count=namespace['reference_counts']
+        schemas=namespace['PUBLIC_SCHEMA_VALUES'];downloads=namespace['PUBLIC_DOWNLOAD_VALUES']
+        for token in (*schemas,*downloads):
+            for template in ['`{}`','<code>{}</code>']:
+                good=template.format(token)
+                self.assertFalse(count(good),good)
+                self.assertFalse(count(good+'. Sentence.'),good)
+                self.assertTrue(count(good+'.suffix'),good)
+                for bad in [template.format(token+'-suffix'),'prefix-'+good,good+'-suffix',template.format('prefix-'+token)]:
+                    self.assertTrue(count(bad),bad)
+            for bad in [token,'Public '+token+' prose','{"'+token+'":"public"}', '"'+token+'"']:
+                self.assertTrue(count(bad),bad)
+        for token in schemas:
+            for prefix in ['{schemaVersion:', '{"schemaVersion":', 'const records=data?.schemaVersion===', 'if record.get("schemaVersion")!=']:
+                good=prefix+'"'+token+'"';self.assertFalse(count(good),good)
+                for bad in [prefix+'"'+token+'-suffix"',prefix+'"'+token.replace('/v','/v9')+'"',prefix+'"'+token+'\n-suffix"']:
+                    self.assertTrue(count(bad),bad)
+            for suffix in ['/*join*/+"-suffix"','["slice"](0,14)','\n/*join*/+"-suffix"']:
+                self.assertTrue(count('{schemaVersion:"'+token+'"'+suffix))
+            for bad in ['Public prose schemaVersion:"'+token+'"', '<a href=\'https://example.com/#schemaVersion:"'+token+'"\'>x</a>', 'prefix&#45;<code>'+token+'</code>', '<code>'+token+'</code>&#45;suffix', 'prefix-<span></span><code>'+token+'</code>']:
+                self.assertTrue(count(bad),bad)
+            for bad in ['schemaVersion:\n"'+token+'"','schemaVersion:"'+token+"'", 'schemaVersion:"'+token+'"+"-suffix"']:
+                self.assertTrue(count(bad),bad)
+            for bad in ['<div data-x="<code>'+token+'</code>">x</div>', 'const x="prefix-"+`'+token+'`;', '`'+token+'`/*x*/+"-suffix"', '`'+token+'` /*x*/ + "-suffix"', '`'+token+'` ["slice"](0,14)', '`'+token+'` .concat("-suffix")', 'const x = `'+token+'`;']:
+                self.assertTrue(count(bad),bad)
+        for token in downloads:
+            good='link.download="'+token+'"';self.assertFalse(count(good),good)
+            self.assertTrue(count('arbitrary="'+token+'"'))
+        template=namespace['PUBLIC_DOWNLOAD_TEMPLATE']
+        self.assertFalse(count('link.download=`'+template+'`;'))
+        for bad in ['arbitrary=`'+template+'`','link.download=`'+template+'-suffix`','link.download=`'+template.replace('activeOrder','other')+'`']:
+            self.assertTrue(count(bad),bad)
+        url=namespace['PUBLIC_PREVIEW_URL']
+        for good in ['<a href="'+url+'">Preview</a>','[Preview]('+url+')',repr(url)]:
+            self.assertFalse(count(good),good)
+            self.assertTrue(count(good+' https://github.com/'+''.join(('PrivatePartner/','secret-repo'))))
+        for operator in ['+','%2B',r'\u002b',r'\x2b','&#43;']:
+            self.assertTrue(count('const x="prefix-"'+operator+'"'+url+'";'))
+        for bad in [url,'"'+url+'private"','"'+url.replace('.onrender.com','.example.com')+'"']:
+            self.assertTrue(count(bad),bad)
 
     def test_optional_ssh_username(self):
         for prefix in ['github.com:','alice@github.com:']:
