@@ -122,11 +122,12 @@ class PublicSecurityGates(unittest.TestCase):
         for value in ['<b>Public</b> documentation', '[Public]('+public+')', '<a href="'+public+'">Public</a>', '**Public** documentation',public]:
             self.assertFalse(count(value),value)
 
-    def test_exact_public_protocol_contexts(self):
+    def test_public_protocol_lexical_contexts_only(self):
         script=SOURCE/'audit_private_references.py'
         namespace={'__file__':str(script)}
         exec(script.read_text().split('base=baseline_ref()')[0],namespace)
-        count=namespace['reference_counts']
+        # Test the lexical recognizer separately; production also requires immutable bytes.
+        count=lambda text:namespace['reference_counts'](namespace['public_name_scan_text'](text))
         schemas=namespace['PUBLIC_SCHEMA_VALUES'];downloads=namespace['PUBLIC_DOWNLOAD_VALUES']
         for token in (*schemas,*downloads):
             for template in ['`{}`','<code>{}</code>']:
@@ -166,6 +167,33 @@ class PublicSecurityGates(unittest.TestCase):
             self.assertTrue(count('const x="prefix-"'+operator+'"'+url+'";'))
         for bad in [url,'"'+url+'private"','"'+url.replace('.onrender.com','.example.com')+'"']:
             self.assertTrue(count(bad),bad)
+
+    def test_public_contract_source_digest_binding(self):
+        script=SOURCE/'audit_private_references.py'
+        namespace={'__file__':str(script)}
+        exec(script.read_text().split('base=baseline_ref()')[0],namespace)
+        count=namespace['reference_counts'];root=SOURCE.parent
+        for path,digest in namespace['REVIEWED_PUBLIC_CONTRACT_SOURCES'].items():
+            raw=(root/path).read_bytes();body=raw.decode('utf-8')
+            self.assertEqual(namespace['hashlib'].sha256(raw).hexdigest(),digest,path)
+            self.assertFalse(count(body,source_path=path,source_bytes=raw),path)
+            self.assertTrue(count(body),path)
+            self.assertTrue(count(body,source_path='other/'+path,source_bytes=raw),path)
+            changed=raw+b'\n// changed source requires explicit re-review\n'
+            self.assertTrue(count(changed.decode(),source_path=path,source_bytes=changed),path)
+            self.assertTrue(count(body+' ',source_path=path,source_bytes=raw),path)
+        token=namespace['PUBLIC_SCHEMA_VALUES'][0]
+        expressions=[
+            'document.body.textContent=({schemaVersion:"'+token+'"}).schemaVersion.slice(0,14)',
+            'document.body.textContent=({schemaVersion:"'+token+'"})["schemaVersion"].slice(0,14)',
+            'const x={schemaVersion:"'+token+'"};const y=x;document.body.textContent=y.schemaVersion.slice(0,14)',
+            'const {schemaVersion:name}={schemaVersion:"'+token+'"};document.body.textContent=name.slice(0,14)',
+        ]
+        path='assets/assurance-demo.js';raw=(root/path).read_bytes()
+        for expression in expressions:
+            self.assertTrue(count(expression),expression)
+            changed=raw+('\n'+expression+';\n').encode()
+            self.assertTrue(count(changed.decode(),source_path=path,source_bytes=changed),expression)
 
     def test_optional_ssh_username(self):
         for prefix in ['github.com:','alice@github.com:']:

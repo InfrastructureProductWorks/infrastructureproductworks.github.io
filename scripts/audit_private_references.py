@@ -3,7 +3,7 @@
 from collections import Counter
 from pathlib import Path
 from urllib.parse import unquote
-import html, os, re, subprocess, sys, unicodedata
+import hashlib, html, os, re, subprocess, sys, unicodedata
 from html.parser import HTMLParser
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -235,6 +235,28 @@ PUBLIC_DOWNLOAD_VALUES=tuple(''.join(parts) for parts in (
 PUBLIC_DOWNLOAD_TEMPLATE=''.join(('iaap-','console-${activeOrder.id.toLowerCase()}-synthetic-review.json'))
 PUBLIC_PREVIEW_URL='https://'+''.join(('iaap-','forge-preview.onrender.com/'))
 
+# Reviewed immutable source bytes; never regenerate these pins as a gate repair.
+# Any change requires explicit review of the full source and exact public spans.
+REVIEWED_PUBLIC_CONTRACT_SOURCES={'assets/assurance-demo.js': '220862a6ea2117b86d0941ec9200f3e4d1c6e608c2152b3f19bb1d7e3b61d3fe',
+ 'assets/assurance-leadership.js': 'df0e1b14899652ef73a897544b786cf160bc284af3bfe111eb7d70a7ae5cd948',
+ 'assets/assurance-portal.js': 'd8d85684ef194571b3b5fece1e6e70667c6c417e222aba0ce9d6c0efd54e4235',
+ 'assets/assurance-record-view.js': '64a6e31f678ca840583c91e35ab9c6171b944e2719d012963b4b00f3acdc99b3',
+ 'assets/assurance-records.json': '326a9310fee5872132deb0cd1e8a43e324fb3123e9762faf02b420f0b1603ff1',
+ 'assets/console-demo.js': '91a0a4f1d54fd220a0f9c32be06c7cc2031dc3c616e48a83818ca0b01e56b636',
+ 'docs/assurance-record-projection.md': '4c558e8e2428ca8176c9924476042ec99a52c5f7f88453ccce925b0f6d699b80',
+ 'forge/index.html': 'b9920d73b4f75e30bf7d3a1e6abc6dffb3ddbda30dcff368a732c34a9c470eb5',
+ 'guides/assurance/index.html': '9956a243aa5a4e5496330c7abdd7435e40c391c069e41606cd024042041dd25c',
+ 'guides/console/index.html': '3b33ed873c92b0fd0f0cb80c300d967d1e4d48ce0d85a406dbb305eb02cdabde',
+ 'guides/content/assurance.md': '525e76c8841e0a436c29460d5a6138b8e1e48ebc11ba8a80610b632b3e03f43a',
+ 'guides/content/console.md': 'e37440b5e06aecaa0f46121599175fc7d3e1ed288f65f87dc366bc88db903af3',
+ 'guides/content/forge.md': 'd008beb179526c02053fcf9c7f5e3ce4c461a5d502fca3c8052708f6c471b47b',
+ 'guides/forge/index.html': '954c2e5bc54c27e5aeb96481bd83c1167c851322a1b6d7d6ff6b39ec7f002185',
+ 'guides/index.html': '0f22463527d31c74110d46836a166e27de98f93d8775e3e40cb73d005d883cd1',
+ 'index.html': '1712d0d3c72d3e5d74eae26cf6a37546a9fd858efbc94fd9c9edaf1e3ae67072',
+ 'scripts/audit_public_projections.py': '48074bf8eacc7dee551c4b183c941b5c351b7f95a797e7dc7b0b61f12fa694e7',
+ 'scripts/build_assurance_records.cjs': '4fbc46b0778cf60db1e55981e3c8b4c19d061e9ada9aeb3edf1ebb5f668f6551',
+ 'scripts/build_guides.py': '23b04383db47e411ff3bed95e70fcdb8c57997366a218dcba33806aeba3b0a05'}
+
 def public_name_scan_text(text):
     spans=[]
     tags=[match.span() for match in re.finditer(r"""<[A-Za-z/!](?:[^<>"']|"[^"]*"|'[^']*')*>""",text)]
@@ -280,7 +302,11 @@ def public_name_scan_text(text):
     return ''.join(chars)
 
 
-def reference_counts(body):
+def reference_counts(body, source_path=None, source_bytes=None):
+    approved=REVIEWED_PUBLIC_CONTRACT_SOURCES.get(source_path)
+    allow_contracts=bool(approved and source_bytes is not None
+        and hashlib.sha256(source_bytes).hexdigest()==approved
+        and source_bytes.decode('utf-8',errors='strict')==body)
     matches=Counter()
     for view in (body,MARKDOWN_ESCAPE.sub(lambda m:m.group(1),body)):
         # Preserve source lexical boundaries before decoding: a percent-encoded
@@ -296,7 +322,7 @@ def reference_counts(body):
                 if match.end()!=len(normalized_token):
                     matches.update([match.group(0).lower()+': noncanonical URL suffix'])
         normalized=normalize_browser_text(view)
-        name_normalized=normalize_browser_text(public_name_scan_text(view))
+        name_normalized=normalize_browser_text(public_name_scan_text(view) if allow_contracts else view)
         matches.update(m.group(0).lower() for m in PRIVATE_REF.finditer(name_normalized))
         matches.update(m.group(0).lower() for m in coordinate_matches(normalized) if not coordinate_allowed(m, PUBLIC_REPOSITORIES))
         for labels_only in (False,True):
@@ -356,7 +382,7 @@ for p in ROOT.rglob("*"):
     if rel=="scripts/audit_private_references.py":
         continue
 
-    current=reference_counts(current_text)
+    current=reference_counts(current_text,source_path=rel,source_bytes=p.read_bytes())
     if not current:
         continue
 
@@ -364,7 +390,7 @@ for p in ROOT.rglob("*"):
     if base and rel in base_files:
         old=read_baseline(base,rel)
         if old is not None:
-            prior=reference_counts(old)
+            prior=reference_counts(old,source_path=rel,source_bytes=old.encode("utf-8"))
 
     extra=current
     for identifier,count in extra.items():
