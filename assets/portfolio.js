@@ -554,9 +554,18 @@ function publicPortfolioCoordinate(match){
   const parts=(match[1]+'/'+match[2]).toLowerCase().split('/');
   if(parts.some(part=>part==='.'||part==='..'))return false;
   const key=(parts[0]+'/'+parts[1]).replace(/\.git$/,'');
-  return PUBLIC_PORTFOLIO_REPOSITORIES.has(key)
-    ||/^(?:www\.)?github\.com\//i.test(match[0])&&parts.join('/')==='apps/iaap-guard'
-      &&/^(?:\s|$)/.test(match.input.slice(match.index+match[0].length));
+  if(PUBLIC_PORTFOLIO_REPOSITORIES.has(key)){
+    if(!/^(?:\s|$)/.test(match.input.slice(match.index+match[0].length)))return false;
+    const suffix=parts.slice(2);
+    if(!suffix.length)return true;
+    // Bounded public routes, not an exemption for arbitrary nested coordinates.
+    if(/^raw\.githubusercontent\.com[.:/]/i.test(match[0]))
+      return suffix.length===2&&suffix[0]==='main'&&/^[a-z0-9_-][a-z0-9_.-]*$/.test(suffix[1]);
+    return suffix.length===2&&['issues','pull'].includes(suffix[0])&&/^[0-9]+$/.test(suffix[1])
+      ||suffix.length===3&&suffix[0]==='blob'&&suffix[1]==='main'&&/^[a-z0-9_-][a-z0-9_.-]*$/.test(suffix[2]);
+  }
+  return /^(?:www\.)?github\.com\//i.test(match[0])&&parts.join('/')==='apps/iaap-guard'
+    &&/^(?:\s|$)/.test(match.input.slice(match.index+match[0].length));
 }
 function decodePortfolioEntities(value){
   const named={amp:'&',AMP:'&',lt:'<',LT:'<',gt:'>',GT:'>',quot:'"',QUOT:'"',apos:"'",sol:'/',bsol:'\\',colon:':',period:'.',commat:'@',percnt:'%',Tab:'\t',NewLine:'\n'};
@@ -564,20 +573,29 @@ function decodePortfolioEntities(value){
   return value.replace(/&(#x[0-9a-f]+|#[0-9]+|[A-Za-z][A-Za-z0-9]+);?/gi,(all,entity)=>{
     if(entity[0]==='#'){
       const hex=entity[1].toLowerCase()==='x';
-      return String.fromCodePoint(parseInt(entity.slice(hex?2:1),hex?16:10));
+      const code=parseInt(entity.slice(hex?2:1),hex?16:10);
+      if(code<32||code>=127&&code<=159||code>=0xfdd0&&code<=0xfdef||(code&0xffff)>=0xfffe)throw new Error('Control entity is not public text');
+      return String.fromCodePoint(code);
     }
     if(!Object.hasOwn(named,entity)||!all.endsWith(';')&&!['amp','AMP','lt','LT','gt','GT','quot','QUOT'].includes(entity))throw new Error('Unsupported public text entity');
     return named[entity];
   });
 }
-function normalizedPublicPortfolioText(value){
+function normalizedPublicPortfolioText(value,tokenScope=false){
   for(let step=0;step<9;step++){
     const previous=value;
     value=decodePortfolioEntities(value.replace(/(?:%[0-9a-f]{2})+/gi,part=>decodeURIComponent(part)))
       .replace(/\\\//g,'/')
       .replace(/\\u([0-9a-f]{4})/gi,(_,hex)=>String.fromCharCode(parseInt(hex,16)))
       .replace(/\\/g,'/');
+    if(/[\x00-\x1f\x7f-\x9f]/.test(value))return null;
     if(value.includes('//'))return null;
+    if(tokenScope)for(const pattern of [PORTFOLIO_GITHUB_COORDINATE,PORTFOLIO_BARE_COORDINATE]){
+      for(const match of value.matchAll(pattern)){
+        const tail=value.slice(match.index+match[0].length);
+        if(tail&&/^\s/u.test(tail))return null;
+      }
+    }
     value=value.replace(/[\x00-\x1f\x7f]/g,'').replace(/[。．｡]/g,'.');
     if(value===previous)return value;
     if(step===8)return null;
@@ -587,6 +605,16 @@ function normalizedPublicPortfolioText(value){
 function publicPortfolioString(value){
   const markdown=value.replace(/\\([!-/:-@\[-`{-~])/g,'$1');
   for(const view of [value,markdown]){
+    // Decoding must not manufacture a route terminator inside an original token.
+    for(const token of view.match(/\S+/gu)||[]){
+      const decoded=normalizedPublicPortfolioText(token,true);
+      if(decoded===null)return false;
+      for(const pattern of [PORTFOLIO_GITHUB_COORDINATE,PORTFOLIO_BARE_COORDINATE]){
+        for(const match of decoded.matchAll(pattern)){
+          if(match.index+match[0].length!==decoded.length)return false;
+        }
+      }
+    }
     const normalized=normalizedPublicPortfolioText(view);
     if(normalized===null||/\b[A-Za-z][A-Za-z0-9+.-]*:\/|git@/i.test(normalized)
       ||/(?<![0-9a-f])[0-9a-f]{40}(?![0-9a-f])/i.test(normalized))return false;

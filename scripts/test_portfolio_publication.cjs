@@ -31,13 +31,31 @@ for(const prefix of [host+'search?q=',host+guard+'/search?q=',host+guard+'?q='])
   }
 }
 for(const suffix of [';private','@private','!private',':private','%3Bprivate','/','?q=private','#private',')',',','.'])negatives.push(app+suffix);
+for(const suffix of [unknown,'blob/main/'+unknown,'tree/main/file','blob/topic/file','blob/main/file/extra','issues/1/extra','pull/name','main/'+unknown,'blob/main/.hidden']){
+  for(const base of [guard,host+guard,['raw','githubusercontent','com'].join('.')+'/'+guard]){
+    const value=base+'/'+suffix;negatives.push(value,encodeURIComponent(value),encodeURIComponent(encodeURIComponent(value)));
+  }
+}
+for(const route of [guard,guard+'/issues/123',guard+'/pull/12',guard+'/blob/main/file',['raw','githubusercontent','com'].join('.')+'/'+guard+'/main/file'])for(const suffix of [';private',':private','@private','/','?private','#private',')'])negatives.push(route+suffix);
+for(const route of [app,guard,host+guard,guard+'/issues/123',guard+'/pull/12',guard+'/blob/main/file',['raw','githubusercontent','com'].join('.')+'/'+guard+'/main/file']){
+  for(const space of ['%09','%0A','%0D','%2509','&#9;','%20','%2520','&#32;','&amp;#32;','\\u0020','%C2%A0','&#160;']){
+    for(const tail of ['/private',' private',''])negatives.push(route+space+tail);
+  }
+}
+for(const code of [...Array(32).keys(),...Array.from({length:33},(_,i)=>127+i),...Array.from({length:32},(_,i)=>0xfdd0+i),...Array.from({length:17},(_,i)=>[i*65536+65534,i*65536+65535]).flat()]){
+  for(const route of [app,guard,host+guard,guard+'/blob/main/file']){
+    for(const suffix of [String.fromCodePoint(code),'&#'+code+';','&#x'+code.toString(16)+';',encodeURIComponent(String.fromCodePoint(code)),'\\u'+code.toString(16).padStart(4,'0')]){
+      negatives.push(route+suffix,route+suffix+'/private',route+encodeURIComponent(suffix));
+    }
+  }
+}
 let encoded=unknown;
 for(let i=0;i<10;i++){encoded=encodeURIComponent(encoded);negatives.push(encoded);}
 for(const first of 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.'){
   const text='//'+first+'.internal';negatives.push(text,encodeURIComponent(text));
 }
 for(let code=0;code<33;code++){
-  for(const text of ['//'+String.fromCharCode(code)+'s.internal',...(code<32?['/'+String.fromCharCode(code)+'/s.internal']:[])]){
+  for(const text of ['//'+String.fromCodePoint(code)+'s.internal',...(code<32?['/'+String.fromCodePoint(code)+'/s.internal']:[])]){
     negatives.push(text,encodeURIComponent(text),encodeURIComponent(encodeURIComponent(text)));
   }
 }
@@ -47,13 +65,14 @@ for(const text of negatives){
   }
 }
 const positives=['Public evidence','100% bounded validation','/forge/','/storefront/',app,
-  'www.'+app,app+' public app',app+'\n Public app','a'.repeat(64),'b'.repeat(64)];
+  'www.'+app,app+' public app','a'.repeat(64),'b'.repeat(64)];
 for(const slug of ['iaap-guard','ai-powered-infrastructure-as-a-product','infrastructureproductworks.github.io']){
   const repo=['InfrastructureProductWorks',slug].join('/');
-  positives.push(repo,repo.toUpperCase(),repo+'.git',repo+'/blob/main/file',host+repo,
+  positives.push(repo,repo.toUpperCase(),repo+'.git',repo+'/blob/main/file',repo+'/issues/12',repo+'/pull/34',host+repo,
     ['github','dev'].join('.')+'/'+repo,['raw','githubusercontent','com'].join('.')+'/'+repo+'/main/file',
     ['api','github','com'].join('.')+'/repos/'+repo,['vscode','dev'].join('.')+'/github/'+repo);
 }
+for(const route of [app,guard,guard+'/issues/12',guard+'/blob/main/file'])positives.push(encodeURIComponent(route),encodeURIComponent(encodeURIComponent(route)),route.replaceAll('/','&amp;sol;'));
 for(const text of positives)assert.equal(valid({presentation:{text}}),true,text);
 const schemas={schemaVersion:'portfolio-bundle/v2',dashboard:{schemaVersion:'portfolio-dashboard/v2'},
   roadmap:{schemaVersion:'roadmap-relationship-view/v6',progressModel:{method:'evidence-backed-epic-rollup/v1'},forecastModel:{method:'linear-evidence-trend/v1'}},

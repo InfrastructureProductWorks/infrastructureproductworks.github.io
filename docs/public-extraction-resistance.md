@@ -40,4 +40,19 @@ Portfolio telemetry v2 publishes product identities and domain-separated SHA-256
 
 ## Supported publication representation
 
-Owned references and explicit GitHub repository URLs are checked against complete approved organization/repository pairs in file bodies and published paths. Browser-equivalent separators and dot segments are resolved before matching. Text that does not reach a stable representation within the supported normalization bound is rejected. Submodule configuration and opaque Git LFS pointers are not approved public-site publication formats. These checks do not certify arbitrary hidden data or repository visibility; perform the publication disposition before committing new material to a public repository.
+Owned references and explicit GitHub repository URLs are checked against complete approved organization/repository pairs in file bodies and published paths. Browser-equivalent separators are decoded before matching. Dot path components are rejected rather than normalized into an approved repository. Text that does not reach a stable representation within the supported normalization bound is rejected. Submodule configuration and opaque Git LFS pointers are not approved public-site publication formats. These checks do not certify arbitrary hidden data or repository visibility; perform the publication disposition before committing new material to a public repository.
+
+
+## Portfolio text contract
+
+The portfolio bundle has a stricter text boundary than the whole-site source audit. It checks object keys and values recursively, rejects unknown owner and repository pairs regardless of organization, and accepts schema identifiers only at their declared object paths. Validation runs before any bundle rendering; one invalid field rejects the complete bundle.
+
+Approved public repository references are deliberately bounded: the repository root, a numeric issue or pull-request route, or a main-branch blob route with one filename. Raw-content references allow the root or main branch with one filename. Filenames start with an alphanumeric character, underscore or hyphen; remaining characters may also include dots. Nested paths, arbitrary refs, extra segments and dot-leading filenames are outside this telemetry contract. An approved repository prefix cannot authorize another coordinate hidden in its suffix. This restriction is specific to published telemetry text and does not prohibit ordinary website source links to reviewed public documentation.
+
+The public App exception is the exact canonical web route only. Source markup closers must correspond to actual quoted URLs, HTML attributes, Markdown links or autolinks; encoded characters cannot manufacture a new lexical boundary. The JSON text boundary is stricter and accepts only whitespace or the end of text after that App route.
+
+Domain-separated measure-source commitments retain source identity without exposing source paths. Evidence commitments are not publisher authentication. A bounded producer and consumer parity corpus and real producer-output validation supplement the tests; they do not prove equivalence for every possible input. The browser conservatively rejects unsupported named entities and malformed percent-encoded UTF-8.
+
+When a live bundle is unavailable or invalid, the page labels its committed roadmap snapshot with its date and states that live telemetry is unavailable. Snapshot counts and synthetic content do not establish current operational progress or production readiness.
+
+The bounded portfolio projection rejects encoded whitespace, control characters and numeric HTML entities that disappear during decoding before accepting a repository route. Browser-source scanning preserves original token and quoted-attribute boundaries. Its additional source-only links are an exact set of eight existing GitHub document, schema and advisory paths and two raw telemetry files; they do not expand the JSON feed grammar.

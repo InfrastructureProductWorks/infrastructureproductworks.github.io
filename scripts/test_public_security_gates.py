@@ -29,6 +29,54 @@ class PublicSecurityGates(unittest.TestCase):
             result=self.gate('audit_private_references.py',('<a href="'+app+suffix+'">App</a>').encode(),ci=True)
             self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
 
+    def test_public_route_encoded_whitespace_and_suffixes(self):
+        repo='/'.join(('InfrastructureProductWorks','iaap-guard'))
+        routes=['https://github.com/'+repo, 'https://github.com/'+repo+'/issues/12', 'https://github.com/'+repo+'/blob/main/file', 'https://raw.githubusercontent.com/'+repo+'/main/file', 'https://github.com/'+'apps/'+'iaap-guard']
+        for route in routes:
+            for body in [route, '<a href="'+route+'">Public</a>', '[Public]('+route+')', '<'+route+'>', json.dumps({'url':route})]:
+                result=self.gate('audit_private_references.py',body.encode(),ci=True)
+                self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+            for space in ['%09','%0A','%0D','%2509','&#9;','%20','%2520','&#32;','&amp;#32;',r'\u0020','%C2%A0','&#160;']:
+                for tail in ['/private','']:
+                    for body in [route+space+tail, '<a href="'+route+space+tail+'">Public</a>']:
+                        with self.subTest(body=body):
+                            result=self.gate('audit_private_references.py',body.encode(),ci=True)
+                            self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+    def test_exact_source_paths_and_control_suffixes(self):
+        script=SOURCE/'audit_private_references.py'
+        namespace={'__file__':str(script)}
+        exec(script.read_text().split('base=baseline_ref()')[0],namespace)
+        count=namespace['reference_counts']
+        web=namespace['PUBLIC_SOURCE_WEB_PATHS']
+        raw=namespace['PUBLIC_SOURCE_RAW_PATHS']
+        self.assertEqual(len(web),8)
+        self.assertEqual(len(raw),2)
+        for host,paths in [('github.com/',web),('raw.githubusercontent.com/',raw)]:
+            for path in paths:
+                route='https://'+host+path
+                for body in [route,'<a href="'+route+'">Public</a>','[Public]('+route+')']:
+                    self.assertFalse(count(body),body)
+                for suffix in ['/extra','?private','#private','%20/private','&#1;','%7F',r'\u0007']:
+                    self.assertTrue(count(route+suffix),route+suffix)
+                wrong=('raw.githubusercontent.com/' if host=='github.com/' else 'github.com/')+path
+                self.assertTrue(count('https://'+wrong),wrong)
+        private='/'.join(('PrivatePartner','secret-repo'))
+        for letter in [r'\u005cu0067',r'\u005cx67',r'\x5cu0067',r'\x5cx67']:
+            self.assertTrue(count('https://'+letter+'ithub.com/'+private),letter)
+            self.assertTrue(count('https://'+letter+'ithub.com/'+'apps/'+'iaap-guard%20/private'),letter)
+        repo='/'.join(('InfrastructureProductWorks','iaap-guard'))
+        for suffix in ['/PrivatePartner/secret-repo','/tree/main/file','/blob/topic/file','/issues/1/extra','?private',';private']:
+            self.assertTrue(count('https://github.com/'+repo+suffix),suffix)
+        for code in [*range(32),*range(127,160),*range(0xfdd0,0xfdf0),*(plane*65536+tail for plane in range(17) for tail in (65534,65535))]:
+            for encoding in ['&#'+str(code)+';','&#x'+format(code,'x')+';',r'\u'+format(code,'04x')]:
+                for route in ['https://github.com/'+repo,'https://github.com/'+'apps/'+'iaap-guard']:
+                    self.assertTrue(count(route+encoding),route+encoding)
+                    self.assertTrue(count(route+encoding+'/private'),route+encoding)
+                    if not namespace['html'].unescape(encoding):
+                        for position in [route.index('github')+3,route.index('iaap')+2]:
+                            altered=route[:position]+encoding+route[position:]
+                            self.assertTrue(count(altered),altered)
+
     def test_optional_ssh_username(self):
         for prefix in ['github.com:','alice@github.com:']:
             result=self.gate('audit_private_references.py',(prefix+''.join(('PrivatePartner/','secret-repo.git'))).encode(),ci=True)
