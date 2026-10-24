@@ -294,7 +294,23 @@ function renderRoadmapRelationships(data){
         const top=node('div','roadmap-epic-top');const title=node('div');title.append(node('span','roadmap-epic-id',ep.id),node('h4','',ep.title));
         const badges=node('div','roadmap-epic-badges');badges.append(node('span','roadmap-percent-pill',`${ep.completionPercent}%`),metaPill(ep.status,ep.group),node('span','roadmap-time-pill',ep.time));
         const contribution=node('div','roadmap-epic-contribution');contribution.append(node('small','','CONTRIBUTION TO THIS KR'),node('p','',contributionByEpic.get(epicId)));
-        top.append(title,badges);card.append(top,contribution,progressBar(ep.completionPercent,'Epic completion'),node('p','roadmap-epic-progress',ep.progress),node('p','roadmap-progress-basis',ep.progressBasis));epicGrid.append(card);
+        top.append(title,badges);card.append(top,contribution,progressBar(ep.completionPercent,'Epic completion'),node('p','roadmap-epic-progress',ep.progress),node('p','roadmap-progress-basis',ep.progressBasis));
+        // Planning-only cross-product visibility. These labels do not alter source evidence or progress.
+        const governanceScope={
+          'EP-04':['Crossplane','Versioned foundation package and authorized execution boundary'],
+          'EP-05':['Policy as Code','Policy lifecycle, exceptions and approval controls'],
+          'EP-06':['Flux','Optional GitOps reconciliation adapter'],
+          'EP-10':['Policy as Code','Native policy enforcement and fail-closed admission'],
+          'EP-13':['Policy as Code','Runtime policy evidence and drift observation'],
+          'EP-22':['Crossplane','Domain capability and identity binding']
+        };
+        if((o.id==='O3'||o.id==='O4')&&Object.hasOwn(governanceScope,epicId)){
+          const [technology,gate]=governanceScope[epicId];
+          const note=node('div','roadmap-epic-contribution');
+          note.append(node('small','','UNIFIED GOVERNANCE INTEGRATION · DOCUMENTATION-FIRST'),node('p','',technology+' — '+gate+'. Next gate: verified implementation and sandbox negative tests. No production authority.'));
+          card.append(note);
+        }
+        epicGrid.append(card);
       });
       hBody.append(epicGrid);hDetails.append(hBody);headlineList.append(hDetails);
     });
