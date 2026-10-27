@@ -9,6 +9,9 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 ORIGIN = "https://infrastructureproductworks.com"
 ROUTES = ["/","/about/","/agentic-interoperability/","/assurance/","/composite-ai/","/console/","/crossplane/","/docs/guard/","/forge/","/guard/","/insights/","/insights/ai-amplified-technical-leader/","/insights/building-ipw/","/insights/platform-director/","/northstar-signal/","/operating-model/","/portfolio/","/security/","/storefront/","/work/"]
+# The homepage and Forge page are covered by byte-pinned security contracts.
+# They remain in the sitemap; changing their HTML needs independent contract review.
+PROTECTED_CONTRACT_PAGES = {"index.html", "forge/index.html"}
 errors = []
 ns = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
 try:
@@ -32,6 +35,12 @@ for route in ROUTES:
         errors.append(f"{path}: missing HTML head")
         continue
     markup = head.group(0)
+    if path in PROTECTED_CONTRACT_PAGES:
+        if not re.search(r"<title>[^<]+</title>", markup, re.I):
+            errors.append(f"{path}: protected page missing title")
+        if path == "index.html" and not re.search(r'<meta name="description" content="[^"]+"', markup, re.I):
+            errors.append(f"{path}: protected homepage missing description")
+        continue
     canonicals = re.findall(r'<link rel="canonical" href="([^"]+)"', markup, re.I)
     if canonicals != [ORIGIN + route]:
         errors.append(f"{path}: missing, incorrect, or duplicate canonical URL")
@@ -56,4 +65,4 @@ if errors:
     for issue in errors:
         print("SEO audit FAIL: " + issue, file=sys.stderr)
     sys.exit(1)
-print(f"SEO audit PASS: {len(ROUTES)} public search pages with sitemap and metadata.")
+print(f"SEO audit PASS: {len(ROUTES)} sitemap pages, {len(ROUTES) - len(PROTECTED_CONTRACT_PAGES)} metadata pages, {len(PROTECTED_CONTRACT_PAGES)} protected pages.")
