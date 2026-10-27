@@ -18,3 +18,5 @@ Disallow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://infrastructureproductworks.com/sitemap.xml
