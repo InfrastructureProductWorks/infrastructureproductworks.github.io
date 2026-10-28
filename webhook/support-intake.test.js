@@ -1,0 +1,117 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {createServer} from './server.js';
+import {createSupportIntake} from './support-intake.js';
+import {TYPES} from './inquiry-contract.js';
+import crypto from 'node:crypto';
+import vm from 'node:vm';
+
+const payload = {name:'Synthetic Reader',email:'reader@example.test',product:'Website',type:'Documentation',title:'Synthetic inquiry',description:'Synthetic question only.',steps:'',environment:''};
+const response = (body, ok=true) => ({ok,json:async()=>body});
+function backend(options={}) {
+  const calls=[],logs=[];
+  const fetchImpl=async(url,init)=>{
+    calls.push({url,init});
+    if (url.endsWith('/assignees')) return response({assignees:[{login:'example-owner'}]});
+    if (url.endsWith('/issues')) return response({number:7,html_url:'https://example.test/private/7'});
+    return response({private:true});
+  };
+  const config={token:'synthetic-not-a-credential',repo:'example/private-inbox',assignee:'example-owner',fetchImpl,log:r=>logs.push(r),...options};
+  return {config,calls,logs,intake:createSupportIntake(config)};
+}
+async function httpFixture(t, options={}) {
+  const b=backend(options);
+  const server=createServer({env:{SUPPORT_GITHUB_TOKEN:b.config.token,SUPPORT_GITHUB_REPO:b.config.repo,SUPPORT_GITHUB_ASSIGNEE:b.config.assignee},fetchImpl:b.config.fetchImpl,log:b.config.log});
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  t.after(()=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve)}));
+  const post=(input,form=false,origin='https://infrastructureproductworks.com')=>fetch(`http://127.0.0.1:${server.address().port}/api/support`,{
+    method:'POST',redirect:'manual',headers:{origin,'content-type':form?'application/x-www-form-urlencoded':'application/json'},
+    body:form?new URLSearchParams(input):JSON.stringify(input)});
+  return {...b,post};
+}
+
+test('all displayed categories work for JSON and HTML form encodings', async t=>{
+  const html=await readFile(new URL('../support/index.html',import.meta.url),'utf8');
+  const select=html.match(/<select id="type"[^>]*>(.*?)<\/select>/s)[1];
+  const types=[...select.matchAll(/<option>(.*?)<\/option>/g)].map(m=>m[1]);
+  assert.deepEqual(types,TYPES);
+  for(const form of [false,true]) for(const type of types) await t.test(`${form?'form':'json'} ${type}`,async t=>{
+    const b=await httpFixture(t);const r=await b.post({...payload,type},form);
+    assert.equal(r.status,form?303:201);
+    if(form) {const u=new URL(r.headers.get('location'));assert.equal(u.searchParams.get('submitted'),'1');assert.match(u.searchParams.get('reference'),/^IPW-/);}
+    else {const body=await r.json();assert.equal(body.accepted,true);assert.match(body.reference,/^IPW-/);assert.equal(body.url,undefined);}
+    assert.equal(b.calls.filter(c=>c.url.endsWith('/issues')).length,1);
+  });
+});
+test('legacy mappings are bounded; installation, unknowns and malformed shapes fail closed',async t=>{
+  for(const [type,expected] of [['Product question','Portfolio question'],['Bug','Public demo issue'],['Feature request','Feedback']]) await t.test(type,async t=>{
+    const b=await httpFixture(t);assert.equal((await b.post({...payload,type})).status,201);
+    assert.match(JSON.parse(b.calls.find(c=>c.url.endsWith('/issues')).init.body).body,new RegExp(`Request type: ${expected}`));
+  });
+  for(const input of [null,[],42,{...payload,type:'Installation'},{...payload,type:'unknown'},{...payload,type:'toString'}]) await t.test(JSON.stringify(input),async t=>{
+    const b=await httpFixture(t);assert.equal((await b.post(input)).status,400);assert.equal(b.calls.length,0);
+  });
+});
+test('untrusted origin, missing configuration and public target do not create issues',async t=>{
+  const b=await httpFixture(t);assert.equal((await b.post(payload,false,'https://example.test')).status,403);assert.equal(b.calls.length,0);
+  assert.equal((await backend({token:''}).intake.submit(payload)).status,503);
+  const publicTarget=backend({fetchImpl:async()=>response({private:false})});
+  assert.equal((await publicTarget.intake.submit(payload)).status,502);
+});
+test('concurrent and sequential identical submissions reuse one receipt without storing raw cache keys',async()=>{
+  const b=backend();const results=await Promise.all([b.intake.submit(payload),b.intake.submit(payload)]);
+  assert.deepEqual(results[0],results[1]);assert.deepEqual(await b.intake.submit(payload),results[0]);
+  assert.equal(b.calls.filter(c=>c.url.endsWith('/issues')).length,1);
+  assert.doesNotMatch(JSON.stringify(b.logs),/reader@example|Synthetic Reader|Synthetic question|synthetic-not-a-credential/);
+});
+test('cache capacity and expiry are bounded',async()=>{
+  let now=0;const b=backend({maxEntries:1,ttlMs:10,now:()=>now});
+  await b.intake.submit(payload);assert.equal((await b.intake.submit({...payload,title:'Second'})).status,503);
+  now=11;assert.equal((await b.intake.submit({...payload,title:'Second'})).status,201);
+});
+test('assignment failure preserves created receipt but records unconfirmed routing',async()=>{
+  const b=backend({fetchImpl:async(url)=>url.endsWith('/assignees')?response({},false):response(url.endsWith('/issues')?{number:7}:{private:true})});
+  assert.equal((await b.intake.submit(payload)).status,201);
+  assert.equal(b.logs.at(-1).outcome,'assignment_unconfirmed');
+});
+test('issue timeout aborts, returns uncertain outcome and never retries the issue POST',async()=>{
+  let creates=0,signal;
+  const b=backend({timeoutMs:10,fetchImpl:async(url,init)=>{
+    if(url.endsWith('/issues')) {creates++;signal=init.signal;return new Promise(()=>{});}
+    return response({private:true});
+  }});
+  const first=await b.intake.submit(payload);assert.equal(first.body.error,'submission_outcome_unknown');assert.equal(signal.aborted,true);
+  assert.deepEqual(await b.intake.submit(payload),first);assert.equal(creates,1);
+});
+test('response-body timeout and malformed issue receipt cannot produce success',async()=>{
+  for(const value of [{ok:true,json:()=>new Promise(()=>{})},response({})]) {
+    const b=backend({timeoutMs:10,fetchImpl:async url=>url.endsWith('/issues')?value:response({private:true})});
+    assert.equal((await b.intake.submit(payload)).body.error,'submission_outcome_unknown');
+  }
+});
+test('honeypot has no downstream writes and is distinct from a genuine receipt',async t=>{
+  const b=await httpFixture(t);const r=await b.post({...payload,website:'bot'});assert.equal(r.status,202);
+  assert.equal((await r.json()).reference,undefined);assert.equal(b.calls.length,0);
+});
+
+test('signed Marketplace route retains signature validation',async t=>{
+  const secret='synthetic-webhook-secret';
+  const server=createServer({env:{GITHUB_MARKETPLACE_WEBHOOK_SECRET:secret}});
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  t.after(()=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve)}));
+  const body=JSON.stringify({action:'synthetic'});
+  const signature='sha256='+crypto.createHmac('sha256',secret).update(body).digest('hex');
+  const url=`http://127.0.0.1:${server.address().port}/api/github/marketplace`;
+  assert.equal((await fetch(url,{method:'POST',body})).status,401);
+  assert.equal((await fetch(url,{method:'POST',body,headers:{'x-hub-signature-256':'sha256=invalid'}})).status,401);
+  assert.equal((await fetch(url,{method:'POST',body,headers:{'x-hub-signature-256':signature}})).status,202);
+});
+test('browser uncertain-outcome message discourages automatic duplicate submission',async()=>{
+  const source=await readFile(new URL('../assets/support.js',import.meta.url),'utf8');
+  const element={};let finalUrl;
+  vm.runInNewContext(source,{URLSearchParams,document:{getElementById:()=>element},window:{location:{search:'?submitted=0&reason=submission_outcome_unknown&reference=IPW-20261028-ABCDEF12',pathname:'/support/'}},history:{replaceState:(_,__,url)=>finalUrl=url}});
+  assert.match(element.textContent,/Do not automatically resubmit/);
+  assert.match(element.textContent,/IPW-20261028-ABCDEF12/);
+  assert.equal(finalUrl,'/support/#ipw-support-form');
+});
