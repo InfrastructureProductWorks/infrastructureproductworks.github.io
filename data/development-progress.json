@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ipw-development-progress/v1",
-  "asOf": "2026-10-29T17:00:00Z",
+  "asOf": "2026-10-29T17:11:05Z",
   "boundary": "Measured engineering increments only. Tests and automated review do not establish customer acceptance, legal compliance or whole-product readiness.",
   "increments": [
     {
@@ -28,6 +28,19 @@
       "evidenceCommitment": "b6d86c88de33195dab828c6e20a9b370019c9f2901b13ede1abd44960f52fa0e",
       "limitations": "Validated on synthetic input; not merged or deployed. No provider access, deletion, verified identity or execution authority.",
       "publicSource": null
+    },
+    {
+      "id": "ambiguous-input-and-logs",
+      "epic": "EP-06",
+      "title": "Ambiguous-input denial and minimized logs",
+      "change": "Implemented rejection of duplicate decoded JSON and form fields, malformed encodings and excessive nesting; bounded signed webhook log values.",
+      "stage": "under-review",
+      "tests": 63,
+      "ciChecks": 0,
+      "review": "pending",
+      "evidenceCommitment": "6017fab2fab01c7c08550194b2177245600fb67b480c27848534aed50746fe70",
+      "limitations": "Local synthetic and loopback tests passed, including 1,000 generated parser cases. CI and review pending; runtime change is not merged or deployed.",
+      "publicSource": "https://github.com/InfrastructureProductWorks/infrastructureproductworks.github.io/pull/179"
     }
   ]
 }
