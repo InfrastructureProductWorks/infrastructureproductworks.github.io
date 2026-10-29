@@ -84,3 +84,21 @@ The private issue retains purpose, notice version and server receipt time alongs
 ## Literal inquiry records
 
 New issues use `literal-json/v1` for submitted fields. Only the eight declared inquiry fields are serialized in a JSON code block, with backticks escaped as JSON Unicode sequences so submitted text cannot terminate the fence. Markdown images, HTML and links remain literal display data. Existing issues are not rewritten. Operators and future privacy/export tooling must treat both old free-text records and this explicit format as untrusted data, preserve purpose/reference/notice/time metadata, and never execute submitted instructions. This is rendering containment, not content approval, identity verification or a claim that GitHub/provider behavior has been audited end to end.
+
+### Ambiguous input and minimized Marketplace telemetry
+
+JSON intake rejects duplicate decoded object keys, invalid UTF-8 and nesting beyond
+32 levels. Conflicting purpose or notice fields cannot become acceptance through
+last-value parsing. The existing body byte limits, deadlines, signature checks,
+operator enablement and current notice gates still apply. Rejection happens before
+an inquiry provider request. URL-encoded duplicate fields, including contact and topic values, are also
+rejected rather than silently choosing one value.
+
+The signed Marketplace receiver emits only a bounded event category, a recognized
+purchase action when applicable, an optional validated delivery UUID and server
+receipt time. Unknown values become an unrecognized category or null; account,
+contact and arbitrary payload properties are not forwarded to application logs.
+The action vocabulary follows GitHub's [Marketplace webhook documentation](https://docs.github.com/en/apps/github-marketplace/using-the-github-marketplace-api-in-your-app/webhook-events-for-the-github-marketplace-api).
+This is application-log minimization, not a provider-log audit, billing lifecycle
+implementation, retention decision or deletion guarantee. No live enablement or
+configuration change is part of this source candidate.

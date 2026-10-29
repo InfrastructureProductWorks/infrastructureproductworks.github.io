@@ -3,6 +3,8 @@ import crypto from 'node:crypto';
 import {pathToFileURL} from 'node:url';
 import {PRODUCTS, inquiryType} from './inquiry-contract.js';
 import {createSupportIntake} from './support-intake.js';
+import {parseUnambiguousJson} from './strict-json.js';
+import {marketplaceTelemetry} from './marketplace-telemetry.js';
 
 export function createServer({env = process.env, fetchImpl = fetch, timeoutMs = 5000, bodyTimeoutMs = 10000, marketplaceBodyMaxBytes = 25 * 1024 * 1024, log} = {}) {
 
@@ -80,10 +82,10 @@ async function handleSupport(req,res,origin){
   }
   let input;
   try{
-    if(contentType==='application/json')input=JSON.parse(raw.toString('utf8'));
+    if(contentType==='application/json')input=parseUnambiguousJson(raw);
     else if(formMode){
       const params=new URLSearchParams(raw.toString('utf8'));
-      if(['inquiryProcessing','privacyNoticeVersion'].some(key=>params.getAll(key).length>1)){
+      if([...new Set(params.keys())].some(key=>params.getAll(key).length>1)){
         return supportResult(res,formMode,400,{error:'invalid_submission'},origin);
       }
       input=Object.fromEntries(params.entries());
@@ -140,8 +142,9 @@ const server=http.createServer(async(req,res)=>{
     const expected='sha256='+crypto.createHmac('sha256',secret).update(body).digest('hex');
     if(!safeEqual(supplied,expected)){res.writeHead(401);return res.end('Invalid signature');}
     const event=req.headers['x-github-event']||'unknown';
-    let payload;try{payload=JSON.parse(body.toString('utf8'))}catch{res.writeHead(400);return res.end('Invalid JSON');}
-    console.log(JSON.stringify({event,action:payload?.action||null,delivery:req.headers['x-github-delivery']||null,receivedAt:new Date().toISOString()}));
+    let payload;try{payload=parseUnambiguousJson(body)}catch{res.writeHead(400);return res.end('Invalid JSON');}
+    const record=marketplaceTelemetry(event,payload,req.headers['x-github-delivery'],new Date().toISOString());
+    if(log)log(record);else console.log(JSON.stringify(record));
     res.writeHead(202,{'content-type':'application/json'});res.end(JSON.stringify({accepted:true}));
 });
 return server;

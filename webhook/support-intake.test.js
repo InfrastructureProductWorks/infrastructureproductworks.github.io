@@ -8,6 +8,8 @@ import {INQUIRY_NOTICE_VERSION} from './inquiry-privacy.js';
 import crypto from 'node:crypto';
 import vm from 'node:vm';
 import http from 'node:http';
+import {parseUnambiguousJson} from './strict-json.js';
+import {marketplaceTelemetry} from './marketplace-telemetry.js';
 
 const payload = {inquiryProcessing:'requested',privacyNoticeVersion:INQUIRY_NOTICE_VERSION,name:'Synthetic Reader',email:'reader@example.test',product:'Website',type:'Documentation',title:'Synthetic inquiry',description:'Synthetic question only.',steps:'',environment:''};
 const response = (body, ok=true) => ({ok,json:async()=>body});
@@ -284,3 +286,84 @@ test('literal records preserve bounded text without forwarding undeclared fields
 });
 
 
+
+test('ambiguous JSON consent, escaped duplicate keys and invalid encoding stop before downstream calls', async t => {
+  const base=JSON.stringify(payload);
+  const cases=[
+    base.replace('"inquiryProcessing":"requested"','"inquiryProcessing":false,"inquiryProcessing":"requested"'),
+    base.replace('"inquiryProcessing":"requested"','"inquiryProcessing":"requested","inquiryProcessing":false'),
+    base.replace('"inquiryProcessing":"requested"','"inquiryProcessing":false,"inquiry\\u0050rocessing":"requested"'),
+    base.replace('"privacyNoticeVersion":','"privacyNoticeVersion":"stale","privacyNoticeVersion":'),
+    base.slice(0,-1)+',"extra":{"key":1,"key":2}}',
+    base.slice(0,-1)+',"extra":'+ '['.repeat(40)+'0'+']'.repeat(40)+'}',
+    Buffer.from([0xff]), Buffer.from('\ufeff'+base)
+  ];
+  for (let i=0;i<cases.length;i++) await t.test(String(i),async t=>{
+    const b=backend();
+    const server=createServer({env:{SUPPORT_INQUIRY_ENABLED:'true',SUPPORT_GITHUB_TOKEN:b.config.token,SUPPORT_GITHUB_REPO:b.config.repo},fetchImpl:b.config.fetchImpl,log:b.config.log});
+    await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+    t.after(()=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve)}));
+    const result=await fetch(`http://127.0.0.1:${server.address().port}/api/support`,{method:'POST',headers:{origin:'https://infrastructureproductworks.com','content-type':'application/json'},body:cases[i]});
+    assert.equal(result.status,400);assert.deepEqual(await result.json(),{error:'invalid_submission'});
+    assert.equal(b.calls.length,0);assert.equal(b.logs.length,0);
+  });
+});
+
+test('strict parser preserves valid JSON values, escaped strings and separate object scopes',()=>{
+  for (const value of [null,true,false,42,0,-0,'quotes " and \\ escapes',[],{},
+    {one:{key:1},two:{key:2},items:[1,'a',null,{'__proto__':3}]},
+    {nested:['unicode \u2603', {'punctuation':'a,b}[]:c'}]}]) {
+    const raw=JSON.stringify(value);
+    assert.deepEqual(parseUnambiguousJson(Buffer.from(raw)),JSON.parse(raw));
+  }
+  for (const raw of ['{"a":1,"\\u0061":2}','[', '1 2', '{"x":NaN}', '"unterminated']) {
+    assert.throws(()=>parseUnambiguousJson(Buffer.from(raw)));
+  }
+  assert.deepEqual(parseUnambiguousJson(Buffer.from('{"__proto__":1}')),JSON.parse('{"__proto__":1}'));
+  assert.throws(()=>parseUnambiguousJson(Buffer.from('{"__proto__":1,"__proto__":2}')));
+});
+
+test('Marketplace telemetry permits only bounded routing metadata',()=>{
+  const delivery='12345678-ABCD-1234-ABCD-1234567890AB', date='2026-10-29T17:00:00.000Z';
+  for (const action of ['purchased','changed','cancelled','pending_change','pending_change_cancelled']) {
+    assert.deepEqual(marketplaceTelemetry('marketplace_purchase',{action,email:'canary@example.test'},delivery,date),
+      {event:'marketplace_purchase',action,delivery:delivery.toLowerCase(),receivedAt:date});
+  }
+  for (const input of [null,[],{},'canary@example.test', {action:{email:'canary@example.test'}}, {action:'canary@example.test'}, {action:'x'.repeat(100000)}]) {
+    const result=marketplaceTelemetry('canary@example.test',input,'canary@example.test',date);
+    assert.deepEqual(result,{event:'unrecognized',action:null,delivery:null,receivedAt:date});
+    assert.doesNotMatch(JSON.stringify(result),/canary|xxxxx/);
+  }
+  assert.equal(marketplaceTelemetry('ping',{action:'purchased'},[],date).action,null);
+});
+
+test('signed Marketplace HTTP requests minimize logs; ambiguous payloads and bad signatures log nothing',async t=>{
+  const secret='synthetic-webhook-secret',logs=[];
+  const server=createServer({env:{GITHUB_MARKETPLACE_WEBHOOK_SECRET:secret},log:r=>logs.push(r)});
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  t.after(()=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve)}));
+  const url=`http://127.0.0.1:${server.address().port}/api/github/marketplace`;
+  const post=(body,valid=true)=>fetch(url,{method:'POST',body,headers:{
+    'x-hub-signature-256':valid?'sha256='+crypto.createHmac('sha256',secret).update(body).digest('hex'):'sha256=invalid',
+    'x-github-event':'canary@example.test','x-github-delivery':'canary@example.test'}});
+  const body=JSON.stringify({action:{email:'canary@example.test'},account:{email:'canary@example.test'}});
+  assert.equal((await post(body)).status,202);assert.equal(logs.length,1);
+  assert.equal(logs[0].event,'unrecognized');assert.equal(logs[0].action,null);assert.equal(logs[0].delivery,null);
+  assert.match(logs[0].receivedAt,/^\d{4}-\d{2}-\d{2}T/);
+  assert.doesNotMatch(JSON.stringify(logs),/canary|account|email/);
+  for (const raw of ['{"action":"purchased","action":"cancelled"}','{',body]) {
+    const valid=raw!==body;
+    assert.equal((await post(raw,valid)).status,valid?400:401);assert.equal(logs.length,1);
+  }
+});
+
+test('duplicate contact and topic fields in HTML forms also stop before provider access',async t=>{
+  for (const [key,value] of [['email','other@example.test'],['name','Another Reader'],['type','Feedback']]) await t.test(key,async t=>{
+    const b=backend();const server=createServer({env:{SUPPORT_INQUIRY_ENABLED:'true',SUPPORT_GITHUB_TOKEN:b.config.token,SUPPORT_GITHUB_REPO:b.config.repo},fetchImpl:b.config.fetchImpl});
+    await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+    t.after(()=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve)}));
+    const params=new URLSearchParams(payload);params.append(key,value);
+    const result=await fetch(`http://127.0.0.1:${server.address().port}/api/support`,{method:'POST',redirect:'manual',headers:{origin:'https://infrastructureproductworks.com','content-type':'application/x-www-form-urlencoded'},body:params});
+    assert.equal(result.status,303);assert.equal(new URL(result.headers.get('location')).searchParams.get('reason'),'invalid_submission');assert.equal(b.calls.length,0);
+  });
+});
