@@ -15,7 +15,7 @@ const allowedOrigins = new Set([
   'https://www.infrastructureproductworks.com'
 ]);
 const rate = new Map();
-const intake = createSupportIntake({token:supportToken,repo:supportRepo,assignee:supportAssignee,fetchImpl,timeoutMs,log});
+const intake = createSupportIntake({enabled:env.SUPPORT_INQUIRY_ENABLED==='true',token:supportToken,repo:supportRepo,assignee:supportAssignee,fetchImpl,timeoutMs,log});
 
 function safeEqual(a,b){const x=Buffer.from(a);const y=Buffer.from(b);return x.length===y.length&&crypto.timingSafeEqual(x,y)}
 function json(res,status,body,origin){
@@ -81,7 +81,13 @@ async function handleSupport(req,res,origin){
   let input;
   try{
     if(contentType==='application/json')input=JSON.parse(raw.toString('utf8'));
-    else if(formMode)input=Object.fromEntries(new URLSearchParams(raw.toString('utf8')).entries());
+    else if(formMode){
+      const params=new URLSearchParams(raw.toString('utf8'));
+      if(['inquiryProcessing','privacyNoticeVersion'].some(key=>params.getAll(key).length>1)){
+        return supportResult(res,formMode,400,{error:'invalid_submission'},origin);
+      }
+      input=Object.fromEntries(params.entries());
+    }
     else return supportResult(res,formMode,415,{error:'unsupported_content_type'},origin);
   }catch{return supportResult(res,formMode,400,{error:'invalid_submission'},origin)}
   if(!input || typeof input !== 'object' || Array.isArray(input))return supportResult(res,formMode,400,{error:'invalid_submission'},origin);
@@ -94,7 +100,9 @@ async function handleSupport(req,res,origin){
     title:clean(input.title,140),
     description:clean(input.description,5000),
     steps:clean(input.steps,4000),
-    environment:clean(input.environment,500)
+    environment:clean(input.environment,500),
+    inquiryProcessing:input.inquiryProcessing,
+    privacyNoticeVersion:input.privacyNoticeVersion
   };
   if(!payload.name||!validEmail(payload.email)||!PRODUCTS.includes(payload.product)||!payload.type||payload.title.length<4||payload.description.length<10){
     return supportResult(res,formMode,400,{error:'invalid_submission'},origin);
@@ -143,4 +151,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const port = process.env.PORT || 10000;
   createServer().listen(port,()=>console.log(`Marketplace webhook + support intake listening on ${port}`));
 }
+
 

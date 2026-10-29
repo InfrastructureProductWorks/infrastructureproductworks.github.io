@@ -31,6 +31,7 @@
 .field input:focus,.field select:focus,.field textarea:focus{outline:3px solid #38bdf833;border-color:#0f6fae}
 .honeypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}
 .form-note{font-size:13px;color:#66778a;margin:14px 0 0}
+.inquiry-choice{display:flex;align-items:flex-start;gap:10px;margin-top:16px;font-size:14px}.inquiry-choice input{margin-top:4px;flex:none}
 .form-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:20px}
 .form-status{min-height:24px;font-size:14px;font-weight:700}
 .form-status.ok{color:#13703d}.form-status.error{color:#a12d32}
@@ -84,6 +85,8 @@
 <div class="honeypot" aria-hidden="true"><label for="website">Website</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
 </div>
 <p class="form-note">Please do not include secrets, customer data or sensitive infrastructure details. Security reports belong in the separate security-reporting path.</p>
+<div class="inquiry-choice"><input id="inquiry-processing" name="inquiryProcessing" type="checkbox" value="requested" required><label for="inquiry-processing">I ask IPW to use the information I submit to review and respond to this inquiry, as described in the <a href="/privacy/#inquiries">inquiry privacy notice</a>. This does not sign me up for marketing.</label></div>
+<input type="hidden" name="privacyNoticeVersion" value="inquiry-2026-10-29">
 <div class="form-actions"><button class="button" id="submit-support" type="submit">Submit request</button><span class="form-status" id="support-status" role="status" aria-live="polite"></span></div>
 </form>
 </div>

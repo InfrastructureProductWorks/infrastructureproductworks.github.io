@@ -71,3 +71,12 @@ Issue creation success does not prove a human saw the inquiry. Assignment is att
 
 Before promotion, establish the actual hosting workspace, service source/revision, private target and access policy, retention/deletion handling, human response owner, and current privacy notice. Validate a separately authorized synthetic inquiry and owner acknowledgment. This change does not enable live analytics, promise response times, create a retention policy or authorize deployment.
 
+
+
+## Inquiry privacy and operator gate
+
+Intake is disabled by default. Only set `SUPPORT_INQUIRY_ENABLED=true` after the operator has approved the deployed notice, private target/access, service providers, retention/deletion procedure, privacy-request route and synthetic acceptance exercise. This setting is a technical admission gate, not proof of legal review or authorization by itself. Marketplace processing is separate and is not enabled by this flag.
+
+The form presents an unchecked purpose-specific request to process the inquiry and a current notice version. The core intake rejects missing/negative/malformed choices or stale notice versions before any downstream request. JSON uses `inquiryProcessing: true` or `"requested"`; form submissions use `inquiryProcessing=requested`; both require `privacyNoticeVersion=inquiry-2026-10-29`. This is not marketing opt-in, acceptance of commercial terms or a declaration that consent is the legal basis for every processing activity.
+
+The private issue retains purpose, notice version and server receipt time alongside the inquiry. This is an assertion submitted by a requester, not authenticated identity or an immutable legal attestation. Routine logs omit inquiry content. Operator-approved retention and deletion must cover issue content, provider records and backups as applicable; the in-memory retry cache is not that procedure. Do not enable optional telemetry, advertising, marketing reuse or AI training on the basis of an inquiry request.

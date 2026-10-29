@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
+import {hasInquiryRequest, INQUIRY_NOTICE_VERSION, INQUIRY_PURPOSE} from './inquiry-privacy.js';
 
 // This cache bounds retries within one process, not across replicas/restarts.
-export function createSupportIntake({token, repo, assignee, fetchImpl = fetch,
+export function createSupportIntake({enabled = false, token, repo, assignee, fetchImpl = fetch,
   timeoutMs = 5000, now = Date.now, maxEntries = 1000, ttlMs = 600000,
   log = record => console.log(JSON.stringify(record))} = {}) {
   const cache = new Map(), key = crypto.randomBytes(32);
@@ -27,13 +28,15 @@ export function createSupportIntake({token, repo, assignee, fetchImpl = fetch,
       throw new Error(mutating ? 'outcome_unknown' : 'downstream_unavailable');
     } finally { clearTimeout(timer); }
   }
-  async function perform(payload, reference) {
+  async function perform(payload, reference, receivedAt) {
     let stage = 'target';
     try {
       const target = await request('');
       if (target.private !== true) throw new Error('private_target_required');
       stage = 'create';
       const body = ['Portfolio inquiry', `Reference: ${reference}`, `Product: ${payload.product}`,
+        `Processing requested: ${INQUIRY_PURPOSE}`, `Privacy notice: ${INQUIRY_NOTICE_VERSION}`,
+        `Request received at: ${receivedAt}`,
         `Request type: ${payload.type}`, `Contact name: ${payload.name}`, `Contact email: ${payload.email}`,
         payload.environment ? `Environment: ${payload.environment}` : '', 'Description', payload.description,
         payload.steps ? `Additional details\n${payload.steps}` : '',
@@ -65,6 +68,8 @@ export function createSupportIntake({token, repo, assignee, fetchImpl = fetch,
   }
   return {
     submit(payload) {
+      if (enabled !== true) return Promise.resolve({status:503,body:{accepted:false,error:'support_intake_disabled'}});
+      if (!hasInquiryRequest(payload)) return Promise.resolve({status:400,body:{accepted:false,error:'inquiry_processing_request_required'}});
       if (!token || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo || '')) {
         return Promise.resolve({status:503,body:{accepted:false,error:'support_intake_not_configured'}});
       }
@@ -74,7 +79,7 @@ export function createSupportIntake({token, repo, assignee, fetchImpl = fetch,
       if (cache.size >= maxEntries) return Promise.resolve({status:503,body:{accepted:false,error:'support_intake_busy'}});
       const reference = `IPW-${new Date(now()).toISOString().slice(0,10).replaceAll('-','')}-${crypto.randomBytes(8).toString('hex').toUpperCase()}`;
       const entry = {finished:false};
-      entry.promise = Promise.resolve().then(() => perform(payload,reference)).finally(() => {
+      entry.promise = Promise.resolve().then(() => perform(payload,reference,new Date(now()).toISOString())).finally(() => {
         entry.finished = true; entry.expires = now() + ttlMs;
       });
       cache.set(hash,entry);
@@ -82,3 +87,4 @@ export function createSupportIntake({token, repo, assignee, fetchImpl = fetch,
     }
   };
 }
+
