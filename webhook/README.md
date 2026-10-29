@@ -57,6 +57,8 @@ Run `npm test --prefix webhook` from the root. All downstream requests in these 
 
 ## Receipt and retry limits
 
+Inquiry uploads have a ten-second application body deadline and a 32 KiB limit. Incomplete JSON uploads return 408, oversized uploads return 413, and form submissions receive the equivalent failed-submission redirect. The response completes before the partial connection closes. These failures never call the downstream issue transport.
+
 Each GitHub operation has a five-second application deadline, including response-body parsing. Requests do not follow redirects and issue creation is never automatically retried. A timeout or invalid response after attempting issue creation produces `submission_outcome_unknown` and a reference for operator follow-up; a remote write might already have occurred. Do not automatically resubmit an uncertain attempt.
 
 Identical normalized payloads share one in-flight/result receipt within a single running process for ten minutes after completion, using an ephemeral HMAC key rather than plaintext cache keys. The cache holds at most 1,000 entries and refuses new unique submissions when full. It is not durable idempotency across restarts, replicas or cache expiry. Operators must reconcile uncertain references before retrying outside this window. Rate-limit state is also bounded per process; edge/proxy and distributed abuse controls need separate deployment review.

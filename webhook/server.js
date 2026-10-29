@@ -4,7 +4,7 @@ import {pathToFileURL} from 'node:url';
 import {PRODUCTS, inquiryType} from './inquiry-contract.js';
 import {createSupportIntake} from './support-intake.js';
 
-export function createServer({env = process.env, fetchImpl = fetch, timeoutMs = 5000, log} = {}) {
+export function createServer({env = process.env, fetchImpl = fetch, timeoutMs = 5000, bodyTimeoutMs = 10000, log} = {}) {
 
 const secret = env.GITHUB_MARKETPLACE_WEBHOOK_SECRET;
 const supportToken = env.SUPPORT_GITHUB_TOKEN;
@@ -50,10 +50,20 @@ function limited(req){
 }
 function readBody(req,maxBytes=32768){
   return new Promise((resolve,reject)=>{
-    const chunks=[];let size=0;
-    req.on('data',chunk=>{size+=chunk.length;if(size>maxBytes){reject(new Error('too_large'));req.destroy();return}chunks.push(chunk)});
-    req.on('end',()=>resolve(Buffer.concat(chunks)));
-    req.on('error',reject);
+    const chunks=[];let size=0,settled=false;
+    const finish=(error)=>{
+      if(settled)return;settled=true;clearTimeout(timer);
+      req.removeListener('data',onData);req.removeListener('end',onEnd);
+      req.removeListener('aborted',onAborted);
+      // Keep the guarded error listener for a late ECONNRESET after abort/close.
+      if(error){req.pause();reject(error)}else resolve(Buffer.concat(chunks));
+    };
+    const onData=chunk=>{size+=chunk.length;if(size>maxBytes)return finish(new Error('too_large'));chunks.push(chunk)};
+    const onEnd=()=>finish();
+    const onAborted=()=>finish(new Error('incomplete'));
+    const onError=()=>finish(new Error('incomplete'));
+    const timer=setTimeout(()=>finish(new Error('body_timeout')),bodyTimeoutMs);
+    req.on('data',onData);req.on('end',onEnd);req.on('aborted',onAborted);req.on('error',onError);
   });
 }
 async function handleSupport(req,res,origin){
@@ -61,7 +71,13 @@ async function handleSupport(req,res,origin){
   const formMode=contentType==='application/x-www-form-urlencoded';
   if(!origin||!allowedOrigins.has(origin))return supportResult(res,formMode,403,{error:'origin_not_allowed'},origin);
   if(limited(req))return supportResult(res,formMode,429,{error:'rate_limited'},origin);
-  let raw;try{raw=await readBody(req)}catch{return supportResult(res,formMode,413,{error:'request_too_large'},origin)}
+  let raw;try{raw=await readBody(req)}catch(error){
+    // Finish the error response before closing a partial/oversized upload.
+    res.once('finish',()=>req.destroy());
+    const timedOut=error.message==='body_timeout';
+    return supportResult(res,formMode,timedOut?408:error.message==='too_large'?413:400,
+      {error:timedOut?'submission_timeout':error.message==='too_large'?'request_too_large':'invalid_submission'},origin);
+  }
   let input;
   try{
     if(contentType==='application/json')input=JSON.parse(raw.toString('utf8'));

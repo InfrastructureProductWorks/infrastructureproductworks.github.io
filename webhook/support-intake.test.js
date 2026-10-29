@@ -6,6 +6,7 @@ import {createSupportIntake} from './support-intake.js';
 import {TYPES} from './inquiry-contract.js';
 import crypto from 'node:crypto';
 import vm from 'node:vm';
+import http from 'node:http';
 
 const payload = {name:'Synthetic Reader',email:'reader@example.test',product:'Website',type:'Documentation',title:'Synthetic inquiry',description:'Synthetic question only.',steps:'',environment:''};
 const response = (body, ok=true) => ({ok,json:async()=>body});
@@ -114,4 +115,41 @@ test('browser uncertain-outcome message discourages automatic duplicate submissi
   assert.match(element.textContent,/Do not automatically resubmit/);
   assert.match(element.textContent,/IPW-20261028-ABCDEF12/);
   assert.equal(finalUrl,'/support/#ipw-support-form');
+});
+
+test('stalled uploads receive a bounded error without downstream calls',async t=>{
+  let calls=0;
+  const server=createServer({bodyTimeoutMs:25,fetchImpl:async()=>{calls++;throw new Error('unexpected transport')}});
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  t.after(()=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve)}));
+  for(const contentType of ['application/json','application/x-www-form-urlencoded']){
+    const result=await new Promise((resolve,reject)=>{
+      const req=http.request({hostname:'127.0.0.1',port:server.address().port,path:'/api/support',method:'POST',headers:{origin:'https://infrastructureproductworks.com','content-type':contentType}},res=>{
+        const parts=[];res.on('data',c=>parts.push(c));res.on('end',()=>resolve({status:res.statusCode,body:Buffer.concat(parts).toString(),location:res.headers.location}));
+      });
+      req.on('error',reject);req.setTimeout(2000,()=>req.destroy(new Error('test timed out')));
+      req.write(contentType==='application/json'?'{':'name='); // Deliberately never end the upload.
+    });
+    if(contentType==='application/json'){assert.equal(result.status,408);assert.equal(JSON.parse(result.body).error,'submission_timeout');}
+    else {assert.equal(result.status,303);assert.equal(new URL(result.location).searchParams.get('submitted'),'0');}
+  }
+  assert.equal(calls,0);
+});
+
+test('oversized uploads get an error receipt rather than losing the response',async t=>{
+  const b=await httpFixture(t);const r=await b.post({...payload,description:'x'.repeat(40000)});
+  assert.equal(r.status,413);assert.equal((await r.json()).error,'request_too_large');assert.equal(b.calls.length,0);
+});
+
+test('a disconnected upload does not produce an unhandled request error',async t=>{
+  let calls=0;const server=createServer({fetchImpl:async()=>{calls++;throw new Error('unexpected transport')}});
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  t.after(()=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve)}));
+  await new Promise(resolve=>{
+    server.once('request',req=>{req.once('close',resolve);client.destroy()});
+    const client=http.request({hostname:'127.0.0.1',port:server.address().port,path:'/api/support',method:'POST',headers:{origin:'https://infrastructureproductworks.com','content-type':'application/json'}});
+    client.on('error',()=>{});client.write('{');
+  });
+  const health=await fetch(`http://127.0.0.1:${server.address().port}/health`);
+  assert.equal(health.status,200);assert.equal(calls,0);
 });
