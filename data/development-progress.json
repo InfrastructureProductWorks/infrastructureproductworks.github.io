@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ipw-development-progress/v1",
-  "asOf": "2026-10-29T17:11:05Z",
+  "asOf": "2026-10-29T17:20:15Z",
   "boundary": "Measured engineering increments only. Tests and automated review do not establish customer acceptance, legal compliance or whole-product readiness.",
   "increments": [
     {
@@ -36,10 +36,10 @@
       "change": "Implemented rejection of duplicate decoded JSON and form fields, malformed encodings and excessive nesting; bounded signed webhook log values.",
       "stage": "under-review",
       "tests": 63,
-      "ciChecks": 0,
-      "review": "pending",
+      "ciChecks": 12,
+      "review": "clean-automated",
       "evidenceCommitment": "6017fab2fab01c7c08550194b2177245600fb67b480c27848534aed50746fe70",
-      "limitations": "Local synthetic and loopback tests passed, including 1,000 generated parser cases. CI and review pending; runtime change is not merged or deployed.",
+      "limitations": "All applicable CI checks and automated review passed at the measured revision. Synthetic and loopback validation only; runtime candidate is not merged or deployed.",
       "publicSource": "https://github.com/InfrastructureProductWorks/infrastructureproductworks.github.io/pull/179"
     }
   ]
