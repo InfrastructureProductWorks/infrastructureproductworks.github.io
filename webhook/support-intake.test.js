@@ -76,7 +76,7 @@ test('concurrent and sequential identical submissions reuse one receipt without 
   assert.doesNotMatch(JSON.stringify(b.logs),/reader@example|Synthetic Reader|Synthetic question|synthetic-not-a-credential/);
 });
 test('cache capacity and expiry are bounded',async()=>{
-  let now=0;const b=backend({maxEntries:1,ttlMs:10,now:()=>now});
+  let now=0;const b=backend({maxEntries:1,ttlMs:10,now:()=>now,expiryNow:()=>now});
   await b.intake.submit(payload);assert.equal((await b.intake.submit({...payload,title:'Second'})).status,503);
   now=11;assert.equal((await b.intake.submit({...payload,title:'Second'})).status,201);
 });
@@ -516,4 +516,68 @@ test('HTTP admission retains six-request limit and blocks the seventh before pro
   const result=await b.post({...payload,title:'Synthetic seventh inquiry'});
   assert.equal(result.status,429);assert.equal((await result.json()).error,'rate_limited');
   assert.equal(b.calls.length,calls);assert.equal(b.logs.length,logs);
+});
+
+function receiptClock(options={}) {
+  let time=0,unrefs=0;const pending=new Map();
+  const b=backend({...options,ttlMs:10,expiryNow:()=>time,
+    setExpiryTimer:(fn,delay)=>{const handle={unref(){unrefs++;}};pending.set(handle,{fn,at:time+delay});return handle;},
+    clearExpiryTimer:handle=>pending.delete(handle)});
+  return {...b,pending,get unrefs(){return unrefs;},
+    advance(value){time=value;for(;;){const due=[...pending].find(([,job])=>job.at<=time);if(!due)break;pending.delete(due[0]);due[1].fn();}},
+    jump(value){time=value;}};
+}
+
+test('finished receipt state expires without another inquiry or provider call',async()=>{
+  const b=receiptClock();await b.intake.submit(payload);const calls=b.calls.length;
+  assert.equal(b.intake.cachedEntries,1);assert.equal(b.pending.size,1);
+  b.advance(10);assert.equal(b.intake.cachedEntries,0);assert.equal(b.pending.size,0);
+  assert.equal(b.calls.length,calls);
+});
+
+test('pending writes retain deduplication and capacity even after an old expiry window',async()=>{
+  let release,creates=0;
+  const b=receiptClock({maxEntries:1,fetchImpl:async url=>{
+    if(url.endsWith('/issues')){creates++;return new Promise(resolve=>{release=()=>resolve(response({number:7}));});}
+    return response({private:true});
+  }});
+  const first=b.intake.submit(payload);
+  while(!release)await new Promise(resolve=>setImmediate(resolve));
+  b.advance(100);assert.equal(b.pending.size,0);assert.equal(b.intake.submit(payload),first);
+  assert.equal((await b.intake.submit({...payload,title:'Other'})).status,503);assert.equal(creates,1);
+  release();await first;assert.equal(b.intake.cachedEntries,1);
+  b.advance(109);assert.equal(b.intake.cachedEntries,1);
+  b.advance(110);assert.equal(b.intake.cachedEntries,0);
+});
+
+test('unknown mutation receipts remain deduplicated until completion expiry without retry',async()=>{
+  let creates=0;
+  const b=receiptClock({timeoutMs:5,fetchImpl:async url=>{
+    if(url.endsWith('/issues')){creates++;return new Promise(()=>{});}return response({private:true});
+  }});
+  const first=await b.intake.submit(payload);assert.equal(first.body.error,'submission_outcome_unknown');
+  b.advance(9);assert.deepEqual(await b.intake.submit(payload),first);assert.equal(creates,1);
+  b.advance(10);assert.equal(b.intake.cachedEntries,0);assert.equal(creates,1);
+});
+
+test('completed receipts expire individually with one unreferenced timer',async()=>{
+  const b=receiptClock();await b.intake.submit(payload);b.advance(4);
+  await b.intake.submit({...payload,title:'Later receipt'});
+  assert.equal(b.intake.cachedEntries,2);assert.equal(b.pending.size,1);assert.ok(b.unrefs>=2);
+  b.advance(10);assert.equal(b.intake.cachedEntries,1);assert.equal(b.pending.size,1);
+  b.advance(14);assert.equal(b.intake.cachedEntries,0);assert.equal(b.pending.size,0);
+});
+
+test('receipt expiry uses elapsed time independently of wall-clock changes',async()=>{
+  let wall=Date.UTC(2026,9,29);const b=receiptClock({now:()=>wall});
+  await b.intake.submit(payload);wall-=86400000;b.advance(10);
+  assert.equal(b.intake.cachedEntries,0);assert.equal(b.pending.size,0);
+});
+
+test('delayed receipt expiry recovers capacity while preserving later live receipts',async()=>{
+  const b=receiptClock({maxEntries:2});await b.intake.submit(payload);b.advance(5);
+  const later={...payload,title:'Later receipt'};const receipt=await b.intake.submit(later);
+  b.jump(11);assert.equal((await b.intake.submit({...payload,title:'New receipt'})).status,201);
+  assert.deepEqual(await b.intake.submit(later),receipt);assert.equal(b.intake.cachedEntries,2);assert.equal(b.pending.size,1);
+  b.advance(100);assert.equal(b.intake.cachedEntries,0);
 });
