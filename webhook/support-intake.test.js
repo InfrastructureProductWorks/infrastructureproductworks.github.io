@@ -367,3 +367,19 @@ test('duplicate contact and topic fields in HTML forms also stop before provider
     assert.equal(result.status,303);assert.equal(new URL(result.headers.get('location')).searchParams.get('reason'),'invalid_submission');assert.equal(b.calls.length,0);
   });
 });
+
+test('strict parser matches native JSON across deterministic nested valid values and depth boundaries',()=>{
+  let state=17;
+  const next=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state;};
+  const build=depth=>{
+    if(!depth) return [null,true,false,next(), 'quote"slash\\unicode☃'][next()%5];
+    const values=Array.from({length:next()%5},()=>build(depth-1));
+    return next()%2?values:Object.fromEntries(values.map((v,i)=>['key'+i,v]));
+  };
+  for(let i=0;i<1000;i++) {
+    const raw=JSON.stringify(build(4));
+    assert.deepEqual(parseUnambiguousJson(Buffer.from(raw)),JSON.parse(raw));
+  }
+  assert.deepEqual(parseUnambiguousJson(Buffer.from('['.repeat(32)+'0'+']'.repeat(32))),JSON.parse('['.repeat(32)+'0'+']'.repeat(32)));
+  assert.throws(()=>parseUnambiguousJson(Buffer.from('['.repeat(33)+'0'+']'.repeat(33))));
+});
