@@ -4,7 +4,7 @@ import {pathToFileURL} from 'node:url';
 import {PRODUCTS, inquiryType} from './inquiry-contract.js';
 import {createSupportIntake} from './support-intake.js';
 
-export function createServer({env = process.env, fetchImpl = fetch, timeoutMs = 5000, bodyTimeoutMs = 10000, log} = {}) {
+export function createServer({env = process.env, fetchImpl = fetch, timeoutMs = 5000, bodyTimeoutMs = 10000, marketplaceBodyMaxBytes = 25 * 1024 * 1024, log} = {}) {
 
 const secret = env.GITHUB_MARKETPLACE_WEBHOOK_SECRET;
 const supportToken = env.SUPPORT_GITHUB_TOKEN;
@@ -119,10 +119,14 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='POST'&&req.url==='/api/support')return handleSupport(req,res,origin);
   if(req.method!=='POST'||req.url!=='/api/github/marketplace'){res.writeHead(404);return res.end();}
   if(!secret){res.writeHead(503);return res.end('Webhook secret not configured');}
-  const chunks=[];
-  req.on('data',c=>chunks.push(c));
-  req.on('end',()=>{
-    const body=Buffer.concat(chunks);
+  let body;
+  try { body=await readBody(req,marketplaceBodyMaxBytes); }
+  catch(error){
+    res.once('finish',()=>req.destroy());
+    const status=error.message==='body_timeout'?408:error.message==='too_large'?413:400;
+    res.writeHead(status,{'content-type':'text/plain','cache-control':'no-store'});
+    return res.end(status===408?'Request timeout':status===413?'Request too large':'Incomplete request');
+  }
     const supplied=req.headers['x-hub-signature-256'];
     if(typeof supplied!=='string'||!supplied.startsWith('sha256=')){res.writeHead(401);return res.end('Missing signature');}
     const expected='sha256='+crypto.createHmac('sha256',secret).update(body).digest('hex');
@@ -131,7 +135,6 @@ const server=http.createServer(async(req,res)=>{
     let payload;try{payload=JSON.parse(body.toString('utf8'))}catch{res.writeHead(400);return res.end('Invalid JSON');}
     console.log(JSON.stringify({event,action:payload?.action||null,delivery:req.headers['x-github-delivery']||null,receivedAt:new Date().toISOString()}));
     res.writeHead(202,{'content-type':'application/json'});res.end(JSON.stringify({accepted:true}));
-  });
 });
 return server;
 }
@@ -140,3 +143,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const port = process.env.PORT || 10000;
   createServer().listen(port,()=>console.log(`Marketplace webhook + support intake listening on ${port}`));
 }
+

@@ -153,3 +153,47 @@ test('a disconnected upload does not produce an unhandled request error',async t
   const health=await fetch(`http://127.0.0.1:${server.address().port}/health`);
   assert.equal(health.status,200);assert.equal(calls,0);
 });
+
+async function marketplaceFixture(t,options={}){
+  const secret='synthetic-webhook-secret';
+  const server=createServer({env:{GITHUB_MARKETPLACE_WEBHOOK_SECRET:secret},...options});
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  t.after(()=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve)}));
+  const base=`http://127.0.0.1:${server.address().port}`;
+  const signed=body=>fetch(`${base}/api/github/marketplace`,{method:'POST',body,headers:{'x-hub-signature-256':'sha256='+crypto.createHmac('sha256',secret).update(body).digest('hex')}});
+  return {server,base,signed};
+}
+
+test('Marketplace rejects an oversized signed upload and preserves its failure response',async t=>{
+  const {signed}=await marketplaceFixture(t,{marketplaceBodyMaxBytes:128});
+  const res=await signed(JSON.stringify({action:'synthetic',padding:'x'.repeat(256)}));
+  assert.equal(res.status,413);assert.equal(await res.text(),'Request too large');
+});
+
+test('Marketplace accepts signed bodies beyond the inquiry limit without changing byte verification',async t=>{
+  const {signed}=await marketplaceFixture(t);
+  const body=JSON.stringify({action:'synthetic',padding:'x'.repeat(40000)});
+  assert.equal((await signed(body)).status,202);
+});
+
+test('Marketplace stalled uploads receive a bounded timeout response',async t=>{
+  const {server}=await marketplaceFixture(t,{bodyTimeoutMs:25});
+  const result=await new Promise((resolve,reject)=>{
+    const req=http.request({hostname:'127.0.0.1',port:server.address().port,path:'/api/github/marketplace',method:'POST'},res=>{
+      const parts=[];res.on('data',c=>parts.push(c));res.on('end',()=>resolve({status:res.statusCode,body:Buffer.concat(parts).toString()}));
+    });
+    req.on('error',reject);req.setTimeout(2000,()=>req.destroy(new Error('test timed out')));req.write('{');
+  });
+  assert.equal(result.status,408);assert.equal(result.body,'Request timeout');
+});
+
+test('Marketplace client disconnect leaves the receiver healthy',async t=>{
+  const {server,base}=await marketplaceFixture(t);
+  await new Promise(resolve=>{
+    server.once('request',req=>{req.once('close',resolve);client.destroy()});
+    const client=http.request({hostname:'127.0.0.1',port:server.address().port,path:'/api/github/marketplace',method:'POST'});
+    client.on('error',()=>{});client.write('{');
+  });
+  assert.equal((await fetch(`${base}/health`)).status,200);
+});
+

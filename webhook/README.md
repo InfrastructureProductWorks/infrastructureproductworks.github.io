@@ -16,6 +16,8 @@ Set `GITHUB_MARKETPLACE_WEBHOOK_SECRET` in the hosting platform's protected envi
 
 Marketplace requests verify `X-Hub-Signature-256` using HMAC-SHA256 before acceptance. The receiver records only event/action/delivery metadata and performs no billing, provisioning, approval, deployment, or privileged infrastructure action.
 
+Marketplace uploads use a separate 25 MiB body limit and the ten-second application body deadline. Oversized requests return 413 and stalled requests return 408 before acceptance; incomplete uploads are rejected, and disconnect errors do not terminate the receiver. Failure responses finish before the partial connection closes. Signature verification still uses the exact received bytes. The inquiry endpoint retains its smaller 32 KiB limit.
+
 ## Support intake
 
 The website support form submits only to the server-side `/api/support` endpoint. GitHub credentials are never exposed to browser JavaScript.
@@ -68,3 +70,4 @@ Issue creation success does not prove a human saw the inquiry. Assignment is att
 ## Release acceptance
 
 Before promotion, establish the actual hosting workspace, service source/revision, private target and access policy, retention/deletion handling, human response owner, and current privacy notice. Validate a separately authorized synthetic inquiry and owner acknowledgment. This change does not enable live analytics, promise response times, create a retention policy or authorize deployment.
+
