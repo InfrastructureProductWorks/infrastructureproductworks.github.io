@@ -94,6 +94,13 @@ operator enablement and current notice gates still apply. Rejection happens befo
 an inquiry provider request. URL-encoded duplicate fields, including contact and topic values, are also
 rejected rather than silently choosing one value.
 
+Form names and values are decoded strictly as UTF-8, including percent-encoded
+bytes. Malformed escapes, truncated/invalid UTF-8 and encoded surrogates return a
+failed-submission redirect before any provider access or application log. This
+prevents silently repaired contact or inquiry text from becoming a private record.
+Valid browser-encoded Unicode, literal percent/plus signs and delimiters retain
+their submitted meaning; duplicates are checked after decoding key aliases.
+
 The signed Marketplace receiver emits only a bounded event category, a recognized
 purchase action when applicable, an optional validated delivery UUID and server
 receipt time. Unknown values become an unrecognized category or null; account,

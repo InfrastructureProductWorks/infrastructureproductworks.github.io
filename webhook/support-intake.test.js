@@ -9,6 +9,7 @@ import crypto from 'node:crypto';
 import vm from 'node:vm';
 import http from 'node:http';
 import {parseUnambiguousJson} from './strict-json.js';
+import {parseUnambiguousForm} from './strict-form.js';
 import {marketplaceTelemetry} from './marketplace-telemetry.js';
 
 const payload = {inquiryProcessing:'requested',privacyNoticeVersion:INQUIRY_NOTICE_VERSION,name:'Synthetic Reader',email:'reader@example.test',product:'Website',type:'Documentation',title:'Synthetic inquiry',description:'Synthetic question only.',steps:'',environment:''};
@@ -32,7 +33,9 @@ async function httpFixture(t, options={}) {
   const post=(input,form=false,origin='https://infrastructureproductworks.com')=>fetch(`http://127.0.0.1:${server.address().port}/api/support`,{
     method:'POST',redirect:'manual',headers:{origin,'content-type':form?'application/x-www-form-urlencoded':'application/json'},
     body:form?new URLSearchParams(input):JSON.stringify(input)});
-  return {...b,post};
+  const postRawForm=body=>fetch(`http://127.0.0.1:${server.address().port}/api/support`,{
+    method:'POST',redirect:'manual',headers:{origin:'https://infrastructureproductworks.com','content-type':'application/x-www-form-urlencoded'},body});
+  return {...b,post,postRawForm};
 }
 
 test('all displayed categories work for JSON and HTML form encodings', async t=>{
@@ -382,4 +385,56 @@ test('strict parser matches native JSON across deterministic nested valid values
   }
   assert.deepEqual(parseUnambiguousJson(Buffer.from('['.repeat(32)+'0'+']'.repeat(32))),JSON.parse('['.repeat(32)+'0'+']'.repeat(32)));
   assert.throws(()=>parseUnambiguousJson(Buffer.from('['.repeat(33)+'0'+']'.repeat(33))));
+});
+
+test('malformed form encoding cannot silently change inquiry records',async t=>{
+  const base=new URLSearchParams(payload).toString();
+  const cases=[
+    ['bare percent',base.replace('Synthetic+question+only.','Synthetic%question+only.')],
+    ['short escape',base.replace('Synthetic+question+only.','Synthetic+question%2')],
+    ['nonhex escape',base.replace('Synthetic+question+only.','Synthetic+question%GG')],
+    ['incomplete UTF-8',base.replace('reader%40', 'reader%E2%82%40')],
+    ['overlong UTF-8',base.replace('reader%40', 'reader%C0%AF%40')],
+    ['encoded surrogate',base.replace('reader%40', 'reader%ED%A0%80%40')],
+    ['invalid encoded field name',base+'&unused%FF=value'],
+    ['invalid raw byte',Buffer.concat([Buffer.from(base.slice(0,base.indexOf('reader%40'))+'reader'),Buffer.from([0xff]),Buffer.from(base.slice(base.indexOf('reader%40')+'reader'.length))])]
+  ];
+  for(const [label,body] of cases) await t.test(label,async t=>{
+    const b=await httpFixture(t);const result=await b.postRawForm(body);
+    assert.equal(result.status,303);
+    const location=new URL(result.headers.get('location'));
+    assert.equal(location.searchParams.get('submitted'),'0');
+    assert.equal(location.searchParams.get('reason'),'invalid_submission');
+    assert.equal(b.calls.length,0,'malformed text must not reach any provider request');
+    assert.equal(b.logs.length,0,'submitted data must not reach application logs');
+  });
+});
+
+test('valid browser form encoding preserves Unicode, literal percent, plus and delimiters',async t=>{
+  const input={...payload,name:'Zoë 雪 🙂',description:'Literal % + & = and café; do not reinterpret.'};
+  const b=await httpFixture(t);const result=await b.postRawForm(new URLSearchParams(input).toString());
+  assert.equal(result.status,303);assert.equal(new URL(result.headers.get('location')).searchParams.get('submitted'),'1');
+  const issue=JSON.parse(b.calls.find(c=>c.url.endsWith('/issues')).init.body);
+  const record=JSON.parse(issue.body.match(/^```json\n([\s\S]*?)\n```$/m)[1]);
+  assert.equal(record.name,input.name);assert.equal(record.description,input.description);
+});
+
+test('strict form decoding preserves browser encoding semantics across generated values',()=>{
+  const values=['','plain','Zoë 雪 🙂','a+b c%&=','\uFFFD','\0','\uFEFF','\r\n','quote" slash\\','x'.repeat(5000)];
+  for(let i=0;i<500;i++){
+    const entries=[['field'+i,values[i%values.length]],['other',values[(i*7+3)%values.length]]];
+    const raw=new URLSearchParams(entries).toString();
+    assert.deepEqual(parseUnambiguousForm(Buffer.from(raw)),Object.fromEntries(new URLSearchParams(raw)));
+  }
+  for(const raw of ['&&a=one=two&b&','x=%2B+%25%26%3D','%5F%5Fproto%5F%5F=safe&constructor=data']){
+    assert.deepEqual(parseUnambiguousForm(Buffer.from(raw)),Object.fromEntries(new URLSearchParams(raw)));
+  }
+});
+
+test('encoded aliases of contact and purpose keys remain duplicate denials',async t=>{
+  for(const extra of ['%65mail=other%40example.test','inquiry%50rocessing=requested','privacyNotice%56ersion='+INQUIRY_NOTICE_VERSION]) await t.test(extra.split('=')[0],async t=>{
+    const b=await httpFixture(t);const result=await b.postRawForm(new URLSearchParams(payload).toString()+'&'+extra);
+    assert.equal(new URL(result.headers.get('location')).searchParams.get('reason'),'invalid_submission');
+    assert.equal(b.calls.length,0);assert.equal(b.logs.length,0);
+  });
 });

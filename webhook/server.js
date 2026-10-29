@@ -4,6 +4,7 @@ import {pathToFileURL} from 'node:url';
 import {PRODUCTS, inquiryType} from './inquiry-contract.js';
 import {createSupportIntake} from './support-intake.js';
 import {parseUnambiguousJson} from './strict-json.js';
+import {parseUnambiguousForm} from './strict-form.js';
 import {marketplaceTelemetry} from './marketplace-telemetry.js';
 
 export function createServer({env = process.env, fetchImpl = fetch, timeoutMs = 5000, bodyTimeoutMs = 10000, marketplaceBodyMaxBytes = 25 * 1024 * 1024, log} = {}) {
@@ -83,13 +84,7 @@ async function handleSupport(req,res,origin){
   let input;
   try{
     if(contentType==='application/json')input=parseUnambiguousJson(raw);
-    else if(formMode){
-      const params=new URLSearchParams(raw.toString('utf8'));
-      if([...new Set(params.keys())].some(key=>params.getAll(key).length>1)){
-        return supportResult(res,formMode,400,{error:'invalid_submission'},origin);
-      }
-      input=Object.fromEntries(params.entries());
-    }
+    else if(formMode)input=parseUnambiguousForm(raw);
     else return supportResult(res,formMode,415,{error:'unsupported_content_type'},origin);
   }catch{return supportResult(res,formMode,400,{error:'invalid_submission'},origin)}
   if(!input || typeof input !== 'object' || Array.isArray(input))return supportResult(res,formMode,400,{error:'invalid_submission'},origin);
