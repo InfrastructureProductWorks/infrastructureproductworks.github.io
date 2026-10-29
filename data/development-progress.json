@@ -40,7 +40,7 @@
       "review": "pending",
       "evidenceCommitment": "b7f6b512760b793dd67021d1a43c5d2bc9b7e1bd173f4669561569cb7b9268f3",
       "limitations": "Ten exact-revision CI checks passed; two contrast checks and fresh automated review were pending at this snapshot. Eight malformed-route regressions and valid Unicode round-trip pass. Not merged or deployed.",
-      "publicSource": "https://github.com/InfrastructureProductWorks/infrastructureproductworks.github.io/commit/925f38126eb5a954d2c3c7628fae5637fbd0f373"
+      "publicSource": "https://github.com/InfrastructureProductWorks/infrastructureproductworks.github.io/pull/179"
     }
   ]
 }
