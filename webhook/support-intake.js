@@ -4,8 +4,22 @@ import {hasInquiryRequest, INQUIRY_NOTICE_VERSION, INQUIRY_PURPOSE} from './inqu
 // This cache bounds retries within one process, not across replicas/restarts.
 export function createSupportIntake({enabled = false, token, repo, assignee, fetchImpl = fetch,
   timeoutMs = 5000, now = Date.now, maxEntries = 1000, ttlMs = 600000,
+  expiryNow = () => performance.now(), setExpiryTimer = setTimeout, clearExpiryTimer = clearTimeout,
   log = record => console.log(JSON.stringify(record))} = {}) {
   const cache = new Map(), key = crypto.randomBytes(32);
+  let expiryTimer;
+  function refreshExpiry() {
+    if(expiryTimer!==undefined){clearExpiryTimer(expiryTimer);expiryTimer=undefined;}
+    const time=expiryNow();let next=Infinity;
+    for(const [hash,entry] of cache) {
+      if(!entry.finished)continue; // A pending mutation must never lose deduplication.
+      if(entry.expires<=time)cache.delete(hash);else next=Math.min(next,entry.expires);
+    }
+    if(next!==Infinity){
+      expiryTimer=setExpiryTimer(()=>{expiryTimer=undefined;refreshExpiry();},Math.max(1,next-time));
+      expiryTimer.unref?.();
+    }
+  }
   async function request(path, options = {}, mutating = false) {
     const controller = new AbortController();
     let timer;
@@ -71,20 +85,21 @@ export function createSupportIntake({enabled = false, token, repo, assignee, fet
     }
   }
   return {
+    get cachedEntries(){return cache.size;},
     submit(payload) {
       if (enabled !== true) return Promise.resolve({status:503,body:{accepted:false,error:'support_intake_disabled'}});
       if (!hasInquiryRequest(payload)) return Promise.resolve({status:400,body:{accepted:false,error:'inquiry_processing_request_required'}});
       if (!token || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo || '')) {
         return Promise.resolve({status:503,body:{accepted:false,error:'support_intake_not_configured'}});
       }
-      for (const [hash, entry] of cache) if (entry.finished && entry.expires <= now()) cache.delete(hash);
+      refreshExpiry();
       const hash = crypto.createHmac('sha256',key).update(JSON.stringify(payload)).digest('hex');
       if (cache.has(hash)) return cache.get(hash).promise;
       if (cache.size >= maxEntries) return Promise.resolve({status:503,body:{accepted:false,error:'support_intake_busy'}});
       const reference = `IPW-${new Date(now()).toISOString().slice(0,10).replaceAll('-','')}-${crypto.randomBytes(8).toString('hex').toUpperCase()}`;
       const entry = {finished:false};
       entry.promise = Promise.resolve().then(() => perform(payload,reference,new Date(now()).toISOString())).finally(() => {
-        entry.finished = true; entry.expires = now() + ttlMs;
+        entry.finished = true; entry.expires = expiryNow() + ttlMs;refreshExpiry();
       });
       cache.set(hash,entry);
       return entry.promise;

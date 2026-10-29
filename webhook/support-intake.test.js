@@ -8,6 +8,10 @@ import {INQUIRY_NOTICE_VERSION} from './inquiry-privacy.js';
 import crypto from 'node:crypto';
 import vm from 'node:vm';
 import http from 'node:http';
+import {parseUnambiguousJson} from './strict-json.js';
+import {parseUnambiguousForm} from './strict-form.js';
+import {marketplaceTelemetry} from './marketplace-telemetry.js';
+import {createInquiryRateLimiter} from './inquiry-rate-limit.js';
 
 const payload = {inquiryProcessing:'requested',privacyNoticeVersion:INQUIRY_NOTICE_VERSION,name:'Synthetic Reader',email:'reader@example.test',product:'Website',type:'Documentation',title:'Synthetic inquiry',description:'Synthetic question only.',steps:'',environment:''};
 const response = (body, ok=true) => ({ok,json:async()=>body});
@@ -30,7 +34,9 @@ async function httpFixture(t, options={}) {
   const post=(input,form=false,origin='https://infrastructureproductworks.com')=>fetch(`http://127.0.0.1:${server.address().port}/api/support`,{
     method:'POST',redirect:'manual',headers:{origin,'content-type':form?'application/x-www-form-urlencoded':'application/json'},
     body:form?new URLSearchParams(input):JSON.stringify(input)});
-  return {...b,post};
+  const postRawForm=body=>fetch(`http://127.0.0.1:${server.address().port}/api/support`,{
+    method:'POST',redirect:'manual',headers:{origin:'https://infrastructureproductworks.com','content-type':'application/x-www-form-urlencoded'},body});
+  return {...b,post,postRawForm};
 }
 
 test('all displayed categories work for JSON and HTML form encodings', async t=>{
@@ -70,7 +76,7 @@ test('concurrent and sequential identical submissions reuse one receipt without 
   assert.doesNotMatch(JSON.stringify(b.logs),/reader@example|Synthetic Reader|Synthetic question|synthetic-not-a-credential/);
 });
 test('cache capacity and expiry are bounded',async()=>{
-  let now=0;const b=backend({maxEntries:1,ttlMs:10,now:()=>now});
+  let now=0;const b=backend({maxEntries:1,ttlMs:10,now:()=>now,expiryNow:()=>now});
   await b.intake.submit(payload);assert.equal((await b.intake.submit({...payload,title:'Second'})).status,503);
   now=11;assert.equal((await b.intake.submit({...payload,title:'Second'})).status,201);
 });
@@ -284,3 +290,294 @@ test('literal records preserve bounded text without forwarding undeclared fields
 });
 
 
+
+test('ambiguous JSON consent, escaped duplicate keys and invalid encoding stop before downstream calls', async t => {
+  const base=JSON.stringify(payload);
+  const cases=[
+    base.replace('"inquiryProcessing":"requested"','"inquiryProcessing":false,"inquiryProcessing":"requested"'),
+    base.replace('"inquiryProcessing":"requested"','"inquiryProcessing":"requested","inquiryProcessing":false'),
+    base.replace('"inquiryProcessing":"requested"','"inquiryProcessing":false,"inquiry\\u0050rocessing":"requested"'),
+    base.replace('"privacyNoticeVersion":','"privacyNoticeVersion":"stale","privacyNoticeVersion":'),
+    base.slice(0,-1)+',"extra":{"key":1,"key":2}}',
+    base.slice(0,-1)+',"extra":'+ '['.repeat(40)+'0'+']'.repeat(40)+'}',
+    Buffer.from([0xff]), Buffer.from('\ufeff'+base)
+  ];
+  for (let i=0;i<cases.length;i++) await t.test(String(i),async t=>{
+    const b=backend();
+    const server=createServer({env:{SUPPORT_INQUIRY_ENABLED:'true',SUPPORT_GITHUB_TOKEN:b.config.token,SUPPORT_GITHUB_REPO:b.config.repo},fetchImpl:b.config.fetchImpl,log:b.config.log});
+    await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+    t.after(()=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve)}));
+    const result=await fetch(`http://127.0.0.1:${server.address().port}/api/support`,{method:'POST',headers:{origin:'https://infrastructureproductworks.com','content-type':'application/json'},body:cases[i]});
+    assert.equal(result.status,400);assert.deepEqual(await result.json(),{error:'invalid_submission'});
+    assert.equal(b.calls.length,0);assert.equal(b.logs.length,0);
+  });
+});
+
+test('strict parser preserves valid JSON values, escaped strings and separate object scopes',()=>{
+  for (const value of [null,true,false,42,0,-0,'quotes " and \\ escapes',[],{},
+    {one:{key:1},two:{key:2},items:[1,'a',null,{'__proto__':3}]},
+    {nested:['unicode \u2603', {'punctuation':'a,b}[]:c'}]}]) {
+    const raw=JSON.stringify(value);
+    assert.deepEqual(parseUnambiguousJson(Buffer.from(raw)),JSON.parse(raw));
+  }
+  for (const raw of ['{"a":1,"\\u0061":2}','[', '1 2', '{"x":NaN}', '"unterminated']) {
+    assert.throws(()=>parseUnambiguousJson(Buffer.from(raw)));
+  }
+  assert.deepEqual(parseUnambiguousJson(Buffer.from('{"__proto__":1}')),JSON.parse('{"__proto__":1}'));
+  assert.throws(()=>parseUnambiguousJson(Buffer.from('{"__proto__":1,"__proto__":2}')));
+});
+
+test('Marketplace telemetry permits only bounded routing metadata',()=>{
+  const delivery='12345678-ABCD-1234-ABCD-1234567890AB', date='2026-10-29T17:00:00.000Z';
+  for (const action of ['purchased','changed','cancelled','pending_change','pending_change_cancelled']) {
+    assert.deepEqual(marketplaceTelemetry('marketplace_purchase',{action,email:'canary@example.test'},delivery,date),
+      {event:'marketplace_purchase',action,delivery:delivery.toLowerCase(),receivedAt:date});
+  }
+  for (const input of [null,[],{},'canary@example.test', {action:{email:'canary@example.test'}}, {action:'canary@example.test'}, {action:'x'.repeat(100000)}]) {
+    const result=marketplaceTelemetry('canary@example.test',input,'canary@example.test',date);
+    assert.deepEqual(result,{event:'unrecognized',action:null,delivery:null,receivedAt:date});
+    assert.doesNotMatch(JSON.stringify(result),/canary|xxxxx/);
+  }
+  assert.equal(marketplaceTelemetry('ping',{action:'purchased'},[],date).action,null);
+});
+
+test('signed Marketplace HTTP requests minimize logs; ambiguous payloads and bad signatures log nothing',async t=>{
+  const secret='synthetic-webhook-secret',logs=[];
+  const server=createServer({env:{GITHUB_MARKETPLACE_WEBHOOK_SECRET:secret},log:r=>logs.push(r)});
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  t.after(()=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve)}));
+  const url=`http://127.0.0.1:${server.address().port}/api/github/marketplace`;
+  const post=(body,valid=true)=>fetch(url,{method:'POST',body,headers:{
+    'x-hub-signature-256':valid?'sha256='+crypto.createHmac('sha256',secret).update(body).digest('hex'):'sha256=invalid',
+    'x-github-event':'canary@example.test','x-github-delivery':'canary@example.test'}});
+  const body=JSON.stringify({action:{email:'canary@example.test'},account:{email:'canary@example.test'}});
+  assert.equal((await post(body)).status,202);assert.equal(logs.length,1);
+  assert.equal(logs[0].event,'unrecognized');assert.equal(logs[0].action,null);assert.equal(logs[0].delivery,null);
+  assert.match(logs[0].receivedAt,/^\d{4}-\d{2}-\d{2}T/);
+  assert.doesNotMatch(JSON.stringify(logs),/canary|account|email/);
+  for (const raw of ['{"action":"purchased","action":"cancelled"}','{',body]) {
+    const valid=raw!==body;
+    assert.equal((await post(raw,valid)).status,valid?400:401);assert.equal(logs.length,1);
+  }
+});
+
+test('duplicate contact and topic fields in HTML forms also stop before provider access',async t=>{
+  for (const [key,value] of [['email','other@example.test'],['name','Another Reader'],['type','Feedback']]) await t.test(key,async t=>{
+    const b=backend();const server=createServer({env:{SUPPORT_INQUIRY_ENABLED:'true',SUPPORT_GITHUB_TOKEN:b.config.token,SUPPORT_GITHUB_REPO:b.config.repo},fetchImpl:b.config.fetchImpl});
+    await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+    t.after(()=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve)}));
+    const params=new URLSearchParams(payload);params.append(key,value);
+    const result=await fetch(`http://127.0.0.1:${server.address().port}/api/support`,{method:'POST',redirect:'manual',headers:{origin:'https://infrastructureproductworks.com','content-type':'application/x-www-form-urlencoded'},body:params});
+    assert.equal(result.status,303);assert.equal(new URL(result.headers.get('location')).searchParams.get('reason'),'invalid_submission');assert.equal(b.calls.length,0);
+  });
+});
+
+test('strict parser matches native JSON across deterministic nested valid values and depth boundaries',()=>{
+  let state=17;
+  const next=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state;};
+  const build=depth=>{
+    if(!depth) return [null,true,false,next(), 'quote"slash\\unicode☃'][next()%5];
+    const values=Array.from({length:next()%5},()=>build(depth-1));
+    return next()%2?values:Object.fromEntries(values.map((v,i)=>['key'+i,v]));
+  };
+  for(let i=0;i<1000;i++) {
+    const raw=JSON.stringify(build(4));
+    assert.deepEqual(parseUnambiguousJson(Buffer.from(raw)),JSON.parse(raw));
+  }
+  assert.deepEqual(parseUnambiguousJson(Buffer.from('['.repeat(32)+'0'+']'.repeat(32))),JSON.parse('['.repeat(32)+'0'+']'.repeat(32)));
+  assert.throws(()=>parseUnambiguousJson(Buffer.from('['.repeat(33)+'0'+']'.repeat(33))));
+});
+
+test('malformed form encoding cannot silently change inquiry records',async t=>{
+  const base=new URLSearchParams(payload).toString();
+  const cases=[
+    ['bare percent',base.replace('Synthetic+question+only.','Synthetic%question+only.')],
+    ['short escape',base.replace('Synthetic+question+only.','Synthetic+question%2')],
+    ['nonhex escape',base.replace('Synthetic+question+only.','Synthetic+question%GG')],
+    ['incomplete UTF-8',base.replace('reader%40', 'reader%E2%82%40')],
+    ['overlong UTF-8',base.replace('reader%40', 'reader%C0%AF%40')],
+    ['encoded surrogate',base.replace('reader%40', 'reader%ED%A0%80%40')],
+    ['invalid encoded field name',base+'&unused%FF=value'],
+    ['invalid raw byte',Buffer.concat([Buffer.from(base.slice(0,base.indexOf('reader%40'))+'reader'),Buffer.from([0xff]),Buffer.from(base.slice(base.indexOf('reader%40')+'reader'.length))])]
+  ];
+  for(const [label,body] of cases) await t.test(label,async t=>{
+    const b=await httpFixture(t);const result=await b.postRawForm(body);
+    assert.equal(result.status,303);
+    const location=new URL(result.headers.get('location'));
+    assert.equal(location.searchParams.get('submitted'),'0');
+    assert.equal(location.searchParams.get('reason'),'invalid_submission');
+    assert.equal(b.calls.length,0,'malformed text must not reach any provider request');
+    assert.equal(b.logs.length,0,'submitted data must not reach application logs');
+  });
+});
+
+test('valid browser form encoding preserves Unicode, literal percent, plus and delimiters',async t=>{
+  const input={...payload,name:'Zoë 雪 🙂',description:'Literal % + & = and café; do not reinterpret.'};
+  const b=await httpFixture(t);const result=await b.postRawForm(new URLSearchParams(input).toString());
+  assert.equal(result.status,303);assert.equal(new URL(result.headers.get('location')).searchParams.get('submitted'),'1');
+  const issue=JSON.parse(b.calls.find(c=>c.url.endsWith('/issues')).init.body);
+  const record=JSON.parse(issue.body.match(/^```json\n([\s\S]*?)\n```$/m)[1]);
+  assert.equal(record.name,input.name);assert.equal(record.description,input.description);
+});
+
+test('strict form decoding preserves browser encoding semantics across generated values',()=>{
+  const values=['','plain','Zoë 雪 🙂','a+b c%&=','\uFFFD','\0','\uFEFF','\r\n','quote" slash\\','x'.repeat(5000)];
+  for(let i=0;i<500;i++){
+    const entries=[['field'+i,values[i%values.length]],['other',values[(i*7+3)%values.length]]];
+    const raw=new URLSearchParams(entries).toString();
+    assert.deepEqual(parseUnambiguousForm(Buffer.from(raw)),Object.fromEntries(new URLSearchParams(raw)));
+  }
+  for(const raw of ['&&a=one=two&b&','x=%2B+%25%26%3D','%5F%5Fproto%5F%5F=safe&constructor=data']){
+    assert.deepEqual(parseUnambiguousForm(Buffer.from(raw)),Object.fromEntries(new URLSearchParams(raw)));
+  }
+});
+
+test('encoded aliases of contact and purpose keys remain duplicate denials',async t=>{
+  for(const extra of ['%65mail=other%40example.test','inquiry%50rocessing=requested','privacyNotice%56ersion='+INQUIRY_NOTICE_VERSION]) await t.test(extra.split('=')[0],async t=>{
+    const b=await httpFixture(t);const result=await b.postRawForm(new URLSearchParams(payload).toString()+'&'+extra);
+    assert.equal(new URL(result.headers.get('location')).searchParams.get('reason'),'invalid_submission');
+    assert.equal(b.calls.length,0);assert.equal(b.logs.length,0);
+  });
+});
+
+function rateClock(options={}) {
+  let time=0,unrefs=0;
+  const pending=new Map();
+  const limiter=createInquiryRateLimiter({windowMs:10,max:2,maxClients:2,...options,
+    now:()=>time,
+    setTimer:(fn,delay)=>{const handle={unref(){unrefs++;}};pending.set(handle,{fn,at:time+delay});return handle;},
+    clearTimer:handle=>pending.delete(handle)});
+  return {limiter,pending,get unrefs(){return unrefs;},
+    advance(value){time=value;for(;;){const due=[...pending].find(([,job])=>job.at<=time);if(!due)break;pending.delete(due[0]);due[1].fn();}},
+    jump(value){time=value;}};
+}
+
+test('rate state expires without a later request',()=>{
+  const clock=rateClock();assert.equal(clock.limiter.limited('192.0.2.1'),false);
+  assert.equal(clock.limiter.trackedClients,1);clock.advance(10);
+  assert.equal(clock.limiter.trackedClients,0);assert.equal(clock.pending.size,0);
+});
+
+test('sliding window preserves later requests and boundary expiry',()=>{
+  const clock=rateClock();assert.equal(clock.limiter.limited('192.0.2.1'),false);
+  clock.advance(5);assert.equal(clock.limiter.limited('192.0.2.1'),false);
+  assert.equal(clock.limiter.limited('192.0.2.1'),true);
+  clock.advance(10);assert.equal(clock.limiter.trackedClients,1);
+  assert.equal(clock.limiter.limited('192.0.2.1'),false);
+  assert.equal(clock.limiter.limited('192.0.2.1'),true);
+  clock.advance(20);assert.equal(clock.limiter.trackedClients,0);
+});
+
+test('full rate capacity denies new clients without evicting active limits',()=>{
+  const clock=rateClock();
+  for(const address of ['192.0.2.1','192.0.2.2']){
+    assert.equal(clock.limiter.limited(address),false);assert.equal(clock.limiter.limited(address),false);
+  }
+  for(let i=0;i<20;i++)assert.equal(clock.limiter.limited('192.0.2.'+(i+3)),true);
+  assert.equal(clock.limiter.trackedClients,2);assert.equal(clock.limiter.limited('192.0.2.1'),true);
+  clock.advance(10);assert.equal(clock.limiter.limited('192.0.2.3'),false);
+});
+
+test('denied retries do not extend retention or the rate window',()=>{
+  const clock=rateClock();clock.limiter.limited('192.0.2.1');clock.limiter.limited('192.0.2.1');
+  clock.advance(9);assert.equal(clock.limiter.limited('192.0.2.1'),true);
+  clock.advance(10);assert.equal(clock.limiter.trackedClients,0);
+  assert.equal(clock.limiter.limited('192.0.2.1'),false);
+});
+
+test('one unreferenced expiry timer remains bounded under repeated traffic',()=>{
+  const clock=rateClock();
+  for(let i=0;i<1000;i++){clock.limiter.limited('192.0.2.1');assert.equal(clock.pending.size,1);}
+  assert.equal(clock.unrefs,1000);clock.advance(10);assert.equal(clock.pending.size,0);
+});
+
+test('late expiry callbacks prune all elapsed state without a request',()=>{
+  const clock=rateClock();clock.limiter.limited('192.0.2.1');clock.advance(4);clock.limiter.limited('192.0.2.2');
+  clock.advance(100);assert.equal(clock.limiter.trackedClients,0);assert.equal(clock.pending.size,0);
+});
+
+test('rate shutdown clears state and timer and permits a fresh process lifecycle',()=>{
+  const clock=rateClock();clock.limiter.limited('192.0.2.1');clock.limiter.limited('192.0.2.1');
+  clock.limiter.clear();assert.equal(clock.limiter.trackedClients,0);assert.equal(clock.pending.size,0);
+  clock.advance(100);assert.equal(clock.limiter.limited('192.0.2.1'),false);
+  clock.limiter.clear();assert.equal(clock.pending.size,0);
+});
+
+test('request-time expiry recovers capacity even before a delayed timer runs',()=>{
+  const clock=rateClock();clock.limiter.limited('192.0.2.1');clock.limiter.limited('192.0.2.2');
+  clock.jump(20);assert.equal(clock.limiter.limited('192.0.2.3'),false);
+  assert.equal(clock.limiter.trackedClients,1);assert.equal(clock.pending.size,1);
+});
+
+test('HTTP admission retains six-request limit and blocks the seventh before providers',async t=>{
+  const b=await httpFixture(t);
+  for(let i=0;i<6;i++)assert.equal((await b.post({...payload,title:'Synthetic inquiry '+i})).status,201);
+  const calls=b.calls.length,logs=b.logs.length;
+  const result=await b.post({...payload,title:'Synthetic seventh inquiry'});
+  assert.equal(result.status,429);assert.equal((await result.json()).error,'rate_limited');
+  assert.equal(b.calls.length,calls);assert.equal(b.logs.length,logs);
+});
+
+function receiptClock(options={}) {
+  let time=0,unrefs=0;const pending=new Map();
+  const b=backend({...options,ttlMs:10,expiryNow:()=>time,
+    setExpiryTimer:(fn,delay)=>{const handle={unref(){unrefs++;}};pending.set(handle,{fn,at:time+delay});return handle;},
+    clearExpiryTimer:handle=>pending.delete(handle)});
+  return {...b,pending,get unrefs(){return unrefs;},
+    advance(value){time=value;for(;;){const due=[...pending].find(([,job])=>job.at<=time);if(!due)break;pending.delete(due[0]);due[1].fn();}},
+    jump(value){time=value;}};
+}
+
+test('finished receipt state expires without another inquiry or provider call',async()=>{
+  const b=receiptClock();await b.intake.submit(payload);const calls=b.calls.length;
+  assert.equal(b.intake.cachedEntries,1);assert.equal(b.pending.size,1);
+  b.advance(10);assert.equal(b.intake.cachedEntries,0);assert.equal(b.pending.size,0);
+  assert.equal(b.calls.length,calls);
+});
+
+test('pending writes retain deduplication and capacity even after an old expiry window',async()=>{
+  let release,creates=0;
+  const b=receiptClock({maxEntries:1,fetchImpl:async url=>{
+    if(url.endsWith('/issues')){creates++;return new Promise(resolve=>{release=()=>resolve(response({number:7}));});}
+    return response({private:true});
+  }});
+  const first=b.intake.submit(payload);
+  while(!release)await new Promise(resolve=>setImmediate(resolve));
+  b.advance(100);assert.equal(b.pending.size,0);assert.equal(b.intake.submit(payload),first);
+  assert.equal((await b.intake.submit({...payload,title:'Other'})).status,503);assert.equal(creates,1);
+  release();await first;assert.equal(b.intake.cachedEntries,1);
+  b.advance(109);assert.equal(b.intake.cachedEntries,1);
+  b.advance(110);assert.equal(b.intake.cachedEntries,0);
+});
+
+test('unknown mutation receipts remain deduplicated until completion expiry without retry',async()=>{
+  let creates=0;
+  const b=receiptClock({timeoutMs:5,fetchImpl:async url=>{
+    if(url.endsWith('/issues')){creates++;return new Promise(()=>{});}return response({private:true});
+  }});
+  const first=await b.intake.submit(payload);assert.equal(first.body.error,'submission_outcome_unknown');
+  b.advance(9);assert.deepEqual(await b.intake.submit(payload),first);assert.equal(creates,1);
+  b.advance(10);assert.equal(b.intake.cachedEntries,0);assert.equal(creates,1);
+});
+
+test('completed receipts expire individually with one unreferenced timer',async()=>{
+  const b=receiptClock();await b.intake.submit(payload);b.advance(4);
+  await b.intake.submit({...payload,title:'Later receipt'});
+  assert.equal(b.intake.cachedEntries,2);assert.equal(b.pending.size,1);assert.ok(b.unrefs>=2);
+  b.advance(10);assert.equal(b.intake.cachedEntries,1);assert.equal(b.pending.size,1);
+  b.advance(14);assert.equal(b.intake.cachedEntries,0);assert.equal(b.pending.size,0);
+});
+
+test('receipt expiry uses elapsed time independently of wall-clock changes',async()=>{
+  let wall=Date.UTC(2026,9,29);const b=receiptClock({now:()=>wall});
+  await b.intake.submit(payload);wall-=86400000;b.advance(10);
+  assert.equal(b.intake.cachedEntries,0);assert.equal(b.pending.size,0);
+});
+
+test('delayed receipt expiry recovers capacity while preserving later live receipts',async()=>{
+  const b=receiptClock({maxEntries:2});await b.intake.submit(payload);b.advance(5);
+  const later={...payload,title:'Later receipt'};const receipt=await b.intake.submit(later);
+  b.jump(11);assert.equal((await b.intake.submit({...payload,title:'New receipt'})).status,201);
+  assert.deepEqual(await b.intake.submit(later),receipt);assert.equal(b.intake.cachedEntries,2);assert.equal(b.pending.size,1);
+  b.advance(100);assert.equal(b.intake.cachedEntries,0);
+});

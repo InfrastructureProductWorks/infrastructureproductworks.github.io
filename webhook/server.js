@@ -3,6 +3,10 @@ import crypto from 'node:crypto';
 import {pathToFileURL} from 'node:url';
 import {PRODUCTS, inquiryType} from './inquiry-contract.js';
 import {createSupportIntake} from './support-intake.js';
+import {parseUnambiguousJson} from './strict-json.js';
+import {parseUnambiguousForm} from './strict-form.js';
+import {marketplaceTelemetry} from './marketplace-telemetry.js';
+import {createInquiryRateLimiter} from './inquiry-rate-limit.js';
 
 export function createServer({env = process.env, fetchImpl = fetch, timeoutMs = 5000, bodyTimeoutMs = 10000, marketplaceBodyMaxBytes = 25 * 1024 * 1024, log} = {}) {
 
@@ -14,7 +18,7 @@ const allowedOrigins = new Set([
   'https://infrastructureproductworks.com',
   'https://www.infrastructureproductworks.com'
 ]);
-const rate = new Map();
+const rate = createInquiryRateLimiter();
 const intake = createSupportIntake({enabled:env.SUPPORT_INQUIRY_ENABLED==='true',token:supportToken,repo:supportRepo,assignee:supportAssignee,fetchImpl,timeoutMs,log});
 
 function safeEqual(a,b){const x=Buffer.from(a);const y=Buffer.from(b);return x.length===y.length&&crypto.timingSafeEqual(x,y)}
@@ -41,12 +45,7 @@ function clean(value,max){return typeof value==='string'?value.trim().replace(/[
 function validEmail(value){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)&&value.length<=254}
 function clientIp(req){return String(req.headers['x-forwarded-for']||req.socket.remoteAddress||'unknown').split(',')[0].trim()}
 function limited(req){
-  const now=Date.now(), ip=clientIp(req), windowMs=10*60*1000, max=6;
-  for (const [key, times] of rate) if (times.at(-1) <= now-windowMs) rate.delete(key);
-  if (!rate.has(ip) && rate.size >= 1000) return true;
-  const prior=(rate.get(ip)||[]).filter(t=>now-t<windowMs);
-  if(prior.length>=max){rate.set(ip,prior);return true}
-  prior.push(now);rate.set(ip,prior);return false;
+  return rate.limited(clientIp(req));
 }
 function readBody(req,maxBytes=32768){
   return new Promise((resolve,reject)=>{
@@ -80,14 +79,8 @@ async function handleSupport(req,res,origin){
   }
   let input;
   try{
-    if(contentType==='application/json')input=JSON.parse(raw.toString('utf8'));
-    else if(formMode){
-      const params=new URLSearchParams(raw.toString('utf8'));
-      if(['inquiryProcessing','privacyNoticeVersion'].some(key=>params.getAll(key).length>1)){
-        return supportResult(res,formMode,400,{error:'invalid_submission'},origin);
-      }
-      input=Object.fromEntries(params.entries());
-    }
+    if(contentType==='application/json')input=parseUnambiguousJson(raw);
+    else if(formMode)input=parseUnambiguousForm(raw);
     else return supportResult(res,formMode,415,{error:'unsupported_content_type'},origin);
   }catch{return supportResult(res,formMode,400,{error:'invalid_submission'},origin)}
   if(!input || typeof input !== 'object' || Array.isArray(input))return supportResult(res,formMode,400,{error:'invalid_submission'},origin);
@@ -140,10 +133,12 @@ const server=http.createServer(async(req,res)=>{
     const expected='sha256='+crypto.createHmac('sha256',secret).update(body).digest('hex');
     if(!safeEqual(supplied,expected)){res.writeHead(401);return res.end('Invalid signature');}
     const event=req.headers['x-github-event']||'unknown';
-    let payload;try{payload=JSON.parse(body.toString('utf8'))}catch{res.writeHead(400);return res.end('Invalid JSON');}
-    console.log(JSON.stringify({event,action:payload?.action||null,delivery:req.headers['x-github-delivery']||null,receivedAt:new Date().toISOString()}));
+    let payload;try{payload=parseUnambiguousJson(body)}catch{res.writeHead(400);return res.end('Invalid JSON');}
+    const record=marketplaceTelemetry(event,payload,req.headers['x-github-delivery'],new Date().toISOString());
+    if(log)log(record);else console.log(JSON.stringify(record));
     res.writeHead(202,{'content-type':'application/json'});res.end(JSON.stringify({accepted:true}));
 });
+server.on('close',()=>rate.clear());
 return server;
 }
 

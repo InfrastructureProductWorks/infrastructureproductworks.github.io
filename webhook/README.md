@@ -63,7 +63,9 @@ Inquiry uploads have a ten-second application body deadline and a 32 KiB limit. 
 
 Each GitHub operation has a five-second application deadline, including response-body parsing. Requests do not follow redirects and issue creation is never automatically retried. A timeout or invalid response after attempting issue creation produces `submission_outcome_unknown` and a reference for operator follow-up; a remote write might already have occurred. Do not automatically resubmit an uncertain attempt.
 
-Identical normalized payloads share one in-flight/result receipt within a single running process for ten minutes after completion, using an ephemeral HMAC key rather than plaintext cache keys. The cache holds at most 1,000 entries and refuses new unique submissions when full. It is not durable idempotency across restarts, replicas or cache expiry. Operators must reconcile uncertain references before retrying outside this window. Rate-limit state is also bounded per process; edge/proxy and distributed abuse controls need separate deployment review.
+Identical normalized payloads share one in-flight/result receipt within a single running process for ten minutes after completion, using an ephemeral HMAC key rather than plaintext cache keys. The cache holds at most 1,000 entries and refuses new unique submissions when full. One unreferenced timer expires completed receipts using elapsed monotonic time without requiring another inquiry. Pending entries never expire or free capacity while a provider operation is unresolved; the retention window begins after the bounded operation completes, including an uncertain-outcome receipt. Duplicate requests do not extend it. Wall-clock time only supplies human-facing reference dates and receipt timestamps. Timer execution can be delayed by event-loop blockage; later requests also prune elapsed finished entries. Expiry makes no provider request and deletes no remote issue, notification or backup. It is not durable idempotency across restarts, replicas or cache expiry. Operators must reconcile uncertain references before retrying outside this window.
+
+Inquiry abuse control retains at most six timestamps per client and 1,000 client entries per process. Address keys are HMAC-SHA-256 values with a fresh random process-local key; raw addresses are not retained in this map or emitted by it. This is minimization, not anonymous processing or cross-process identity. A monotonic ten-minute sliding window preserves the existing six-request limit. A single unreferenced expiry timer removes elapsed timestamps and idle entries without waiting for another inquiry; callback execution can be delayed by a blocked event loop. Denied retries do not extend the window or retention. Server close clears entries, cancels the timer and rotates the key. No timer, address or digest is exported to a provider. Forwarded-address selection is unchanged: proxy trust and distributed/edge abuse controls still need deployment review. These source controls do not establish hosting/proxy log retention, physical memory erasure or an approved record-deletion policy.
 
 Issue creation success does not prove a human saw the inquiry. Assignment is attempted separately; `support-owner-routing` records `assigned`, `assignment_unconfirmed` or `unconfigured` without contact payloads. Notification settings, human acknowledgment, repository access, retention and deletion require operator verification. Do not treat the browser's URL-driven status text as an authenticated receipt.
 
@@ -84,3 +86,28 @@ The private issue retains purpose, notice version and server receipt time alongs
 ## Literal inquiry records
 
 New issues use `literal-json/v1` for submitted fields. Only the eight declared inquiry fields are serialized in a JSON code block, with backticks escaped as JSON Unicode sequences so submitted text cannot terminate the fence. Markdown images, HTML and links remain literal display data. Existing issues are not rewritten. Operators and future privacy/export tooling must treat both old free-text records and this explicit format as untrusted data, preserve purpose/reference/notice/time metadata, and never execute submitted instructions. This is rendering containment, not content approval, identity verification or a claim that GitHub/provider behavior has been audited end to end.
+
+### Ambiguous input and minimized Marketplace telemetry
+
+JSON intake rejects duplicate decoded object keys, invalid UTF-8 and nesting beyond
+32 levels. Conflicting purpose or notice fields cannot become acceptance through
+last-value parsing. The existing body byte limits, deadlines, signature checks,
+operator enablement and current notice gates still apply. Rejection happens before
+an inquiry provider request. URL-encoded duplicate fields, including contact and topic values, are also
+rejected rather than silently choosing one value.
+
+Form names and values are decoded strictly as UTF-8, including percent-encoded
+bytes. Malformed escapes, truncated/invalid UTF-8 and encoded surrogates return a
+failed-submission redirect before any provider access or application log. This
+prevents silently repaired contact or inquiry text from becoming a private record.
+Valid browser-encoded Unicode, literal percent/plus signs and delimiters retain
+their submitted meaning; duplicates are checked after decoding key aliases.
+
+The signed Marketplace receiver emits only a bounded event category, a recognized
+purchase action when applicable, an optional validated delivery UUID and server
+receipt time. Unknown values become an unrecognized category or null; account,
+contact and arbitrary payload properties are not forwarded to application logs.
+The action vocabulary follows GitHub's [Marketplace webhook documentation](https://docs.github.com/en/apps/github-marketplace/using-the-github-marketplace-api-in-your-app/webhook-events-for-the-github-marketplace-api).
+This is application-log minimization, not a provider-log audit, billing lifecycle
+implementation, retention decision or deletion guarantee. No live enablement or
+configuration change is part of this source candidate.
