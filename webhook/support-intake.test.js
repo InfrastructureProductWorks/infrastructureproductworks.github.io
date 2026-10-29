@@ -11,6 +11,7 @@ import http from 'node:http';
 import {parseUnambiguousJson} from './strict-json.js';
 import {parseUnambiguousForm} from './strict-form.js';
 import {marketplaceTelemetry} from './marketplace-telemetry.js';
+import {createInquiryRateLimiter} from './inquiry-rate-limit.js';
 
 const payload = {inquiryProcessing:'requested',privacyNoticeVersion:INQUIRY_NOTICE_VERSION,name:'Synthetic Reader',email:'reader@example.test',product:'Website',type:'Documentation',title:'Synthetic inquiry',description:'Synthetic question only.',steps:'',environment:''};
 const response = (body, ok=true) => ({ok,json:async()=>body});
@@ -437,4 +438,82 @@ test('encoded aliases of contact and purpose keys remain duplicate denials',asyn
     assert.equal(new URL(result.headers.get('location')).searchParams.get('reason'),'invalid_submission');
     assert.equal(b.calls.length,0);assert.equal(b.logs.length,0);
   });
+});
+
+function rateClock(options={}) {
+  let time=0,unrefs=0;
+  const pending=new Map();
+  const limiter=createInquiryRateLimiter({windowMs:10,max:2,maxClients:2,...options,
+    now:()=>time,
+    setTimer:(fn,delay)=>{const handle={unref(){unrefs++;}};pending.set(handle,{fn,at:time+delay});return handle;},
+    clearTimer:handle=>pending.delete(handle)});
+  return {limiter,pending,get unrefs(){return unrefs;},
+    advance(value){time=value;for(;;){const due=[...pending].find(([,job])=>job.at<=time);if(!due)break;pending.delete(due[0]);due[1].fn();}},
+    jump(value){time=value;}};
+}
+
+test('rate state expires without a later request',()=>{
+  const clock=rateClock();assert.equal(clock.limiter.limited('192.0.2.1'),false);
+  assert.equal(clock.limiter.trackedClients,1);clock.advance(10);
+  assert.equal(clock.limiter.trackedClients,0);assert.equal(clock.pending.size,0);
+});
+
+test('sliding window preserves later requests and boundary expiry',()=>{
+  const clock=rateClock();assert.equal(clock.limiter.limited('192.0.2.1'),false);
+  clock.advance(5);assert.equal(clock.limiter.limited('192.0.2.1'),false);
+  assert.equal(clock.limiter.limited('192.0.2.1'),true);
+  clock.advance(10);assert.equal(clock.limiter.trackedClients,1);
+  assert.equal(clock.limiter.limited('192.0.2.1'),false);
+  assert.equal(clock.limiter.limited('192.0.2.1'),true);
+  clock.advance(20);assert.equal(clock.limiter.trackedClients,0);
+});
+
+test('full rate capacity denies new clients without evicting active limits',()=>{
+  const clock=rateClock();
+  for(const address of ['192.0.2.1','192.0.2.2']){
+    assert.equal(clock.limiter.limited(address),false);assert.equal(clock.limiter.limited(address),false);
+  }
+  for(let i=0;i<20;i++)assert.equal(clock.limiter.limited('192.0.2.'+(i+3)),true);
+  assert.equal(clock.limiter.trackedClients,2);assert.equal(clock.limiter.limited('192.0.2.1'),true);
+  clock.advance(10);assert.equal(clock.limiter.limited('192.0.2.3'),false);
+});
+
+test('denied retries do not extend retention or the rate window',()=>{
+  const clock=rateClock();clock.limiter.limited('192.0.2.1');clock.limiter.limited('192.0.2.1');
+  clock.advance(9);assert.equal(clock.limiter.limited('192.0.2.1'),true);
+  clock.advance(10);assert.equal(clock.limiter.trackedClients,0);
+  assert.equal(clock.limiter.limited('192.0.2.1'),false);
+});
+
+test('one unreferenced expiry timer remains bounded under repeated traffic',()=>{
+  const clock=rateClock();
+  for(let i=0;i<1000;i++){clock.limiter.limited('192.0.2.1');assert.equal(clock.pending.size,1);}
+  assert.equal(clock.unrefs,1000);clock.advance(10);assert.equal(clock.pending.size,0);
+});
+
+test('late expiry callbacks prune all elapsed state without a request',()=>{
+  const clock=rateClock();clock.limiter.limited('192.0.2.1');clock.advance(4);clock.limiter.limited('192.0.2.2');
+  clock.advance(100);assert.equal(clock.limiter.trackedClients,0);assert.equal(clock.pending.size,0);
+});
+
+test('rate shutdown clears state and timer and permits a fresh process lifecycle',()=>{
+  const clock=rateClock();clock.limiter.limited('192.0.2.1');clock.limiter.limited('192.0.2.1');
+  clock.limiter.clear();assert.equal(clock.limiter.trackedClients,0);assert.equal(clock.pending.size,0);
+  clock.advance(100);assert.equal(clock.limiter.limited('192.0.2.1'),false);
+  clock.limiter.clear();assert.equal(clock.pending.size,0);
+});
+
+test('request-time expiry recovers capacity even before a delayed timer runs',()=>{
+  const clock=rateClock();clock.limiter.limited('192.0.2.1');clock.limiter.limited('192.0.2.2');
+  clock.jump(20);assert.equal(clock.limiter.limited('192.0.2.3'),false);
+  assert.equal(clock.limiter.trackedClients,1);assert.equal(clock.pending.size,1);
+});
+
+test('HTTP admission retains six-request limit and blocks the seventh before providers',async t=>{
+  const b=await httpFixture(t);
+  for(let i=0;i<6;i++)assert.equal((await b.post({...payload,title:'Synthetic inquiry '+i})).status,201);
+  const calls=b.calls.length,logs=b.logs.length;
+  const result=await b.post({...payload,title:'Synthetic seventh inquiry'});
+  assert.equal(result.status,429);assert.equal((await result.json()).error,'rate_limited');
+  assert.equal(b.calls.length,calls);assert.equal(b.logs.length,logs);
 });
