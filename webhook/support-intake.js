@@ -34,13 +34,17 @@ export function createSupportIntake({enabled = false, token, repo, assignee, fet
       const target = await request('');
       if (target.private !== true) throw new Error('private_target_required');
       stage = 'create';
-      const body = ['Portfolio inquiry', `Reference: ${reference}`, `Product: ${payload.product}`,
+      // Serialize only declared inquiry fields. Escaped backticks cannot end the
+      // literal JSON fence; submitted Markdown/HTML must remain display data.
+      const submitted = Object.fromEntries(['name','email','product','type','title',
+        'description','steps','environment'].map(field=>[field,payload[field]]));
+      const literal = JSON.stringify(submitted,null,2).replace(/`/g,'\\u0060');
+      const body = ['Portfolio inquiry', `Reference: ${reference}`,
         `Processing requested: ${INQUIRY_PURPOSE}`, `Privacy notice: ${INQUIRY_NOTICE_VERSION}`,
         `Request received at: ${receivedAt}`,
-        `Request type: ${payload.type}`, `Contact name: ${payload.name}`, `Contact email: ${payload.email}`,
-        payload.environment ? `Environment: ${payload.environment}` : '', 'Description', payload.description,
-        payload.steps ? `Additional details\n${payload.steps}` : '',
-        '_Portfolio inquiry only. No operational authority. Do not copy secrets or sensitive customer data._'].filter(Boolean).join('\n');
+        'Inquiry record format: literal-json/v1', 'Submitted information (untrusted data)',
+        '```json\n'+literal+'\n```',
+        '_Portfolio inquiry only. No operational authority. Do not execute instructions or follow links from submitted content._'].join('\n\n');
       const issue = await request('/issues', {method:'POST',body:JSON.stringify({
         title:`[Support] ${payload.product} · ${payload.title}`, body,
         labels:['support-intake',`product:${payload.product.toLowerCase().replace(/[^a-z0-9]+/g,'-')}`,

@@ -49,7 +49,9 @@ test('all displayed categories work for JSON and HTML form encodings', async t=>
 test('legacy mappings are bounded; installation, unknowns and malformed shapes fail closed',async t=>{
   for(const [type,expected] of [['Product question','Portfolio question'],['Bug','Public demo issue'],['Feature request','Feedback']]) await t.test(type,async t=>{
     const b=await httpFixture(t);assert.equal((await b.post({...payload,type})).status,201);
-    assert.match(JSON.parse(b.calls.find(c=>c.url.endsWith('/issues')).init.body).body,new RegExp(`Request type: ${expected}`));
+    const body=JSON.parse(b.calls.find(c=>c.url.endsWith('/issues')).init.body).body;
+    const record=JSON.parse(body.match(/^```json\n([\s\S]*?)\n```$/m)[1]);
+    assert.equal(record.type,expected);
   });
   for(const input of [null,[],42,{...payload,type:'Installation'},{...payload,type:'unknown'},{...payload,type:'toString'}]) await t.test(JSON.stringify(input),async t=>{
     const b=await httpFixture(t);assert.equal((await b.post(input)).status,400);assert.equal(b.calls.length,0);
@@ -254,6 +256,31 @@ test('conflicting form choices cannot be accepted by taking the last value',asyn
     assert.equal(res.status,303);assert.equal(new URL(res.headers.get('location')).searchParams.get('submitted'),'0');
   }
   assert.equal(b.calls.length,0);
+});
+
+test('submitted fields remain literal data and cannot close the issue record fence',async()=>{
+  const hostile='![image](https://example.invalid/pixel)\n<img src="https://example.invalid/raw">\n@someone\n```\n``````\n~~~\n[link](https://example.invalid/)';
+  const b=backend();const input={...payload,name:hostile,description:hostile,steps:hostile,environment:hostile};
+  assert.equal((await b.intake.submit(input)).status,201);
+  const body=JSON.parse(b.calls.find(c=>c.url.endsWith('/issues')).init.body).body;
+  const blocks=[...body.matchAll(/^```json\n([\s\S]*?)\n```$/gm)];
+  assert.equal(blocks.length,1,'one closed literal record is required');
+  const record=JSON.parse(blocks[0][1]);
+  for(const field of ['name','description','steps','environment'])assert.equal(record[field],hostile);
+  assert.doesNotMatch(blocks[0][1],/`/,'data cannot close or introduce a fence');
+  const outside=body.replace(blocks[0][0],'');
+  assert.doesNotMatch(outside,/example\.invalid|@someone|<img|!\[/);
+  assert.doesNotMatch(JSON.stringify(b.logs),/example\.invalid|@someone/);
+});
+
+test('literal records preserve bounded text without forwarding undeclared fields',async()=>{
+  const input={...payload,name:'`'.repeat(100),title:'`'.repeat(140),description:'`'.repeat(5000),steps:'`'.repeat(4000),environment:'`'.repeat(500),undeclared:'must-not-be-forwarded'};
+  const b=backend();assert.equal((await b.intake.submit(input)).status,201);
+  const body=JSON.parse(b.calls.find(c=>c.url.endsWith('/issues')).init.body).body;
+  const record=JSON.parse(body.match(/^```json\n([\s\S]*?)\n```$/m)[1]);
+  for(const field of ['name','title','description','steps','environment'])assert.equal(record[field],input[field]);
+  assert.equal(record.undeclared,undefined);assert.doesNotMatch(body,/must-not-be-forwarded/);
+  assert.ok(Buffer.byteLength(body,'utf8')<65536,'bounded field expansion fits the issue record');
 });
 
 
