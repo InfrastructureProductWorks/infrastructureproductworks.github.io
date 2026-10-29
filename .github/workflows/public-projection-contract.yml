@@ -5,6 +5,10 @@ on:
     paths:
       - 'assets/assurance-records.json'
       - 'data/roadmap-relationships.json'
+      - 'data/development-progress.json'
+      - 'portfolio/index.html'
+      - 'scripts/build_development_progress.cjs'
+      - 'scripts/test_development_progress.cjs'
       - 'scripts/audit_public_projections.py'
       - '.github/workflows/public-projection-contract.yml'
   push:
@@ -22,3 +26,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - name: Enforce bounded public JSON projections
         run: python3 scripts/audit_public_projections.py
+      - name: Verify measured development evidence and rendered page
+        run: |
+          node scripts/test_development_progress.cjs
+          node scripts/build_development_progress.cjs --check

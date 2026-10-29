@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "ipw-development-progress/v1",
+  "asOf": "2026-10-29T17:00:00Z",
+  "boundary": "Measured engineering increments only. Tests and automated review do not establish customer acceptance, legal compliance or whole-product readiness.",
+  "increments": [
+    {
+      "id": "inquiry-admission",
+      "epic": "EP-06",
+      "title": "Purpose-bound inquiry admission",
+      "change": "Released bounded request handling, explicit purpose and notice-version gates, default-off admission and literal inquiry records.",
+      "stage": "released",
+      "tests": 46,
+      "ciChecks": 17,
+      "review": "clean-automated",
+      "evidenceCommitment": "1b27d9360b9b047503d6697b47cba63aa104effa1304f6f68bed40057f1b5ce2",
+      "limitations": "Receiver health and source release verified. Intake enablement, provider-copy handling, retention and accountable operator acceptance remain separate.",
+      "publicSource": "https://github.com/InfrastructureProductWorks/infrastructureproductworks.github.io/pull/177"
+    },
+    {
+      "id": "privacy-review-packets",
+      "epic": "EP-06",
+      "title": "Offline privacy-action review packets",
+      "change": "Implemented strict metadata review packets, explicit identity, policy, hold and copy gates, malformed-input containment and exact record-version binding.",
+      "stage": "under-review",
+      "tests": 11,
+      "ciChecks": 7,
+      "review": "clean-automated",
+      "evidenceCommitment": "b6d86c88de33195dab828c6e20a9b370019c9f2901b13ede1abd44960f52fa0e",
+      "limitations": "Validated on synthetic input; not merged or deployed. No provider access, deletion, verified identity or execution authority.",
+      "publicSource": null
+    }
+  ]
+}
