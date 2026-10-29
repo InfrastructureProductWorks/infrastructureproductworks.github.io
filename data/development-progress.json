@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ipw-development-progress/v1",
-  "asOf": "2026-10-29T17:20:15Z",
+  "asOf": "2026-10-29T18:21:22Z",
   "boundary": "Measured engineering increments only. Tests and automated review do not establish customer acceptance, legal compliance or whole-product readiness.",
   "increments": [
     {
@@ -33,14 +33,14 @@
       "id": "ambiguous-input-and-logs",
       "epic": "EP-06",
       "title": "Ambiguous-input denial and minimized logs",
-      "change": "Implemented rejection of duplicate decoded JSON and form fields, malformed encodings and excessive nesting; bounded signed webhook log values.",
+      "change": "Added strict UTF-8 and percent decoding for actual form intake; malformed contact bytes and duplicate decoded names deny before provider access. Existing JSON and minimized-log controls retained.",
       "stage": "under-review",
-      "tests": 63,
-      "ciChecks": 12,
-      "review": "clean-automated",
-      "evidenceCommitment": "6017fab2fab01c7c08550194b2177245600fb67b480c27848534aed50746fe70",
-      "limitations": "All applicable CI checks and automated review passed at the measured revision. Synthetic and loopback validation only; runtime candidate is not merged or deployed.",
-      "publicSource": "https://github.com/InfrastructureProductWorks/infrastructureproductworks.github.io/pull/179"
+      "tests": 78,
+      "ciChecks": 10,
+      "review": "pending",
+      "evidenceCommitment": "b7f6b512760b793dd67021d1a43c5d2bc9b7e1bd173f4669561569cb7b9268f3",
+      "limitations": "Ten exact-revision CI checks passed; two contrast checks and fresh automated review were pending at this snapshot. Eight malformed-route regressions and valid Unicode round-trip pass. Not merged or deployed.",
+      "publicSource": "https://github.com/InfrastructureProductWorks/infrastructureproductworks.github.io/commit/925f38126eb5a954d2c3c7628fae5637fbd0f373"
     }
   ]
 }
