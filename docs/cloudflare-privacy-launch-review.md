@@ -19,6 +19,7 @@ Configuration observed October 30, 2026; refreshed after the founder confirmed Z
 | Processing | Purpose | Current handling evidence | Remaining verification |
 | --- | --- | --- | --- |
 | Cloudflare Access email and connection records | Send email codes, authenticate demo access, investigate misuse | Same email-PIN policy; 24-hour application session; no Logpush jobs observed | Founder confirmed Zero Trust Free. Provider documentation lists 24-hour Access log retention and 18-month admin log retention. Confirm actual record lifecycle, operator access and provider-specific identity/deletion handling; these periods are not a universal deletion guarantee. |
+| Origin-forwarded authentication tokens | Let a protected origin check the Access session | Provider documentation describes identity-bearing application tokens on authenticated origin requests. The optional Forge/Storefront verifier checks them in request memory without writing token/claim contents to product records or application logs; this is a source property, not deployed acceptance. | Inventory hosting logs, traces, error tools and IPW copies separately. Stripping cookies or separate identity headers does not anonymize the signed token. The Access log period is not a hosting-record deletion period. |
 | Website security/request metadata | Delivery and abuse prevention | Proxied hostname, HTTPS and existing request protections | Establish provider retention and any separate operational copies; do not promise IP anonymity or automatic erasure. |
 | Web Analytics | Aggregate usage/performance | Service enabled; provider documents no cookies/local storage for analytics measurement | Verify actual browser requests, settings and applicable privacy requirements before making stronger statements or adding new tools. |
 | Optional inquiry | Inquiry review and response | Existing purpose/version checks and default-disabled admission gate retained in source | Retention, private destination, deployed flag, human owner, deletion/backup handling and authorized synthetic receipt remain the existing intake activation prerequisites. This review does not activate intake. |
@@ -54,6 +55,7 @@ Do not reuse demo email identities for marketing on the strength of sign-in. Do 
 
 - [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/)
 - [Access authorization cookies](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/)
+- [Access application tokens and origin forwarding](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/application-token/)
 - [Zero Trust log retention](https://developers.cloudflare.com/cloudflare-one/insights/logs/)
 - [Zaraz consent management](https://developers.cloudflare.com/zaraz/consent-management/)
 - [Application paths](https://developers.cloudflare.com/cloudflare-one/access-controls/policies/app-paths/)
