@@ -23,3 +23,5 @@ Search discovery is intentionally limited to the public marketing, architecture,
 ## Website privacy and access review
 
 The [Cloudflare privacy and launch review](docs/cloudflare-privacy-launch-review.md) records the dated configuration observations, processing/retention gaps and remaining browser acceptance checks. Public marketing and guides are separate from the email-gated demo paths. The website privacy notice explains that distinction and Cloudflare Web Analytics. This record does not activate inquiry intake, optional tracking, external log exports or production capabilities.
+
+The [privacy-request handling procedure](docs/privacy-request-handling.md) separates login-log retention, identity/session handling, provider records and IPW copies. It defines target-specific authorization and completion evidence without enabling deletion or inquiry intake.
