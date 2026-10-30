@@ -19,3 +19,7 @@ Lifecycle requirements are a design reference, separate from the live portfolio 
 ## Search discoverability
 
 Search discovery is intentionally limited to the public marketing, architecture, and insights pages enumerated in `sitemap.xml` and `scripts/validate_seo.py`. Run `python3 scripts/validate_seo.py` before proposing website changes. Keep canonical URLs, descriptions, and truthful structured metadata aligned on editable public pages. Homepage and Forge are included in the sitemap but are byte-pinned public contracts: their markup must not be rewritten or re-pinned solely for SEO without a complete independent security-contract review. Do not publish private implementation information, customer records, fictitious customer outcomes, or unsupported compliance claims in order to rank. Demo, legal, redirect, and support utility routes are intentionally excluded from the sitemap; this does not remove or disallow them.
+
+## Website privacy and access review
+
+The [Cloudflare privacy and launch review](docs/cloudflare-privacy-launch-review.md) records the dated configuration observations, processing/retention gaps and remaining browser acceptance checks. Public marketing and guides are separate from the email-gated demo paths. The website privacy notice explains that distinction and Cloudflare Web Analytics. This record does not activate inquiry intake, optional tracking, external log exports or production capabilities.

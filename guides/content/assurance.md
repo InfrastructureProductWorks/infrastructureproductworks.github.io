@@ -6,9 +6,13 @@ Infrastructure Product Works | Version 1.2 | September 24, 2026
 
 Use this guide to inspect a predeployment decision, evaluate bounded runtime authority, replay protected-data custody outcomes, and follow exported decisions into the Portal. The Portal includes instructions for Management and leadership, Security and operations, and Governance and evidence. All examples in these interfaces are synthetic.
 
+## Hosted demo access
+
+The website demo gate uses a Cloudflare Access email one-time code. Enter it only on Cloudflare's sign-in page; never put passwords, codes or real customer information into demo fields. This verifies mailbox access, not an application role, contractual acceptance or marketing consent. Read the [demo access and privacy notice](/privacy/#demo-access). Guides remain readable without that code.
+
 ## 1 Open Assurance and understand the views
 
-Open the [Assurance demo](https://infrastructureproductworks.com/assurance/demo/). It uses preloaded fixtures and requires no credentials, customer records, or uploaded Authority Package.
+Open the [Assurance demo](https://infrastructureproductworks.com/assurance/demo/). It uses preloaded fixtures and requires no cloud credentials, customer records, or uploaded Authority Package. The hosted website requires the separate email verification described above.
 
 | View | Current capability |
 | --- | --- |

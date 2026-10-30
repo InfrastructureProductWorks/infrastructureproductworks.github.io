@@ -8,9 +8,13 @@ Use this guide to select a request, review its evidence, record a local review n
 
 Architecture, Security, Platform, Product, and Audit review the same record for different purposes. Section 10 gives each audience a review procedure and expected handoff. These responsibilities do not require a role selector in the demo and do not create approval permissions.
 
+## Hosted demo access
+
+The website demo gate uses a Cloudflare Access email one-time code. Enter it only on Cloudflare's sign-in page; never put passwords, codes or real customer information into demo fields. This verifies mailbox access, not an application role, contractual acceptance or marketing consent. Read the [demo access and privacy notice](/privacy/#demo-access). Guides remain readable without that code.
+
 ## 1 Open the workbench
 
-Open the [Console demo](https://infrastructureproductworks.com/console/demo/) in a current browser with JavaScript and browser cryptography available. No installation, sign-in, cloud account, or uploaded evidence package is required for this demonstration.
+Open the [Console demo](https://infrastructureproductworks.com/console/demo/) in a current browser with JavaScript and browser cryptography available. No installation, cloud account, or uploaded evidence package is required for this demonstration. The hosted website requires the separate email verification described above.
 
 The workbench verifies a package in your browser before presenting it as verified. These are preloaded synthetic packages. The page does not fetch live developer orders from Storefront, accept an arbitrary customer package, or send an approved action to Assurance.
 
