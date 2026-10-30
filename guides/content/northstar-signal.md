@@ -2,6 +2,10 @@
 
 Infrastructure Product Works | Synthetic evaluation experience
 
+## Hosted demo access
+
+The website demo gate uses a Cloudflare Access email one-time code. Enter it only on Cloudflare's sign-in page; never put passwords, codes or real customer information into demo fields. This verifies mailbox access, not an application role, contractual acceptance or marketing consent. Read the [demo access and privacy notice](/privacy/#demo-access). Guides remain readable without that code.
+
 ## Find your way around
 
 On desktop, use the grouped left sidebar: **Strategy**, **Decisions**, and **Delivery & evidence**. The selected destination has a visible accent. On smaller screens the same destinations appear in one horizontally scrollable strip; keyboard users can Tab to every destination.

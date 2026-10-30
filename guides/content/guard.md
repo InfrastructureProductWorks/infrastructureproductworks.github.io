@@ -6,6 +6,10 @@ Infrastructure Product Works | Version 1.0 | September 24, 2026
 
 Use this guide to install Guard for selected repositories, obtain an architecture assessment on a pull request, investigate findings, and verify the result after a correction. Guard's supported user interface is the **IaaP Guard / Architecture** GitHub Check.
 
+## Hosted demo access
+
+The website demo gate uses a Cloudflare Access email one-time code. Enter it only on Cloudflare's sign-in page; never put passwords, codes or real customer information into demo fields. This verifies mailbox access, not an application role, contractual acceptance or marketing consent. Read the [demo access and privacy notice](/privacy/#demo-access). Guides remain readable without that code.
+
 ## Explore the sample report first
 
 1. Open the [Guard demo](/guard/demo/). No GitHub installation or credentials are needed.
