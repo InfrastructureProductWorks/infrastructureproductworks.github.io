@@ -59,6 +59,11 @@
       "path": "assets/funding-contract.lock.json",
       "gitBlobSha": "2b3205d65b9883f3f47c61476aa2348a3f6ef17c",
       "classification": "synthetic funding reference asset integrity; no financial authority"
+    },
+    {
+      "path": "data/development-progress.json",
+      "gitBlobSha": "cf96051a77f0dbcca037066105c5053821a45154",
+      "classification": "reviewed dated engineering increments; no production readiness or customer acceptance inference"
     }
   ],
   "downloads": [
