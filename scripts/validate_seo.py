@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 ORIGIN = "https://infrastructureproductworks.com"
-ROUTES = ["/","/about/","/agentic-interoperability/","/assurance/","/composite-ai/","/console/","/crossplane/","/docs/guard/","/forge/","/guard/","/insights/","/insights/ai-amplified-technical-leader/","/insights/building-ipw/","/insights/platform-director/","/northstar-signal/","/operating-model/","/portfolio/","/security/","/storefront/","/work/"]
+ROUTES = ["/","/about/","/agentic-interoperability/","/assurance/","/composite-ai/","/console/","/crossplane/","/docs/guard/","/forge/","/guard/","/insights/","/insights/ai-amplified-technical-leader/","/insights/building-ipw/","/insights/orbital-edge-hybrid-space-networks/","/insights/platform-director/","/northstar-signal/","/operating-model/","/portfolio/","/security/","/storefront/","/work/"]
 # The homepage and Forge page are covered by byte-pinned security contracts.
 # They remain in the sitemap; changing their HTML needs independent contract review.
 PROTECTED_CONTRACT_PAGES = {"index.html", "forge/index.html"}
