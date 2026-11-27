@@ -424,5 +424,156 @@ class PublicSecurityGates(unittest.TestCase):
         result=self.gate("audit_private_references.py",b"Forge, Guard, Console, Assurance, Composite AI, Northstar Signal",ci=True)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
 
+    def projection_gate(self, assurance, roadmap):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            (root/"scripts").mkdir()
+            (root/"assets").mkdir()
+            (root/"data").mkdir()
+            shutil.copyfile(SOURCE/"audit_public_projections.py",root/"scripts/audit_public_projections.py")
+            (root/"assets/assurance-records.json").write_text(json.dumps(assurance),encoding="utf-8")
+            (root/"data/roadmap-relationships.json").write_text(json.dumps(roadmap),encoding="utf-8")
+            return subprocess.run(
+                [sys.executable,str(root/"scripts/audit_public_projections.py")],
+                cwd=root,
+                capture_output=True,
+                text=True,
+            )
+
+    def load_projection_module(self):
+        import types
+        path=SOURCE/"audit_public_projections.py"
+        module=types.ModuleType("audit_public_projections")
+        module.__file__=str(path)
+        exec(compile(path.read_text(encoding="utf-8"),str(path),"exec"),module.__dict__)
+        return module
+
+    def load_valid_projections(self):
+        root=SOURCE.parent
+        assurance=json.loads((root/"assets/assurance-records.json").read_text(encoding="utf-8"))
+        roadmap=json.loads((root/"data/roadmap-relationships.json").read_text(encoding="utf-8"))
+        return assurance,roadmap
+
+    def test_public_projection_valid_baseline_passes(self):
+        assurance,roadmap=self.load_valid_projections()
+        result=self.projection_gate(assurance,roadmap)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertIn("Public Projection Contract Gate: PASS",result.stdout)
+        module=self.load_projection_module()
+        findings=[]
+        module.reject_sensitive({"keyResults":["KR1.1"],"headlineKeyResults":["O1-HKR1"],"schemaVersion":"v1"},"$",findings)
+        self.assertEqual(findings,[])
+
+    def test_public_projection_rejects_non_list_nested_arrays(self):
+        import copy
+        assurance,roadmap=self.load_valid_projections()
+        top_fields=("objectives","keyResults","headlineKeyResults","progressHistory")
+        for field in top_fields:
+            for bad_value in ({},"not-a-list",123,None):
+                with self.subTest(field=field,bad_type=type(bad_value).__name__):
+                    mutated=copy.deepcopy(roadmap)
+                    mutated[field]=bad_value
+                    result=self.projection_gate(assurance,mutated)
+                    self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+                    self.assertIn(f"roadmap.{field}: expected array",result.stdout)
+
+        for bad_value in ({},"not-a-list",42,None):
+            with self.subTest(field="headlineKeyResults[0].epicContributions",bad_type=type(bad_value).__name__):
+                mutated=copy.deepcopy(roadmap)
+                mutated["headlineKeyResults"][0]["epicContributions"]=bad_value
+                result=self.projection_gate(assurance,mutated)
+                self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+                self.assertIn("roadmap.headlineKeyResults[0].epicContributions: expected array",result.stdout)
+
+        nested_cases=[
+            ("objectives",0,"keyResults","roadmap.objectives[0].keyResults: expected array"),
+            ("objectives",0,"headlineKeyResults","roadmap.objectives[0].headlineKeyResults: expected array"),
+            ("keyResults",0,"epics","roadmap.keyResults[0].epics: expected array"),
+            ("headlineKeyResults",0,"measures","roadmap.headlineKeyResults[0].measures: expected array"),
+        ]
+        for parent,idx,field,expected_msg in nested_cases:
+            for bad_value in ({},"scalar",7):
+                with self.subTest(path=expected_msg,bad_type=type(bad_value).__name__):
+                    mutated=copy.deepcopy(roadmap)
+                    mutated[parent][idx][field]=bad_value
+                    result=self.projection_gate(assurance,mutated)
+                    self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+                    self.assertIn(expected_msg,result.stdout)
+
+        first_epic=next(iter(roadmap["epics"]))
+        for bad_value in ({},"scalar",7):
+            with self.subTest(path=f"epics[{first_epic}].features",bad_type=type(bad_value).__name__):
+                mutated=copy.deepcopy(roadmap)
+                mutated["epics"][first_epic]["features"]=bad_value
+                result=self.projection_gate(assurance,mutated)
+                self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+                self.assertIn(f"roadmap.epics[{first_epic}].features: expected array",result.stdout)
+
+    def test_public_projection_rejects_invalid_epic_identifiers(self):
+        import copy
+        assurance,roadmap=self.load_valid_projections()
+        sample_epic=copy.deepcopy(next(iter(roadmap["epics"].values())))
+        invalid_ids=("EP-abc","BAD-1","EP-12-extra","","ep-01","EP-01\n","EP-\u0661")
+        for bad_id in invalid_ids:
+            with self.subTest(section="epics",bad_id=bad_id):
+                mutated=copy.deepcopy(roadmap)
+                mutated["epics"][bad_id]=copy.deepcopy(sample_epic)
+                result=self.projection_gate(assurance,mutated)
+                self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+                self.assertIn("unexpected epic identifier",result.stdout)
+            with self.subTest(section="progressHistory.epics",bad_id=bad_id):
+                mutated=copy.deepcopy(roadmap)
+                mutated["progressHistory"][0]["epics"][bad_id]=50
+                result=self.projection_gate(assurance,mutated)
+                self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+                self.assertIn("unexpected epic identifier",result.stdout)
+
+        module=self.load_projection_module()
+        mutated_epics=copy.deepcopy(roadmap)
+        mutated_epics["epics"][123]=copy.deepcopy(sample_epic)
+        findings=module.validate_projections(assurance,mutated_epics)
+        self.assertTrue(any("roadmap.epics.123: unexpected epic identifier" in item for item in findings),findings)
+
+        mutated_history=copy.deepcopy(roadmap)
+        mutated_history["progressHistory"][0]["epics"][456]=25
+        findings=module.validate_projections(assurance,mutated_history)
+        self.assertTrue(any("roadmap.progressHistory[0].epics.456: unexpected epic identifier" in item for item in findings),findings)
+
+    def test_public_projection_rejects_punctuation_separated_sensitive_keys(self):
+        import copy
+        module=self.load_projection_module()
+        assurance,roadmap=self.load_valid_projections()
+        sensitive_keys=(
+            "api.key",
+            "secret:token",
+            "access/token",
+            "auth.bearer",
+            "client.secret",
+            "private:key",
+            "ssh/key",
+            "session.key",
+            "API.KEY",
+            "clientSecret",
+            "APIKey",
+            "passWord",
+            "seCret",
+            "toKen",
+            "my.passWord",
+        )
+        for bad_key in sensitive_keys:
+            with self.subTest(mode="direct",key=bad_key):
+                findings=[]
+                module.reject_sensitive({"nested":{bad_key:"synthetic-placeholder"}},"$",findings)
+                self.assertTrue(
+                    any("sensitive field name is not allowed in public projection" in item for item in findings),
+                    f"Expected sensitive-key finding for {bad_key!r}, got {findings!r}",
+                )
+            with self.subTest(mode="subprocess",key=bad_key):
+                mutated=copy.deepcopy(roadmap)
+                mutated["planning"][bad_key]="synthetic-placeholder"
+                result=self.projection_gate(assurance,mutated)
+                self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+                self.assertIn("sensitive field name is not allowed in public projection",result.stdout)
+
 if __name__=="__main__":
     unittest.main()
