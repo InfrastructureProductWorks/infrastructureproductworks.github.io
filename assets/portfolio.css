@@ -421,3 +421,7 @@
 .demo-validation{margin-top:16px}.demo-validation .validation-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.demo-validation .validation-boundary a{color:#174d73;text-decoration:underline}@media(max-width:720px){.demo-validation .validation-grid{grid-template-columns:1fr}}
 
 .stage-current strong{color:#237645}
+
+.development-measures{display:grid;gap:10px;margin:18px 0}.development-measures>div{display:flex;justify-content:space-between;gap:12px}.development-measures dt{color:#40566d}.development-measures dd{margin:0;text-align:right;font-weight:700}.development-commitment{overflow-wrap:anywhere;word-break:break-word}
+
+#development-progress .validation-boundary{color:#40566d}#development-progress .telemetry-panel{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:1000px){#development-progress .telemetry-panel{grid-template-columns:1fr}}
