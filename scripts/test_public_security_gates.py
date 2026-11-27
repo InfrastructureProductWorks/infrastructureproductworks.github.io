@@ -559,6 +559,18 @@ class PublicSecurityGates(unittest.TestCase):
             "seCret",
             "toKen",
             "my.passWord",
+            "myPassWord",
+            "userPassWord",
+            "authToKen",
+            "mySeCret",
+            "myApiKeY",
+            "myPrivateKey",
+            "myAccessKey",
+            "mySecretKey",
+            "pass\u200bword",
+            "pass\ufeffword",
+            "to\u200cken",
+            "api\u200bKey",
         )
         for bad_key in sensitive_keys:
             with self.subTest(mode="direct",key=bad_key):
@@ -574,6 +586,50 @@ class PublicSecurityGates(unittest.TestCase):
                 result=self.projection_gate(assurance,mutated)
                 self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
                 self.assertIn("sensitive field name is not allowed in public projection",result.stdout)
+
+        # Benign keys containing "key" outside sensitive compounds MUST remain allowed.
+        benign_findings=[]
+        module.reject_sensitive(
+            {
+                "keyResults":["KR1.1"],
+                "headlineKeyResults":["O1-HKR1"],
+                "objectiveToHeadlineKeyResults":"one-to-many",
+                "headlineKeyResultToEpics":"derived",
+            },
+            "$",
+            benign_findings,
+        )
+        self.assertEqual(benign_findings,[])
+
+    def test_public_projection_rejects_malformed_relationship_model_and_progress_history_values(self):
+        import copy
+        assurance,roadmap=self.load_valid_projections()
+
+        for field in ("registeredMeasures","objectiveToEpics","objectiveToHeadlineKeyResults","headlineKeyResultToEpics","epicContributionSemantics"):
+            for bad_value in ([],{},123,True,None,"","not-a-list","not-a-dict"):
+                with self.subTest(section="relationshipModel",field=field,bad_value=bad_value):
+                    mutated=copy.deepcopy(roadmap)
+                    mutated["relationshipModel"][field]=bad_value
+                    result=self.projection_gate(assurance,mutated)
+                    self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+                    self.assertIn(f"roadmap.relationshipModel.{field}:",result.stdout)
+
+        first_history_epic=next(iter(roadmap["progressHistory"][0]["epics"]))
+        for bad_value in ({"injected":"object"},"50",True,False,[50],None,50.5,-5,101,33):
+            with self.subTest(section="progressHistory.epics",bad_value=bad_value):
+                mutated=copy.deepcopy(roadmap)
+                mutated["progressHistory"][0]["epics"][first_history_epic]=bad_value
+                result=self.projection_gate(assurance,mutated)
+                self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+                self.assertIn(f"roadmap.progressHistory[0].epics.{first_history_epic}:",result.stdout)
+
+        for bad_date in (123,None,{},"not-a-date","2026/09/19"):
+            with self.subTest(section="progressHistory.date",bad_date=bad_date):
+                mutated=copy.deepcopy(roadmap)
+                mutated["progressHistory"][0]["date"]=bad_date
+                result=self.projection_gate(assurance,mutated)
+                self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+                self.assertIn("roadmap.progressHistory[0].date:",result.stdout)
 
 if __name__=="__main__":
     unittest.main()

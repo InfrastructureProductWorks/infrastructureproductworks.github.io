@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Enforce bounded schemas and sanitization rules for public JSON projections."""
 from pathlib import Path
-import json, re, sys
+import json, re, sys, unicodedata
 
 ROOT=Path(__file__).resolve().parents[1]
 ASSURANCE=ROOT/"assets/assurance-records.json"
@@ -11,11 +11,17 @@ SENSITIVE_KEY=re.compile(
     r"(?:^|_)(?:password|passwd|secret|token|credential|bearer|private_?key|access_?key|client_?secret|"
     r"connection_?string|ssh_?key|api_?key|session_?key|cookie)(?:$|_)", re.I
 )
+SENSITIVE_KEY_SUBSTRING=re.compile(
+    r"(?:password|passwd|secret|token|credential|bearer|cookie|connectionstring|"
+    r"(?:api|private|access|secret|ssh|session)key)", re.I
+)
 SENSITIVE_VALUE=re.compile(
     r"(?:AKIA|ASIA)[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|"
     r"-----BEGIN (?:RSA |EC |OPENSSH |DSA |ENCRYPTED )?PRIVATE KEY-----"
 )
 EPIC_ID_PATTERN=re.compile(r"EP-\d+", re.ASCII)
+ISO_DATE_PATTERN=re.compile(r"\d{4}-\d{2}-\d{2}", re.ASCII)
+ROADMAP_PROGRESS_PERCENT_VALUES=frozenset({0,25,50,75,100})
 
 ASSURANCE_TOP={"schemaVersion","scopeRef","source","asOf","entries"}
 ASSURANCE_ENTRY={"record","requestedAt","requestSummary","initial"}
@@ -35,7 +41,14 @@ ROADMAP_PLANNING={"baseline","evidenceQuarter","horizon","timingNote"}
 ROADMAP_OBJECTIVE={"definition","group","headlineKeyResults","id","keyResults","progress","status","time"}
 ROADMAP_KEY_RESULT={"definition","epics","group","id","objective","sharedRange","source","status","time"}
 ROADMAP_EPIC={"completionPercent","featureCount","features","group","id","progress","progressBasis","status","time","title"}
-ROADMAP_RELATIONSHIP_MODEL={"epicContributionSemantics","headlineKeyResultToEpics","objectiveToEpics","objectiveToHeadlineKeyResults","registeredMeasures"}
+ROADMAP_RELATIONSHIP_MODEL_VALUES={
+    "epicContributionSemantics":"relationship-specific-description-required",
+    "headlineKeyResultToEpics":"derived-through-registered-measures-with-explicit-contributions",
+    "objectiveToEpics":"derived-through-registered-measures",
+    "objectiveToHeadlineKeyResults":"one-to-many",
+    "registeredMeasures":"traceability-only-hidden-from-executive-view",
+}
+ROADMAP_RELATIONSHIP_MODEL=set(ROADMAP_RELATIONSHIP_MODEL_VALUES)
 ROADMAP_HEADLINE_KR={"epicContributions","id","measures","objective","title"}
 ROADMAP_EPIC_CONTRIBUTION={"description","epic"}
 ROADMAP_PROGRESS_HISTORY={"date","epics"}
@@ -44,18 +57,30 @@ ROADMAP_PROGRESS_MODEL={"method","note","objective","scale","strategicKeyResult"
 
 errors=[]
 
+def strip_format_chars(text):
+    return "".join(ch for ch in str(text) if unicodedata.category(ch)!="Cf")
+
+
 def normalized_key(key):
-    text=str(key)
+    text=strip_format_chars(key)
     text=re.sub(r"([a-z0-9])([A-Z])",r"\1_\2",text)
     text=re.sub(r"([A-Z]+)([A-Z][a-z])",r"\1_\2",text)
     return re.sub(r"[^A-Za-z0-9]+","_",text).lower()
 
 
 def normalized_key_forms(key):
-    text=str(key)
+    text=strip_format_chars(key)
     folded=re.sub(r"[^A-Za-z0-9]+","_",text).lower()
     split=normalized_key(text)
     return (folded,) if folded==split else (folded,split)
+
+
+def is_sensitive_key(key):
+    cleaned=strip_format_chars(key)
+    compact=re.sub(r"[^A-Za-z0-9]+","",cleaned).lower()
+    if SENSITIVE_KEY_SUBSTRING.search(compact):
+        return True
+    return any(SENSITIVE_KEY.search(form) for form in normalized_key_forms(cleaned))
 
 
 def is_valid_epic_id(epic_id):
@@ -67,7 +92,7 @@ def reject_sensitive(obj,path="$",findings=None):
     if isinstance(obj,dict):
         for key,value in obj.items():
             child=f"{path}.{key}"
-            if any(SENSITIVE_KEY.search(form) for form in normalized_key_forms(key)):
+            if is_sensitive_key(key):
                 target.append(f"{child}: sensitive field name is not allowed in public projection")
             reject_sensitive(value,child,target)
     elif isinstance(obj,list):
@@ -162,7 +187,15 @@ def validate_projections(assurance,roadmap):
                 if isinstance(item,dict) and not isinstance(item.get("features"),list):
                     findings.append(f"roadmap.epics[{epic_id}].features: expected array")
 
-        exact_keys(roadmap.get("relationshipModel"),ROADMAP_RELATIONSHIP_MODEL,"roadmap.relationshipModel",findings)
+        relationship_model=roadmap.get("relationshipModel")
+        exact_keys(relationship_model,ROADMAP_RELATIONSHIP_MODEL,"roadmap.relationshipModel",findings)
+        if isinstance(relationship_model,dict):
+            for field,expected in sorted(ROADMAP_RELATIONSHIP_MODEL_VALUES.items()):
+                value=relationship_model.get(field)
+                if not isinstance(value,str):
+                    findings.append(f"roadmap.relationshipModel.{field}: expected string descriptor")
+                elif value!=expected:
+                    findings.append(f"roadmap.relationshipModel.{field}: unexpected relationship contract value")
 
         headline=roadmap.get("headlineKeyResults")
         if not isinstance(headline,list):
@@ -187,13 +220,18 @@ def validate_projections(assurance,roadmap):
             for i,item in enumerate(history):
                 exact_keys(item,ROADMAP_PROGRESS_HISTORY,f"roadmap.progressHistory[{i}]",findings)
                 if isinstance(item,dict):
+                    snapshot_date=item.get("date")
+                    if not isinstance(snapshot_date,str) or not ISO_DATE_PATTERN.fullmatch(snapshot_date):
+                        findings.append(f"roadmap.progressHistory[{i}].date: expected YYYY-MM-DD string")
                     values=item.get("epics")
                     if not isinstance(values,dict):
                         findings.append(f"roadmap.progressHistory[{i}].epics: expected object")
                     else:
-                        for epic_id in values:
+                        for epic_id,pct in values.items():
                             if not is_valid_epic_id(epic_id):
                                 findings.append(f"roadmap.progressHistory[{i}].epics.{epic_id}: unexpected epic identifier")
+                            if type(pct) is not int or pct not in ROADMAP_PROGRESS_PERCENT_VALUES:
+                                findings.append(f"roadmap.progressHistory[{i}].epics.{epic_id}: expected integer completion percentage in 0..100 scale")
 
         exact_keys(roadmap.get("forecastModel"),ROADMAP_FORECAST_MODEL,"roadmap.forecastModel",findings)
         exact_keys(roadmap.get("progressModel"),ROADMAP_PROGRESS_MODEL,"roadmap.progressModel",findings)
