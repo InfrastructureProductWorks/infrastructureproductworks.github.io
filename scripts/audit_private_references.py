@@ -253,7 +253,7 @@ REVIEWED_PUBLIC_CONTRACT_SOURCES={'assets/assurance-demo.js': '220862a6ea2117b86
  'guides/forge/index.html': '954c2e5bc54c27e5aeb96481bd83c1167c851322a1b6d7d6ff6b39ec7f002185',
  'guides/index.html': '0f22463527d31c74110d46836a166e27de98f93d8775e3e40cb73d005d883cd1',
  'index.html': '1712d0d3c72d3e5d74eae26cf6a37546a9fd858efbc94fd9c9edaf1e3ae67072',
- 'scripts/audit_public_projections.py': '48074bf8eacc7dee551c4b183c941b5c351b7f95a797e7dc7b0b61f12fa694e7',
+ 'scripts/audit_public_projections.py': 'd06676402e7babeabd310e1954fb1196cc841a18ecfc4a01bc114b4ef0ac2eb8',
  'scripts/build_assurance_records.cjs': '4fbc46b0778cf60db1e55981e3c8b4c19d061e9ada9aeb3edf1ebb5f668f6551',
  'scripts/build_guides.py': '23b04383db47e411ff3bed95e70fcdb8c57997366a218dcba33806aeba3b0a05'}
 
